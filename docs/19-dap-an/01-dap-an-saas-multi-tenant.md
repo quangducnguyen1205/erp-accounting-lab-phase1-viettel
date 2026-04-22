@@ -12,12 +12,96 @@
 - On-Premise: mỗi client = 1 instance → data isolation tự nhiên, không cần multi-tenant logic, deploy đơn giản
 - SaaS: phải giải quyết multi-tenancy, shared infrastructure, zero-downtime deployment, data isolation ở application level
 - Thêm các concerns: tenant-aware caching, tenant-aware logging, rate limiting, billing
+- On-Premise cũng phức tạp ở chỗ: N clients = N deployments, version fragmentation, customize per-client, debug remote
 
 **Alternatives:**
 - Có thể giảm complexity bằng cách dùng platform services (Keycloak cho auth, managed DB)
 - Hybrid model: SaaS cho SME, dedicated instance cho enterprise
 
 **Kết luận Phase 1:** Hiểu rõ complexity giúp đánh giá đúng effort. Không được coi nhẹ multi-tenant design.
+
+---
+
+## Câu 2: Data residency requirement
+
+**Trả lời ngắn:** Có mâu thuẫn một phần với centralized hosting, nhưng không mâu thuẫn với bản chất SaaS.
+
+**Lập luận:**
+- SaaS = nhà cung cấp quản lý phần mềm. Dù data nằm trên server riêng, nếu nhà cung cấp vẫn quản lý application → vẫn là SaaS variant (managed dedicated).
+- Mâu thuẫn: centralized hosting bị phá vỡ một phần. Nhưng bản chất SaaS (nhà cung cấp chịu trách nhiệm vận hành) vẫn giữ nguyên.
+- Giải pháp: hybrid deployment — multi-tenant shared DB cho SME, dedicated DB/instance cho enterprise.
+
+**Kiến trúc cần thay đổi:**
+- Tenant metadata chứa DB connection info
+- Routing layer biết chuyển request đến đúng DB
+- Migration tool chạy được trên nhiều DB
+- Backup/restore per-tenant
+
+**Kết luận Phase 1:** Demo dùng shared DB. Thiết kế data access layer qua interface để switch DB source sau.
+
+---
+
+## Câu 3: Subscription vs License
+
+**Trả lời ngắn:** Subscription phù hợp vì SaaS là dịch vụ liên tục, cần revenue stream tương ứng.
+
+**Lợi ích kỹ thuật:**
+- Nhà cung cấp kiểm soát version duy nhất → giảm support burden
+- Subscription fund cho operating cost liên tục (hosting, monitoring, maintenance)
+- Khách hàng luôn trên bản mới nhất → dễ debug, dễ maintain
+
+**Lợi ích kinh doanh:**
+- MRR/ARR ổn định, predictable
+- Barrier to entry thấp cho SME
+- Dễ upsell, customer lifetime value cao
+
+**Lưu ý:** Subscription ≠ SaaS. Đây là 2 trục độc lập. On-premise + subscription tồn tại (JetBrains). SaaS + lifetime license cũng có thể.
+
+**Kết luận Phase 1:** Hiểu phân biệt delivery model vs pricing model. Demo không cần billing.
+
+---
+
+## Câu 4: Blast radius khi deploy lỗi
+
+**Trả lời ngắn:** SaaS: tất cả tenant dùng tính năng bị lỗi đều bị ảnh hưởng. On-premise: chỉ client đã update.
+
+**Lập luận:**
+- SaaS: blast radius lớn nhưng fix nhanh (1 deploy). Giảm blast radius bằng: canary (5% traffic trước), rolling deployment, feature flags.
+- On-premise: blast radius nhỏ per-incident nhưng fix chậm (push fix từng client). Lỗi có thể xảy ra N lần ở N client.
+
+**Kết luận Phase 1:** Demo cần backward-compatible DB migration. Production cần canary/rolling + health check + rollback plan.
+
+---
+
+## Câu 5: Feature flags design
+
+**Trả lời ngắn:** 2 bảng: `feature_flag` + `tenant_feature_flag`, check ở service layer, cache result.
+
+**Data model:**
+- `feature_flag(id, name, description, default_enabled, created_at)`
+- `tenant_feature_flag(tenant_id, flag_id, is_enabled, updated_at, updated_by)`
+
+**Logic:** Check `tenant_feature_flag` → nếu không có row → dùng `default_enabled`. Cache per tenant.
+
+**Check ở đâu:** Service layer, helper: `featureFlagService.isEnabled(tenantId, "new_report_v2")`
+
+**Kết luận Phase 1:** Implement đơn giản 2 bảng + helper method. Không cần rollout percentage.
+
+---
+
+## Câu 6: Zero-downtime deployment
+
+**Trả lời ngắn:** Rolling deployment + backward-compatible migration + health check.
+
+**Các yếu tố:**
+1. DB migration backward compatible (thêm cột nullable/default)
+2. Rolling deployment (thay từng pod) hoặc blue-green
+3. Health check endpoint + auto rollback
+4. Stateless design (JWT) → không cần sticky session
+5. Feature flags — deploy code nhưng chưa bật tính năng
+6. Rollback plan rõ ràng
+
+**Kết luận Phase 1:** Demo cần backward-compatible migration. Production cần rolling + health check.
 
 ---
 
@@ -102,6 +186,32 @@
 
 ---
 
+## Câu 11: Schema per tenant — migration complexity
+
+**Trả lời ngắn:** Phải migrate **TẤT CẢ N schema** (N = số tenant).
+
+**Lập luận:**
+- Schema per tenant = mỗi tenant có 1 schema riêng. 500 tenant = 500 schema.
+- Thêm 1 cột mới → phải chạy ALTER TABLE cho TẤT CẢ 500 schema.
+- Đây là trade-off lớn nhất của schema per tenant.
+
+**Quy trình:**
+- Viết migration script → chạy loop qua tất cả schema → handle failure per-schema → verify consistency
+
+**Rủi ro:**
+1. 1 schema fail → tenant đó bị inconsistent với các tenant khác
+2. Thời gian migration dài (N × thời gian per-schema)
+3. Khó rollback nếu chỉ một số schema đã migrate
+4. Lock table per-schema → ảnh hưởng tenant đang dùng
+
+**So sánh:**
+- tenant_id column: migrate 1 lần cho 1 bảng → đơn giản nhất
+- DB per tenant: migrate N lần nhưng independent — fail 1 DB không ảnh hưởng DB khác
+
+**Kết luận Phase 1:** Đây là lý do Phase 1 chọn tenant_id column — migration đơn giản nhất.
+
+---
+
 ## Câu 12: Tự động inject tenant_id
 
 **Trả lời ngắn:** Dùng combination Interceptor + Base Entity + Hibernate Event.
@@ -130,3 +240,43 @@ sequenceDiagram
 ```
 
 **Kết luận Phase 1:** Implement TenantFilter + TenantAwareEntity + Base Repository. Hibernate Filter thêm sau nếu cần auto-filter SELECT.
+
+---
+
+## Câu 13: Data portability — export toàn bộ dữ liệu tenant
+
+**Trả lời ngắn:** DB per tenant dễ nhất (pg_dump), tenant_id column khó nhất (query từng bảng).
+
+**So sánh:**
+
+| Mô hình | Cách export | Độ khó | Ưu điểm | Nhược điểm |
+|---------|-------------|--------|---------|------------|
+| tenant_id column | Query mỗi bảng với WHERE tenant_id = ? | Trung bình-Khó | Không cần tool đặc biệt | Phải biết tất cả bảng, handle FK, maintain export script |
+| Schema per tenant | `pg_dump --schema=tenant_X` | Thấp | Clean, complete, 1 lệnh | Cần quyền DB-level |
+| DB per tenant | `pg_dump database_tenant_X` | Thấp nhất | Đơn giản nhất, isolated | Cần quyền DB-level |
+
+**Format:** SQL dump cho restore, JSON/CSV cho data portability (GDPR).
+
+**Kết luận Phase 1:** Với tenant_id column, cần thiết kế export service sớm.
+
+---
+
+## Câu 14: User thuộc nhiều tenant
+
+**Trả lời ngắn:** Bảng mapping `user_tenant_role` (many-to-many) + tenant picker sau login.
+
+**Data model:**
+- `user_tenant_role(user_id, tenant_id, role_id, is_default, joined_at)`
+- User X có thể có nhiều row (1 row per tenant)
+
+**Auth flow:**
+1. Login → verify credentials
+2. Query `user_tenant_role` WHERE user_id = X
+3. Nếu 1 tenant → auto-select
+4. Nếu nhiều → hiện tenant picker
+5. User chọn → set `tenant_id` vào JWT claim
+6. Tiếp tục bình thường
+
+**Switch tenant:** Cho phép switch trong session mà không cần re-login (issue JWT mới).
+
+**Kết luận Phase 1:** Implement bảng mapping + default tenant. Tenant picker UI nếu có thời gian.
