@@ -61,12 +61,12 @@
 
 ---
 
-## Câu 4: Blast radius khi deploy lỗi
+## Câu 4: Blast radius (phạm vi ảnh hưởng) khi deploy lỗi
 
 **Trả lời ngắn:** SaaS: tất cả tenant dùng tính năng bị lỗi đều bị ảnh hưởng. On-premise: chỉ client đã update.
 
 **Lập luận:**
-- SaaS: blast radius lớn nhưng fix nhanh (1 deploy). Giảm blast radius bằng: canary (5% traffic trước), rolling deployment, feature flags.
+- SaaS: blast radius lớn nhưng fix nhanh (1 deploy). Giảm blast radius bằng: canary (triển khai thử cho một nhóm nhỏ người dùng trước, ví dụ 5% traffic trước), rolling deployment (triển khai cuốn chiếu, cập nhật dần từng phần hệ thống thay vì cập nhật toàn bộ cùng lúc), feature flags (cờ bật/tắt tính năng mà không cần sửa code lớn hoặc deploy lại toàn bộ).
 - On-premise: blast radius nhỏ per-incident nhưng fix chậm (push fix từng client). Lỗi có thể xảy ra N lần ở N client.
 
 **Kết luận Phase 1:** Demo cần backward-compatible DB migration. Production cần canary/rolling + health check + rollback plan.
@@ -75,7 +75,7 @@
 
 ## Câu 5: Feature flags design
 
-**Trả lời ngắn:** 2 bảng: `feature_flag` + `tenant_feature_flag`, check ở service layer, cache result.
+**Trả lời ngắn:** 2 bảng: `feature_flag` (định nghĩa flag) + `tenant_feature_flag` (tenant nào bật flag nào), check ở service layer, cache result.
 
 **Data model:**
 - `feature_flag(id, name, description, default_enabled, created_at)`
@@ -94,9 +94,9 @@
 **Trả lời ngắn:** Rolling deployment + backward-compatible migration + health check.
 
 **Các yếu tố:**
-1. DB migration backward compatible (thêm cột nullable/default)
-2. Rolling deployment (thay từng pod) hoặc blue-green
-3. Health check endpoint + auto rollback
+1. DB migration backward compatible (migration DB theo kiểu an toàn, ví dụ thêm cột nullable/default để code cũ chưa biết cột mới vẫn chạy được)
+2. Rolling deployment (thay từng pod) hoặc blue-green (dựng sẵn môi trường mới song song, rồi chuyển traffic sang khi ổn)
+3. Health check endpoint + auto rollback (ự động quay lại phiên bản cũ nếu bản mới lỗi)
 4. Stateless design (JWT) → không cần sticky session
 5. Feature flags — deploy code nhưng chưa bật tính năng
 6. Rollback plan rõ ràng
@@ -171,18 +171,20 @@
 **Trả lời ngắn:** Có ảnh hưởng nhưng có thể giảm thiểu.
 
 **Lập luận:**
-- Index trên `(tenant_id, ...)` giúp query của Tenant B vẫn nhanh nếu index đúng
-- Nhưng: table size lớn → index lớn → disk I/O tăng, vacuum chậm hơn
-- Nếu Tenant A chạy full table scan → lock, buffer pool bị chiếm
+- Index trên `(tenant_id, ...)` (chỉ mục bắt đầu bằng tenant_id, giúp database tìm nhanh dữ liệu của đúng tenant) giúp query của Tenant B vẫn nhanh nếu index đúng
+- Nhưng: table size lớn → index lớn → disk I/O tăng, vacuum chậm hơn (PostgreSQL dọn dẹp row cũ/chết chậm hơn)
+- Nếu Tenant A chạy full table scan → lock, buffer pool bị chiếm (vùng cache dữ liệu trong RAM bị chiếm nhiều, làm query khác chậm theo)
 
 **Giải pháp:**
-1. Composite index `(tenant_id, column)` — B-tree index skip đến đúng tenant
-2. Table partitioning by tenant_id — PostgreSQL partition pruning
-3. Connection pool riêng cho tenant lớn
-4. Read replica cho heavy queries
+1. Composite index `(tenant_id, column)` (index nhiều cột, bắt đầu bằng tenant_id rồi đến cột thường query cùng) — B-tree index skip đến đúng tenant
+2. Table partitioning by tenant_id (chia bảng lớn thành nhiều phần nhỏ theo tenant hoặc nhóm tenant)  — PostgreSQL partition pruning (PostgreSQL tự bỏ qua các partition không liên quan khi query)
+3. Connection pool riêng cho tenant lớn (nhóm kết nối DB tách riêng để tenant lớn không chiếm hết tài nguyên của tenant khác)
+4. Read replica (bản sao chỉ để đọc, dùng sang tải query nặng riêng) cho heavy queries (các câu query tốn tài nguyên)
 5. Cân nhắc migrate tenant lớn sang MH2/MH3
 
 **Kết luận Phase 1:** Với 10 tenants và ít data, không phải vấn đề. Nhưng biết rằng đây là điểm sẽ cần giải quyết khi scale.
+
+Đọc thêm: [vi-du-ve-noisy-neighbor.md](../23-kien-thuc-mo-rong/vi-du-ve-noisy-neighbor.md)
 
 ---
 

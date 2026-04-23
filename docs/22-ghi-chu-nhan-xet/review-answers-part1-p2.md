@@ -115,7 +115,7 @@
 **Tôi đang thiếu gì:**
 - Tách rõ lợi ích **kỹ thuật** vs **kinh doanh** (câu hỏi yêu cầu tách)
 - Lý do kỹ thuật cốt lõi: SaaS = nhà cung cấp vận hành liên tục → cần revenue stream liên tục
-- Lý do kinh doanh: MRR/ARR ổn định, barrier to entry thấp, customer lifetime value
+- Lý do kinh doanh: MRR/ARR (doanh thu định kỳ hàng tháng/năm) ổn định, barrier to entry thấp, customer lifetime value
 
 **Tôi nên sửa cách hiểu:**
 - Subscription phù hợp SaaS vì **bản chất dịch vụ liên tục**, không phải vì multi-tenant
