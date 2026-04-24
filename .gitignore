@@ -1,0 +1,31 @@
+# Tài liệu học tập riêng tư hoặc chỉ dùng local
+local/*
+!local/README.md
+
+drafts/
+prompts/
+questions/
+answers/
+reviews/
+mentor-notes/
+tmp/
+temp/
+scratch/
+
+*.bak
+*.tmp
+
+# File build từ LaTeX
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.pdf
+
+# File sinh bởi hệ điều hành và editor
+.DS_Store
+.idea/
+.vscode/
