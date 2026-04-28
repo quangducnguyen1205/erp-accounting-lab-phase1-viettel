@@ -20,7 +20,6 @@ graph LR
     M --> M2["Trade-off analysis"]
 
     DB --> DB1["PostgreSQL<br/>tenant-aware"]
-    DB --> DB2["Index / Lock /<br/>Migration"]
 
     style P1 fill:#1565c0,color:white
     style S fill:#43a047,color:white
@@ -236,7 +235,7 @@ graph TB
 
 ---
 
-> **Ghi chú khi leader hỏi ngoài lề:**
+> **Ghi chú:**
 >
 > - *"Tại sao không dùng MongoDB?"* → Kế toán cần ACID mạnh, foreign key constraint, dữ liệu quan hệ chặt. MongoDB eventual consistency không phù hợp cho nghiệp vụ tài chính chính thống.
 > - *"Schema per tenant có phức tạp lắm không?"* → 500 tenant = 500 schema. Migration phải loop qua tất cả. 1 schema fail = partial migration = inconsistency.
