@@ -11,8 +11,8 @@
 
 \geometry{margin=2.5cm}
 \IfFontExistsTF{Times New Roman}
-    {\setmainfont{Times New Roman}}
-    {\setmainfont{TeX Gyre Termes}}
+{\setmainfont{Times New Roman}}
+{\setmainfont{TeX Gyre Termes}}
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{6pt}
 \hypersetup{
@@ -23,23 +23,23 @@
 
 \title{\textbf{Báo cáo tóm tắt tiến độ học tập}\\SaaS, Multi-tenant và nền tảng Backend/Database}
 \author{Quang Đức Nguyễn}
-\date{24/04/2026}
+\date{28/04/2026}
 
 \begin{document}
 
-\maketitle
+    \maketitle
 
-\section*{1. Tóm tắt điều hành}
+    \section*{1. Tóm tắt điều hành}
 
-Trong giai đoạn Phase 1, em đã gần hoàn tất phần nền tảng về SaaS và kiến trúc multi-tenant trong bối cảnh hệ thống ERP/kế toán. Trọng tâm học không chỉ là định nghĩa khái niệm, mà là hiểu các hệ quả kỹ thuật khi một hệ thống phục vụ nhiều doanh nghiệp trên cùng nền tảng.
+    Trong giai đoạn Phase 1, em đã gần hoàn tất phần nền tảng về SaaS và kiến trúc multi-tenant trong bối cảnh hệ thống ERP/kế toán. Trọng tâm học không chỉ là định nghĩa khái niệm, mà là hiểu các hệ quả kỹ thuật khi một hệ thống phục vụ nhiều doanh nghiệp trên cùng nền tảng.
 
-Các ghi chú chi tiết được duy trì trong các file markdown của repository. Báo cáo này là bản tóm tắt phục vụ báo cáo tiến độ; repository đóng vai trò tài liệu đính kèm và nguồn sự thật cho các phần kiến thức đã được tổng hợp.
+    Các ghi chú chi tiết được duy trì trong các file markdown của repository em tự tạo \href{https://github.com/quangducnguyen1205/erp-accounting-lab-phase1-viettel}{Link repo}. Báo cáo này là bản tóm tắt phục vụ báo cáo tiến độ; repository đóng vai trò tài liệu đính kèm cho các phần kiến thức đã được tổng hợp.
 
-\section*{2. Phạm vi học gần đây}
+    \section*{2. Phạm vi học gần đây}
 
-Các chủ đề đã được tổng hợp gồm:
+    Các chủ đề đã được tổng hợp gồm:
 
-\begin{itemize}[leftmargin=*]
+    \begin{itemize}[leftmargin=*]
     \item SaaS như một mô hình phân phối phần mềm.
     \item Phân biệt SaaS, cloud, subscription, on-premise và multi-tenant.
     \item Multi-tenant như một pattern kiến trúc.
@@ -47,93 +47,84 @@ Các chủ đề đã được tổng hợp gồm:
     \item Trade-off giữa chi phí, isolation, migration complexity, blast radius, vận hành và customization.
     \item Feature flags, rolling deployment, blue-green deployment và backward-compatible migration.
     \item Noisy neighbor, index tenant-aware, migration lock, rollback và vai trò của PostgreSQL.
-\end{itemize}
+    \end{itemize}
 
-Các tài liệu liên quan:
+    Các tài liệu liên quan:
 
-\begin{itemize}[leftmargin=*]
+    \begin{itemize}[leftmargin=*]
     \item \texttt{docs/01-saas/tong-quan-saas.md}
     \item \texttt{docs/02-multi-tenant/tong-quan-multi-tenant.md}
     \item \texttt{docs/02-multi-tenant/cac-mo-hinh-tenant-isolation.md}
     \item \texttt{docs/03-backend-database-mo-rong/}
-\end{itemize}
+    \end{itemize}
 
-\section*{3. Kiến thức chính đã học}
+    \section*{3. Kiến thức chính đã học}
 
-\subsection*{3.1. SaaS}
+    \subsection*{3.1. SaaS}
 
-Em đã hiểu SaaS là mô hình phân phối phần mềm: nhà cung cấp host, vận hành, bảo trì và cập nhật hệ thống; khách hàng sử dụng qua internet. SaaS không đồng nghĩa với cloud, subscription hoặc multi-tenant.
+    Em đã hiểu SaaS là mô hình phân phối phần mềm: nhà cung cấp host, vận hành, bảo trì và cập nhật hệ thống; khách hàng sử dụng qua internet. SaaS không đồng nghĩa với cloud, subscription hoặc multi-tenant.
 
-Điểm quan trọng đã sửa được là phân biệt ba trục độc lập:
+    Điểm quan trọng đã sửa được là phân biệt ba trục độc lập:
 
-\begin{longtable}{|p{4cm}|p{5cm}|p{5cm}|}
-\hline
-\textbf{Trục} & \textbf{Câu hỏi chính} & \textbf{Ví dụ} \\
-\hline
-Delivery model & Ai host và vận hành phần mềm? & SaaS, on-premise, hybrid \\
-\hline
-Pricing model & Khách hàng trả tiền thế nào? & Subscription, license, freemium \\
-\hline
-Architecture pattern & Hệ thống phục vụ nhiều khách hàng ra sao? & Multi-tenant, single-tenant \\
-\hline
-\end{longtable}
+    \begin{longtable}{|p{4cm}|p{5cm}|p{5cm}|}
+        \hline
+        \textbf{Trục} & \textbf{Câu hỏi chính} & \textbf{Ví dụ} \\
+        \hline
+        Delivery model & Ai host và vận hành phần mềm? & SaaS, on-premise, hybrid \\
+        \hline
+        Pricing model & Khách hàng trả tiền thế nào? & Subscription, license, freemium \\
+        \hline
+        Architecture pattern & Hệ thống phục vụ nhiều khách hàng ra sao? & Multi-tenant, single-tenant \\
+        \hline
+    \end{longtable}
 
-\subsection*{3.2. Multi-tenant}
+    \subsection*{3.2. Multi-tenant}
 
-Em đã hiểu tenant trong bối cảnh ERP/kế toán thường tương ứng với một doanh nghiệp. Multi-tenant là cách nhiều doanh nghiệp dùng chung nền tảng nhưng dữ liệu, quyền và cấu hình phải được cách ly.
+    Em đã hiểu tenant trong bối cảnh ERP/kế toán thường tương ứng với một doanh nghiệp. Multi-tenant là cách nhiều doanh nghiệp dùng chung nền tảng nhưng dữ liệu, quyền và cấu hình phải được cách ly.
 
-Rủi ro quan trọng nhất là data leakage. Trong mô hình shared table, nếu query thiếu \texttt{tenant\_id}, dữ liệu của tenant này có thể lộ sang tenant khác. Điều này đặc biệt nghiêm trọng với dữ liệu kế toán.
+    Rủi ro quan trọng nhất là data leakage. Trong mô hình shared table, nếu query thiếu \texttt{tenant\_id}, dữ liệu của tenant này có thể lộ sang tenant khác. Điều này đặc biệt nghiêm trọng với dữ liệu kế toán.
 
-\subsection*{3.3. Tenant isolation}
+    \subsection*{3.3. Tenant isolation}
 
-Ba mô hình isolation đã được so sánh:
+    Ba mô hình isolation đã được so sánh:
 
-\begin{longtable}{|p{4cm}|p{3cm}|p{3cm}|p{4cm}|}
-\hline
-\textbf{Mô hình} & \textbf{Chi phí} & \textbf{Isolation} & \textbf{Nhận xét} \\
-\hline
-Shared table + \texttt{tenant\_id} & Thấp & Thấp đến trung bình & Phù hợp Phase 1, nhưng phải chống data leakage \\
-\hline
-Schema per tenant & Trung bình & Trung bình & Migration nhiều schema là rủi ro lớn \\
-\hline
-Database per tenant & Cao & Cao & Phù hợp enterprise hoặc yêu cầu compliance cao \\
-\hline
-\end{longtable}
+    \begin{longtable}{|p{4cm}|p{3cm}|p{3cm}|p{4cm}|}
+        \hline
+        \textbf{Mô hình} & \textbf{Chi phí} & \textbf{Isolation} & \textbf{Nhận xét} \\
+        \hline
+        Shared table + \texttt{tenant\_id} & Thấp & Thấp đến trung bình & Phù hợp Phase 1, nhưng phải chống data leakage \\
+        \hline
+        Schema per tenant & Trung bình & Trung bình & Migration nhiều schema là rủi ro lớn \\
+        \hline
+        Database per tenant & Cao & Cao & Phù hợp enterprise hoặc yêu cầu compliance cao \\
+        \hline
+    \end{longtable}
 
-Kết luận hiện tại: Phase 1 nên bắt đầu với shared table và \texttt{tenant\_id}. Nếu sau này có tenant enterprise lớn, có thể cân nhắc hybrid: SME dùng shared table, enterprise dùng database riêng.
+    Kết luận hiện tại: Phase 1 nên bắt đầu với shared table và \texttt{tenant\_id}. Nếu sau này có tenant enterprise lớn, có thể cân nhắc hybrid: SME dùng shared table, enterprise dùng database riêng.
 
-\section*{4. Insight kỹ thuật quan trọng}
+    \section*{4. Insight kỹ thuật quan trọng}
 
-Một số điểm kỹ thuật đã hiểu rõ hơn:
+    Một số điểm kỹ thuật đã hiểu rõ hơn:
 
-\begin{itemize}[leftmargin=*]
+    \begin{itemize}[leftmargin=*]
     \item Feature flags giúp deploy code trước nhưng kiểm soát việc bật tính năng theo tenant.
     \item Zero-downtime deployment cần rolling hoặc blue-green deployment, health check và migration tương thích ngược.
     \item Blast radius của SaaS lớn hơn on-premise vì một lỗi deploy có thể ảnh hưởng nhiều tenant.
-    \item Cache key phải có tenant prefix, ví dụ \texttt{tenant:42:categories}.
-    \item Platform admin và tenant admin là hai phạm vi quyền khác nhau, không nên trộn lẫn.
-\end{itemize}
+    \end{itemize}
 
-Ngoài ra, em đã bắt đầu tìm hiểu về các chủ đề backend/database liên quan trực tiếp đến multi-tenant (composite index, noisy neighbor, migration lock, partitioning). Những phần này được ghi nhận riêng trong tài liệu tự học mở rộng tại \texttt{docs/03-backend-database-mo-rong/}, không thuộc scope báo cáo này.
+    Ngoài ra, em đã bắt đầu tìm hiểu về các chủ đề backend/database liên quan trực tiếp đến multi-tenant (composite index, noisy neighbor, migration lock, partitioning). Những phần này được ghi nhận riêng trong tài liệu tự học mở rộng tại \texttt{docs/03-backend-database-mo-rong/}, không thuộc scope báo cáo này.
 
-\section*{5. Giới hạn hiện tại và hướng học tiếp}
+    \section*{5. Giới hạn hiện tại và hướng học tiếp}
 
-Em đang ở mức có nền tảng lý thuyết tốt hơn trước, nhưng chưa nên tự đánh giá là đã thành thạo production backend. Các phần cần học và thực hành tiếp gồm:
+    Em đang ở mức có nền tảng lý thuyết tốt hơn trước, nhưng chưa nên tự đánh giá là đã thành thạo production backend. Các phần cần học và thực hành tiếp gồm:
 
-\begin{itemize}[leftmargin=*]
+    \begin{itemize}[leftmargin=*]
     \item Đọc và phân tích \texttt{EXPLAIN ANALYZE}.
     \item Thực hành tạo index và so sánh query plan.
-    \item Thực hành migration an toàn bằng Flyway hoặc Liquibase.
     \item Xây một backend demo nhỏ để kiểm chứng tenant-aware query, auth và data isolation.
     \item Viết test chống data leakage giữa các tenant.
-\end{itemize}
+    \end{itemize}
 
-Về code demo, hướng hiện tại là chưa khởi tạo full project trong repository này. Khi bắt đầu code, em sẽ tự implement task trước, sau đó nhờ Agent review và đề xuất sửa để đảm bảo quá trình học vẫn đến từ việc tự viết code.
-
-\section*{6. Kết luận}
-
-Phase 1 đã giúp em hình thành nền tảng rõ hơn về SaaS, multi-tenant và các vấn đề backend/database đi kèm. Em đã hiểu rằng thiết kế SaaS không chỉ là đưa ứng dụng lên cloud, mà là một chuỗi quyết định liên quan đến cách ly dữ liệu, migration, deployment, vận hành và khả năng mở rộng.
-
-Giai đoạn tiếp theo nên tập trung vào thực hành PostgreSQL và backend demo nhỏ, để chuyển kiến thức đã tổng hợp thành kỹ năng triển khai và kiểm chứng bằng code.
+    Về code demo, hướng hiện tại là chưa khởi tạo full project trong repository này. Khi bắt đầu code, em sẽ tự implement task trước, sau đó nhờ Agent review và đề xuất sửa để đảm bảo quá trình học vẫn đến từ việc tự viết code.
 
 \end{document}
