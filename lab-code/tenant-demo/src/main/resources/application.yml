@@ -1,0 +1,26 @@
+# ==============================================================
+# TODO TASK: Cấu hình Spring Boot application
+# ==============================================================
+#
+# [Mục tiêu]
+# Cấu hình kết nối PostgreSQL và Flyway migration.
+#
+# [Nhiệm vụ của tôi]
+# 1. Cấu hình spring.datasource: url, username, password.
+#    (Phải khớp với docker-compose.yml bạn đã tạo.)
+# 2. Cấu hình spring.jpa: hibernate ddl-auto nên đặt là gì?
+#    Suy nghĩ: nếu dùng Flyway thì ddl-auto nên là "none" hay "validate"?
+# 3. Cấu hình spring.flyway: locations, enabled.
+# 4. Bật SQL logging để debug query.
+#
+# [Kiến thức cần tự research]
+# - Spring Boot application.yml format
+# - spring.datasource.url format cho PostgreSQL: jdbc:postgresql://host:port/db
+# - spring.jpa.hibernate.ddl-auto: none, validate, update, create-drop
+# - spring.jpa.show-sql, spring.jpa.properties.hibernate.format_sql
+# - spring.flyway.locations
+# - Docs: https://docs.spring.io/spring-boot/docs/current/reference/html/application-properties.html
+#
+# ==============================================================
+
+# Viết cấu hình của bạn ở đây:

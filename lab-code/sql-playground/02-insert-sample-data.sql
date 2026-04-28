@@ -1,0 +1,25 @@
+-- ==============================================================
+-- TODO TASK 2: Insert dữ liệu mẫu cho nhiều tenant
+-- ==============================================================
+--
+-- [Mục tiêu]
+-- Tạo dữ liệu mẫu để có cơ sở test query tenant-aware.
+-- Cần có ÍT NHẤT 2 tenant với dữ liệu riêng biệt.
+--
+-- [Nhiệm vụ của tôi]
+-- 1. Insert 2-3 tenant vào bảng tenants.
+-- 2. Insert master_data cho mỗi tenant (mỗi tenant 5-10 rows).
+-- 3. Đảm bảo: mã code trùng nhau giữa các tenant là hợp lệ
+--    (ví dụ: tenant 1 có "VT001" và tenant 2 cũng có "VT001").
+-- 4. Đảm bảo: mã code trùng trong CÙNG tenant phải bị lỗi
+--    (ví dụ: tenant 1 có 2 dòng "VT001" → phải vi phạm UNIQUE).
+--
+-- [Kiến thức cần tự research]
+-- - PostgreSQL INSERT syntax
+-- - Cách test UNIQUE constraint violation
+-- - Suy nghĩ: nếu dùng UNIQUE(code) thay vì UNIQUE(tenant_id, code),
+--   chuyện gì sẽ xảy ra khi 2 tenant cùng dùng mã "VT001"?
+--
+-- ==============================================================
+
+-- Viết SQL của bạn ở đây:

@@ -1,35 +1,31 @@
--- ============================================================
--- SQL Playground: Setup bảng cho multi-tenant demo
--- Dùng với: psql -d tenant_demo -f 01-setup-tables.sql
--- ============================================================
+-- ==============================================================
+-- TODO TASK 1: Tạo bảng cho multi-tenant demo
+-- ==============================================================
+--
+-- [Mục tiêu]
+-- Tạo schema database cho mô hình Shared Table + tenant_id.
+-- Đây là nền tảng để tất cả các bài thực hành sau dựa vào.
+--
+-- [Nhiệm vụ của tôi]
+-- 1. Tạo bảng `tenants` để lưu danh sách tenant (doanh nghiệp).
+--    - Cần có: id (PK), code (unique), name, is_active, created_at.
+-- 2. Tạo bảng `master_data` (ví dụ: danh mục vật tư) với cột `tenant_id`.
+--    - Cần có: id (PK), tenant_id (FK → tenants), code, name, category,
+--      is_active, created_at.
+-- 3. Tạo UNIQUE constraint tenant-aware: (tenant_id, code).
+--    - Suy nghĩ: tại sao UNIQUE(code) là sai trong multi-tenant?
+-- 4. Tạo composite index bắt đầu bằng tenant_id.
+--    - Suy nghĩ: tại sao tenant_id phải là cột đầu tiên? (leftmost prefix)
+--
+-- [Kiến thức cần tự research]
+-- - PostgreSQL CREATE TABLE syntax
+-- - BIGSERIAL vs BIGINT
+-- - REFERENCES (foreign key)
+-- - UNIQUE constraint trên nhiều cột
+-- - CREATE INDEX vs UNIQUE constraint
+-- - Composite index và leftmost prefix rule
+-- - Đọc lại: docs/03-backend-database-mo-rong/index-va-query-tenant-aware.md
+--
+-- ==============================================================
 
--- Bảng tenant
-CREATE TABLE IF NOT EXISTS tenants (
-    id          bigserial PRIMARY KEY,
-    code        varchar(50) NOT NULL UNIQUE,
-    name        varchar(255) NOT NULL,
-    is_active   boolean NOT NULL DEFAULT true,
-    created_at  timestamp NOT NULL DEFAULT now()
-);
-
--- Bảng master_data (ví dụ: danh mục vật tư, nhà cung cấp, v.v.)
-CREATE TABLE IF NOT EXISTS master_data (
-    id          bigserial PRIMARY KEY,
-    tenant_id   bigint NOT NULL REFERENCES tenants(id),
-    code        varchar(50) NOT NULL,
-    name        varchar(255) NOT NULL,
-    category    varchar(50) NOT NULL,
-    is_active   boolean NOT NULL DEFAULT true,
-    created_at  timestamp NOT NULL DEFAULT now(),
-    UNIQUE (tenant_id, code)
-);
-
--- Index tenant-aware
-CREATE INDEX IF NOT EXISTS idx_master_data_tenant
-    ON master_data (tenant_id);
-
-CREATE INDEX IF NOT EXISTS idx_master_data_tenant_category
-    ON master_data (tenant_id, category);
-
-CREATE INDEX IF NOT EXISTS idx_master_data_tenant_active
-    ON master_data (tenant_id, is_active);
+-- Viết SQL của bạn ở đây:

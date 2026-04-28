@@ -1,69 +1,76 @@
 # Lab Code — Thực hành Phase 1
 
-Thư mục này chứa source code thực hành song song với lý thuyết Phase 1.
+Thư mục này là không gian thực hành code, song song với lý thuyết Phase 1.
 
-## Mục đích
+## Nguyên tắc tối thượng
 
-- Kiểm chứng kiến thức SaaS/multi-tenant bằng code thật.
-- Thực hành shared table + `tenant_id` trên PostgreSQL.
-- Tự viết code trước, sau đó nhờ Agent review.
+1. **TỰ VIẾT CODE TRƯỚC.** Không copy solution.
+2. Mỗi file có TODO task hướng dẫn. Đọc task → tự research → tự implement.
+3. Sau khi tự viết xong → nhờ Agent review, tìm lỗi, đề xuất sửa.
+4. Code phải chạy được thật, không chỉ pseudo-code.
+5. Mỗi bước nhỏ, commit riêng, message rõ ràng.
 
-## Cấu trúc đề xuất
+## Cấu trúc
 
 ```text
 lab-code/
 ├── README.md                          ← File này
 ├── tenant-demo/                       ← PoC chính: Spring Boot + PostgreSQL
-│   ├── src/
-│   │   └── main/
-│   │       ├── java/
-│   │       │   └── com/viettel/demo/
-│   │       │       ├── TenantDemoApplication.java
-│   │       │       ├── config/
-│   │       │       │   └── TenantFilter.java         ← Servlet filter: JWT → tenant context
-│   │       │       ├── context/
-│   │       │       │   └── TenantContext.java         ← ThreadLocal giữ tenant_id
-│   │       │       ├── entity/
-│   │       │       │   ├── TenantAwareEntity.java     ← Base entity có tenant_id
-│   │       │       │   └── MasterData.java            ← Entity ví dụ
-│   │       │       ├── repository/
-│   │       │       │   ├── TenantAwareRepository.java ← Base repo auto-filter tenant
-│   │       │       │   └── MasterDataRepository.java
-│   │       │       ├── service/
-│   │       │       │   └── MasterDataService.java
-│   │       │       └── controller/
-│   │       │           └── MasterDataController.java
-│   │       └── resources/
-│   │           ├── application.yml
-│   │           └── db/migration/                      ← Flyway migrations
-│   │               ├── V1__create_tenants.sql
-│   │               ├── V2__create_master_data.sql
-│   │               └── V3__create_indexes.sql
-│   └── pom.xml
-├── sql-playground/                    ← Script SQL để test trực tiếp trên psql
-│   ├── 01-setup-tables.sql
-│   ├── 02-insert-sample-data.sql
-│   ├── 03-query-with-explain.sql
-│   ├── 04-index-comparison.sql
-│   └── 05-data-leakage-test.sql
+│   ├── src/main/java/com/viettel/demo/
+│   │   ├── TenantDemoApplication.java         ← Entry point
+│   │   ├── config/
+│   │   │   └── TenantFilter.java              ← TODO: Servlet filter
+│   │   ├── context/
+│   │   │   └── TenantContext.java             ← TODO: ThreadLocal
+│   │   ├── entity/
+│   │   │   ├── TenantAwareEntity.java         ← TODO: Base entity
+│   │   │   └── MasterData.java                ← TODO: Business entity
+│   │   ├── repository/
+│   │   │   ├── TenantAwareRepository.java     ← TODO: Base repo
+│   │   │   └── MasterDataRepository.java      ← TODO: Repo cụ thể
+│   │   ├── service/
+│   │   │   └── MasterDataService.java         ← TODO: Business logic
+│   │   └── controller/
+│   │       └── MasterDataController.java      ← TODO: REST API
+│   ├── src/main/resources/
+│   │   ├── application.yml                    ← TODO: Cấu hình DB
+│   │   └── db/migration/
+│   │       ├── V1__create_tenants.sql         ← TODO: Migration
+│   │       ├── V2__create_master_data.sql     ← TODO: Migration
+│   │       └── V3__create_indexes.sql         ← TODO: Index strategy
+│   ├── src/test/java/com/viettel/demo/
+│   │   └── DataLeakageTest.java               ← TODO: Integration test
+│   └── pom.xml                                ← TODO: Dependencies
+├── sql-playground/
+│   ├── 01-setup-tables.sql                    ← TODO: Tạo bảng
+│   ├── 02-insert-sample-data.sql              ← TODO: Data mẫu
+│   ├── 03-query-with-explain.sql              ← TODO: EXPLAIN
+│   ├── 04-index-comparison.sql                ← TODO: So sánh index
+│   └── 05-data-leakage-test.sql               ← TODO: Test leakage
 └── docker/
-    └── docker-compose.yml             ← PostgreSQL local cho dev
+    └── docker-compose.yml                     ← TODO: PostgreSQL local
 ```
 
-## Lộ trình push code lên GitHub
+## Lộ trình thực hành
 
-| Bước | Nội dung | Đồng bộ với lý thuyết |
-|:---:|---------|----------------------|
-| 1 | `docker-compose.yml` + SQL playground | `docs/03-backend-database-mo-rong/` |
-| 2 | Spring Boot skeleton + TenantContext + TenantFilter | `docs/02-multi-tenant/tong-quan-multi-tenant.md` |
-| 3 | TenantAwareEntity + TenantAwareRepository | `docs/02-multi-tenant/tinh-huong-va-trade-off.md` (data leakage) |
-| 4 | MasterData CRUD + Flyway migration | `docs/03-backend-database-mo-rong/migration-lock-rollback.md` |
-| 5 | Integration test chống data leakage | `docs/02-multi-tenant/tinh-huong-va-trade-off.md` (câu 8) |
-| 6 | EXPLAIN ANALYZE trên query thật | `docs/03-backend-database-mo-rong/index-va-query-tenant-aware.md` |
+| Bước | Task | Liên hệ lý thuyết | Files liên quan |
+|:---:|------|-------------------|----------------|
+| 1 | Setup PostgreSQL local | `docs/03-backend-database-mo-rong/postgres-va-bai-toan-multi-tenant.md` | `docker/`, `sql-playground/01-02` |
+| 2 | Tạo Spring Boot project + cấu hình DB | Spring Initializr docs | `pom.xml`, `application.yml`, `TenantDemoApplication.java` |
+| 3 | Implement TenantContext + TenantFilter | `docs/02-multi-tenant/tong-quan-multi-tenant.md` (tenant-aware everything) | `context/`, `config/` |
+| 4 | Implement Base Entity + Base Repository | `docs/02-multi-tenant/tinh-huong-va-trade-off.md` (data leakage) | `entity/TenantAwareEntity`, `repository/TenantAwareRepository` |
+| 5 | Implement MasterData CRUD + Flyway | `docs/03-backend-database-mo-rong/migration-lock-rollback.md` | `entity/`, `repository/`, `service/`, `controller/`, `db/migration/` |
+| 6 | Viết Integration Test chống data leakage | `docs/02-multi-tenant/tinh-huong-va-trade-off.md` (câu 8) | `DataLeakageTest.java` |
+| 7 | Chạy EXPLAIN ANALYZE trên query thật | `docs/03-backend-database-mo-rong/index-va-query-tenant-aware.md` | `sql-playground/03-04` |
 
-## Nguyên tắc
+## Workflow mỗi bước
 
-1. Tự viết code trước. Nhờ Agent review sau.
-2. Code phải chạy được (không chỉ là pseudo-code).
-3. Mỗi bước nhỏ, commit riêng, message rõ ràng.
-4. Nếu project lớn dần → tách sang repository riêng.
+```
+1. Đọc TODO task trong file skeleton
+2. Đọc tài liệu lý thuyết liên quan
+3. Tự research keyword được gợi ý
+4. Tự viết code
+5. Test thử
+6. Commit
+7. Nhờ Agent review nếu cần
+```

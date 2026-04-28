@@ -1,0 +1,36 @@
+-- ==============================================================
+-- TODO TASK 3: Chạy EXPLAIN ANALYZE trên query tenant-aware
+-- ==============================================================
+--
+-- [Mục tiêu]
+-- Học cách đọc query plan của PostgreSQL.
+-- Phân biệt Index Scan vs Sequential Scan.
+-- Hiểu tại sao index tenant-aware quan trọng.
+--
+-- [Nhiệm vụ của tôi]
+-- 1. Viết query lấy master_data của 1 tenant cụ thể (có WHERE tenant_id).
+--    Chạy EXPLAIN ANALYZE trên query đó.
+--    Ghi chú: thấy Index Scan hay Seq Scan?
+--
+-- 2. Viết query THIẾU tenant_id (ví dụ: WHERE category = '...').
+--    Chạy EXPLAIN ANALYZE.
+--    Ghi chú: kết quả khác gì so với query 1?
+--
+-- 3. Viết query dùng composite index (tenant_id + category).
+--    Chạy EXPLAIN ANALYZE.
+--    So sánh: có nhanh hơn query chỉ filter tenant_id?
+--
+-- 4. Ghi lại nhận xét về các chỉ số:
+--    - "Actual Rows" vs "Rows Removed by Filter"
+--    - "Shared Hit" vs "Shared Read"
+--    - Planning Time vs Execution Time
+--
+-- [Kiến thức cần tự research]
+-- - EXPLAIN ANALYZE syntax: https://www.postgresql.org/docs/current/sql-explain.html
+-- - EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT)
+-- - Cách đọc output: Index Scan, Seq Scan, Bitmap Index Scan
+-- - Đọc lại: docs/03-backend-database-mo-rong/index-va-query-tenant-aware.md
+--
+-- ==============================================================
+
+-- Viết SQL của bạn ở đây:

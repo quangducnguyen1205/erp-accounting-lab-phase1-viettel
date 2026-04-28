@@ -1,0 +1,38 @@
+<!--
+  ==============================================================
+  TODO TASK: Maven POM — khai báo dependencies
+  ==============================================================
+
+  [Mục tiêu]
+  File này khai báo project metadata và dependencies.
+  Bạn có thể tạo file này bằng Spring Initializr rồi chỉnh lại,
+  hoặc tự viết từ đầu.
+
+  [Nhiệm vụ của tôi]
+  1. Dùng Spring Initializr (https://start.spring.io) để generate project:
+     - Project: Maven
+     - Language: Java
+     - Spring Boot: 3.x
+     - Group: com.viettel
+     - Artifact: demo
+     - Java: 17
+     - Dependencies: Spring Web, Spring Data JPA, PostgreSQL Driver,
+                     Flyway Migration
+  2. Copy pom.xml được generate vào đây.
+  3. Thêm dependency cho test nếu cần:
+     - spring-boot-starter-test (thường đã có)
+     - testcontainers (nếu muốn test với PostgreSQL thật)
+
+  [Kiến thức cần tự research]
+  - Maven POM structure: groupId, artifactId, version, dependencies
+  - Spring Boot parent POM: spring-boot-starter-parent
+  - Spring Boot starters: spring-boot-starter-web, spring-boot-starter-data-jpa
+  - PostgreSQL driver: org.postgresql:postgresql
+  - Flyway: org.flywaydb:flyway-core
+
+  ==============================================================
+-->
+
+<project>
+    <!-- TODO: Tự tạo bằng Spring Initializr hoặc viết tay -->
+</project>

@@ -1,0 +1,34 @@
+-- ==============================================================
+-- TODO TASK 4: So sánh hiệu quả các chiến lược index
+-- ==============================================================
+--
+-- [Mục tiêu]
+-- Tự kiểm chứng bằng thực nghiệm: composite index (tenant_id, ...)
+-- có thực sự giúp query nhanh hơn không?
+--
+-- [Nhiệm vụ của tôi]
+-- 1. Xóa tất cả index trên bảng master_data (trừ PK).
+--    Chạy EXPLAIN ANALYZE trên query tenant-aware.
+--    Ghi lại thời gian và scan type.
+--
+-- 2. Tạo index chỉ trên (tenant_id).
+--    Chạy lại cùng query. So sánh.
+--
+-- 3. Tạo composite index (tenant_id, category).
+--    Chạy lại query WHERE tenant_id = ? AND category = ?.
+--    So sánh với bước 2.
+--
+-- 4. Thử query WHERE category = ? (KHÔNG có tenant_id).
+--    Composite index (tenant_id, category) có giúp không? Tại sao?
+--
+-- 5. Ghi lại kết luận vào comment cuối file.
+--
+-- [Kiến thức cần tự research]
+-- - DROP INDEX, CREATE INDEX syntax
+-- - Leftmost prefix rule
+-- - Covering index (INCLUDE clause) — đọc thêm nếu tò mò
+-- - Đọc lại: docs/03-backend-database-mo-rong/index-va-query-tenant-aware.md
+--
+-- ==============================================================
+
+-- Viết SQL của bạn ở đây:

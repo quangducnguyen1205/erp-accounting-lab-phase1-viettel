@@ -1,0 +1,34 @@
+-- ==============================================================
+-- TODO TASK 5: Test data leakage ở tầng SQL
+-- ==============================================================
+--
+-- [Mục tiêu]
+-- Tự chứng minh rằng query thiếu tenant_id sẽ trả về data
+-- của tenant khác = data leakage.
+--
+-- [Nhiệm vụ của tôi]
+-- 1. Viết query "nguy hiểm": SELECT mà KHÔNG có WHERE tenant_id.
+--    Quan sát: kết quả có chứa data của nhiều tenant không?
+--
+-- 2. Viết query "an toàn": cùng mục đích nhưng CÓ WHERE tenant_id.
+--    Quan sát: kết quả chỉ chứa data của 1 tenant?
+--
+-- 3. Thử tình huống: findById nhưng ID thuộc tenant khác.
+--    Ví dụ: Tenant A có record id=5. Tenant B query WHERE id=5.
+--    Nếu KHÔNG check tenant_id → Tenant B thấy data Tenant A.
+--    Nếu CÓ check tenant_id → Tenant B không thấy gì.
+--
+-- 4. Suy nghĩ và ghi chú:
+--    - Nếu bạn là developer quên thêm tenant_id, hậu quả là gì?
+--    - Ở tầng code, bạn sẽ phòng tránh thế nào?
+--    - Đọc lại: docs/02-multi-tenant/tinh-huong-va-trade-off.md
+--
+-- [Kiến thức cần tự research]
+-- - PostgreSQL Row Level Security (RLS) — có thể thử bật cho bảng này
+-- - ALTER TABLE ... ENABLE ROW LEVEL SECURITY
+-- - CREATE POLICY ... USING (...)
+-- - SET session variable: SET app.current_tenant = '1'
+--
+-- ==============================================================
+
+-- Viết SQL của bạn ở đây:

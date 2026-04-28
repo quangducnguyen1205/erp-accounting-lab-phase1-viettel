@@ -1,16 +1,25 @@
+# ==============================================================
+# TODO TASK: Cấu hình PostgreSQL local cho development
+# ==============================================================
+#
+# [Mục tiêu]
+# Tạo file docker-compose để chạy PostgreSQL local.
+# Đây là database dùng cho toàn bộ PoC multi-tenant demo.
+#
+# [Nhiệm vụ của tôi]
+# 1. Chọn image PostgreSQL phù hợp (gợi ý: postgres:16-alpine).
+# 2. Cấu hình port mapping (host:container).
+# 3. Đặt tên database, username, password qua environment variables.
+# 4. Cấu hình volume để dữ liệu không mất khi container restart.
+# 5. Đảm bảo có thể chạy `docker compose up -d` rồi connect bằng psql.
+#
+# [Kiến thức cần tự research]
+# - Docker Compose file format version 3.8
+# - PostgreSQL Docker Hub official image: https://hub.docker.com/_/postgres
+# - Environment variables: POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD
+# - Docker volumes (named volume vs bind mount)
+# - Lệnh test: `psql -h localhost -U <user> -d <database>`
+#
+# ==============================================================
 
-services:
-  postgres:
-    image: postgres:16
-    container_name: tenant-demo-db
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: tenant_demo
-      POSTGRES_USER: demo
-      POSTGRES_PASSWORD: demo123
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-
-volumes:
-  pgdata:
+# Viết docker-compose.yml của bạn ở đây:

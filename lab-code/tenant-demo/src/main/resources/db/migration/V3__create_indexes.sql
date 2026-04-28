@@ -1,0 +1,25 @@
+-- ==============================================================
+-- TODO TASK: Flyway Migration V3 — Tạo index tenant-aware
+-- ==============================================================
+--
+-- [Mục tiêu]
+-- Tạo composite index để query tenant-aware nhanh hơn.
+-- Đây là migration RIÊNG cho index — tách khỏi migration tạo bảng.
+--
+-- [Nhiệm vụ của tôi]
+-- 1. Tạo index trên (tenant_id, category).
+-- 2. Tạo index trên (tenant_id, is_active).
+-- 3. Suy nghĩ: tại sao tenant_id phải đứng ĐẦU TIÊN trong index?
+-- 4. Suy nghĩ: nên dùng CREATE INDEX hay CREATE INDEX CONCURRENTLY?
+--    Trong context nào thì CONCURRENTLY quan trọng?
+--
+-- [Kiến thức cần tự research]
+-- - CREATE INDEX syntax
+-- - CREATE INDEX CONCURRENTLY
+-- - Leftmost prefix rule (B-Tree)
+-- - Đọc lại: docs/03-backend-database-mo-rong/index-va-query-tenant-aware.md
+-- - Lưu ý: Flyway KHÔNG hỗ trợ CONCURRENTLY trong transaction.
+--   Nếu muốn dùng, migration phải disable transaction.
+-- ==============================================================
+
+-- Viết SQL migration ở đây:

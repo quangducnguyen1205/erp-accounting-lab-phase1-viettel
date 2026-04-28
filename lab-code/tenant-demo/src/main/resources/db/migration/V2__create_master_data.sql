@@ -1,0 +1,23 @@
+-- ==============================================================
+-- TODO TASK: Flyway Migration V2 — Tạo bảng master_data
+-- ==============================================================
+--
+-- [Mục tiêu]
+-- Tạo bảng nghiệp vụ đầu tiên, có cột tenant_id.
+--
+-- [Nhiệm vụ của tôi]
+-- 1. Tạo bảng master_data với: id, tenant_id, code, name,
+--    category, is_active, created_at.
+-- 2. tenant_id phải là FK → tenants(id).
+-- 3. UNIQUE constraint trên (tenant_id, code).
+-- 4. Suy nghĩ: nếu viết UNIQUE(code) thay vì UNIQUE(tenant_id, code),
+--    vấn đề gì xảy ra khi 2 doanh nghiệp dùng cùng mã "VT001"?
+--
+-- [Kiến thức cần tự research]
+-- - REFERENCES (foreign key) syntax
+-- - UNIQUE constraint trên nhiều cột
+-- - NOT NULL constraints
+-- - DEFAULT values
+-- ==============================================================
+
+-- Viết SQL migration ở đây:
