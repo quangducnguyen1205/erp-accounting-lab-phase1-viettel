@@ -25,6 +25,30 @@ SaaS có thể chạy trên public cloud, private cloud hoặc data center riên
 
 Một hiểu lầm dễ gặp là gom SaaS, subscription và multi-tenant thành một khái niệm. Thực tế đây là ba trục độc lập:
 
+```mermaid
+graph TB
+    subgraph AXES["3 trục độc lập"]
+        AX1["🚀 Delivery Model<br/>Ai host và vận hành?"]
+        AX2["💰 Pricing Model<br/>Trả tiền thế nào?"]
+        AX3["🏗️ Architecture Pattern<br/>Phục vụ nhiều KH ra sao?"]
+    end
+
+    AX1 --> D1["SaaS"]
+    AX1 --> D2["On-premise"]
+    AX1 --> D3["Hybrid"]
+
+    AX2 --> P1["Subscription"]
+    AX2 --> P2["License"]
+    AX2 --> P3["Freemium"]
+
+    AX3 --> A1["Multi-tenant"]
+    AX3 --> A2["Single-tenant"]
+
+    style AX1 fill:#e3f2fd,stroke:#1565c0
+    style AX2 fill:#fce4ec,stroke:#c62828
+    style AX3 fill:#e8f5e9,stroke:#2e7d32
+```
+
 | Trục | Câu hỏi chính | Ví dụ |
 |---|---|---|
 | Delivery model | Ai host và vận hành phần mềm? | SaaS, on-premise, hybrid |

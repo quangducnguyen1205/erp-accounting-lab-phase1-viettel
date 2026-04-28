@@ -2,6 +2,29 @@
 
 Tenant isolation là cách hệ thống tách dữ liệu và tài nguyên giữa các tenant. Ba mô hình phổ biến là shared table với `tenant_id`, schema per tenant và database per tenant.
 
+## Sơ đồ tổng quan 3 mô hình
+
+```mermaid
+graph TB
+    subgraph MH1["MH1: Shared Table + tenant_id"]
+        DB1[(PostgreSQL)] --> T1["invoice table<br/>tenant_id=1 | INV-001<br/>tenant_id=2 | INV-002<br/>tenant_id=3 | INV-003"]
+    end
+
+    subgraph MH2["MH2: Schema per Tenant"]
+        DB2[(PostgreSQL)] --> S1["schema: tenant_1<br/>invoice, customer"]
+        DB2 --> S2["schema: tenant_2<br/>invoice, customer"]
+    end
+
+    subgraph MH3["MH3: Database per Tenant"]
+        D1[(DB tenant_1)] --> T3A["invoice, customer"]
+        D2[(DB tenant_2)] --> T3B["invoice, customer"]
+    end
+
+    style MH1 fill:#e8f5e9,stroke:#4caf50
+    style MH2 fill:#fff3e0,stroke:#ff9800
+    style MH3 fill:#ffebee,stroke:#f44336
+```
+
 ## Mô hình 1: Shared database, shared table, có tenant_id
 
 Tất cả tenant dùng chung database và chung bảng. Mỗi bảng nghiệp vụ có cột `tenant_id`.
@@ -132,10 +155,16 @@ Với Phase 1, lựa chọn hợp lý là shared table với `tenant_id` vì:
 - Không làm phức tạp quá sớm bằng nhiều schema hoặc nhiều database.
 - Có thể tiến hóa sau nếu dữ liệu, tenant enterprise hoặc yêu cầu compliance tăng.
 
-Về lâu dài, mô hình hybrid có thể phù hợp:
+```mermaid
+graph LR
+    START["Phase 1 Demo"] --> MH1["MH1: Shared table<br/>+ tenant_id"]
+    MH1 -->|"Scale / cần isolation"| MH2["MH2: Schema<br/>per tenant"]
+    MH1 -->|"Enterprise / compliance"| MH3["MH3: DB<br/>per tenant"]
+    MH1 -->|"Hybrid"| HYB["SME → MH1<br/>Enterprise → MH3"]
 
-```text
-SME tenants       -> shared table + tenant_id
-Premium tenants   -> schema riêng hoặc partition/nhóm riêng
-Enterprise tenant -> database riêng hoặc deployment riêng
+    style START fill:#2196f3,color:white
+    style MH1 fill:#4caf50,color:white
+    style MH2 fill:#ff9800,color:white
+    style MH3 fill:#f44336,color:white
+    style HYB fill:#9c27b0,color:white
 ```

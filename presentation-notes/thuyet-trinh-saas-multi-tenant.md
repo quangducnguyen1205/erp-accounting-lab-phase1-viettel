@@ -1,367 +1,244 @@
-# Thuyết trình nhanh: SaaS, Multi-tenant và nền tảng Backend/Database
+# Thuyết trình: SaaS, Multi-tenant & Nền tảng Backend
 
-Tài liệu này dùng để mở ra và nói theo mạch. Đây không phải slide thiết kế.
-
----
-
-## 1. Mở đầu: Tôi đã học gì?
-
-```text
-Phase 1
-├── SaaS foundation
-├── Multi-tenant architecture
-├── Tenant isolation trade-off
-└── Backend/database expansion
-    ├── PostgreSQL
-    ├── Index và query tenant-aware
-    ├── Noisy neighbor
-    └── Migration, lock, rollback
-```
-
-Ý chính:
-
-- Tôi đã gần hoàn tất phần nền tảng SaaS và multi-tenant.
-- Hiện tại đang tổng hợp lại kiến thức và đi sâu hơn vào database/backend.
-- Repo này là nơi lưu bản kiến thức đã chuẩn hóa, không lưu toàn bộ nháp học tập.
-
-Ghi chú khi trình bày:
-
-- Nói rõ đây là kết quả học nền tảng, chưa overclaim là đã làm production hoàn chỉnh.
-- Nhấn mạnh hướng học: hiểu trade-off trước, code demo sau.
+> **Mục đích:** Tài liệu Visual Anchor — mở lên khi báo cáo trực tiếp với leader.
+> Mỗi phần = 1 "slide". Nhìn sơ đồ → đọc bullet → tự nói mở rộng.
 
 ---
 
-## 2. SaaS là gì?
+## Slide 1 — Em đã học gì trong Phase 1?
 
-```text
-SaaS = Software as a Service
+```mermaid
+graph LR
+    P1["Phase 1"] --> S["SaaS<br/>Foundation"]
+    P1 --> M["Multi-tenant<br/>Architecture"]
+    P1 --> DB["Backend &<br/>Database"]
 
-Nhà cung cấp
-├── host phần mềm
-├── vận hành
-├── bảo trì
-└── cập nhật
+    S --> S1["Delivery model"]
+    S --> S2["3 trục độc lập"]
 
-Khách hàng
-└── truy cập qua internet và sử dụng
+    M --> M1["3 mô hình isolation"]
+    M --> M2["Trade-off analysis"]
+
+    DB --> DB1["PostgreSQL<br/>tenant-aware"]
+    DB --> DB2["Index / Lock /<br/>Migration"]
+
+    style P1 fill:#1565c0,color:white
+    style S fill:#43a047,color:white
+    style M fill:#ef6c00,color:white
+    style DB fill:#6a1b9a,color:white
 ```
 
-SaaS là mô hình phân phối phần mềm. Điểm chính là nhà cung cấp chịu trách nhiệm vận hành hệ thống, khách hàng không tự cài đặt và quản lý server.
+**Core facts:**
+- Gần hoàn tất nền tảng SaaS + multi-tenant.
+- Đang đi sâu vào database/backend.
+- Repo = kho kiến thức, chưa có code demo.
 
-| Hiểu đúng | Không nên hiểu nhầm |
-|---|---|
-| SaaS là delivery model | SaaS không chỉ là "chạy trên cloud" |
-| Nhà cung cấp vận hành | Không bắt buộc phải public cloud |
-| Khách hàng dùng như dịch vụ | Không đồng nghĩa với subscription |
-
-Ghi chú khi trình bày:
-
-- Có thể nói ví dụ Google Workspace, Slack, MISA online.
-- Với ERP/kế toán, SaaS giúp nhiều doanh nghiệp dùng hệ thống mà không tự vận hành server.
+> **Speaker script:** "Em đã dành thời gian tập trung vào 3 mảng: hiểu SaaS là gì ở mức delivery model, hiểu multi-tenant là kiến trúc phục vụ nhiều khách hàng, và bắt đầu tìm hiểu database backend liên quan trực tiếp. Em xin trình bày qua từng phần."
 
 ---
 
-## 3. Multi-tenant là gì?
+## Slide 2 — SaaS là gì?
 
-```text
-Một nền tảng ERP/kế toán SaaS
-┌─────────────────────────────────────────┐
-│                 App                     │
-│                                         │
-│  Tenant A      Tenant B      Tenant C   │
-│  Công ty A     Công ty B     Công ty C  │
-│  data riêng    data riêng    data riêng │
-└─────────────────────────────────────────┘
+```mermaid
+graph TB
+    NCC["Nhà cung cấp<br/>Host · Vận hành · Cập nhật"]
+    KH["Khách hàng<br/>Truy cập qua internet"]
+    NCC -->|"cung cấp dịch vụ"| KH
+
+    style NCC fill:#1565c0,color:white
+    style KH fill:#e8f5e9,stroke:#4caf50
 ```
 
-Multi-tenant là pattern kiến trúc cho phép nhiều khách hàng dùng chung nền tảng nhưng dữ liệu và quyền truy cập phải được cách ly.
+**Core facts:**
+- SaaS = mô hình **phân phối phần mềm** (delivery model).
+- Nhà cung cấp chịu trách nhiệm vận hành, khách hàng dùng như dịch vụ.
+- SaaS ≠ Cloud. SaaS ≠ Subscription. SaaS ≠ Multi-tenant.
 
-Chia sẻ:
-
-- Codebase.
-- Hạ tầng.
-- Pipeline deploy.
-- Logic nghiệp vụ lõi.
-
-Cách ly:
-
-- Dữ liệu.
-- User và quyền.
-- Cấu hình.
-- Cache.
-- Log/metrics theo tenant.
-
-Ghi chú khi trình bày:
-
-- Mỗi doanh nghiệp trong bài toán kế toán có thể xem là một tenant.
-- Rủi ro lớn nhất là data leakage giữa tenant.
+> **Speaker script:** "SaaS không phải là 'chạy trên cloud'. Nó là câu chuyện AI host và vận hành phần mềm. Cloud là hạ tầng, subscription là cách tính tiền, multi-tenant là cách phục vụ nhiều khách — ba thứ khác nhau."
 
 ---
 
-## 4. SaaS và multi-tenant khác nhau thế nào?
+## Slide 3 — 3 trục độc lập
 
-```text
-SaaS
-└── Mô hình phân phối
-    └── Ai host và vận hành phần mềm?
+```mermaid
+graph TB
+    subgraph AXES["3 quyết định RIÊNG BIỆT"]
+        D["🚀 Delivery<br/>SaaS / On-premise"]
+        P["💰 Pricing<br/>Subscription / License"]
+        A["🏗️ Architecture<br/>Multi-tenant / Single"]
+    end
 
-Multi-tenant
-└── Pattern kiến trúc
-    └── Hệ thống phục vụ nhiều khách hàng thế nào?
-
-Hai khái niệm thường đi cùng
-nhưng không đồng nghĩa.
+    style D fill:#e3f2fd,stroke:#1565c0
+    style P fill:#fce4ec,stroke:#c62828
+    style A fill:#e8f5e9,stroke:#2e7d32
 ```
 
-| Khái niệm | Trục quyết định | Câu hỏi |
-|---|---|---|
-| SaaS | Delivery model | Ai vận hành phần mềm? |
-| Subscription | Pricing model | Khách hàng trả tiền thế nào? |
-| Multi-tenant | Architecture pattern | Nhiều khách hàng được phục vụ ra sao? |
+**Core facts:**
+- 3 trục này **thường đi cùng** nhưng **không bắt buộc**.
+- JetBrains = on-premise + subscription.
+- SaaS single-tenant tồn tại. Multi-tenant on-premise cũng tồn tại.
 
-Ghi chú khi trình bày:
-
-- Đây là điểm tôi đã sửa lại trong quá trình học: ban đầu dễ đánh đồng SaaS với multi-tenant.
-- Có SaaS single-tenant và cũng có multi-tenant không phải SaaS.
+> **Speaker script:** "Đây là điểm em đã sửa lại trong quá trình học. Ban đầu em hay gộp SaaS với multi-tenant. Thực tế đây là ba quyết định riêng. Dự án mình chọn cả 3: SaaS delivery, subscription pricing, multi-tenant architecture."
 
 ---
 
-## 5. Các mô hình tenant isolation
+## Slide 4 — Multi-tenant là gì?
 
-```text
-MH1: Shared table + tenant_id
+```mermaid
+graph TB
+    PLAT["Nền tảng ERP / Kế toán"]
+    PLAT --> TA["Tenant A<br/>Công ty A"]
+    PLAT --> TB["Tenant B<br/>Công ty B"]
+    PLAT --> TC["Tenant C<br/>Công ty C"]
 
-invoice
-┌────┬───────────┬────────────┐
-│ id │ tenant_id │ invoice_no │
-├────┼───────────┼────────────┤
-│  1 │     10    │ INV-001    │
-│  2 │     20    │ INV-002    │
-└────┴───────────┴────────────┘
+    TA -.- DATA_A["data · users · config"]
+    TB -.- DATA_B["data · users · config"]
+    TC -.- DATA_C["data · users · config"]
 
-MH2: Schema per tenant
-
-database
-├── tenant_10.invoice
-└── tenant_20.invoice
-
-MH3: Database per tenant
-
-tenant_10_db
-tenant_20_db
+    style PLAT fill:#1565c0,color:white
+    style TA fill:#e8f5e9,stroke:#4caf50
+    style TB fill:#fff3e0,stroke:#ff9800
+    style TC fill:#f3e5f5,stroke:#9c27b0
 ```
 
-| Mô hình | Chi phí | Isolation | Migration | Phù hợp |
-|---|---:|---:|---:|---|
-| Shared table + `tenant_id` | Thấp | Thấp/TB | Dễ nhất | Phase 1, SME |
-| Schema per tenant | TB | TB | N schema | Tenant vừa, cần cách ly hơn |
-| DB per tenant | Cao | Cao | N DB | Enterprise |
+**Core facts:**
+- Nhiều doanh nghiệp dùng **chung nền tảng**, nhưng dữ liệu **phải cách ly**.
+- Chia sẻ: code, hạ tầng, deploy pipeline.
+- Cách ly: data, quyền, cache, log, config.
+- Rủi ro lớn nhất = **data leakage**.
 
-Ghi chú khi trình bày:
-
-- Phase 1 chọn shared table + `tenant_id` vì đơn giản và học đúng được vấn đề.
-- Nếu enterprise yêu cầu mạnh hơn, có thể chuyển sang hybrid.
+> **Speaker script:** "Mỗi doanh nghiệp trong bài toán kế toán là một tenant. Họ dùng chung hệ thống nhưng dữ liệu kế toán phải hoàn toàn tách biệt. Nếu để lộ dữ liệu — đó là lỗi bảo mật nghiêm trọng."
 
 ---
 
-## 6. Feature flags và giảm rủi ro rollout
+## Slide 5 — 3 mô hình Tenant Isolation
 
-```text
-new_report_v2
-├── Tenant A: bật
-├── Tenant B: tắt
-└── Tenant C: bật
+```mermaid
+graph TB
+    subgraph MH1["MH1: Shared Table + tenant_id"]
+        DB1[(1 Database)] --> TBL1["1 bảng chung<br/>phân biệt bằng tenant_id"]
+    end
+
+    subgraph MH2["MH2: Schema per Tenant"]
+        DB2[(1 Database)] --> SCH1["Schema tenant_A"]
+        DB2 --> SCH2["Schema tenant_B"]
+    end
+
+    subgraph MH3["MH3: DB per Tenant"]
+        DBA[(DB tenant_A)]
+        DBB[(DB tenant_B)]
+    end
+
+    style MH1 fill:#e8f5e9,stroke:#4caf50
+    style MH2 fill:#fff3e0,stroke:#ff9800
+    style MH3 fill:#ffebee,stroke:#f44336
 ```
 
-Feature flag cho phép deploy code nhưng chưa bật tính năng cho tất cả tenant.
+| | MH1 Shared table | MH2 Schema/tenant | MH3 DB/tenant |
+|---|:---:|:---:|:---:|
+| **Chi phí** | 💰 | 💰💰 | 💰💰💰 |
+| **Isolation** | Thấp | Trung bình | Cao |
+| **Migration** | 1 lần | N lần | N lần (độc lập) |
+| **Phase 1** | ✅ Chọn | Chưa cần | Quá phức tạp |
 
-Lợi ích:
-
-- Bật thử cho một số tenant.
-- Tắt nhanh khi có lỗi.
-- Giảm blast radius.
-- Hỗ trợ gói dịch vụ khác nhau.
-
-Data model tối giản:
-
-| Bảng | Vai trò |
-|---|---|
-| `feature_flags` | Định nghĩa tính năng |
-| `tenant_feature_flags` | Tenant nào bật/tắt tính năng nào |
-
-Ghi chú khi trình bày:
-
-- Feature flag không thay thế test, nhưng giúp kiểm soát rollout trong SaaS.
-- Với ERP/kế toán, có thể dùng để bật module báo cáo mới cho một nhóm tenant trước.
+> **Speaker script:** "Phase 1 chọn MH1 — shared table với tenant_id. Đơn giản nhất, học được đúng vấn đề. Nếu sau này có khách enterprise yêu cầu isolation mạnh, có thể chuyển sang hybrid: SME dùng MH1, enterprise dùng MH3."
 
 ---
 
-## 7. Zero-downtime deployment
+## Slide 6 — Tenant-aware: mọi tầng phải biết tenant
 
-```text
-Deploy an toàn hơn
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Auth as Auth Middleware
+    participant Svc as Service Layer
+    participant Cache as Redis Cache
+    participant DB as PostgreSQL
 
-1. Migration tương thích ngược
-2. Rolling hoặc blue-green deployment
-3. Health check
-4. Feature flag
-5. Theo dõi logs/metrics
-6. Rollback plan
+    Client->>Auth: Request + JWT
+    Auth->>Auth: Extract tenant_id
+    Auth->>Svc: tenant_id = 42
+    Svc->>Cache: GET tenant:42:categories
+    alt Cache miss
+        Svc->>DB: WHERE tenant_id = 42
+        DB-->>Svc: Result
+        Svc->>Cache: SET tenant:42:categories
+    end
+    Svc-->>Client: Response
 ```
 
-Rolling deployment:
+**Core facts:**
+- Auth → Service → Cache → DB: tất cả phải biết tenant.
+- Cache key thiếu tenant prefix = data leakage qua cache.
+- Query thiếu `WHERE tenant_id` = data leakage qua DB.
 
-```text
-Pod cũ:  A A A
-Step 1:  B A A
-Step 2:  B B A
-Step 3:  B B B
-```
-
-Blue-green deployment:
-
-```text
-Blue  = version đang chạy
-Green = version mới đã chuẩn bị
-
-Traffic -> Blue
-Kiểm tra Green ổn
-Traffic -> Green
-Rollback nhanh: Traffic -> Blue
-```
-
-Ghi chú khi trình bày:
-
-- Điểm khó nhất là database migration, vì rollback schema khó hơn rollback code.
-- Backward-compatible migration giúp code cũ và code mới cùng chạy được trong lúc rollout.
+> **Speaker script:** "Không chỉ database. Cache, log, auth, metrics — tất cả phải tenant-aware. Em đã phân tích cụ thể các tình huống lỗi như cache key thiếu prefix, query thiếu filter, và cách phòng tránh."
 
 ---
 
-## 8. Noisy neighbor trong shared table
+## Slide 7 — Các tình huống thực tế đã phân tích
 
-```text
-Shared database
-├── Tenant A: chạy report nặng
-│   ├── ăn CPU
-│   ├── tăng disk I/O
-│   └── chiếm connection
-└── Tenant B: query nhỏ nhưng bị chậm theo
+```mermaid
+graph LR
+    subgraph RISKS["Rủi ro SaaS multi-tenant"]
+        R1["Data leakage<br/>Quên tenant filter"]
+        R2["Blast radius<br/>1 deploy lỗi = tất cả"]
+        R3["Noisy neighbor<br/>Tenant A làm B chậm"]
+        R4["Migration lock<br/>ALTER TABLE block all"]
+    end
+
+    subgraph SOLUTIONS["Giải pháp"]
+        S1["Base Repository<br/>+ RLS + Test"]
+        S2["Canary / Rolling<br/>+ Feature flags"]
+        S3["Composite index<br/>+ Partitioning"]
+        S4["Backward-compatible<br/>migration"]
+    end
+
+    R1 --> S1
+    R2 --> S2
+    R3 --> S3
+    R4 --> S4
+
+    style RISKS fill:#ffebee,stroke:#c62828
+    style SOLUTIONS fill:#e8f5e9,stroke:#2e7d32
 ```
 
-Noisy neighbor là khi một tenant dùng nhiều tài nguyên chung và làm tenant khác bị ảnh hưởng.
-
-Các tầng thường gặp:
-
-| Tầng | Ảnh hưởng |
-|---|---|
-| CPU | Query nặng chiếm xử lý |
-| Disk I/O | Full scan đọc nhiều dữ liệu |
-| Shared buffers | Cache của tenant khác bị đẩy ra |
-| Connection pool | Tenant lớn chiếm hết connection |
-| VACUUM | Bảng chung nhiều dead rows làm dọn dẹp nặng |
-
-Giảm rủi ro:
-
-- Query luôn có `tenant_id`.
-- Index `(tenant_id, ...)`.
-- Giới hạn report/export nặng.
-- Resource quota hoặc connection pool riêng cho tenant lớn.
-- Read replica cho workload đọc nặng.
-- Cân nhắc partitioning hoặc DB riêng khi cần.
-
-Ghi chú khi trình bày:
-
-- Shared table không sai, nhưng phải hiểu cái giá khi dữ liệu tăng.
-- Index tốt giúp nhiều query tenant nhỏ không phải quét dữ liệu tenant lớn.
+> **Speaker script:** "Em đã phân tích 4 tình huống rủi ro chính. Mỗi cái có giải pháp cụ thể. Ví dụ data leakage — phòng bằng Base Repository auto-filter, PostgreSQL RLS, và integration test. Blast radius — giảm bằng canary deployment và feature flags."
 
 ---
 
-## 9. Migration complexity trong schema-per-tenant
+## Slide 8 — Kết luận và hướng tiếp
 
-```text
-Thêm cột tax_code
+```mermaid
+graph TB
+    DONE["✅ Đã hoàn tất"]
+    NEXT["🔄 Tiếp theo"]
 
-tenant_001.invoice -> OK
-tenant_002.invoice -> OK
-tenant_003.invoice -> FAIL
-tenant_004.invoice -> chưa chạy
-...
-tenant_500.invoice -> chưa chạy
+    DONE --> D1["SaaS concept + 3 trục"]
+    DONE --> D2["Multi-tenant 3 mô hình"]
+    DONE --> D3["Trade-off analysis"]
+    DONE --> D4["Tình huống production"]
+
+    NEXT --> N1["PostgreSQL thực hành"]
+    NEXT --> N2["Backend demo nhỏ"]
+    NEXT --> N3["Auth / RBAC"]
+
+    style DONE fill:#4caf50,color:white
+    style NEXT fill:#1565c0,color:white
 ```
 
-Với schema per tenant, một thay đổi schema phải chạy qua nhiều schema. Rủi ro chính là partial migration.
+**Core facts:**
+- Nền tảng SaaS + multi-tenant: **gần hoàn tất**.
+- Đã phát triển tư duy **trade-off**, không chỉ liệt kê đặc điểm.
+- Tiếp theo: PostgreSQL thực hành, code demo, Auth/RBAC.
 
-| Rủi ro | Ý nghĩa |
-|---|---|
-| Partial migration | Một số tenant schema mới, một số tenant schema cũ |
-| Lock per schema | Tenant đang dùng có thể bị block |
-| Thời gian tổng dài | N tenant nhân với thời gian mỗi schema |
-| Rollback khó | Rollback cũng phải chạy N lần |
-
-Ghi chú khi trình bày:
-
-- Đây là lý do không nên vội chọn schema per tenant khi chưa cần.
-- Phase 1 dùng shared table để tập trung học data isolation, index và tenant-aware query trước.
+> **Speaker script:** "Tóm lại, em đã nắm được nền tảng SaaS và multi-tenant. Bước tiến lớn nhất là chuyển từ 'biết là gì' sang 'hiểu trade-off'. Tiếp theo em sẽ bắt đầu thực hành code demo để kiểm chứng kiến thức, bắt đầu từ shared table + tenant_id trên PostgreSQL."
 
 ---
 
-## 10. Vì sao cần hiểu sâu database/backend?
-
-```text
-SaaS backend không chỉ là CRUD
-
-CRUD
-└── thêm tenant context
-    ├── query isolation
-    ├── index strategy
-    ├── migration safety
-    ├── locking behavior
-    ├── cache isolation
-    └── production observability
-```
-
-Những phần cần đào sâu tiếp:
-
-- PostgreSQL.
-- Index và query planning.
-- Locking.
-- Migration strategy.
-- Partitioning.
-- Read replicas.
-- Production backend behavior.
-
-Ghi chú khi trình bày:
-
-- Lý thuyết SaaS/multi-tenant đã đủ nền để chuyển sang thực hành backend có kiểm soát.
-- Cần thực hành bằng dữ liệu, query plan và migration thật, không chỉ đọc khái niệm.
-
----
-
-## 11. Kết luận và hướng tiếp theo
-
-```text
-Đã nắm nền tảng
-├── SaaS là delivery model
-├── Multi-tenant là architecture pattern
-├── Tenant isolation có trade-off
-├── Shared table cần tenant-aware mọi lớp
-└── Database behavior ảnh hưởng trực tiếp production
-
-Tiếp theo
-├── Học sâu PostgreSQL
-├── Thực hành index/query plan
-├── Thực hành migration an toàn
-└── Tự code demo nhỏ rồi nhờ Agent review
-```
-
-Hướng repo:
-
-- Repo này giữ vai trò kho kiến thức Phase 1.
-- Chưa tạo full coding project ngay.
-- Demo nhỏ có thể đặt tạm trong `lab-code/` hoặc `demo/`.
-- Nếu demo lớn, tách repository riêng cho code.
-
-Ghi chú khi trình bày:
-
-- Kết lại bằng tinh thần học tiếp: đã có nền, bước sau là kiểm chứng bằng code và database thực tế.
-- Nhấn mạnh mình sẽ tự implement code trước rồi nhờ Agent review để học sâu hơn.
+> **Ghi chú khi leader hỏi ngoài lề:**
+>
+> - *"Tại sao không dùng MongoDB?"* → Kế toán cần ACID mạnh, foreign key constraint, dữ liệu quan hệ chặt. MongoDB eventual consistency không phù hợp cho nghiệp vụ tài chính chính thống.
+> - *"Schema per tenant có phức tạp lắm không?"* → 500 tenant = 500 schema. Migration phải loop qua tất cả. 1 schema fail = partial migration = inconsistency.
+> - *"Noisy neighbor giải quyết thế nào?"* → Composite index `(tenant_id, ...)`, table partitioning, connection pool isolation, read replica cho report nặng.
+> - *"Feature flag hoạt động thế nào?"* → 2 bảng: `feature_flags` + `tenant_feature_flags`. Check ở service layer, cache per tenant.
