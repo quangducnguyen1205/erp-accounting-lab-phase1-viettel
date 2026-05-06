@@ -1,34 +1,218 @@
 -- ==============================================================
--- TODO TASK 5: Test data leakage ở tầng SQL
+-- TODO TASK 5: Data leakage test ở tầng SQL
 -- ==============================================================
 --
+-- [Bài học tiếp theo]
+--
+-- File này dành cho task học tiếp theo, sau khi đã hoàn thành:
+-- - 03-query-with-explain.sql
+-- - 04-index-comparison.sql
+--
 -- [Mục tiêu]
--- Tự chứng minh rằng query thiếu tenant_id sẽ trả về data
--- của tenant khác = data leakage.
 --
--- [Nhiệm vụ của tôi]
--- 1. Viết query "nguy hiểm": SELECT mà KHÔNG có WHERE tenant_id.
---    Quan sát: kết quả có chứa data của nhiều tenant không?
+-- Hiểu cách data leakage xảy ra trong mô hình multi-tenant shared-table
+-- khi SQL query quên điều kiện `tenant_id`.
 --
--- 2. Viết query "an toàn": cùng mục đích nhưng CÓ WHERE tenant_id.
---    Quan sát: kết quả chỉ chứa data của 1 tenant?
+-- Trọng tâm của bài này là:
+-- - correctness
+-- - tenant isolation
+-- - chống lộ dữ liệu giữa các tenant
 --
--- 3. Thử tình huống: findById nhưng ID thuộc tenant khác.
---    Ví dụ: Tenant A có record id=5. Tenant B query WHERE id=5.
---    Nếu KHÔNG check tenant_id → Tenant B thấy data Tenant A.
---    Nếu CÓ check tenant_id → Tenant B không thấy gì.
+-- Không phải trọng tâm chính:
+-- - benchmark performance
+-- - tối ưu index
+-- - ép PostgreSQL dùng một query plan cụ thể
 --
--- 4. Suy nghĩ và ghi chú:
---    - Nếu bạn là developer quên thêm tenant_id, hậu quả là gì?
---    - Ở tầng code, bạn sẽ phòng tránh thế nào?
---    - Đọc lại: docs/02-multi-tenant/tinh-huong-va-trade-off.md
---
--- [Kiến thức cần tự research]
--- - PostgreSQL Row Level Security (RLS) — có thể thử bật cho bảng này
--- - ALTER TABLE ... ENABLE ROW LEVEL SECURITY
--- - CREATE POLICY ... USING (...)
--- - SET session variable: SET app.current_tenant = '1'
+-- Hãy tự hoàn thành các TODO trong file này khi bắt đầu task 05.
 --
 -- ==============================================================
 
--- Viết SQL của bạn ở đây:
+
+-- ==============================================================
+-- 1. Pre-check: inspect dữ liệu mẫu
+-- ==============================================================
+--
+-- TODO:
+-- Viết query xem danh sách tenant hiện có trong bảng `tenants`.
+--
+-- Câu hỏi cần trả lời:
+-- - Có ít nhất 2 tenant không?
+-- - Tenant nào sẽ đóng vai "tenant hiện tại"?
+-- - Tenant nào sẽ đóng vai "tenant khác" để kiểm tra leakage?
+--
+-- Gợi ý nhỏ:
+-- SELECT ... FROM tenants ...;
+--
+-- TODO: Viết query inspect tenants ở đây.
+
+
+-- TODO:
+-- Viết query xem một phần dữ liệu trong `master_data`.
+--
+-- Câu hỏi cần trả lời:
+-- - Mỗi dòng thuộc tenant nào?
+-- - Có code/category/name nào phù hợp để minh họa tenant separation không?
+-- - Có code nào xuất hiện ở nhiều tenant không?
+--
+-- Gợi ý nhỏ:
+-- SELECT tenant_id, id, code, name, category FROM master_data ...;
+--
+-- TODO: Viết query inspect master_data ở đây.
+
+
+-- ==============================================================
+-- 2. Case 1: Query an toàn có tenant_id
+-- ==============================================================
+--
+-- Mục tiêu:
+-- Viết một query đúng pattern backend multi-tenant:
+-- luôn giới hạn dữ liệu theo tenant hiện tại.
+--
+-- TODO:
+-- Chọn một tenant hiện tại, ví dụ tenant A.
+-- Viết query có điều kiện:
+-- - `WHERE tenant_id = ...`
+-- - thêm điều kiện nghiệp vụ tùy chọn như `category`, `code`, hoặc `name`
+--
+-- Điều cần quan sát:
+-- - Kết quả chỉ thuộc tenant đã chọn.
+-- - Đây là pattern đúng ở tầng repository/service.
+--
+-- Gợi ý nhỏ:
+-- SELECT ... FROM master_data
+-- WHERE tenant_id = ...
+--   AND ...;
+--
+-- TODO: Viết query an toàn ở đây.
+
+
+-- ==============================================================
+-- 3. Case 2: Query nguy hiểm thiếu tenant_id
+-- ==============================================================
+--
+-- Mục tiêu:
+-- Cố tình viết một query có filter nghiệp vụ nhưng quên `tenant_id`.
+--
+-- TODO:
+-- Viết query lọc theo một trong các cột:
+-- - `code`
+-- - `category`
+-- - `name`
+--
+-- Nhưng cố tình KHÔNG viết `WHERE tenant_id = ...`.
+--
+-- Điều cần quan sát:
+-- - Query có thể trả dữ liệu của nhiều tenant.
+-- - Đây là lỗi data leakage.
+-- - Lỗi này nguy hiểm dù query chạy nhanh hay chậm.
+--
+-- Gợi ý nhỏ:
+-- SELECT ... FROM master_data
+-- WHERE category = ...;
+--
+-- TODO: Viết query thiếu tenant_id ở đây.
+
+
+-- ==============================================================
+-- 4. Case 3: Mô phỏng bug ở backend/service
+-- ==============================================================
+--
+-- Tình huống:
+-- Request hiện tại thuộc tenant A.
+-- Backend đã biết tenant hiện tại từ context/header/JWT.
+-- Nhưng developer viết query chỉ theo `id`, `code`, hoặc `category`,
+-- mà quên thêm điều kiện tenant.
+--
+-- TODO:
+-- Chọn một record thuộc tenant khác.
+-- Sau đó mô phỏng query sai ở tầng service/repository:
+-- - request context là tenant A
+-- - SQL lại không check tenant A
+--
+-- Câu hỏi cần tự trả lời bằng comment:
+-- - Vì sao bug này nguy hiểm?
+-- - Tenant A có thể nhìn thấy dữ liệu gì của tenant khác?
+-- - Nếu đây là API kế toán/ERP, hậu quả là gì?
+--
+-- Gợi ý nhỏ:
+-- Bạn có thể bắt đầu bằng query tìm một record thuộc tenant khác,
+-- rồi tự viết query sai/chưa an toàn bên dưới.
+--
+-- TODO: Viết các query mô phỏng bug ở đây.
+--
+-- Ghi chú của tôi:
+-- TODO: ...
+
+
+-- ==============================================================
+-- 5. Case 4: Sửa query bằng tenant_id
+-- ==============================================================
+--
+-- Mục tiêu:
+-- Sửa query nguy hiểm ở Case 2 hoặc Case 3 bằng cách thêm tenant filter.
+--
+-- TODO:
+-- Viết lại query unsafe, nhưng lần này bắt buộc có:
+-- - `tenant_id = <tenant hiện tại>`
+-- - điều kiện nghiệp vụ còn lại như `id`, `code`, `category`, hoặc `name`
+--
+-- Quan trọng:
+-- `tenant_id` nên đến từ backend context đáng tin cậy
+-- như JWT/header đã được validate hoặc TenantContext.
+--
+-- Không nên để client tùy ý gửi `tenant_id` trong request body
+-- rồi backend tin ngay giá trị đó.
+--
+-- Điều cần quan sát:
+-- - Nếu record thuộc tenant khác, query đúng phải trả 0 dòng.
+-- - Nếu record thuộc tenant hiện tại, query mới trả dữ liệu.
+--
+-- TODO: Viết query đã sửa ở đây.
+
+
+-- ==============================================================
+-- 6. Reflection: tự ghi kết luận
+-- ==============================================================
+--
+-- TODO:
+-- Sau khi chạy các query ở trên, tự trả lời ngắn gọn.
+--
+-- 1. Unsafe query của tôi là gì?
+-- Trả lời:
+-- TODO: ...
+--
+-- 2. Dữ liệu nào có thể bị leak?
+-- Trả lời:
+-- TODO: ...
+--
+-- 3. Vì sao đây là correctness issue trước khi là performance issue?
+-- Trả lời:
+-- TODO: ...
+--
+-- 4. Backend rule tôi cần nhớ là gì?
+-- Trả lời:
+-- TODO: ...
+--
+-- 5. Vì sao tenant_id phải được enforce nhất quán ở repository/service query?
+-- Trả lời:
+-- TODO: ...
+
+
+-- ==============================================================
+-- 7. Optional: dùng EXPLAIN ANALYZE để quan sát plan
+-- ==============================================================
+--
+-- Phần này là tùy chọn.
+--
+-- Bạn có thể dùng `EXPLAIN ANALYZE` hoặc `EXPLAIN (ANALYZE, BUFFERS)`
+-- để xem PostgreSQL chạy query unsafe/safe như thế nào.
+--
+-- Tuy nhiên, mục tiêu chính của file này KHÔNG phải index benchmarking.
+-- Mục tiêu chính là chứng minh:
+-- - query thiếu `tenant_id` có thể lộ dữ liệu tenant khác;
+-- - query đúng phải giới hạn dữ liệu theo tenant hiện tại.
+--
+-- TODO tùy chọn:
+-- Chạy EXPLAIN cho query safe và unsafe nếu muốn so sánh plan.
+--
+-- TODO: Viết EXPLAIN tùy chọn ở đây nếu cần.

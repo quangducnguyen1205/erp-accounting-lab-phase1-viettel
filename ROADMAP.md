@@ -40,11 +40,11 @@
 
 ### Thứ Tư 29/04 — Index & EXPLAIN
 
-- [ ] `[LÝ THUYẾT]` Đọc `docs/03-backend-database-mo-rong/index-va-query-tenant-aware.md`
-- [ ] `[THỰC HÀNH]` Tự code `03-query-with-explain.sql` — chạy EXPLAIN ANALYZE
-- [ ] `[THỰC HÀNH]` Tự code `04-index-comparison.sql` — so sánh Seq Scan vs Index Scan
+- [x] `[LÝ THUYẾT]` Đọc `docs/03-backend-database-mo-rong/index-va-query-tenant-aware.md`
+- [x] `[THỰC HÀNH]` Tự code `03-query-with-explain.sql` — chạy EXPLAIN ANALYZE
+- [x] `[THỰC HÀNH]` Tự code `04-index-comparison.sql` — so sánh Seq Scan vs Index Scan
 
-### Thứ Năm 30/04 _(hôm nay)_ — Data Leakage & Noisy Neighbor
+### Thứ Năm 30/04 — Data Leakage & Noisy Neighbor
 
 - [ ] `[LÝ THUYẾT]` Đọc `docs/03-backend-database-mo-rong/noisy-neighbor-shared-table.md`
 - [ ] `[LÝ THUYẾT]` Đọc `local/.../23-kien-thuc-mo-rong/vi-du-ve-noisy-neighbor.md`

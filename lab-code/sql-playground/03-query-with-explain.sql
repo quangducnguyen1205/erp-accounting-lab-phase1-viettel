@@ -1,5 +1,5 @@
 -- ==============================================================
--- TODO TASK 3: Chạy EXPLAIN ANALYZE trên query tenant-aware
+-- TASK 3: Chạy EXPLAIN ANALYZE trên query tenant-aware
 -- ==============================================================
 --
 -- [Mục tiêu]
@@ -11,19 +11,65 @@
 -- 1. Viết query lấy master_data của 1 tenant cụ thể (có WHERE tenant_id).
 --    Chạy EXPLAIN ANALYZE trên query đó.
 --    Ghi chú: thấy Index Scan hay Seq Scan?
+EXPLAIN ANALYZE
+SELECT * FROM master_data WHERE tenant_id = 1;
+-- Nhận xét:
+-- Query này đúng hướng multi-tenant vì có `WHERE tenant_id = 1`.
+-- PostgreSQL có thể dùng index bắt đầu bằng `tenant_id`, nhưng với bảng rất nhỏ
+-- nó vẫn có thể chọn `Seq Scan` vì đọc cả bảng vài dòng rẻ hơn dùng index.
+-- Khi đọc plan, không chỉ hỏi "có index không?", mà cần hỏi:
+-- planner chọn cách nào và vì sao cách đó rẻ trong bối cảnh dữ liệu hiện tại?
 --
 -- 2. Viết query THIẾU tenant_id (ví dụ: WHERE category = '...').
 --    Chạy EXPLAIN ANALYZE.
 --    Ghi chú: kết quả khác gì so với query 1?
+EXPLAIN ANALYZE
+SELECT * FROM master_data WHERE category = 'Laptop';
+-- Nhận xét:
+-- Query này thiếu `tenant_id`, nên sai hướng trong backend multi-tenant.
+-- Về performance, index `(tenant_id, category)` không giúp tốt khi query chỉ lọc
+-- theo `category`, vì không dùng cột đầu tiên của composite index.
+-- Về correctness, query có thể trả dữ liệu của nhiều tenant.
 --
 -- 3. Viết query dùng composite index (tenant_id + category).
 --    Chạy EXPLAIN ANALYZE.
 --    So sánh: có nhanh hơn query chỉ filter tenant_id?
+EXPLAIN ANALYZE
+SELECT * FROM master_data WHERE tenant_id = 1 AND category = 'Laptop';
+-- Nhận xét:
+-- Đây là query phù hợp với index `idx_master_data_tenant_category`
+-- vì điều kiện có cả `tenant_id` và `category`.
+-- Với dữ liệu lớn hơn, đây là pattern dễ thấy lợi ích của composite index.
 --
 -- 4. Ghi lại nhận xét về các chỉ số:
 --    - "Actual Rows" vs "Rows Removed by Filter"
 --    - "Shared Hit" vs "Shared Read"
 --    - Planning Time vs Execution Time
+-- Nhận xét tổng kết:
+--
+-- Query `WHERE tenant_id = 1 AND category = 'Laptop'` là case phù hợp nhất
+-- với index `idx_master_data_tenant_category` vì index được tạo trên
+-- `(tenant_id, category)`.
+--
+-- Nếu plan dùng Index Scan / Bitmap Index Scan, hãy kiểm tra xem điều kiện
+-- `tenant_id` và `category` có nằm trong `Index Cond` không.
+-- Nếu plan vẫn dùng Seq Scan trên bảng rất nhỏ, điều đó chưa chắc sai:
+-- PostgreSQL đang chọn plan mà nó ước lượng là rẻ nhất.
+--
+-- `Actual Rows` cho biết số dòng thực tế trả về.
+-- `Rows Removed by Filter` cho biết có bao nhiêu dòng bị đọc rồi loại bỏ.
+-- Nếu con số này lớn trong bảng shared-table, query có thể đang đọc quá nhiều
+-- dữ liệu không cần thiết.
+--
+-- Planning Time là thời gian chọn kế hoạch chạy query.
+-- Execution Time là thời gian thực thi query thật sự.
+-- Giá trị cụ thể phụ thuộc máy local, dữ liệu, cache và lần chạy.
+-- Nếu muốn lưu số liệu, hãy copy từ output EXPLAIN local của bạn.
+--
+-- Để xem thêm Shared Hit và Shared Read, cần dùng:
+-- EXPLAIN (ANALYZE, BUFFERS)
+-- Shared Hit cho biết dữ liệu đọc từ cache.
+-- Shared Read cho biết dữ liệu phải đọc từ disk.
 --
 -- [Kiến thức cần tự research]
 -- - EXPLAIN ANALYZE syntax: https://www.postgresql.org/docs/current/sql-explain.html
@@ -33,4 +79,6 @@
 --
 -- ==============================================================
 
--- Viết SQL của bạn ở đây:
+-- Hoàn thành: file này dùng để làm quen với EXPLAIN trên bảng thật `master_data`.
+-- So sánh rõ hơn giữa Seq Scan và Index Scan nằm ở `04-index-comparison.sql`,
+-- nơi dùng bảng TEMP với dữ liệu lab lớn hơn.
