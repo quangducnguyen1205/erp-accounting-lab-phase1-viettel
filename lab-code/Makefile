@@ -61,6 +61,10 @@ sql-4: ## Nạp 04-index-comparison.sql (so sánh index)
 sql-5: ## Nạp 05-data-leakage-test.sql (test leakage)
 	docker exec -i $(CONTAINER_NAME) psql -U $(DB_USER) -d $(DB_NAME) < $(SQL_DIR)/05-data-leakage-test.sql
 
+.PHONY: sql-6
+sql-6: ## Nạp 06-migration-lock-observation.sql (migration/lock lab)
+	docker exec -i $(CONTAINER_NAME) psql -U $(DB_USER) -d $(DB_NAME) < $(SQL_DIR)/06-migration-lock-observation.sql
+
 .PHONY: sql-all
 sql-all: sql-1 sql-2 ## Nạp bảng + data mẫu (setup nhanh)
 

@@ -118,6 +118,44 @@ Bài `05-data-leakage-test.sql` chứng minh rõ rủi ro:
 
 Đây là lỗi correctness/tenant isolation trước khi là lỗi performance. Index giúp truy vấn nhanh hơn, nhưng không thay thế authorization và không tự bảo vệ dữ liệu giữa các tenant. Ở backend, repository/service query phải enforce `tenant_id` nhất quán từ trusted context như JWT/header đã validate hoặc `TenantContext`, không tin trực tiếp `tenant_id` từ request body.
 
+## Milestone #2: Migration & Locking — ghi chú sau thực hành
+
+Milestone #2 đóng vai trò cầu nối giữa SQL playground và phần Spring Boot + Flyway. Mục tiêu không phải học sâu toàn bộ PostgreSQL internals, mà là nắm mindset tối thiểu trước khi đưa schema migration vào backend demo.
+
+### Migration là gì?
+
+Migration là thay đổi có kiểm soát trên schema hoặc dữ liệu database, ví dụ thêm cột, thêm constraint, tạo index hoặc chuẩn bị dữ liệu cho phiên bản code mới. Backend team cần quản lý migration cẩn thận vì database thường là trạng thái chung của hệ thống, khó rollback hơn code và có thể ảnh hưởng dữ liệu đang được nhiều tenant sử dụng.
+
+### Lock là gì?
+
+Lock là cơ chế database dùng để bảo vệ tính nhất quán khi nhiều session cùng đọc/ghi hoặc thay đổi schema. Ở mức học hiện tại, điểm cần nhớ là một số lệnh DDL như `ALTER TABLE` có thể giữ lock mạnh và làm statement khác phải chờ. Không cần thuộc toàn bộ lock mode, nhưng cần biết migration có thể gây blocking.
+
+### BEGIN / COMMIT / ROLLBACK
+
+`BEGIN` mở một transaction, `COMMIT` giữ lại thay đổi, còn `ROLLBACK` hủy thay đổi chưa commit. Trong lab local, `BEGIN` + `ROLLBACK` hữu ích để thử một schema change nhỏ mà không giữ lại schema rác. Trong migration thật với Flyway, rollback cần được thiết kế trước; nếu migration đã áp dụng và dữ liệu mới đã phát sinh, thường không thể chỉ coi rollback là một lệnh SQL đơn giản.
+
+### Quan sát local từ `06-migration-lock-observation.sql`
+
+Lab 06 kiểm tra baseline của `master_data`, thử thêm cột nullable `lab_observation`, kiểm tra dữ liệu cũ vẫn còn, sau đó cleanup bằng `DROP COLUMN IF EXISTS`. Lab cũng có ví dụ `BEGIN` + `ROLLBACK` với cột `lab_rollback_test` để thấy thay đổi schema trong transaction có thể được hủy ở local.
+
+Phần quan sát blocking thật cần hai terminal/session nên không chạy tự động bằng `make sql-6`. Bài lab chỉ giữ hướng dẫn thủ công để tránh giả lập sai: một session giữ transaction sau `ALTER TABLE`, session còn lại thử query và quan sát việc chờ/block nếu xảy ra.
+
+### Vì sao shared-table multi-tenant cần cẩn thận khi `ALTER TABLE`?
+
+Trong shared-table design, tất cả tenant cùng dùng một bảng vật lý như `master_data`. Vì vậy một `ALTER TABLE master_data` không chỉ tác động một tenant, mà có thể ảnh hưởng toàn bộ request của nhiều doanh nghiệp đang dùng bảng đó. Nếu lock kéo dài, blast radius là toàn hệ thống dùng chung bảng.
+
+### Rule of thumb rút ra
+
+- Ưu tiên migration nhỏ, dễ kiểm tra và dễ rollback.
+- Nghĩ cleanup/rollback trước khi chạy migration, không đợi lỗi mới nghĩ.
+- Với SaaS shared-table, luôn cân nhắc lock duration và ảnh hưởng lên tất cả tenant.
+- Ưu tiên backward-compatible migration để code cũ và code mới có thể cùng tồn tại khi deploy.
+- Test trên local/staging trước production; nếu cần backfill lớn, nên tách bước và đo đạc kỹ hơn.
+
+### Giới hạn hiện tại / chưa học sâu
+
+Phần này mới dừng ở mức quan sát local và mindset an toàn. Chưa học sâu lock mode chi tiết, partitioning, vacuum tuning, zero-downtime migration production, migration trên bảng rất lớn, hoặc strategy rollback phức tạp khi dữ liệu mới đã được ghi trong thời gian dài.
+
 ## Giới hạn hiện tại
 
 Những phần vẫn cần học tiếp:

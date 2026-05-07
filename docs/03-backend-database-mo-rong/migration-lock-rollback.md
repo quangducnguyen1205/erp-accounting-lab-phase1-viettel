@@ -84,6 +84,43 @@ Vì vậy cần hỏi trước khi migration:
 - Migration có thể chạy lại an toàn không?
 - Có cần chia migration thành nhiều bước nhỏ không?
 
+## BEGIN, COMMIT và ROLLBACK ở mức lab
+
+Ở mức học hiện tại, có thể hiểu transaction control đơn giản như sau:
+
+- `BEGIN` mở một transaction mới.
+- `COMMIT` xác nhận và giữ lại các thay đổi trong transaction.
+- `ROLLBACK` hủy các thay đổi chưa được commit trong transaction.
+
+Ví dụ thử một schema change rồi hủy:
+
+```sql
+BEGIN;
+ALTER TABLE master_data ADD COLUMN lab_note varchar(255);
+ROLLBACK;
+```
+
+Sau `ROLLBACK`, cột `lab_note` không được giữ lại. Cách này hữu ích khi học local vì mình có thể quan sát lệnh `ALTER TABLE` mà không làm bẩn schema lâu dài.
+
+Ngược lại, nếu dùng `COMMIT`:
+
+```sql
+BEGIN;
+ALTER TABLE master_data ADD COLUMN lab_note varchar(255);
+COMMIT;
+```
+
+Thay đổi schema được giữ lại, và cần một migration/cleanup khác nếu muốn quay về trạng thái cũ.
+
+Điểm cần nhớ:
+
+- `BEGIN` + `ROLLBACK` là cách tốt để thử nghiệm local có kiểm soát.
+- `COMMIT` làm thay đổi trở thành trạng thái thật của database.
+- Trước khi chạy migration, nên nghĩ trước cách kiểm tra, cleanup và rollback.
+- Trong hệ thống thật dùng Flyway, rollback không chỉ là gõ `ROLLBACK` sau khi migration đã chạy xong. Flyway quản lý lịch sử migration; nếu migration đã áp dụng và hệ thống đã ghi dữ liệu mới, thường cần một migration tiếp theo hoặc kế hoạch rollback được thiết kế trước.
+
+Phần này chỉ là giải thích ở mức học lab, chưa đi sâu vào transaction isolation level hay toàn bộ cơ chế lock của PostgreSQL.
+
 ## Schema per tenant và partial migration
 
 Với schema per tenant, migration phải chạy qua nhiều schema:
@@ -104,6 +141,12 @@ Rủi ro:
 - Thời gian tổng tăng theo số tenant.
 
 Đây là lý do Phase 1 chưa nên vội dùng schema per tenant nếu mục tiêu chính là học nền tảng.
+
+## Liên hệ với bài lab 06
+
+Sau khi đọc phần lý thuyết này, dùng `lab-code/sql-playground/06-migration-lock-observation.sql` như bài thực hành đi kèm. Mục tiêu của lab là quan sát một schema change nhỏ, nghĩ trước cleanup/rollback, và thử thấy việc giữ lock có thể ảnh hưởng session khác trong PostgreSQL local.
+
+Không cần biến bài lab này thành hướng dẫn migration production đầy đủ. Ở giai đoạn này, chỉ cần nắm mindset: migration phải nhỏ, có đường thoát, và được kiểm thử trước khi áp dụng vào bảng shared-table nhiều tenant.
 
 ## Kết luận
 
