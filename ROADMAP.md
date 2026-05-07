@@ -46,9 +46,9 @@
 
 ### Thứ Năm 30/04 — Data Leakage & Noisy Neighbor
 
-- [ ] `[LÝ THUYẾT]` Đọc `docs/03-backend-database-mo-rong/noisy-neighbor-shared-table.md`
-- [ ] `[LÝ THUYẾT]` Đọc `local/.../23-kien-thuc-mo-rong/vi-du-ve-noisy-neighbor.md`
-- [ ] `[THỰC HÀNH]` Tự code `05-data-leakage-test.sql` — chứng minh query thiếu tenant_id lộ data
+- [x] `[LÝ THUYẾT]` Đọc `docs/03-backend-database-mo-rong/noisy-neighbor-shared-table.md`
+- [x] `[LÝ THUYẾT]` Đọc `local/.../23-kien-thuc-mo-rong/vi-du-ve-noisy-neighbor.md`
+- [x] `[THỰC HÀNH]` Tự code `05-data-leakage-test.sql` — chứng minh query thiếu tenant_id lộ data
 
 ### 🚩 Thứ Sáu 01/05 — MILESTONE #1
 

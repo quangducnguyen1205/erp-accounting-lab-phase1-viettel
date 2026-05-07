@@ -196,6 +196,12 @@ thì có hai vấn đề:
 
 `EXPLAIN` giúp mình nhìn thấy thiết kế index và cách viết query có đi cùng nhau không.
 
+### Lưu ý về data leakage
+
+Trong shared-table multi-tenant, query thiếu `tenant_id` là lỗi **correctness/tenant isolation** trước khi là lỗi performance. Index có thể giúp query chạy nhanh hơn, nhưng index không thay thế authorization và không tự đảm bảo dữ liệu chỉ thuộc tenant hiện tại.
+
+Ở tầng backend, repository/service nên enforce `tenant_id` nhất quán từ context đáng tin cậy như JWT/header đã validate hoặc `TenantContext`. Không nên để client tự gửi `tenant_id` trong request body rồi backend tin trực tiếp.
+
 ### Đọc query plan ở mức cơ bản
 
 Ở giai đoạn này, chỉ cần tập trung vào vài phần dễ hiểu.
