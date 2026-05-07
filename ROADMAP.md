@@ -1,249 +1,308 @@
-# 🗺️ ROADMAP — Phase 1: ERP/Kế toán SaaS Multi-tenant
+# ROADMAP — Phase 1: ERP/Kế toán SaaS Multi-tenant
 
 > **Bắt đầu:** Thứ Ba 28/04/2026 · **Deadline:** Thứ Hai 25/05/2026
-> **Chu kỳ báo cáo:** 8 milestones, mỗi 3-4 ngày
-> **Phương châm:** Lý thuyết + Thực hành đan xen → Báo cáo luôn có output
+> **Chu kỳ báo cáo:** mỗi 2-3 ngày phải có output có thể trình bày
+> **Phương châm:** tự học + tự code trước, Agent review sau
 
 ---
 
-## 📊 Quick Stats
+## Quick Stats
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 17% |
-| **Tổng task** | 72 |
-| **Đã hoàn thành** | 12 / 72 |
-| **Sprint hiện tại** | Sprint 1 — SQL baseline đã đóng |
-| **Milestone tiếp theo** | #2 — Migration & Locking / PostgreSQL internals |
+| **Tiến độ** | 24% |
+| **Tổng task** | 51 |
+| **Đã hoàn thành** | 12 / 51 |
+| **Focus hiện tại** | Migration & Locking bridge → Spring Boot PoC |
+| **Milestone tiếp theo** | #2 — Migration & Locking / PostgreSQL safety mindset |
 
 ---
 
-## 🏷️ Chú thích
+## Chú thích
 
-| Tag | Mở file nào |
-|-----|-------------|
-| `[LÝ THUYẾT]` | `docs/`, `local/` |
-| `[THỰC HÀNH]` | `lab-code/` |
-| `[BÁO CÁO]` | `reports/`, `presentation-notes/` |
-| `[MILESTONE]` | Cột mốc — phải có output cụ thể để báo cáo |
+| Tag | Ý nghĩa | File/khu vực thường dùng |
+|-----|---------|--------------------------|
+| `[LÝ THUYẾT]` | Đọc, hiểu, ghi lại ý chính | `docs/` |
+| `[THỰC HÀNH]` | Tự code/chạy lệnh/verify output | `lab-code/` |
+| `[BÁO CÁO]` | Tổng hợp ngắn để báo cáo mentor/leader | `docs/99-tong-ket/`, `reports/`, `presentation-notes/` |
+| `[REVIEW]` | Nhờ Agent review sau khi đã tự làm | code/docs đã viết |
+| `[MILESTONE]` | Checkpoint có output cụ thể | demo, summary, curl output, test result |
 
 ---
 
-## Sprint 1 (T3 28/04 → T2 04/05): Nền tảng & SQL Thực chiến
+## Trạng thái repo sau Milestone #1
 
-### Thứ Ba 28/04 — Setup & Multi-tenant core
+- SQL playground đã có đủ `01` đến `05` trong `lab-code/sql-playground/`.
+- Đã verify lại baseline: schema, sample data, EXPLAIN, index comparison bằng temp table, data leakage proof.
+- `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` đã có summary Milestone #1.
+- `lab-code/tenant-demo/` hiện vẫn là skeleton: có `pom.xml`, `application.yml`, Flyway migration files dạng TODO, nhưng chưa có Java implementation.
+- `reports/latex/bao-cao-saas-multi-tenant.tex` và `presentation-notes/thuyet-trinh-saas-multi-tenant.md` đã tồn tại, nhưng cần cập nhật dần khi có Spring Boot output thật.
 
-- [x] `[LÝ THUYẾT]` Review `docs/02-multi-tenant/cac-mo-hinh-tenant-isolation.md` — nắm chắc 3 mô hình
-- [x] `[THỰC HÀNH]` Chạy `make db-up`, verify PostgreSQL container
-- [x] `[THỰC HÀNH]` Chạy `make sql-1` — verify bảng tenants + master_data
-- [x] `[THỰC HÀNH]` Chạy `make sql-2` — verify 4 kịch bản insert
+Quyết định sắp tới: làm một bridge ngắn về Migration & Locking để đủ nền tảng DB, sau đó chuyển nhanh sang Spring Boot PoC để kịp có runnable demo trước deadline.
+
+---
+
+## Sprint 1 (28/04 → 01/05): SQL Playground Baseline — Đã đóng
+
+### Thứ Ba 28/04 — Setup & Multi-tenant Core
+
+- [x] `[LÝ THUYẾT]` Review `docs/02-multi-tenant/cac-mo-hinh-tenant-isolation.md` — nắm 3 mô hình tenant isolation
+- [x] `[THỰC HÀNH]` Chạy `make db-up` trong `lab-code/` — verify PostgreSQL container
+- [x] `[THỰC HÀNH]` Chạy `make sql-1` — verify bảng `tenants` và `master_data`
+- [x] `[THỰC HÀNH]` Chạy `make sql-2` — verify sample data và `UNIQUE (tenant_id, code)`
 
 ### Thứ Tư 29/04 — Index & EXPLAIN
 
 - [x] `[LÝ THUYẾT]` Đọc `docs/03-backend-database-mo-rong/index-va-query-tenant-aware.md`
-- [x] `[THỰC HÀNH]` Tự code `03-query-with-explain.sql` — chạy EXPLAIN ANALYZE
-- [x] `[THỰC HÀNH]` Tự code `04-index-comparison.sql` — so sánh Seq Scan vs Index Scan
+- [x] `[THỰC HÀNH]` Tự code `lab-code/sql-playground/03-query-with-explain.sql` — chạy `EXPLAIN ANALYZE`
+- [x] `[THỰC HÀNH]` Tự code `lab-code/sql-playground/04-index-comparison.sql` — so sánh no index, `tenant_id` index, composite index
 
 ### Thứ Năm 30/04 — Data Leakage & Noisy Neighbor
 
 - [x] `[LÝ THUYẾT]` Đọc `docs/03-backend-database-mo-rong/noisy-neighbor-shared-table.md`
-- [x] `[LÝ THUYẾT]` Đọc `local/.../23-kien-thuc-mo-rong/vi-du-ve-noisy-neighbor.md`
-- [x] `[THỰC HÀNH]` Tự code `05-data-leakage-test.sql` — chứng minh query thiếu tenant_id lộ data
+- [x] `[LÝ THUYẾT]` Tổng hợp ý chính về noisy neighbor trong shared-table multi-tenant
+- [x] `[THỰC HÀNH]` Tự code `lab-code/sql-playground/05-data-leakage-test.sql` — chứng minh query thiếu `tenant_id` có thể lộ data
 
-### 🚩 Thứ Sáu 01/05 — MILESTONE #1
+### Milestone #1 — SQL Playground Tenant-aware
 
-> **Output báo cáo:** Multi-tenant 3 mô hình + Kết quả SQL (EXPLAIN output, data leakage proof).
-> **Trạng thái:** Đã verify và đóng ngày 07/05/2026. Trọng tâm tiếp theo: Migration & Locking / PostgreSQL internals.
+> **Output artifact:** SQL playground results + summary trong `docs/99-tong-ket/nhung-gi-da-nam-duoc.md`.
+> **Files để show:** `lab-code/sql-playground/01-05`, `docs/03-backend-database-mo-rong/index-va-query-tenant-aware.md`, `docs/99-tong-ket/nhung-gi-da-nam-duoc.md`.
+> **Done criteria:** `make sql-all`, `make sql-3`, `make sql-4`, `make sql-5` chạy pass trên database local sạch.
+> **Out of scope:** Spring Boot, Flyway app migration, API demo.
 
 - [x] `[MILESTONE]` Tổng hợp output 5 file SQL playground → ghi chú kết quả
 - [x] `[BÁO CÁO]` Cập nhật `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` — thêm phần SQL thực hành
 
-### Thứ Bảy 02/05 — Migration & Locking
+---
 
-- [ ] `[LÝ THUYẾT]` Đọc `docs/03-backend-database-mo-rong/migration-lock-rollback.md`
-- [ ] `[LÝ THUYẾT]` Đọc `local/.../23-kien-thuc-mo-rong/postgresql-internals-phan2-partition-migration-lock.md`
-- [ ] `[THỰC HÀNH]` Thử ALTER TABLE trên master_data trong psql, quan sát lock
+## Sprint 1.5 (07/05 → 08/05): Migration & Locking Bridge
 
-### Chủ Nhật 03/05 — PostgreSQL Internals tổng hợp
+Mục tiêu của sprint này là đủ hiểu mindset schema change an toàn trước khi đem Flyway vào Spring Boot. Không học quá sâu PostgreSQL internals ở đây.
 
-- [ ] `[LÝ THUYẾT]` Đọc `local/.../23-kien-thuc-mo-rong/postgresql-internals-phan1-index-va-query.md`
-- [ ] `[LÝ THUYẾT]` Đọc `local/.../07-postgresql-data-modeling/01-postgresql-va-data-modeling.md`
-- [ ] `[LÝ THUYẾT]` Liệt kê ALTER TABLE an toàn vs nguy hiểm → ghi vào ghi chú riêng
+### Thứ Năm 07/05 — Migration safety tối thiểu
 
-### 🚩 Thứ Hai 04/05 — MILESTONE #2
+- [ ] `[LÝ THUYẾT]` Đọc `docs/03-backend-database-mo-rong/migration-lock-rollback.md` — output: 5-7 bullet về safe vs risky migration trong `docs/99-tong-ket/nhung-gi-da-nam-duoc.md`
+- [ ] `[THỰC HÀNH]` Tự tạo khi bắt đầu task: `lab-code/sql-playground/06-migration-lock-observation.sql` — thử một vài `ALTER TABLE` nhỏ trên `master_data`; verify bằng `make db-up`, `make sql-reset`, `make sql-all`, rồi chạy script thủ công bằng `psql`
+- [ ] `[BÁO CÁO]` Ghi summary ngắn: lock là gì, vì sao migration có thể ảnh hưởng nhiều tenant, rollback cần chuẩn bị gì; không quá 1 trang
 
-> **Output báo cáo:** Index strategy + Migration safety + PostgreSQL internals tổng hợp.
+### Milestone #2 — Migration & Locking / PostgreSQL Safety Mindset
 
-- [ ] `[MILESTONE]` Chốt Sprint 1 — SQL playground xong, lý thuyết DB vững
-- [ ] `[BÁO CÁO]` Review `docs/01-saas/tong-quan-saas.md` — xác nhận SaaS lý thuyết vững
+> **Output artifact:** summary ngắn trong `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` và script quan sát lock nếu đã tạo.
+> **Files để show:** `docs/03-backend-database-mo-rong/migration-lock-rollback.md`, `docs/99-tong-ket/nhung-gi-da-nam-duoc.md`, `lab-code/sql-playground/06-migration-lock-observation.sql` nếu có.
+> **Demo/report expectation:** giải thích được vì sao schema change trong shared-table SaaS cần backward-compatible và tránh lock dài.
+> **Done criteria:** có ghi chú ngắn + ít nhất một quan sát thực hành về `ALTER TABLE`/lock trên PostgreSQL local.
+> **Out of scope:** partitioning sâu, VACUUM tuning, zero-downtime migration production thật.
+
+- [ ] `[MILESTONE]` Chốt Milestone #2 — có summary và output thực hành nhỏ về migration/locking
 
 ---
 
-## Sprint 2 (T3 05/05 → T2 11/05): Backend Core — PoC Spring Boot
+## Sprint 2 (09/05 → 10/05): Spring Boot Bootstrap + Flyway + Tenant Context
 
-### Thứ Ba 05/05 — Project Bootstrap
+Mục tiêu là biến `lab-code/tenant-demo/` từ skeleton thành app Spring Boot khởi động được, migrate schema được và nhận diện tenant từ request.
 
-- [ ] `[THỰC HÀNH]` Generate project từ https://start.spring.io (Web, JPA, PostgreSQL, Flyway)
-- [ ] `[THỰC HÀNH]` Tự code `pom.xml` + `application.yml` — kết nối PostgreSQL
-- [ ] `[THỰC HÀNH]` Tự code `TenantDemoApplication.java` — verify Spring Boot khởi động
+### Thứ Bảy 09/05 — Bootstrap app và Flyway baseline
 
-### Thứ Tư 06/05 — Tenant Context & Filter
+- [ ] `[THỰC HÀNH]` Tự hoàn thiện `lab-code/tenant-demo/pom.xml` bằng Spring Initializr hoặc viết tay — dependencies: Web, JPA, PostgreSQL, Flyway, Test
+- [ ] `[THỰC HÀNH]` Tự hoàn thiện `lab-code/tenant-demo/src/main/resources/application.yml` — kết nối DB local, Flyway enabled, JPA `ddl-auto` không tự tạo schema
+- [ ] `[THỰC HÀNH]` Tự code `TenantDemoApplication.java` và Flyway `V1`, `V2`, `V3` dựa trên SQL baseline; verify: `cd lab-code && make db-up && make app-run`
 
-- [ ] `[LÝ THUYẾT]` Đọc lại sơ đồ sequence `docs/02-multi-tenant/tong-quan-multi-tenant.md`
-- [ ] `[THỰC HÀNH]` Tự code `TenantContext.java` — ThreadLocal
-- [ ] `[THỰC HÀNH]` Tự code `TenantFilter.java` — OncePerRequestFilter
-- [ ] `[THỰC HÀNH]` Test curl: header `X-Tenant-Id` → verify log đúng tenant
+### Chủ Nhật 10/05 — TenantContext và TenantFilter
 
-### 🚩 Thứ Năm 07/05 — MILESTONE #3
+- [ ] `[THỰC HÀNH]` Tự code `TenantContext.java` và `TenantFilter.java` — đọc `X-Tenant-Id`, set/clear context đúng vòng đời request
+- [ ] `[THỰC HÀNH]` Verify bằng curl/log: request có `X-Tenant-Id` thì app log đúng tenant; request thiếu header được xử lý rõ ràng
+- [ ] `[BÁO CÁO]` Cập nhật `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` — thêm mục ngắn về Spring Boot bootstrap, Flyway và TenantFilter
 
-> **Output báo cáo:** Spring Boot chạy + TenantFilter log tenant_id + Flyway tạo bảng.
+### Milestone #3 — Spring Boot Foundation
 
-- [ ] `[THỰC HÀNH]` Tự code `TenantAwareEntity.java` — @MappedSuperclass, @PrePersist
-- [ ] `[THỰC HÀNH]` Tự code `MasterData.java` — entity + uniqueConstraints
-- [ ] `[THỰC HÀNH]` Tự code Flyway `V1`, `V2`, `V3` — verify bảng tạo xong
+> **Output artifact:** app khởi động được, Flyway tạo schema, TenantFilter nhận `X-Tenant-Id`.
+> **Files để show:** `lab-code/tenant-demo/pom.xml`, `application.yml`, `TenantDemoApplication.java`, `TenantContext.java`, `TenantFilter.java`, `db/migration/V1-V3`.
+> **Demo/report expectation:** chạy `make app-run`, gửi một curl có `X-Tenant-Id`, giải thích request đi qua filter thế nào.
+> **Done criteria:** app start pass; Flyway migrate pass; log hoặc response chứng minh tenant context hoạt động.
+> **Out of scope:** CRUD đầy đủ, auth/JWT thật, RBAC, production security.
+
 - [ ] `[MILESTONE]` Demo: Spring Boot start → Flyway migrate → TenantFilter hoạt động
 
-### Thứ Sáu 08/05 — Repository auto-filter
+---
 
-- [ ] `[LÝ THUYẾT]` Đọc `local/.../05-auth-authz-rbac/01-auth-authz-rbac.md` — preview Auth
-- [ ] `[THỰC HÀNH]` Tự code `TenantAwareRepository.java` — base repo auto WHERE tenant_id
-- [ ] `[THỰC HÀNH]` Tự code `MasterDataRepository.java` — kế thừa base repo
-- [ ] `[THỰC HÀNH]` Bật `show-sql=true`, verify query có WHERE tenant_id
+## Sprint 3 (11/05 → 14/05): Tenant-aware MasterData API
 
-### Thứ Bảy 09/05 + Chủ Nhật 10/05 — Service + Controller
+Mục tiêu là có endpoint thật để chứng minh tenant-scoped data access. Ưu tiên rõ, chạy được, dễ giải thích; chưa cần generic framework quá phức tạp.
 
-- [ ] `[THỰC HÀNH]` Tự code `MasterDataService.java` — CRUD + soft delete
-- [ ] `[THỰC HÀNH]` Tự code `MasterDataController.java` — REST endpoints
-- [ ] `[THỰC HÀNH]` Test curl: CRUD với 2 tenant, verify data isolation
+### Thứ Hai 11/05 — Entity và repository tenant-aware
 
-### 🚩 Thứ Hai 11/05 — MILESTONE #4
+- [ ] `[LÝ THUYẾT]` Đọc lại `docs/02-multi-tenant/tong-quan-multi-tenant.md` và phần data leakage trong `docs/03-backend-database-mo-rong/index-va-query-tenant-aware.md` — output: 3 rule backend query phải nhớ
+- [ ] `[THỰC HÀNH]` Tự code `TenantAwareEntity.java` và `MasterData.java` — mapping đúng `tenant_id`, unique constraint, `is_active`
+- [ ] `[THỰC HÀNH]` Tự code `MasterDataRepository.java` với method explicit có `tenantId`; không overdo base repository nếu chưa thật sự cần
 
-> **Output báo cáo:** CRUD hoàn chỉnh, 2 tenant tách biệt qua API.
+### Thứ Ba 12/05 — Service, controller và curl verification
 
-- [ ] `[MILESTONE]` Demo: Tenant A POST → GET chỉ thấy data A. Tenant B không thấy data A.
-- [ ] `[THỰC HÀNH]` Commit code sạch theo Conventional Commits
+- [ ] `[THỰC HÀNH]` Tự code `MasterDataService.java` và `MasterDataController.java` — endpoint đọc danh sách và tìm theo `code` trong tenant hiện tại
+- [ ] `[THỰC HÀNH]` Verify bằng curl: `X-Tenant-Id: 1` chỉ thấy data tenant 1; `X-Tenant-Id: 2` chỉ thấy data tenant 2
+- [ ] `[REVIEW]` Sau khi tự chạy được, nhờ Agent review code trong `lab-code/tenant-demo/` — chỉ sửa lỗi rõ ràng, không refactor lớn
+- [ ] `[BÁO CÁO]` Ghi curl output/pattern vào `docs/99-tong-ket/nhung-gi-da-nam-duoc.md`
+
+### Milestone #4 — Tenant-aware API Demo
+
+> **Output artifact:** REST endpoint tenant-scoped cho `master_data`.
+> **Files để show:** entity, repository, service, controller, curl commands/output.
+> **Demo/report expectation:** mở app, gọi curl với 2 tenant khác nhau, giải thích vì sao dữ liệu không lẫn.
+> **Done criteria:** app chạy; endpoint trả data scoped theo `X-Tenant-Id`; query/service không tin tenant từ request body.
+> **Out of scope:** full ERP CRUD, auth/JWT thật, UI, pagination nâng cao.
+
+- [ ] `[MILESTONE]` Demo: Tenant A GET chỉ thấy data A; Tenant B GET chỉ thấy data B
 
 ---
 
-## Sprint 3 (T3 12/05 → T2 18/05): Testing & Advanced Topics
+## Sprint 4 (15/05 → 17/05): Data Leakage Tests + Code Review
 
-### Thứ Ba 12/05 — Integration Test
+Mục tiêu là biến bài học SQL leakage thành test backend có thể chạy lại.
 
-- [ ] `[THỰC HÀNH]` Tự code `DataLeakageTest.java` — 3 test cases (xem TODO trong file)
-- [ ] `[THỰC HÀNH]` Chạy `make app-test` — tất cả test pass
+### Thứ Sáu 15/05 — Integration test chống leakage
 
-### Thứ Tư 13/05 — Partitioning & VACUUM
+- [ ] `[THỰC HÀNH]` Tự code `DataLeakageTest.java` — tối thiểu 3 case: tenant A không thấy tenant B, missing/invalid tenant bị chặn, query by code vẫn scoped theo tenant
+- [ ] `[THỰC HÀNH]` Chạy `cd lab-code && make app-test` — test pass hoặc ghi lỗi cụ thể nếu fail
 
-- [ ] `[LÝ THUYẾT]` Đọc `docs/03-backend-database-mo-rong/partitioning-vacuum-read-replica.md`
-- [ ] `[LÝ THUYẾT]` Tổng hợp: khi nào partition? VACUUM? Read replica?
+### Thứ Bảy 16/05 → Chủ Nhật 17/05 — Review nhỏ và chốt chất lượng
 
-### 🚩 Thứ Năm 14/05 — MILESTONE #5
+- [ ] `[REVIEW]` Nhờ Agent review focused: tenant context lifecycle, repository/service có quên `tenant_id` không, migration có khớp SQL baseline không
+- [ ] `[BÁO CÁO]` Cập nhật `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` — thêm phần test chống data leakage và giới hạn hiện tại
 
-> **Output báo cáo:** Integration test pass + Partitioning/VACUUM theory.
+### Milestone #5 — Testable Tenant Isolation
 
-- [ ] `[LÝ THUYẾT]` Đọc `local/.../04-phan-tach-service/01-tu-duy-phan-tach.md`
-- [ ] `[LÝ THUYẾT]` Đọc `local/.../06-api-gateway-kong/01-api-gateway-va-kong.md`
-- [ ] `[MILESTONE]` Screenshot test pass + ghi chú summary mỗi topic
+> **Output artifact:** integration test hoặc test gần tương đương chứng minh tenant isolation.
+> **Files để show:** `DataLeakageTest.java`, service/repository/controller liên quan, test output.
+> **Demo/report expectation:** chạy `make app-test`, giải thích 3 test case và lỗi nào sẽ bắt được.
+> **Done criteria:** test pass hoặc nếu còn blocker thì có lỗi cụ thể, nguyên nhân, hướng sửa.
+> **Out of scope:** testcontainers nâng cao nếu làm chậm tiến độ, performance benchmark API.
 
-### Thứ Sáu 15/05 — Kiến thức bổ trợ
-
-- [ ] `[LÝ THUYẾT]` Đọc `local/.../08-redis-cache/01-redis-cache.md`
-- [ ] `[LÝ THUYẾT]` Đọc `local/.../09-kafka-async/01-kafka-va-async.md`
-- [ ] `[LÝ THUYẾT]` Đọc `local/.../11-observability/01-observability.md`
-
-### Thứ Bảy 16/05 + Chủ Nhật 17/05 — Code Review & Refactor
-
-- [ ] `[THỰC HÀNH]` Nhờ Agent review toàn bộ `lab-code/tenant-demo/`
-- [ ] `[THỰC HÀNH]` Fix lỗi, refactor theo suggestion, đảm bảo clean code
-- [ ] `[LÝ THUYẾT]` Đọc `local/.../13-design-patterns/01-design-patterns.md`
-
-### 🚩 Thứ Hai 18/05 — MILESTONE #6
-
-> **Output báo cáo:** Code clean + Knowledge summary (Redis, Kafka, Observability, Patterns).
-
-- [ ] `[MILESTONE]` Commit code đã refactor. Liệt kê "hướng học tiếp" cho Phase 2.
-- [ ] `[BÁO CÁO]` Cập nhật `docs/99-tong-ket/nhung-gi-da-nam-duoc.md`
-- [ ] `[BÁO CÁO]` Draft phần "Giới hạn và hướng tiếp" trong LaTeX report
+- [ ] `[MILESTONE]` Chốt test isolation — có test output và summary ngắn
 
 ---
 
-## Sprint 4 (T3 19/05 → T2 25/05): Đóng gói & Bảo vệ Phase 1
+## Sprint 5 (18/05 → 20/05): Báo cáo và Talk-through Gắn Với Demo
 
-### Thứ Ba 19/05 — LaTeX Report
+Mục tiêu là cập nhật tài liệu đủ để báo cáo mentor/leader mà không đợi tới sát deadline.
 
-- [ ] `[BÁO CÁO]` Review `reports/latex/bao-cao-saas-multi-tenant.tex` — cập nhật 6 sections
-- [ ] `[BÁO CÁO]` Bổ sung kết quả thực hành (EXPLAIN output, test screenshot)
-- [ ] `[BÁO CÁO]` Compile LaTeX → verify PDF sạch
+### Thứ Hai 18/05 — LaTeX report update
 
-### Thứ Tư 20/05 — Presentation Polish
+- [ ] `[BÁO CÁO]` Cập nhật `reports/latex/bao-cao-saas-multi-tenant.tex` — thêm kết quả SQL playground, Spring Boot PoC, test leakage; không viết thành sách giáo khoa
+- [ ] `[BÁO CÁO]` Compile thử LaTeX nếu môi trường có `xelatex`; nếu không có, ghi rõ chưa verify PDF
 
-- [ ] `[BÁO CÁO]` Review `presentation-notes/thuyet-trinh-saas-multi-tenant.md`
-- [ ] `[BÁO CÁO]` Đọc to speaker script, bấm giờ (15-20 phút)
-- [ ] `[BÁO CÁO]` Bổ sung FAQ + chuẩn bị kịch bản demo
+### Thứ Ba 19/05 → Thứ Tư 20/05 — Presentation và demo script
 
-### 🚩 Thứ Năm 21/05 — MILESTONE #7
+- [ ] `[BÁO CÁO]` Cập nhật `presentation-notes/thuyet-trinh-saas-multi-tenant.md` — thêm flow demo: SQL → Flyway → TenantFilter → API → test
+- [ ] `[THỰC HÀNH]` Tạo khi đến task: checklist demo ngắn trong `presentation-notes/` hoặc cuối file thuyết trình — gồm command, curl, điểm nói chính
+- [ ] `[REVIEW]` Đọc thử report/talk-through một lượt; nhờ Agent review tính mạch lạc nếu cần
 
-> **Output báo cáo:** LaTeX PDF xong + Presentation sẵn sàng + Demo chạy trơn tru.
+### Milestone #6 — Mentor-facing Report Package
 
-- [ ] `[THỰC HÀNH]` `make db-up` → `make app-run` → CRUD demo 2 tenant
-- [ ] `[THỰC HÀNH]` `make app-test` — tất cả pass
-- [ ] `[MILESTONE]` Dry-run: mở PDF → trình bày → chạy demo → thử Q&A
+> **Output artifact:** report LaTeX cập nhật + presentation notes có demo flow.
+> **Files để show:** `reports/latex/bao-cao-saas-multi-tenant.tex`, `presentation-notes/thuyet-trinh-saas-multi-tenant.md`, `docs/99-tong-ket/nhung-gi-da-nam-duoc.md`.
+> **Demo/report expectation:** có thể trình bày 10-15 phút về theory + runnable output.
+> **Done criteria:** report không còn chỉ nói theory; presentation có đường dẫn tới demo thật.
+> **Out of scope:** thiết kế slide đẹp, PDF publish nếu chưa cần.
 
-### Thứ Sáu 22/05 — Buffer & Fix
-
-- [ ] `[BÁO CÁO]` Sửa lỗi cuối cùng, polish tài liệu
-- [ ] `[THỰC HÀNH]` Final rehearsal: demo từ đầu đến cuối
-
-### Thứ Bảy 23/05 + Chủ Nhật 24/05 — Final Commit
-
-- [ ] `[BÁO CÁO]` Cập nhật `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` — phiên bản cuối
-- [ ] `[BÁO CÁO]` Cập nhật ROADMAP.md — Quick Stats = 100%
-- [ ] `[BÁO CÁO]` Final commit: chốt version Phase 1
-
-### 🚩 Thứ Hai 25/05 — MILESTONE #8: 🎯 BẢO VỆ PHASE 1
-
-> **BẢO VỆ PHASE 1 VỚI LEADER**
-
-- [ ] `[MILESTONE]` Trình bày + Demo + Q&A
-- [ ] `[BÁO CÁO]` Ghi chú feedback Leader vào `local/`
+- [ ] `[MILESTONE]` Chốt package báo cáo — đủ nội dung để báo cáo mentor trước deadline
 
 ---
 
-## 📅 Tổng quan 8 Milestones
+## Sprint 6 (21/05 → 23/05): Final Dry-run và Buffer Kỹ Thuật
 
-| # | Ngày | Thứ | Output báo cáo |
-|:-:|:----:|:---:|---------------|
-| 1 | 01/05 | T6 | SQL playground results + Multi-tenant isolation |
-| 2 | 04/05 | T2 | Index/EXPLAIN + Migration safety + PG internals |
-| 3 | 07/05 | T5 | Spring Boot + TenantFilter + Flyway working |
-| 4 | 11/05 | T2 | CRUD hoàn chỉnh, 2 tenant tách biệt qua API |
-| 5 | 14/05 | T5 | Integration test pass + Advanced DB theory |
-| 6 | 18/05 | T2 | Code clean + Knowledge summary 5 topics |
-| 7 | 21/05 | T5 | LaTeX PDF + Demo + Presentation ready |
-| 8 | 25/05 | T2 | 🎯 **BẢO VỆ PHASE 1** |
+Mục tiêu là đảm bảo demo chạy từ đầu đến cuối trên máy local, không chỉ chạy từng mảnh.
+
+### Thứ Năm 21/05 — Full demo rehearsal
+
+- [ ] `[THỰC HÀNH]` Chạy full flow từ đầu: `make db-up`, reset DB nếu cần, `make app-run`, curl 2 tenant, `make app-test`
+- [ ] `[THỰC HÀNH]` Ghi lại command thành demo checklist cuối cùng; đánh dấu command nào bắt buộc, command nào optional
+
+### Thứ Sáu 22/05 → Thứ Bảy 23/05 — Final review
+
+- [ ] `[BÁO CÁO]` Cập nhật `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` — bản gần cuối: đã làm được gì, giới hạn, hướng tiếp
+- [ ] `[REVIEW]` Nhờ Agent review final repo ở mức rủi ro demo: lệnh nào fail, docs nào stale, roadmap nào sai
+
+### Milestone #7 — Final Dry-run
+
+> **Output artifact:** demo checklist đã chạy qua + test/curl output.
+> **Files để show:** `lab-code/Makefile`, `lab-code/tenant-demo/`, presentation notes, report.
+> **Demo/report expectation:** chạy thử như ngày bảo vệ; biết fallback nếu một phần fail.
+> **Done criteria:** demo chính chạy; test pass hoặc có caveat rõ; tài liệu không hứa quá mức.
+> **Out of scope:** thêm feature mới sau dry-run nếu không cần thiết.
+
+- [ ] `[MILESTONE]` Dry-run: trình bày → chạy demo → chạy test → ghi lại vấn đề còn lại
 
 ---
 
-## 📁 File Reference
+## Sprint 7 (24/05 → 25/05): Đóng Gói và Bảo Vệ Phase 1
 
-| Cần làm gì | File |
-|------------|------|
+### Chủ Nhật 24/05 — Polish cuối
+
+- [ ] `[BÁO CÁO]` Polish report/presentation theo feedback dry-run; chỉ sửa nội dung sai hoặc thiếu, không mở scope mới
+- [ ] `[THỰC HÀNH]` Final rehearsal: mở tài liệu, chạy command demo chính, chuẩn bị Q&A
+
+### Thứ Hai 25/05 — Milestone #8: Bảo vệ Phase 1
+
+> **Output artifact:** trình bày + demo + Q&A.
+> **Files để show:** report, presentation notes, SQL playground, Spring Boot PoC, roadmap.
+> **Done criteria:** giải thích được trade-off shared-table multi-tenant, chứng minh demo chạy, nói rõ giới hạn hiện tại.
+> **Out of scope:** production ERP hoàn chỉnh, auth/RBAC đầy đủ, distributed system nâng cao.
+
+- [ ] `[MILESTONE]` Trình bày Phase 1 + demo runnable + Q&A với leader/mentor
+- [ ] `[BÁO CÁO]` Ghi feedback leader vào `local/` hoặc ghi chú local-only, không commit nội dung riêng tư
+
+---
+
+## Tổng quan Milestones
+
+| # | Ngày mục tiêu | Output báo cáo |
+|:-:|:-------------:|---------------|
+| 1 | 01/05 | SQL playground results + tenant-aware data isolation proof |
+| 2 | 08/05 | Migration & Locking safety summary + small PostgreSQL observation |
+| 3 | 10/05 | Spring Boot starts + Flyway baseline + TenantFilter |
+| 4 | 14/05 | Tenant-aware MasterData API demo bằng curl |
+| 5 | 17/05 | Data leakage tests + focused code review |
+| 6 | 20/05 | Mentor-facing report package + demo talk-through |
+| 7 | 23/05 | Final dry-run: app, curl, tests, presentation |
+| 8 | 25/05 | Phase 1 defense: trình bày + runnable demo + Q&A |
+
+---
+
+## File Reference
+
+| Cần làm gì | File/khu vực |
+|------------|--------------|
 | SaaS lý thuyết | `docs/01-saas/tong-quan-saas.md` |
 | Multi-tenant | `docs/02-multi-tenant/*.md` |
-| PostgreSQL sâu | `docs/03-backend-database-mo-rong/*.md` |
-| Nháp cũ | `local/pre-rebuild-backup-20260424-165714/docs/...` |
+| PostgreSQL/backend DB | `docs/03-backend-database-mo-rong/*.md` |
+| Tổng kết tiến độ | `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` |
 | SQL thực hành | `lab-code/sql-playground/*.sql` |
-| Java PoC | `lab-code/tenant-demo/src/...` |
+| Spring Boot PoC | `lab-code/tenant-demo/` |
 | Make commands | `lab-code/Makefile` → `make help` |
 | Báo cáo LaTeX | `reports/latex/bao-cao-saas-multi-tenant.tex` |
-| Thuyết trình | `presentation-notes/thuyet-trinh-saas-multi-tenant.md` |
+| Thuyết trình/demo script | `presentation-notes/thuyet-trinh-saas-multi-tenant.md` |
+| Ghi chú private | `local/` — chỉ local-only, không dùng làm source of truth công khai |
 
 ---
 
-## ⚠️ Nguyên tắc
+## Việc Làm Ngay
 
-1. **Tự code trước.** Nhờ Agent review SAU KHI đã tự viết.
-2. **Commit mỗi ngày.** Message theo Conventional Commits.
-3. **Stuck > 2 tiếng** → ghi chú, skip, quay lại sau.
-4. **Cập nhật Quick Stats** cuối mỗi ngày.
-5. **Milestone = phải có output cụ thể** (SQL output, curl result, test pass, PDF).
+Mở trước: `docs/03-backend-database-mo-rong/migration-lock-rollback.md`.
+
+Task tiếp theo:
+
+1. Đọc tài liệu migration/locking, ghi 5-7 bullet vào `docs/99-tong-ket/nhung-gi-da-nam-duoc.md`.
+2. Tạo khi bắt đầu task `lab-code/sql-playground/06-migration-lock-observation.sql`.
+3. Chạy baseline: `cd lab-code && make db-up && make sql-reset && make sql-all`.
+4. Thực hành một vài `ALTER TABLE` nhỏ để quan sát lock/ảnh hưởng.
+5. Done khi có summary ngắn + output/nhận xét thực hành đủ báo cáo Milestone #2.
+
+---
+
+## Nguyên tắc
+
+1. **Tự code trước.** Nhờ Agent review sau khi đã tự viết và chạy thử.
+2. **Milestone phải có output.** Không chốt milestone chỉ bằng đọc lý thuyết.
+3. **Không overdo.** Phase 1 cần runnable demo nhỏ, không cần production ERP.
+4. **Report dần.** Mỗi milestone cập nhật một đoạn ngắn, không dồn tới cuối.
+5. **Không commit local-only notes.** Nháp, prompt, feedback riêng tư ở `local/`.
+6. **Nếu stuck hơn 2 tiếng:** ghi blocker, tạo fallback nhỏ hơn, tiếp tục tiến độ.
