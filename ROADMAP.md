@@ -10,11 +10,11 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 6% |
-| **Tổng task** | 64 |
-| **Đã hoàn thành** | 4 / 64 |
-| **Sprint hiện tại** | Sprint 1 |
-| **Milestone tiếp theo** | #1 — Thứ Sáu 01/05 |
+| **Tiến độ** | 17% |
+| **Tổng task** | 72 |
+| **Đã hoàn thành** | 12 / 72 |
+| **Sprint hiện tại** | Sprint 1 — SQL baseline đã đóng |
+| **Milestone tiếp theo** | #2 — Migration & Locking / PostgreSQL internals |
 
 ---
 
@@ -53,9 +53,10 @@
 ### 🚩 Thứ Sáu 01/05 — MILESTONE #1
 
 > **Output báo cáo:** Multi-tenant 3 mô hình + Kết quả SQL (EXPLAIN output, data leakage proof).
+> **Trạng thái:** Đã verify và đóng ngày 07/05/2026. Trọng tâm tiếp theo: Migration & Locking / PostgreSQL internals.
 
-- [ ] `[MILESTONE]` Tổng hợp output 5 file SQL playground → ghi chú kết quả
-- [ ] `[BÁO CÁO]` Cập nhật `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` — thêm phần SQL thực hành
+- [x] `[MILESTONE]` Tổng hợp output 5 file SQL playground → ghi chú kết quả
+- [x] `[BÁO CÁO]` Cập nhật `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` — thêm phần SQL thực hành
 
 ### Thứ Bảy 02/05 — Migration & Locking
 
