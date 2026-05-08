@@ -18,6 +18,8 @@
 -- - UNIQUE constraint trên nhiều cột
 -- - NOT NULL constraints
 -- - DEFAULT values
+-- - Dựa lại SQL playground: lab-code/sql-playground/01-setup-tables.sql
+-- - Không dựa vào Hibernate ddl-auto để tự tạo bảng
 -- ==============================================================
 
 -- Viết SQL migration ở đây:

@@ -16,6 +16,8 @@
 -- - Flyway naming convention: V{version}__{description}.sql
 -- - Flyway chỉ chạy migration CHƯA từng chạy
 -- - PostgreSQL BIGSERIAL, DEFAULT now()
+-- - Dựa lại SQL playground: lab-code/sql-playground/01-setup-tables.sql
+-- - Không dựa vào Hibernate ddl-auto để tự tạo bảng
 -- ==============================================================
 
 -- Viết SQL migration ở đây:

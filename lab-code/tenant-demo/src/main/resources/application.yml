@@ -1,26 +1,53 @@
 # ==============================================================
-# TODO TASK: Cấu hình Spring Boot application
+# TASK: Cấu hình Spring Boot application
 # ==============================================================
 #
-# [Mục tiêu]
-# Cấu hình kết nối PostgreSQL và Flyway migration.
+# File này là cấu hình local tối thiểu kèm ghi chú học tập.
 #
-# [Nhiệm vụ của tôi]
-# 1. Cấu hình spring.datasource: url, username, password.
-#    (Phải khớp với docker-compose.yml bạn đã tạo.)
-# 2. Cấu hình spring.jpa: hibernate ddl-auto nên đặt là gì?
-#    Suy nghĩ: nếu dùng Flyway thì ddl-auto nên là "none" hay "validate"?
-# 3. Cấu hình spring.flyway: locations, enabled.
-# 4. Bật SQL logging để debug query.
+# Lưu ý quan trọng:
+# - Spring Boot đọc environment variables từ OS/process.
+# - Spring Boot KHÔNG tự đọc file `.env` chỉ vì file đó tồn tại.
+# - Docker Compose, IDE, terminal hoặc tool như dotenv có thể nạp biến môi
+#   trường trước khi chạy app.
+# - `.env.example` chỉ là file mẫu để biết cần biến nào.
+# - Không hardcode secret thật vào `application.yml`.
 #
-# [Kiến thức cần tự research]
-# - Spring Boot application.yml format
-# - spring.datasource.url format cho PostgreSQL: jdbc:postgresql://host:port/db
-# - spring.jpa.hibernate.ddl-auto: none, validate, update, create-drop
-# - spring.jpa.show-sql, spring.jpa.properties.hibernate.format_sql
-# - spring.flyway.locations
-# - Docs: https://docs.spring.io/spring-boot/docs/current/reference/html/application-properties.html
+# Cách đọc placeholder:
+#   ${TEN_BIEN:gia_tri_mac_dinh}
+#
+# Ví dụ `${SERVER_PORT:8080}` nghĩa là:
+# - nếu có biến SERVER_PORT thì dùng biến đó;
+# - nếu không có thì dùng 8080.
 #
 # ==============================================================
 
-# Viết cấu hình của bạn ở đây:
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  datasource:
+    # Các giá trị mặc định dưới đây khớp với `lab-code/docker/docker-compose.yml`.
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:erpdb}
+    username: ${DB_USER:erpuser}
+    password: ${DB_PASSWORD:erpuser}
+
+  jpa:
+    hibernate:
+      # Vì schema do Flyway quản lý, KHÔNG để Hibernate tự tạo/cập nhật bảng.
+      # Giai đoạn này dùng `validate` để phát hiện entity không khớp schema.
+      ddl-auto: validate
+    show-sql: false # Dùng logging bên dưới thay vì show-sql để log rõ hơn.
+    properties:
+      hibernate:
+        format_sql: true
+        highlight_sql: true
+
+  flyway:
+    enabled: true
+    # Flyway mặc định đọc `classpath:db/migration`.
+    # locations: classpath:db/migration
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.flywaydb: info

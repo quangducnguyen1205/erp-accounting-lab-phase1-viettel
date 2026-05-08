@@ -77,11 +77,11 @@ sql-reset: ## Xóa toàn bộ bảng rồi tạo lại từ đầu
 
 .PHONY: app-run
 app-run: ## [TODO] Chạy Spring Boot application
-	cd $(APP_DIR) && ./mvnw spring-boot:run
+	cd $(APP_DIR) && if [ -f .env ]; then set -a; . ./.env; set +a; fi; ./mvnw spring-boot:run
 
 .PHONY: app-test
 app-test: ## [TODO] Chạy integration tests
-	cd $(APP_DIR) && ./mvnw test
+	cd $(APP_DIR) && if [ -f .env ]; then set -a; . ./.env; set +a; fi; ./mvnw test
 
 # --- Help -------------------------------------------------------
 

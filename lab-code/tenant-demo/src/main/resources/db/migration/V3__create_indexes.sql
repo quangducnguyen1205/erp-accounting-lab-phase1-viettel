@@ -20,6 +20,8 @@
 -- - Đọc lại: docs/03-backend-database-mo-rong/index-va-query-tenant-aware.md
 -- - Lưu ý: Flyway KHÔNG hỗ trợ CONCURRENTLY trong transaction.
 --   Nếu muốn dùng, migration phải disable transaction.
+-- - Dựa lại SQL playground: lab-code/sql-playground/01-setup-tables.sql
+-- - Không dựa vào Hibernate ddl-auto để tự tạo index
 -- ==============================================================
 
 -- Viết SQL migration ở đây:
