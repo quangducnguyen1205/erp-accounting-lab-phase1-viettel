@@ -10,9 +10,9 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 33% |
+| **Tiến độ** | 38% |
 | **Tổng task** | 48 |
-| **Đã hoàn thành** | 16 / 48 |
+| **Đã hoàn thành** | 18 / 48 |
 | **Focus hiện tại** | Spring Boot Bootstrap + Flyway + Tenant Context |
 | **Milestone tiếp theo** | #3 — Spring Boot Foundation |
 
@@ -52,8 +52,8 @@ Quyết định thiết kế Phase 1: demo runnable vẫn là Spring Boot + Post
 | Tenant isolation & data leakage | Core / must practice | `05-data-leakage-test.sql`, curl proof, `DataLeakageTest.java` | #1, #5 | SQL đã xong, test app chưa |
 | PostgreSQL schema, indexing, EXPLAIN | Core / must practice | SQL `01-04`, docs query plan | #1 | Đã xong baseline |
 | Migration, locking, rollback mindset | Important / mini-lab | `06-migration-lock-observation.sql`, summary ngắn | #2 | Đã đóng Milestone #2 |
-| Spring Boot backend PoC | Core / must practice | `lab-code/tenant-demo/`, `make app-run` | #3 | Skeleton |
-| Flyway migration baseline | Core / must practice | `V1-V3` migration chạy được | #3 | Skeleton |
+| Spring Boot backend PoC | Core / must practice | `lab-code/tenant-demo/`, `make app-run` | #3 | App start + Flyway baseline xong, TenantFilter chưa |
+| Flyway migration baseline | Core / must practice | `V1-V3` migration chạy được | #3 | Đã chạy V1-V3 |
 | TenantContext / TenantFilter | Core / must practice | Java implementation + curl/log proof | #3 | Skeleton |
 | Tenant-aware repository/service/controller | Core / must practice | MasterData API + curl proof | #4 | Skeleton |
 | Basic verification / curl / tests | Core / must practice | curl commands + `make app-test` | #4, #5, #7 | Chưa làm |
@@ -140,8 +140,8 @@ Mục tiêu: biến `lab-code/tenant-demo/` từ skeleton thành app Spring Boot
 
 ### Thứ Bảy 09/05 — Bootstrap app và Flyway baseline
 
-- [ ] `[THỰC HÀNH]` Tự hoàn thiện `lab-code/tenant-demo/pom.xml` và `application.yml` — dependencies Web, JPA, PostgreSQL, Flyway, Test; verify bằng `cd lab-code && make app-run`
-- [ ] `[THỰC HÀNH]` Tự code `TenantDemoApplication.java` và Flyway `V1`, `V2`, `V3` dựa trên SQL baseline; verify Flyway tạo bảng, không dùng Hibernate auto-create schema
+- [x] `[THỰC HÀNH]` Tự hoàn thiện `lab-code/tenant-demo/pom.xml` và `application.yml` — dependencies Web, JPA, PostgreSQL, Flyway, Test; verify bằng `cd lab-code && make app-run`
+- [x] `[THỰC HÀNH]` Tự code `TenantDemoApplication.java` và Flyway `V1`, `V2`, `V3` dựa trên SQL baseline; verify Flyway tạo bảng, không dùng Hibernate auto-create schema
 
 ### Chủ Nhật 10/05 — TenantContext và TenantFilter
 

@@ -15,6 +15,16 @@ scratch/
 *.bak
 *.tmp
 
+# File môi trường local, không commit secret thật
+.env
+**/.env
+.env.local
+**/.env.local
+
+# File build sinh bởi Maven/Gradle
+target/
+**/target/
+
 # File build từ LaTeX
 *.aux
 *.log
