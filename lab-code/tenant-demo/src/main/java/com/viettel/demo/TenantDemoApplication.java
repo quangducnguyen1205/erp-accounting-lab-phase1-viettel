@@ -1,10 +1,11 @@
 package com.viettel.demo;
 
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /*
  * ==============================================================
- * TODO TASK: Entry point của Spring Boot application
+ * Entry point của Spring Boot application
  * ==============================================================
  *
  * [Mục tiêu]
@@ -27,8 +28,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class TenantDemoApplication {
 
-    // TODO: Implement main method
     public static void main(String[] args) {
-        // Khởi chạy Spring Boot application
+        SpringApplication.run(TenantDemoApplication.class, args);
     }
 }

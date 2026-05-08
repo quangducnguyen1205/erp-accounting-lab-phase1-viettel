@@ -25,3 +25,5 @@
 -- ==============================================================
 
 -- Viết SQL migration ở đây:
+CREATE INDEX idx_master_data_tenant_category ON master_data (tenant_id, category);
+CREATE INDEX idx_master_data_tenant_active ON master_data (tenant_id, is_active);

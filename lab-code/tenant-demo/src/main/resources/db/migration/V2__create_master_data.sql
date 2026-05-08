@@ -23,3 +23,14 @@
 -- ==============================================================
 
 -- Viết SQL migration ở đây:
+CREATE TABLE master_data (
+    id BIGSERIAL PRIMARY KEY,
+    tenant_id BIGINT NOT NULL,
+    code VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    category VARCHAR(255) NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    CONSTRAINT fk_tenant FOREIGN KEY (tenant_id) REFERENCES tenants(id),
+    CONSTRAINT unique_tenant_code UNIQUE (tenant_id, code)
+)

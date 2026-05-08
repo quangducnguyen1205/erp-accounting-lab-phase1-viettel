@@ -32,6 +32,7 @@ spring:
     password: ${DB_PASSWORD:erpuser}
 
   jpa:
+    open-in-view: false
     hibernate:
       # Vì schema do Flyway quản lý, KHÔNG để Hibernate tự tạo/cập nhật bảng.
       # Giai đoạn này dùng `validate` để phát hiện entity không khớp schema.
