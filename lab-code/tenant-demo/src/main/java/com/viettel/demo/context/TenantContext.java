@@ -2,25 +2,23 @@ package com.viettel.demo.context;
 
 /*
  * ==============================================================
- * TODO TASK: Tenant Context — lưu tenant_id cho request hiện tại
+ * Tenant Context — lưu tenant_id cho request hiện tại
  * ==============================================================
  *
  * [Mục tiêu]
  * Trong multi-tenant, mỗi HTTP request phải mang theo tenant_id.
- * Class này lưu tenant_id vào một nơi mà TẤT CẢ các tầng
+ * Class này lưu tenant_id vào ThreadLocal để các tầng
  * (service, repository) có thể truy cập, mà không cần truyền
  * tenant_id qua parameter của mỗi method.
  *
- * [Nhiệm vụ của tôi]
- * 1. Tạo một biến static có thể lưu giá trị PER-THREAD
- *    (mỗi request có thread riêng → mỗi request có tenant_id riêng).
- * 2. Viết method: setCurrentTenant(Long tenantId)
- * 3. Viết method: getCurrentTenant() → Long
- * 4. Viết method: clear() — dọn dẹp sau khi request xong.
- *    Suy nghĩ: nếu không clear, chuyện gì xảy ra khi thread
- *    được reuse cho request khác?
+ * [Cách hoạt động hiện tại]
+ * 1. Mỗi thread xử lý request có một giá trị tenant riêng.
+ * 2. TenantFilter set tenant trước khi request đi vào controller.
+ * 3. Service/repository sau này có thể đọc tenant hiện tại.
+ * 4. TenantFilter phải gọi clear() sau request để tránh rò tenant
+ *    khi thread được tái sử dụng.
  *
- * [Kiến thức cần tự research]
+ * [Kiến thức đã áp dụng]
  * - java.lang.ThreadLocal<T>
  * - ThreadLocal.set(), ThreadLocal.get(), ThreadLocal.remove()
  * - Tại sao ThreadLocal phù hợp cho per-request context

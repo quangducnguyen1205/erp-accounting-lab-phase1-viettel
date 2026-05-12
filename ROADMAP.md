@@ -10,10 +10,10 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 40% |
+| **Tiến độ** | 42% |
 | **Tổng task** | 48 |
-| **Đã hoàn thành** | 19 / 48 |
-| **Focus hiện tại** | Verify TenantFilter + Entity/Repository tenant-aware |
+| **Đã hoàn thành** | 20 / 48 |
+| **Focus hiện tại** | Entity/Repository tenant-aware |
 | **Milestone tiếp theo** | #3 — Spring Boot Foundation |
 
 ---
@@ -52,9 +52,9 @@ Quyết định thiết kế Phase 1: demo runnable vẫn là Spring Boot + Post
 | Tenant isolation & data leakage | Core / must practice | `05-data-leakage-test.sql`, curl proof, `DataLeakageTest.java` | #1, #5 | SQL đã xong, test app chưa |
 | PostgreSQL schema, indexing, EXPLAIN | Core / must practice | SQL `01-04`, docs query plan | #1 | Đã xong baseline |
 | Migration, locking, rollback mindset | Important / mini-lab | `06-migration-lock-observation.sql`, summary ngắn | #2 | Đã đóng Milestone #2 |
-| Spring Boot backend PoC | Core / must practice | `lab-code/tenant-demo/`, `make app-run` | #3 | App start + Flyway baseline xong, TenantFilter đã code, cần verify khi Docker chạy |
+| Spring Boot backend PoC | Core / must practice | `lab-code/tenant-demo/`, `make app-run` | #3 | App start + Flyway baseline + TenantFilter verified |
 | Flyway migration baseline | Core / must practice | `V1-V3` migration chạy được | #3 | Đã chạy V1-V3 |
-| TenantContext / TenantFilter | Core / must practice | Java implementation + curl/log proof | #3 | Code đã xong, cần curl/log proof |
+| TenantContext / TenantFilter | Core / must practice | Java implementation + curl/log proof | #3 | Code + runtime proof đã xong |
 | Tenant-aware repository/service/controller | Core / must practice | MasterData API + curl proof | #4 | Skeleton |
 | Basic verification / curl / tests | Core / must practice | curl commands + `make app-test` | #4, #5, #7 | Chưa làm |
 | Auth/AuthZ, JWT, RBAC, Keycloak | Important / concise notes | Summary: tự implement vs Keycloak, RBAC tenant-scope | #5 | Có local context, chưa chuẩn hóa public |
@@ -146,7 +146,7 @@ Mục tiêu: biến `lab-code/tenant-demo/` từ skeleton thành app Spring Boot
 ### Chủ Nhật 10/05 — TenantContext và TenantFilter
 
 - [x] `[THỰC HÀNH]` Tự code `TenantContext.java` và `TenantFilter.java` — Phase 1 dùng `X-Tenant-Id`, clear bằng `finally`; không overdo JWT thật ở bước này
-- [ ] `[THỰC HÀNH]` Verify bằng curl/log: request có `X-Tenant-Id` thì app nhận đúng tenant; request thiếu/invalid header được xử lý rõ
+- [x] `[THỰC HÀNH]` Verify bằng curl/log: request có `X-Tenant-Id` thì app nhận đúng tenant; request thiếu/invalid header được xử lý rõ
 - [ ] `[BÁO CÁO]` Cập nhật `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` — thêm mục Spring Boot bootstrap, Flyway và TenantFilter
 
 ### Milestone #3 — Spring Boot Foundation

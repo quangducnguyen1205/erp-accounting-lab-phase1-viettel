@@ -2,28 +2,29 @@ package com.viettel.demo.config;
 
 /*
  * ==============================================================
- * TODO TASK: Tenant Filter — extract tenant_id từ mỗi request
+ * Tenant Filter — extract tenant_id từ mỗi request
  * ==============================================================
  *
  * [Mục tiêu]
  * Đây là Servlet Filter chạy TRƯỚC mọi request.
- * Nhiệm vụ: đọc JWT token từ header → giải mã → lấy tenant_id
- * → nạp vào TenantContext để các tầng sau dùng.
+ * Nhiệm vụ trong Phase 1: đọc header học tập X-Tenant-Id,
+ * validate giá trị tenant_id, rồi nạp vào TenantContext để
+ * các tầng sau dùng.
  *
- * [Nhiệm vụ của tôi]
- * 1. Kế thừa đúng base class của Spring để tạo một filter
- *    chạy 1 lần per request.
- * 2. Trong method filter:
- *    a. Lấy Authorization header từ request.
- *    b. Parse/giải mã JWT để lấy tenant_id.
- *       (Phase 1 có thể tạm dùng header đơn giản "X-Tenant-Id"
- *        thay vì JWT thật — đơn giản hóa để tập trung học flow.)
- *    c. Gọi TenantContext.setCurrentTenant(tenantId).
- *    d. Cho request đi tiếp qua filter chain.
- *    e. SAU KHI request xong → gọi TenantContext.clear().
- *       Suy nghĩ: bước này nằm ở đâu? try-finally?
+ * [Cách hoạt động hiện tại]
+ * 1. Kế thừa OncePerRequestFilter để filter chạy 1 lần per request.
+ * 2. Đọc X-Tenant-Id từ request header.
+ * 3. Chặn request thiếu/sai tenant bằng HTTP 400.
+ * 4. Gọi TenantContext.setCurrentTenant(tenantId).
+ * 5. Cho request đi tiếp qua filter chain.
+ * 6. SAU KHI request xong → gọi TenantContext.clear() trong finally.
  *
- * [Kiến thức cần tự research]
+ * [Ghi chú production]
+ * Hệ thống thật thường lấy tenant từ JWT/OIDC/session đã xác thực,
+ * không tin trực tiếp header giả lập. Phase 1 dùng X-Tenant-Id để
+ * tập trung học request flow và tenant isolation trước.
+ *
+ * [Kiến thức đã áp dụng]
  * - OncePerRequestFilter (Spring Web)
  * - doFilterInternal(HttpServletRequest, HttpServletResponse, FilterChain)
  * - FilterChain.doFilter(request, response)
@@ -50,9 +51,6 @@ import java.io.IOException;
 public class TenantFilter extends OncePerRequestFilter {
     private static final String TENANT_HEADER = "X-Tenant-Id";
 
-    // TODO: Kế thừa đúng base class
-
-    // TODO: Override method filter
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -90,13 +88,4 @@ public class TenantFilter extends OncePerRequestFilter {
             TenantContext.clear();
         }
     }
-
-    // TODO: Extract tenant_id từ header
-
-    // TODO: Set vào TenantContext
-
-    // TODO: filterChain.doFilter(...)
-
-    // TODO: Clear TenantContext trong finally block
-
 }
