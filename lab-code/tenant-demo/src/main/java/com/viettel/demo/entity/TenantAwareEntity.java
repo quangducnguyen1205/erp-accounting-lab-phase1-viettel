@@ -1,8 +1,13 @@
 package com.viettel.demo.entity;
 
+import com.viettel.demo.context.TenantContext;
+import jakarta.persistence.Column;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.PrePersist;
+
 /*
  * ==============================================================
- * TODO TASK: Base Entity — mọi entity nghiệp vụ kế thừa từ đây
+ * Base Entity — mọi entity nghiệp vụ có tenant_id kế thừa từ đây
  * ==============================================================
  *
  * [Mục tiêu]
@@ -11,11 +16,11 @@ package com.viettel.demo.entity;
  * mọi entity đều có cột tenant_id.
  *
  * [Nhiệm vụ của tôi]
- * 1. Đánh dấu class là JPA entity (mapped superclass).
+ * 1. Đánh dấu class là mapped superclass, không phải table riêng.
  * 2. Khai báo field tenantId (Long, NOT NULL).
  * 3. Tự động set tenantId từ TenantContext TRƯỚC KHI insert.
- *    Suy nghĩ: nếu developer quên set tenantId, dữ liệu sẽ
- *    thuộc tenant nào? → Cần auto-set.
+ * 4. Không đặt @Id ở base class này vì mỗi entity nghiệp vụ có thể
+ *    có chiến lược định danh riêng.
  *
  * [Kiến thức cần tự research]
  * - @MappedSuperclass (JPA)
@@ -26,11 +31,26 @@ package com.viettel.demo.entity;
  *
  * ==============================================================
  */
+@MappedSuperclass
+public abstract class TenantAwareEntity {
 
-public class TenantAwareEntity {
+    @Column(name = "tenant_id", nullable = false, updatable = false)
+    private Long tenantId;
 
-    // TODO: Khai báo field tenantId
+    public Long getTenantId() {
+        return tenantId;
+    }
 
-    // TODO: @PrePersist method để auto-set tenantId
+    protected void setTenantId(Long tenantId) {
+        this.tenantId = tenantId;
+    }
 
+    @PrePersist
+    protected void autoSetTenantId() {
+        Long currentTenantId = TenantContext.getCurrentTenant();
+        if (currentTenantId == null) {
+            throw new IllegalStateException("Tenant ID is not set");
+        }
+        this.tenantId = currentTenantId;
+    }
 }

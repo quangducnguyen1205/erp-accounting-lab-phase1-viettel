@@ -1,8 +1,18 @@
 package com.viettel.demo.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+
+import java.time.LocalDateTime;
+
 /*
  * ==============================================================
- * TODO TASK: MasterData Entity — entity nghiệp vụ đầu tiên
+ * MasterData Entity — entity nghiệp vụ đầu tiên
  * ==============================================================
  *
  * [Mục tiêu]
@@ -10,13 +20,12 @@ package com.viettel.demo.entity;
  * hoặc bất kỳ danh mục nào dùng chung trong ERP).
  * Entity này kế thừa TenantAwareEntity → tự có tenant_id.
  *
- * [Nhiệm vụ của tôi]
+ * [Cách mapping hiện tại]
  * 1. Kế thừa TenantAwareEntity.
  * 2. Đánh dấu là JPA @Entity, mapping với bảng master_data.
  * 3. Khai báo các field: id (PK), code, name, category,
  *    isActive, createdAt.
  * 4. Tạo unique constraint tenant-aware: (tenant_id, code).
- *    Suy nghĩ: annotation nào của JPA dùng cho unique trên nhiều cột?
  *
  * [Kiến thức cần tự research]
  * - @Entity, @Table (JPA)
@@ -28,13 +37,69 @@ package com.viettel.demo.entity;
  *
  * ==============================================================
  */
+@Entity
+@Table(name = "master_data",
+        uniqueConstraints = @UniqueConstraint(
+                name = "unique_tenant_code",
+                columnNames = {"tenant_id", "code"}))
+public class MasterData extends TenantAwareEntity{
 
-public class MasterData {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    // TODO: Kế thừa TenantAwareEntity
+    @Column(name = "code", nullable = false)
+    private String code;
 
-    // TODO: Khai báo fields
+    @Column(name = "name", nullable = false)
+    private String name;
 
-    // TODO: Unique constraint (tenant_id, code)
+    @Column(name = "category", nullable = false)
+    private String category;
 
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
+
+    @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean active) {
+        isActive = active;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 }

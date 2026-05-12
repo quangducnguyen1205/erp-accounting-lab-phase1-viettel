@@ -2,44 +2,48 @@ package com.viettel.demo.repository;
 
 /*
  * ==============================================================
- * TODO TASK: Base Repository — tự động filter theo tenant_id
+ * TenantAwareRepository — ghi chú học tập, chưa dùng trong Phase 1
  * ==============================================================
  *
  * [Mục tiêu]
- * Đây là TẦNG PHÒNG THỦ CHÍNH chống data leakage.
- * Mọi repository nghiệp vụ kế thừa class/interface này.
- * Khi gọi findAll(), findById(), ... → tự động thêm
- * WHERE tenant_id = <tenant hiện tại>.
+ * Ban đầu file này dùng để thử ý tưởng generic base repository.
+ * Sau khi review, mình tạm de-scope nó vì Phase 1 cần rõ ràng,
+ * dễ hiểu và tránh over-design.
  *
- * [Nhiệm vụ của tôi]
- * 1. Quyết định: dùng abstract class hay interface?
- *    - Nếu dùng Spring Data JPA: có thể dùng custom base repository.
- *    - Nếu dùng JPQL/EntityManager: có thể dùng abstract class.
- * 2. Override hoặc cung cấp method findAll() có tenant filter.
- * 3. Override hoặc cung cấp method findById() có tenant filter.
- *    Suy nghĩ: findById(id) mà KHÔNG check tenant_id → lỗ hổng gì?
- * 4. Tenant_id lấy từ đâu? → TenantContext.getCurrentTenant().
+ * [Bài học quan trọng]
+ * - @MappedSuperclass như TenantAwareEntity KHÔNG phải real @Entity.
+ * - JpaRepository phải trỏ tới entity thật, ví dụ MasterData.
+ * - Generic base repository muốn dùng đúng thường cần @NoRepositoryBean
+ *   và thiết kế custom cẩn thận hơn.
+ * - Trong repo này, MasterDataRepository sẽ trực tiếp extends
+ *   JpaRepository<MasterData, Long> và khai báo method có tenantId.
  *
- * [Kiến thức cần tự research]
+ * [Kiến thức cần học sau]
  * - Spring Data JPA: JpaRepository<T, ID>
+ * - @NoRepositoryBean
  * - @Query annotation (JPQL)
- * - Cách viết custom base repository trong Spring Data
- *   (search: "spring data jpa custom repository base class")
- * - Hoặc đơn giản hơn: dùng @Query("... WHERE e.tenantId = ?1")
- *   trên từng method
- * - Hibernate @Filter và @FilterDef (nâng cao — tùy chọn)
+ * - Custom base repository trong Spring Data
+ * - Hibernate @Filter và @FilterDef (nâng cao)
  * - Đọc lại: docs/02-multi-tenant/tinh-huong-va-trade-off.md
  *   (tình huống 2: quên tenant filter)
  *
  * ==============================================================
  */
 
-public interface TenantAwareRepository {
+import com.viettel.demo.entity.TenantAwareEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.NoRepositoryBean;
 
-    // TODO: Quyết định thiết kế (interface hay abstract class?)
+import java.util.List;
+import java.util.Optional;
 
-    // TODO: Method findAll có tenant filter
+@NoRepositoryBean
+public interface TenantAwareRepository<T extends TenantAwareEntity> extends JpaRepository<T, Long> {
 
-    // TODO: Method findById có tenant filter
+    // Hiện tại chưa dùng trong MasterDataRepository.
+    // Giữ lại để học pattern generic repository sau, khi thật sự cần.
 
+    List<T> findAllByTenantId(Long tenantId);
+
+    Optional<T> findByTenantIdAndId(Long tenantId, Long id);
 }

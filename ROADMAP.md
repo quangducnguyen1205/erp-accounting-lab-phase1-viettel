@@ -10,10 +10,10 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 42% |
+| **Tiến độ** | 44% |
 | **Tổng task** | 48 |
-| **Đã hoàn thành** | 20 / 48 |
-| **Focus hiện tại** | Entity/Repository tenant-aware |
+| **Đã hoàn thành** | 21 / 48 |
+| **Focus hiện tại** | Service/Controller tenant-aware + curl verification |
 | **Milestone tiếp theo** | #3 — Spring Boot Foundation |
 
 ---
@@ -55,7 +55,7 @@ Quyết định thiết kế Phase 1: demo runnable vẫn là Spring Boot + Post
 | Spring Boot backend PoC | Core / must practice | `lab-code/tenant-demo/`, `make app-run` | #3 | App start + Flyway baseline + TenantFilter verified |
 | Flyway migration baseline | Core / must practice | `V1-V3` migration chạy được | #3 | Đã chạy V1-V3 |
 | TenantContext / TenantFilter | Core / must practice | Java implementation + curl/log proof | #3 | Code + runtime proof đã xong |
-| Tenant-aware repository/service/controller | Core / must practice | MasterData API + curl proof | #4 | Skeleton |
+| Tenant-aware repository/service/controller | Core / must practice | MasterData API + curl proof | #4 | Entity/repository xong, service/controller chưa |
 | Basic verification / curl / tests | Core / must practice | curl commands + `make app-test` | #4, #5, #7 | Chưa làm |
 | Auth/AuthZ, JWT, RBAC, Keycloak | Important / concise notes | Summary: tự implement vs Keycloak, RBAC tenant-scope | #5 | Có local context, chưa chuẩn hóa public |
 | Service decomposition / modular monolith | Important / concise notes | Architecture note: modular monolith vs microservices | #6 | Có local context, chưa chuẩn hóa public |
@@ -168,7 +168,7 @@ Mục tiêu: có endpoint thật để chứng minh tenant-scoped data access. �
 
 ### Thứ Hai 11/05 — Entity và repository tenant-aware
 
-- [ ] `[THỰC HÀNH]` Tự code `TenantAwareEntity.java`, `MasterData.java`, `MasterDataRepository.java` — method explicit có `tenantId`; không overdo custom base repository nếu chưa cần
+- [x] `[THỰC HÀNH]` Tự code `TenantAwareEntity.java`, `MasterData.java`, `MasterDataRepository.java` — method explicit có `tenantId`; không overdo custom base repository nếu chưa cần
 - [ ] `[LÝ THUYẾT]` Ghi 3 rule backend query phải nhớ vào `docs/99-tong-ket/`: tenant từ trusted context, query luôn scoped, không tin request body
 
 ### Thứ Ba 12/05 → Thứ Tư 13/05 — Service, controller và curl verification

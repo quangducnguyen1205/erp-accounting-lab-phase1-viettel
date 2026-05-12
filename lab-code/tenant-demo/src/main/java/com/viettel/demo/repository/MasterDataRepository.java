@@ -2,35 +2,43 @@ package com.viettel.demo.repository;
 
 /*
  * ==============================================================
- * TODO TASK: MasterData Repository
+ * MasterData Repository
  * ==============================================================
  *
  * [Mục tiêu]
  * Repository cụ thể cho entity MasterData.
- * Kế thừa từ TenantAwareRepository (hoặc JpaRepository)
- * để đảm bảo mọi query đều tenant-aware.
+ * Giai đoạn học này dùng trực tiếp JpaRepository và khai báo
+ * các method tenant-aware rõ ràng, tránh generic base repository
+ * khi chưa thật sự cần.
  *
- * [Nhiệm vụ của tôi]
- * 1. Kế thừa đúng base repository đã tạo ở bước trước.
- * 2. Thêm method tìm theo category (trong phạm vi tenant).
- * 3. Thêm method tìm theo code (trong phạm vi tenant).
- *    Suy nghĩ: method signature nên là gì?
- *    findByCode(String code) hay findByTenantIdAndCode(Long tenantId, String code)?
+ * [Cách hoạt động hiện tại]
+ * 1. Repository trỏ trực tiếp tới real entity MasterData.
+ * 2. Query nghiệp vụ luôn nhận tenantId rõ ràng.
+ * 3. Không khai báo findByCode(...) hoặc findByCategory(...)
+ *    vì các method đó thiếu tenant scope và dễ gây data leakage.
  *
- * [Kiến thức cần tự research]
+ * [Kiến thức đã áp dụng]
  * - Spring Data JPA query derivation (method name → query)
- * - @Query annotation với JPQL
- * - Derived query: findByTenantIdAndCategory(Long, String)
+ * - JpaRepository<MasterData, Long>
+ * - Optional cho lookup có thể không tìm thấy dữ liệu
+ * - Derived query: findByTenantIdAndCategory(...)
  *
  * ==============================================================
  */
 
-public interface MasterDataRepository {
+import com.viettel.demo.entity.MasterData;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-    // TODO: Kế thừa base repository
+import java.util.List;
+import java.util.Optional;
 
-    // TODO: findByCategory (tenant-aware)
+public interface MasterDataRepository extends JpaRepository<MasterData, Long> {
 
-    // TODO: findByCode (tenant-aware)
+    List<MasterData> findByTenantIdAndIsActiveTrue(Long tenantId);
 
+    List<MasterData> findByTenantIdAndCategory(Long tenantId, String category);
+
+    Optional<MasterData> findByTenantIdAndCode(Long tenantId, String code);
+
+    Optional<MasterData> findByTenantIdAndId(Long tenantId, Long id);
 }
