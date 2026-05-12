@@ -36,11 +36,44 @@ package com.viettel.demo.config;
  * ==============================================================
  */
 
-public class TenantFilter {
+import com.viettel.demo.context.TenantContext;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
+import java.io.IOException;
+
+@Component
+public class TenantFilter extends OncePerRequestFilter {
+    private Long tenant_id;
+    private final TenantContext tenantContext;
+
+    public TenantFilter(TenantContext tenantContext) {
+        this.tenantContext = tenantContext;
+        this.tenant_id = null;
+    }
     // TODO: Kế thừa đúng base class
 
     // TODO: Override method filter
+    @Override
+    protected void doFilterInternal(
+            HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
+        String header = request.getHeader("X-Tenant-Id");
+        if (header != null) {
+            tenant_id = Long.parseLong(header);
+        }
+        tenantContext.setCurrentTenant(tenant_id);
+        try {
+            filterChain.doFilter(request, response);
+        } catch (IOException | ServletException e) {
+            throw new RuntimeException(e);
+        } finally {
+            tenantContext.clear();
+        }
+    }
 
     // TODO: Extract tenant_id từ header
 

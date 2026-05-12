@@ -31,14 +31,21 @@ package com.viettel.demo.context;
  * ==============================================================
  */
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class TenantContext {
 
     // TODO: Khai báo ThreadLocal
+    private static final ThreadLocal<Long> tenantIdThreadLocal = new ThreadLocal<>();
 
     // TODO: setCurrentTenant(Long tenantId)
+    public TenantContext() {}
+    public void setCurrentTenant(Long tenantId) { tenantIdThreadLocal.set(tenantId); }
 
     // TODO: getCurrentTenant() → Long
+    public Long getCurrentTenant() { return tenantIdThreadLocal.get(); }
 
     // TODO: clear()
-
+    public void clear() { tenantIdThreadLocal.remove(); }
 }
