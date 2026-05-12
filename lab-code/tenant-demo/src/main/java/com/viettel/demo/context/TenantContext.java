@@ -31,21 +31,30 @@ package com.viettel.demo.context;
  * ==============================================================
  */
 
-import org.springframework.stereotype.Component;
+public final class TenantContext {
 
-@Component
-public class TenantContext {
+    // ThreadLocal lưu tenant theo thread đang xử lý request.
+    // Vì server có thể tái sử dụng thread, TenantFilter bắt buộc phải gọi clear().
+    private static final ThreadLocal<Long> currentTenant = new ThreadLocal<>();
 
-    // TODO: Khai báo ThreadLocal
-    private static final ThreadLocal<Long> tenantIdThreadLocal = new ThreadLocal<>();
+    private TenantContext() {
+        // Utility class: không tạo object bằng new.
+    }
 
-    // TODO: setCurrentTenant(Long tenantId)
-    public TenantContext() {}
-    public void setCurrentTenant(Long tenantId) { tenantIdThreadLocal.set(tenantId); }
+    public static void setCurrentTenant(Long tenantId) {
+        if (tenantId == null) {
+            clear();
+            return;
+        }
 
-    // TODO: getCurrentTenant() → Long
-    public Long getCurrentTenant() { return tenantIdThreadLocal.get(); }
+        currentTenant.set(tenantId);
+    }
 
-    // TODO: clear()
-    public void clear() { tenantIdThreadLocal.remove(); }
+    public static Long getCurrentTenant() {
+        return currentTenant.get();
+    }
+
+    public static void clear() {
+        currentTenant.remove();
+    }
 }

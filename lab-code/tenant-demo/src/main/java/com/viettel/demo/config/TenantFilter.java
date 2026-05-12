@@ -48,30 +48,46 @@ import java.io.IOException;
 
 @Component
 public class TenantFilter extends OncePerRequestFilter {
-    private Long tenant_id;
-    private final TenantContext tenantContext;
+    private static final String TENANT_HEADER = "X-Tenant-Id";
 
-    public TenantFilter(TenantContext tenantContext) {
-        this.tenantContext = tenantContext;
-        this.tenant_id = null;
-    }
     // TODO: Kế thừa đúng base class
 
     // TODO: Override method filter
     @Override
     protected void doFilterInternal(
-            HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
-        String header = request.getHeader("X-Tenant-Id");
-        if (header != null) {
-            tenant_id = Long.parseLong(header);
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
+    ) throws ServletException, IOException {
+        String header = request.getHeader(TENANT_HEADER);
+
+        if (header == null || header.isBlank()) {
+            TenantContext.clear();
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing X-Tenant-Id header");
+            return;
         }
-        tenantContext.setCurrentTenant(tenant_id);
+
+        Long tenantId;
+        try {
+            tenantId = Long.parseLong(header.trim());
+        } catch (NumberFormatException e) {
+            TenantContext.clear();
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid X-Tenant-Id header");
+            return;
+        }
+
+        if (tenantId <= 0) {
+            TenantContext.clear();
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "X-Tenant-Id must be positive");
+            return;
+        }
+
+        TenantContext.setCurrentTenant(tenantId);
+
         try {
             filterChain.doFilter(request, response);
-        } catch (IOException | ServletException e) {
-            throw new RuntimeException(e);
         } finally {
-            tenantContext.clear();
+            TenantContext.clear();
         }
     }
 
