@@ -12,11 +12,11 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 45% |
+| **Tiến độ** | 51% |
 | **Tổng task** | 53 |
-| **Đã hoàn thành** | 24 / 53 |
-| **Focus hiện tại** | Đóng API tenant-aware, viết test chống leakage, chuẩn bị JWT tạm |
-| **Milestone tiếp theo** | #4 - Tenant-aware API Demo + leakage test |
+| **Đã hoàn thành** | 27 / 53 |
+| **Focus hiện tại** | DataLeakageTest / testing tenant isolation |
+| **Milestone tiếp theo** | #5 - Data leakage tests + temporary JWT + Keycloak awareness |
 | **Demo cuối Phase 1** | Spring Boot + PostgreSQL/Flyway + tenant-aware API + JWT tạm + React UI nhỏ |
 
 Ghi chú: phần trăm giảm so với roadmap cũ vì phạm vi Phase 1 được mở rộng lại theo sơ đồ kiến trúc target, gồm cả React UI, JWT tạm và awareness package cho các công nghệ nền.
@@ -62,7 +62,7 @@ Ghi chú: phần trăm giảm so với roadmap cũ vì phạm vi Phase 1 đượ
 ### Còn thiếu hoặc chưa đóng
 
 - `DataLeakageTest.java` vẫn là guided skeleton, chưa thành test pass thật.
-- `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` chưa có summary mới cho Spring Boot API/curl demo.
+- `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` đã có summary Milestone #4 cho Spring Boot tenant-aware API/curl demo.
 - Chưa có JWT/Spring Security tạm, chưa có Keycloak/OIDC awareness note public.
 - Chưa có React UI demo.
 - Chưa có public architecture coverage docs cho Redis, Kafka, Debezium, MinIO, Elasticsearch, gRPC, realtime, observability, LLM provider và external services.
@@ -108,7 +108,7 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 | Spring Boot backend | Core demo | `docs/04-spring-boot/` | `lab-code/tenant-demo/` | `make app-run` | #3, #4 | App/API cơ bản đã có |
 | Flyway | Core demo | `docs/04-spring-boot/spring-boot-bootstrap-config.md` | `V1-V3` migrations | Startup logs/Flyway logs | #3 | Đã chạy baseline |
 | TenantContext/TenantFilter | Core demo | `docs/04-spring-boot/request-filter-threadlocal.md` | `TenantContext.java`, `TenantFilter.java` | curl/log | #3 | Đã implement/review |
-| Tenant-aware service/controller | Core demo | `docs/04-spring-boot/service-controller-curl-flow.md` | `MasterDataService`, `MasterDataController` | curl tenant 1/2 | #4 | Đã implement/review |
+| Tenant-aware service/controller | Core demo | `docs/04-spring-boot/service-controller-curl-flow.md` | `MasterDataService`, `MasterDataController` | curl tenant 1/2 | #4 | Đã verify và đóng #4 |
 | Data leakage tests | Core demo | `docs/04-spring-boot/testing-tenant-isolation.md` | `DataLeakageTest.java` | `make app-test` | #4 | Skeleton, chưa tự code |
 | Temporary JWT auth | Core demo | `docs/05-security/jwt-spring-security-temporary.md` | Security config/filter/service TODO | curl valid/invalid JWT | #5 | Chưa có |
 | Keycloak/OAuth2/OIDC | Awareness | `docs/05-security/keycloak-oauth2-oidc-awareness.md` | Không chạy Keycloak | Summary + diagram | #5, #7 | Chưa có public note |
@@ -176,9 +176,9 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 
 Mục tiêu: biến phần API đã chạy được thành artifact báo cáo ngắn, rồi chuyển ngay sang test chống leakage.
 
-- [ ] `[BÁO CÁO]` Cập nhật `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` - thêm 3 rule backend tenant-aware: tenant từ trusted context, query luôn scoped, không tin `tenant_id` trong request body.
-- [ ] `[THỰC HÀNH]` Rerun ngắn: `cd lab-code && make db-up && make app-run`; verify curl tenant 1/2, missing/invalid tenant, cross-tenant id trả `404`; ghi pattern ngắn, không paste log dài.
-- [ ] `[MILESTONE]` Chốt Milestone #4 - API tenant-aware demo bằng curl, chưa tính JWT/React/test nâng cao.
+- [x] `[BÁO CÁO]` Cập nhật `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` - thêm 3 rule backend tenant-aware: tenant từ trusted context, query luôn scoped, không tin `tenant_id` trong request body.
+- [x] `[THỰC HÀNH]` Rerun ngắn: `cd lab-code && make db-up && make app-run`; verify curl tenant 1/2, missing/invalid tenant, cross-tenant id trả `404`; ghi pattern ngắn, không paste log dài.
+- [x] `[MILESTONE]` Chốt Milestone #4 - API tenant-aware demo bằng curl, chưa tính JWT/React/test nâng cao.
 
 ### Sprint 4 - 14/05 đến 15/05: Test chống leakage + chuẩn bị JWT
 
@@ -240,7 +240,7 @@ Mục tiêu: đóng gói để trình bày sớm, tránh sát deadline mới gom
 | 1 | 01/05 | SQL playground + tenant-aware data isolation proof | Đã đóng |
 | 2 | 08/05 | Migration & locking safety summary | Đã đóng |
 | 3 | 10/05 | Spring Boot start + Flyway + TenantFilter | Practice đã xong, summary gộp vào #4 |
-| 4 | 13/05 | Tenant-aware API demo + curl proof | Đang đóng |
+| 4 | 13/05 | Tenant-aware API demo + curl proof | Đã đóng |
 | 5 | 17/05 | Data leakage tests + temporary JWT + Keycloak awareness | Kế tiếp |
 | 6 | 19/05 | React UI tenant demo | Planned |
 | 7 | 21/05 | Target architecture awareness package | Planned |
