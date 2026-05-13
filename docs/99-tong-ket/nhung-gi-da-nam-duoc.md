@@ -220,3 +220,20 @@ File hỗ trợ test thủ công:
 
 - `docs/04-spring-boot/curl-va-http-client-api-testing.md`
 - `lab-code/tenant-demo/http/master-data-api.http`
+
+### Kết quả verify Milestone #4 ngày 13/05
+
+Đã verify API trên app đang chạy ở `localhost:8080` với dữ liệu local hiện tại:
+
+| Case | Kết quả |
+|---|---|
+| Tenant 1 list | `200`, response chỉ có `tenantId = 1` |
+| Tenant 2 list | `200`, response chỉ có `tenantId = 2` |
+| Missing `X-Tenant-Id` | `400 Bad Request` |
+| Invalid `X-Tenant-Id: abc` | `400 Bad Request` |
+| Tenant 1 tìm `code = LAPTOP-01` | trả record tenant 1 |
+| Tenant 2 tìm `code = LAPTOP-01` | trả record tenant 2 |
+| Tenant 1 gọi id `6` của tenant 2 | `404 Not Found`, không lộ dữ liệu |
+| Tenant 2 gọi id `6` | `200`, chứng minh record tồn tại nhưng scoped theo tenant |
+
+Kết luận: API hiện tại đã chứng minh được tenant-aware flow ở mức demo. Đây vẫn là cơ chế header-based bằng `X-Tenant-Id` để học request flow; bước sau mới chuyển sang JWT tạm và sau đó hiểu Keycloak/OIDC ở mức architecture awareness.

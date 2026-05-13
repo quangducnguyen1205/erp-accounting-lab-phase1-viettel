@@ -13,6 +13,7 @@
 @invalidTenant = abc
 @code = LAPTOP-01
 @category = Laptop
+@tenant2RecordId = 6
 
 ### List master data - tenant 1
 GET {{baseUrl}}/api/master-data
@@ -45,9 +46,29 @@ X-Tenant-Id: {{tenant1}}
 GET {{baseUrl}}/api/master-data/category/{{category}}
 X-Tenant-Id: {{tenant2}}
 
-### TODO: Cross-tenant id check
-# 1. Tạo hoặc tìm một id thuộc tenant 2.
-# 2. Gọi endpoint dưới đây với X-Tenant-Id: 1.
-# 3. Expected: 404, vì tenant 1 không được thấy record tenant 2.
-GET {{baseUrl}}/api/master-data/2
+### Cross-tenant id check - bước 1: lấy danh sách tenant 2
+# Chạy request này trước, nhìn response body và copy một field "id" của tenant 2.
+# Sau đó paste id đó vào biến @tenant2RecordId ở trên.
+#
+# Curl tương đương:
+# curl -i -H "X-Tenant-Id: 2" "http://localhost:8080/api/master-data"
+GET {{baseUrl}}/api/master-data
+X-Tenant-Id: {{tenant2}}
+
+### Cross-tenant id check - bước 2: tenant 1 thử truy cập id của tenant 2
+# Expected: 404 Not Found.
+# Ý nghĩa: record có tồn tại trong database, nhưng KHÔNG thuộc tenant 1,
+# nên API không được trả dữ liệu đó cho tenant 1.
+#
+# Curl tương đương:
+# curl -i -H "X-Tenant-Id: 1" "http://localhost:8080/api/master-data/{{tenant2RecordId}}"
+GET {{baseUrl}}/api/master-data/{{tenant2RecordId}}
 X-Tenant-Id: {{tenant1}}
+
+### Cross-tenant id check - bước 3: tenant 2 truy cập lại chính id đó
+# Expected: 200 OK nếu record vẫn active và đúng là thuộc tenant 2.
+# Request này giúp phân biệt:
+# - 404 ở bước 2 không phải vì record không tồn tại;
+# - 404 ở bước 2 là vì service/repository đã scope theo tenant hiện tại.
+GET {{baseUrl}}/api/master-data/{{tenant2RecordId}}
+X-Tenant-Id: {{tenant2}}
