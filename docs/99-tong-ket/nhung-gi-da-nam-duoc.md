@@ -237,3 +237,40 @@ File hỗ trợ test thủ công:
 | Tenant 2 gọi id `6` | `200`, chứng minh record tồn tại nhưng scoped theo tenant |
 
 Kết luận: API hiện tại đã chứng minh được tenant-aware flow ở mức demo. Đây vẫn là cơ chế header-based bằng `X-Tenant-Id` để học request flow; bước sau mới chuyển sang JWT tạm và sau đó hiểu Keycloak/OIDC ở mức architecture awareness.
+
+## Ngày 14/05: DataLeakageTest chống leakage
+
+Sau khi verify thủ công bằng curl/HTTP Client, phần tenant isolation đã được khóa lại bằng automated regression test trong `DataLeakageTest.java`.
+
+Test hiện dùng `@SpringBootTest` + `@AutoConfigureMockMvc` để request đi qua flow gần giống runtime:
+
+```text
+MockMvc
+-> TenantFilter
+-> Controller
+-> Service
+-> Repository
+-> PostgreSQL
+```
+
+### Kết quả chính
+
+`cd lab-code && make app-test` đã pass với 6 test:
+
+- Tenant 1 list chỉ trả dữ liệu `tenantId = 1`.
+- Tenant 2 list chỉ trả dữ liệu `tenantId = 2`.
+- Tenant 1 không truy cập được id thuộc tenant 2.
+- Query theo cùng `code = LAPTOP-01` vẫn scoped đúng theo tenant hiện tại.
+- Request thiếu `X-Tenant-Id` trả `400`.
+- Request có `X-Tenant-Id` không hợp lệ trả `400`.
+
+### Điểm học được
+
+- Curl chứng minh API đúng ở thời điểm hiện tại; test tự động giúp chống regression khi code thay đổi.
+- Test cần tự chuẩn bị fixture, không phụ thuộc dữ liệu local đang bẩn.
+- Với multi-tenant, happy path chưa đủ; phải test cả case cross-tenant access và missing/invalid tenant context.
+- `404` trong cross-tenant id case là hành vi tốt cho demo này: record có tồn tại ở tenant 2, nhưng tenant 1 không được thấy.
+
+### Giới hạn hiện tại
+
+Test hiện dùng PostgreSQL local của lab, chưa dùng Testcontainers hoặc test database tách riêng. Cách này đủ cho Phase 1 learning, nhưng khi dự án lớn hơn nên cân nhắc test profile/database riêng để không ảnh hưởng dữ liệu local dùng demo thủ công.

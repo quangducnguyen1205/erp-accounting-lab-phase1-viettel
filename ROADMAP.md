@@ -12,10 +12,10 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 51% |
+| **Tiến độ** | 57% |
 | **Tổng task** | 53 |
-| **Đã hoàn thành** | 27 / 53 |
-| **Focus hiện tại** | DataLeakageTest / testing tenant isolation |
+| **Đã hoàn thành** | 30 / 53 |
+| **Focus hiện tại** | Temporary JWT auth learning / skeleton |
 | **Milestone tiếp theo** | #5 - Data leakage tests + temporary JWT + Keycloak awareness |
 | **Demo cuối Phase 1** | Spring Boot + PostgreSQL/Flyway + tenant-aware API + JWT tạm + React UI nhỏ |
 
@@ -57,13 +57,14 @@ Ghi chú: phần trăm giảm so với roadmap cũ vì phạm vi Phase 1 đượ
 - `TenantContext` / `TenantFilter` đã implement và từng được runtime verify bằng header `X-Tenant-Id`.
 - Entity/repository layer đã có `TenantAwareEntity`, `MasterData`, `MasterDataRepository`; repository method chính đều có `tenantId`.
 - Service/controller layer hiện đã có API `master_data` tenant-aware cơ bản.
+- `DataLeakageTest.java` đã có 6 regression tests pass bằng `make app-test`.
 - Các note Spring Boot đã có trong `docs/04-spring-boot/`: filter/threadlocal, JPA entity/repository, service/controller, database stack, component/bean/DI.
 
 ### Còn thiếu hoặc chưa đóng
 
-- `DataLeakageTest.java` vẫn là guided skeleton, chưa thành test pass thật.
 - `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` đã có summary Milestone #4 cho Spring Boot tenant-aware API/curl demo.
-- Chưa có JWT/Spring Security tạm, chưa có Keycloak/OIDC awareness note public.
+- Đã có note chuẩn bị JWT tạm trong `docs/05-security/jwt-spring-security-temporary.md`, nhưng chưa implement Spring Security/JWT.
+- Chưa có Keycloak/OIDC awareness note public.
 - Chưa có React UI demo.
 - Chưa có public architecture coverage docs cho Redis, Kafka, Debezium, MinIO, Elasticsearch, gRPC, realtime, observability, LLM provider và external services.
 - `README.md` vẫn mô tả repo thiên về knowledge base; chưa phản ánh rõ demo fast-track mới.
@@ -109,8 +110,8 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 | Flyway | Core demo | `docs/04-spring-boot/spring-boot-bootstrap-config.md` | `V1-V3` migrations | Startup logs/Flyway logs | #3 | Đã chạy baseline |
 | TenantContext/TenantFilter | Core demo | `docs/04-spring-boot/request-filter-threadlocal.md` | `TenantContext.java`, `TenantFilter.java` | curl/log | #3 | Đã implement/review |
 | Tenant-aware service/controller | Core demo | `docs/04-spring-boot/service-controller-curl-flow.md` | `MasterDataService`, `MasterDataController` | curl tenant 1/2 | #4 | Đã verify và đóng #4 |
-| Data leakage tests | Core demo | `docs/04-spring-boot/testing-tenant-isolation.md` | `DataLeakageTest.java` | `make app-test` | #4 | Skeleton, chưa tự code |
-| Temporary JWT auth | Core demo | `docs/05-security/jwt-spring-security-temporary.md` | Security config/filter/service TODO | curl valid/invalid JWT | #5 | Chưa có |
+| Data leakage tests | Core demo | `docs/04-spring-boot/testing-tenant-isolation.md` | `DataLeakageTest.java` | `make app-test` | #4 | Đã pass 6 regression tests |
+| Temporary JWT auth | Core demo | `docs/05-security/jwt-spring-security-temporary.md` | Security config/filter/service TODO | curl valid/invalid JWT | #5 | Note chuẩn bị đã có, chưa implement |
 | Keycloak/OAuth2/OIDC | Awareness | `docs/05-security/keycloak-oauth2-oidc-awareness.md` | Không chạy Keycloak | Summary + diagram | #5, #7 | Chưa có public note |
 | RBAC/tenant-scope | Core concept + awareness | `docs/05-security/rbac-tenant-scope.md` | JWT tạm có claim đơn giản | curl/test role/tenant notes | #5 | Chưa có |
 | React frontend | Core demo | `docs/06-frontend/react-tenant-demo-ui.md` | `lab-code/tenant-ui/` | browser/UI + curl fallback | #6 | Chưa có |
@@ -184,10 +185,10 @@ Mục tiêu: biến phần API đã chạy được thành artifact báo cáo ng
 
 Mục tiêu: khóa lại correctness của backend trước khi đổi cơ chế tenant context từ header giả lập sang JWT tạm.
 
-- [ ] `[LÝ THUYẾT]` Tạo/read `docs/04-spring-boot/testing-tenant-isolation.md` từ Spring Boot testing/MockMvc docs - chỉ học đủ để viết test API tenant isolation.
-- [ ] `[THỰC HÀNH]` Tự code `DataLeakageTest.java` - tối thiểu: tenant A không thấy data B, missing/invalid tenant bị chặn, query by code vẫn scoped theo tenant.
-- [ ] `[REVIEW]` Nhờ Codex review `DataLeakageTest.java` sau khi `cd lab-code && make app-test` pass hoặc có lỗi rõ.
-- [ ] `[LÝ THUYẾT]` Tạo/read `docs/05-security/jwt-spring-security-temporary.md` từ Spring Security/JWT chuẩn - phân biệt JWT tạm trong lab với Keycloak/OIDC production.
+- [x] `[LÝ THUYẾT]` Tạo/read `docs/04-spring-boot/testing-tenant-isolation.md` từ Spring Boot testing/MockMvc docs - chỉ học đủ để viết test API tenant isolation.
+- [x] `[THỰC HÀNH]` Tự code `DataLeakageTest.java` - tối thiểu: tenant A không thấy data B, missing/invalid tenant bị chặn, query by code vẫn scoped theo tenant.
+- [x] `[REVIEW]` Nhờ Codex review `DataLeakageTest.java` sau khi `cd lab-code && make app-test` pass hoặc có lỗi rõ.
+- [ ] `[LÝ THUYẾT]` Đọc `docs/05-security/jwt-spring-security-temporary.md` từ Spring Security/JWT chuẩn - phân biệt JWT tạm trong lab với Keycloak/OIDC production.
 - [ ] `[SKELETON]` Nhờ Codex tạo skeleton/TODO comments cho security package, không tự động fill toàn bộ logic JWT.
 
 ### Sprint 5 - 16/05 đến 17/05: Temporary JWT auth + Keycloak awareness
@@ -256,7 +257,7 @@ Mục tiêu: đóng gói để trình bày sớm, tránh sát deadline mới gom
 | Multi-tenant | `docs/02-multi-tenant/*.md` |
 | PostgreSQL/backend DB | `docs/03-backend-database-mo-rong/*.md` |
 | Spring Boot learning notes | `docs/04-spring-boot/*.md` |
-| Security/JWT notes | `docs/05-security/` - tạo khi tới task JWT |
+| Security/JWT notes | `docs/05-security/` - đã có note JWT tạm, còn thiếu Keycloak/RBAC awareness |
 | React UI notes | `docs/06-frontend/` - tạo khi tới task UI |
 | Architecture awareness notes | `docs/07-architecture/` - tạo khi tới Sprint 7 |
 | Tổng kết tiến độ | `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` |
@@ -272,34 +273,27 @@ Mục tiêu: đóng gói để trình bày sớm, tránh sát deadline mới gom
 
 ## Việc làm ngay trong 1-2 ngày tới
 
-### Ngày 13/05
+### Ngày 14/05 - đã hoàn thành
 
-1. Mở `docs/99-tong-ket/nhung-gi-da-nam-duoc.md`.
-2. Ghi 3 rule backend tenant-aware và curl pattern ngắn cho Milestone #4.
-3. Chạy lại:
-
-```bash
-cd lab-code
-make db-up
-make app-run
-```
-
-4. Curl verify lại tenant 1/2, missing/invalid token/header theo cơ chế hiện tại.
-5. Nhờ Codex review summary nếu muốn đóng Milestone #4 thật gọn.
-
-### Ngày 14/05
-
-1. Mở `lab-code/tenant-demo/src/test/java/com/viettel/demo/DataLeakageTest.java`.
-2. Đọc/tạo note `docs/04-spring-boot/testing-tenant-isolation.md`.
-3. Tự code test bằng MockMvc hoặc cách test tối giản phù hợp.
-4. Verify:
+1. `DataLeakageTest.java` đã verify tenant 1/2, missing/invalid header, cross-tenant id và query by code scoped theo tenant.
+2. Verify:
 
 ```bash
 cd lab-code
 make app-test
 ```
 
-5. Sau khi pass hoặc có lỗi cụ thể, nhờ Codex review test và chuẩn bị note JWT/Spring Security.
+3. Summary đã cập nhật trong `docs/99-tong-ket/nhung-gi-da-nam-duoc.md`.
+
+### Ngày 15/05 - việc mở đầu JWT tạm
+
+1. Đọc `docs/05-security/jwt-spring-security-temporary.md`.
+2. Xác định dependency tối thiểu cần thêm cho Spring Security/JWT, chưa code vội.
+3. Nhờ Codex tạo skeleton/TODO comments cho security package nếu đã hiểu flow:
+   - `JwtTokenService`
+   - `JwtTenantFilter`
+   - `SecurityConfig`
+4. Sau skeleton, tự code từng bước và verify bằng curl token tenant 1/2.
 
 ---
 
