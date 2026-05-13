@@ -1,8 +1,17 @@
 package com.viettel.demo.service;
 
+import com.viettel.demo.context.TenantContext;
+import com.viettel.demo.entity.MasterData;
+import com.viettel.demo.repository.MasterDataRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+
 /*
  * ==============================================================
- * TODO TASK: MasterData Service — business logic layer
+ * MasterData Service — business logic layer
  * ==============================================================
  *
  * [Mục tiêu]
@@ -10,16 +19,12 @@ package com.viettel.demo.service;
  * Tầng này gọi Repository (đã tenant-aware) và cung cấp
  * API cho Controller.
  *
- * [Nhiệm vụ của tôi]
+ * [Cách hoạt động hiện tại]
  * 1. Inject MasterDataRepository.
- * 2. Viết method: getAll() → trả về tất cả master_data của tenant hiện tại.
- * 3. Viết method: getById(Long id) → trả về 1 record, verify thuộc tenant.
- * 4. Viết method: create(MasterData data) → tạo mới.
- *    Suy nghĩ: tenant_id được set ở đâu? Ở service hay ở entity @PrePersist?
- * 5. Viết method: update(Long id, MasterData data) → cập nhật.
- *    Suy nghĩ: cần verify ownership (id thuộc tenant hiện tại) không?
- * 6. Viết method: delete(Long id) → soft delete (set isActive = false).
- *    Suy nghĩ: tại sao không dùng hard delete trong hệ thống kế toán?
+ * 2. Lấy tenant hiện tại từ TenantContext, không lấy tenant từ body.
+ * 3. Gọi repository bằng các method có tenantId rõ ràng.
+ * 4. Tạo mới dựa vào @PrePersist để set tenant_id.
+ * 5. Update/delete đều tìm record trong phạm vi tenant trước.
  *
  * [Kiến thức cần tự research]
  * - @Service annotation
@@ -30,19 +35,80 @@ package com.viettel.demo.service;
  *
  * ==============================================================
  */
-
+@Service
 public class MasterDataService {
 
-    // TODO: Inject repository
+    private final MasterDataRepository repository;
 
-    // TODO: getAll()
+    public MasterDataService(MasterDataRepository repository) {
+        this.repository = repository;
+    }
 
-    // TODO: getById(Long id)
+    public List<MasterData> getAll() {
+        return repository.findByTenantIdAndIsActiveTrue(currentTenantId());
+    }
 
-    // TODO: create(...)
+    public MasterData getById(Long id) {
+        if (id == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID cannot be null");
+        }
+        return repository.findByTenantIdAndId(currentTenantId(), id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "MasterData not found"));
+    }
 
-    // TODO: update(Long id, ...)
+    public MasterData getByCode(String code) {
+        if (code == null || code.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Code cannot be blank");
+        }
+        return repository.findByTenantIdAndCode(currentTenantId(), code)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "MasterData not found"));
+    }
 
-    // TODO: delete(Long id) — soft delete
+    public List<MasterData> getByCategory(String category) {
+        if (category == null || category.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category cannot be blank");
+        }
+        return repository.findByTenantIdAndCategory(currentTenantId(), category);
+    }
 
+    public MasterData create(MasterData data) {
+        if (data == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "MasterData cannot be null");
+        }
+        // tenant_id sẽ được set tự động trong @PrePersist của entity.
+        return repository.save(data);
+    }
+
+    public MasterData update(Long id, MasterData data) {
+        if (id == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID cannot be null");
+        }
+        if (data == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "MasterData cannot be null");
+        }
+        MasterData existing = getById(id);
+        // Cập nhật các field cần thiết (code, name, category, isActive).
+        existing.setCode(data.getCode());
+        existing.setName(data.getName());
+        existing.setCategory(data.getCategory());
+        existing.setIsActive(data.getIsActive());
+        return repository.save(existing);
+    }
+
+    public void delete(Long id) {
+        if (id == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID cannot be null");
+        }
+        MasterData existing = getById(id);
+        existing.setIsActive(false);
+        repository.save(existing);
+    }
+
+    private Long currentTenantId() {
+        Long tenantId = TenantContext.getCurrentTenant();
+        if (tenantId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tenant context is missing");
+        }
+        return tenantId;
+    }
 }
