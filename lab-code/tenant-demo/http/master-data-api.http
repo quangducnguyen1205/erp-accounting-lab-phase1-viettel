@@ -1,0 +1,53 @@
+# HTTP Client requests cho MasterData API
+# Chạy trong IntelliJ IDEA bằng nút Run cạnh từng request.
+# Điều kiện: backend đang chạy ở http://localhost:8080.
+#
+# Lưu ý học tập:
+# - Phase hiện tại dùng header X-Tenant-Id thay cho JWT thật.
+# - Không paste output dài vào report; chỉ ghi status code và behavior chính.
+# - Nếu local data khác, đổi @code hoặc @category cho khớp dữ liệu của bạn.
+
+@baseUrl = http://localhost:8080
+@tenant1 = 1
+@tenant2 = 2
+@invalidTenant = abc
+@code = LAPTOP-01
+@category = Laptop
+
+### List master data - tenant 1
+GET {{baseUrl}}/api/master-data
+X-Tenant-Id: {{tenant1}}
+
+### List master data - tenant 2
+GET {{baseUrl}}/api/master-data
+X-Tenant-Id: {{tenant2}}
+
+### Missing X-Tenant-Id - expected 400
+GET {{baseUrl}}/api/master-data
+
+### Invalid X-Tenant-Id - expected 400
+GET {{baseUrl}}/api/master-data
+X-Tenant-Id: {{invalidTenant}}
+
+### Find by code trong tenant 1
+GET {{baseUrl}}/api/master-data/code/{{code}}
+X-Tenant-Id: {{tenant1}}
+
+### Find by code trong tenant 2
+GET {{baseUrl}}/api/master-data/code/{{code}}
+X-Tenant-Id: {{tenant2}}
+
+### Find by category trong tenant 1
+GET {{baseUrl}}/api/master-data/category/{{category}}
+X-Tenant-Id: {{tenant1}}
+
+### Find by category trong tenant 2
+GET {{baseUrl}}/api/master-data/category/{{category}}
+X-Tenant-Id: {{tenant2}}
+
+### TODO: Cross-tenant id check
+# 1. Tạo hoặc tìm một id thuộc tenant 2.
+# 2. Gọi endpoint dưới đây với X-Tenant-Id: 1.
+# 3. Expected: 404, vì tenant 1 không được thấy record tenant 2.
+GET {{baseUrl}}/api/master-data/2
+X-Tenant-Id: {{tenant1}}

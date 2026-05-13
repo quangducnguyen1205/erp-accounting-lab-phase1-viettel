@@ -178,3 +178,45 @@ Hướng học tiếp nên đi theo thứ tự:
 ## Kết luận
 
 Nền tảng SaaS và multi-tenant đã đủ rõ để chuyển sang giai đoạn học backend/database sâu hơn. Trọng tâm tiếp theo không phải học thêm thật nhiều khái niệm rời rạc, mà là thực hành có kiểm soát để thấy các trade-off xuất hiện trong code, query, migration và vận hành.
+
+## Milestone #4: Spring Boot tenant-aware API
+
+Milestone #4 chuyển bài học data leakage từ SQL playground sang backend API thật. API `master_data` hiện đi theo flow:
+
+```text
+Request
+-> TenantFilter đọc X-Tenant-Id
+-> TenantContext lưu tenant hiện tại
+-> Controller gọi Service
+-> Service gọi Repository bằng method có tenantId
+-> PostgreSQL chỉ trả dữ liệu trong phạm vi tenant đó
+```
+
+### 3 rule backend tenant-aware
+
+1. **Tenant phải lấy từ trusted context**, ví dụ `TenantContext` hiện tại hoặc JWT/OIDC đã validate sau này; không để request body tự quyết định tenant.
+2. **Repository query nghiệp vụ phải scoped theo `tenantId`**, ví dụ dùng `findByTenantIdAndCode(...)` thay vì `findByCode(...)`.
+3. **Backend phải enforce tenant isolation ở service/repository**, không dựa vào frontend, Swagger UI, Postman hay người dùng tự gửi đúng dữ liệu.
+
+Ví dụ thực tế trong demo:
+
+- Tìm master data theo code phải dùng `tenantId + code`, vì `LAPTOP-01` có thể tồn tại hợp lệ ở nhiều tenant.
+- Tenant 1 gọi `/api/master-data/{id}` với id thuộc tenant 2 nên trả `404`, không trả dữ liệu tenant 2.
+
+### Curl/HTTP Client verification pattern
+
+Không cần paste log dài vào report. Chỉ cần ghi pattern kiểm chứng:
+
+| Case | Request pattern | Expected behavior |
+|---|---|---|
+| Tenant 1 list | `GET /api/master-data` + `X-Tenant-Id: 1` | `200`, chỉ thấy data tenant 1 |
+| Tenant 2 list | `GET /api/master-data` + `X-Tenant-Id: 2` | `200`, chỉ thấy data tenant 2 |
+| Missing tenant | `GET /api/master-data` không có header | `400` |
+| Invalid tenant | `X-Tenant-Id: abc` | `400` |
+| Find by code | `GET /api/master-data/code/{code}` + tenant header | Kết quả scoped theo tenant hiện tại |
+| Cross-tenant id | Tenant 1 gọi id thuộc tenant 2 | `404` hoặc bị chặn, không lộ dữ liệu |
+
+File hỗ trợ test thủ công:
+
+- `docs/04-spring-boot/curl-va-http-client-api-testing.md`
+- `lab-code/tenant-demo/http/master-data-api.http`
