@@ -12,10 +12,10 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 57% |
+| **Tiến độ** | 60% |
 | **Tổng task** | 53 |
-| **Đã hoàn thành** | 30 / 53 |
-| **Focus hiện tại** | Temporary JWT auth learning / skeleton |
+| **Đã hoàn thành** | 32 / 53 |
+| **Focus hiện tại** | Temporary JWT auth self-code |
 | **Milestone tiếp theo** | #5 - Data leakage tests + temporary JWT + Keycloak awareness |
 | **Demo cuối Phase 1** | Spring Boot + PostgreSQL/Flyway + tenant-aware API + JWT tạm + React UI nhỏ |
 
@@ -63,7 +63,7 @@ Ghi chú: phần trăm giảm so với roadmap cũ vì phạm vi Phase 1 đượ
 ### Còn thiếu hoặc chưa đóng
 
 - `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` đã có summary Milestone #4 cho Spring Boot tenant-aware API/curl demo.
-- Đã có note chuẩn bị JWT tạm trong `docs/05-security/jwt-spring-security-temporary.md`, nhưng chưa implement Spring Security/JWT.
+- Đã có note và code skeleton chuẩn bị JWT tạm trong `docs/05-security/` và `lab-code/tenant-demo/src/main/java/com/viettel/demo/security/`, nhưng chưa implement Spring Security/JWT.
 - Chưa có Keycloak/OIDC awareness note public.
 - Chưa có React UI demo.
 - Chưa có public architecture coverage docs cho Redis, Kafka, Debezium, MinIO, Elasticsearch, gRPC, realtime, observability, LLM provider và external services.
@@ -111,7 +111,7 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 | TenantContext/TenantFilter | Core demo | `docs/04-spring-boot/request-filter-threadlocal.md` | `TenantContext.java`, `TenantFilter.java` | curl/log | #3 | Đã implement/review |
 | Tenant-aware service/controller | Core demo | `docs/04-spring-boot/service-controller-curl-flow.md` | `MasterDataService`, `MasterDataController` | curl tenant 1/2 | #4 | Đã verify và đóng #4 |
 | Data leakage tests | Core demo | `docs/04-spring-boot/testing-tenant-isolation.md` | `DataLeakageTest.java` | `make app-test` | #4 | Đã pass 6 regression tests |
-| Temporary JWT auth | Core demo | `docs/05-security/jwt-spring-security-temporary.md` | Security config/filter/service TODO | curl valid/invalid JWT | #5 | Note chuẩn bị đã có, chưa implement |
+| Temporary JWT auth | Core demo | `docs/05-security/jwt-spring-security-temporary.md` | Security config/filter/service TODO | curl valid/invalid JWT | #5 | Note + skeleton đã có, chưa implement |
 | Keycloak/OAuth2/OIDC | Awareness | `docs/05-security/keycloak-oauth2-oidc-awareness.md` | Không chạy Keycloak | Summary + diagram | #5, #7 | Chưa có public note |
 | RBAC/tenant-scope | Core concept + awareness | `docs/05-security/rbac-tenant-scope.md` | JWT tạm có claim đơn giản | curl/test role/tenant notes | #5 | Chưa có |
 | React frontend | Core demo | `docs/06-frontend/react-tenant-demo-ui.md` | `lab-code/tenant-ui/` | browser/UI + curl fallback | #6 | Chưa có |
@@ -188,8 +188,8 @@ Mục tiêu: khóa lại correctness của backend trước khi đổi cơ chế
 - [x] `[LÝ THUYẾT]` Tạo/read `docs/04-spring-boot/testing-tenant-isolation.md` từ Spring Boot testing/MockMvc docs - chỉ học đủ để viết test API tenant isolation.
 - [x] `[THỰC HÀNH]` Tự code `DataLeakageTest.java` - tối thiểu: tenant A không thấy data B, missing/invalid tenant bị chặn, query by code vẫn scoped theo tenant.
 - [x] `[REVIEW]` Nhờ Codex review `DataLeakageTest.java` sau khi `cd lab-code && make app-test` pass hoặc có lỗi rõ.
-- [ ] `[LÝ THUYẾT]` Đọc `docs/05-security/jwt-spring-security-temporary.md` từ Spring Security/JWT chuẩn - phân biệt JWT tạm trong lab với Keycloak/OIDC production.
-- [ ] `[SKELETON]` Nhờ Codex tạo skeleton/TODO comments cho security package, không tự động fill toàn bộ logic JWT.
+- [x] `[LÝ THUYẾT]` Đọc `docs/05-security/jwt-spring-security-temporary.md` từ Spring Security/JWT chuẩn - phân biệt JWT tạm trong lab với Keycloak/OIDC production.
+- [x] `[SKELETON]` Nhờ Codex tạo skeleton/TODO comments cho security package, không tự động fill toàn bộ logic JWT.
 
 ### Sprint 5 - 16/05 đến 17/05: Temporary JWT auth + Keycloak awareness
 
@@ -287,13 +287,13 @@ make app-test
 
 ### Ngày 15/05 - việc mở đầu JWT tạm
 
-1. Đọc `docs/05-security/jwt-spring-security-temporary.md`.
-2. Xác định dependency tối thiểu cần thêm cho Spring Security/JWT, chưa code vội.
-3. Nhờ Codex tạo skeleton/TODO comments cho security package nếu đã hiểu flow:
+1. Đã đọc `docs/05-security/jwt-spring-security-temporary.md`.
+2. Đã có skeleton/TODO comments cho security package:
    - `JwtTokenService`
    - `JwtTenantFilter`
    - `SecurityConfig`
-4. Sau skeleton, tự code từng bước và verify bằng curl token tenant 1/2.
+3. Việc tiếp theo: xác định dependency tối thiểu cần thêm cho Spring Security/JWT.
+4. Sau đó tự code từng bước và verify bằng curl token tenant 1/2.
 
 ---
 

@@ -24,6 +24,14 @@ package com.viettel.demo.config;
  * không tin trực tiếp header giả lập. Phase 1 dùng X-Tenant-Id để
  * tập trung học request flow và tenant isolation trước.
  *
+ * [Migration path sang JWT tạm]
+ * - Giữ filter này hoạt động cho đến khi JwtTenantFilter đã được tự code
+ *   và verify bằng test/curl.
+ * - Khi JWT flow sẵn sàng, tenant_id sẽ đến từ claim trong Bearer token,
+ *   không đến trực tiếp từ X-Tenant-Id.
+ * - Không bật đồng thời hai cơ chế một cách mơ hồ; cần quyết định rõ
+ *   request nào dùng header học tập, request nào dùng JWT.
+ *
  * [Kiến thức đã áp dụng]
  * - OncePerRequestFilter (Spring Web)
  * - doFilterInternal(HttpServletRequest, HttpServletResponse, FilterChain)
