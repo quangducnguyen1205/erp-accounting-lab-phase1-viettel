@@ -2,7 +2,7 @@
 
 > **Bắt đầu:** Thứ Ba 28/04/2026
 > **Deadline:** Thứ Hai 25/05/2026
-> **Cập nhật roadmap:** 13/05/2026
+> **Cập nhật roadmap:** 14/05/2026
 > **Chu kỳ báo cáo:** mỗi 2-3 ngày phải có output có thể trình bày
 > **Phương châm:** tự học + tự code trước, Codex tạo note/skeleton và review sau
 
@@ -12,10 +12,10 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 60% |
+| **Tiến độ** | 64% |
 | **Tổng task** | 53 |
-| **Đã hoàn thành** | 32 / 53 |
-| **Focus hiện tại** | Temporary JWT auth self-code |
+| **Đã hoàn thành** | 34 / 53 |
+| **Focus hiện tại** | Keycloak/OIDC + RBAC awareness summary |
 | **Milestone tiếp theo** | #5 - Data leakage tests + temporary JWT + Keycloak awareness |
 | **Demo cuối Phase 1** | Spring Boot + PostgreSQL/Flyway + tenant-aware API + JWT tạm + React UI nhỏ |
 
@@ -63,7 +63,7 @@ Ghi chú: phần trăm giảm so với roadmap cũ vì phạm vi Phase 1 đượ
 ### Còn thiếu hoặc chưa đóng
 
 - `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` đã có summary Milestone #4 cho Spring Boot tenant-aware API/curl demo.
-- Đã có note và code skeleton chuẩn bị JWT tạm trong `docs/05-security/` và `lab-code/tenant-demo/src/main/java/com/viettel/demo/security/`, nhưng chưa implement Spring Security/JWT.
+- JWT tạm đã implement bằng Spring Security Resource Server: Bearer token local, `tenant_id` claim, `JwtTenantContextFilter`, dev token endpoint và regression tests bằng MockMvc.
 - Chưa có Keycloak/OIDC awareness note public.
 - Chưa có React UI demo.
 - Chưa có public architecture coverage docs cho Redis, Kafka, Debezium, MinIO, Elasticsearch, gRPC, realtime, observability, LLM provider và external services.
@@ -111,7 +111,7 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 | TenantContext/TenantFilter | Core demo | `docs/04-spring-boot/request-filter-threadlocal.md` | `TenantContext.java`, `TenantFilter.java` | curl/log | #3 | Đã implement/review |
 | Tenant-aware service/controller | Core demo | `docs/04-spring-boot/service-controller-curl-flow.md` | `MasterDataService`, `MasterDataController` | curl tenant 1/2 | #4 | Đã verify và đóng #4 |
 | Data leakage tests | Core demo | `docs/04-spring-boot/testing-tenant-isolation.md` | `DataLeakageTest.java` | `make app-test` | #4 | Đã pass 6 regression tests |
-| Temporary JWT auth | Core demo | `docs/05-security/jwt-spring-security-temporary.md` | Security config/filter/service TODO | curl valid/invalid JWT | #5 | Note + skeleton đã có, chưa implement |
+| Temporary JWT auth | Core demo | `docs/05-security/jwt-spring-security-temporary.md` | `SecurityConfig`, `JwtTokenService`, `JwtTenantContextFilter`, dev token endpoint | MockMvc + runtime HTTP valid/invalid JWT | #5 | Đã implement + test pass |
 | Keycloak/OAuth2/OIDC | Awareness | `docs/05-security/keycloak-oauth2-oidc-awareness.md` | Không chạy Keycloak | Summary + diagram | #5, #7 | Chưa có public note |
 | RBAC/tenant-scope | Core concept + awareness | `docs/05-security/rbac-tenant-scope.md` | JWT tạm có claim đơn giản | curl/test role/tenant notes | #5 | Chưa có |
 | React frontend | Core demo | `docs/06-frontend/react-tenant-demo-ui.md` | `lab-code/tenant-ui/` | browser/UI + curl fallback | #6 | Chưa có |
@@ -195,8 +195,8 @@ Mục tiêu: khóa lại correctness của backend trước khi đổi cơ chế
 
 Mục tiêu: demo tenant context không còn dựa trực tiếp vào `X-Tenant-Id`, nhưng vẫn không overdo full Keycloak.
 
-- [ ] `[THỰC HÀNH]` Tự code JWT tạm: validate Bearer token local, đọc `tenant_id` claim, set `TenantContext`; giữ code rõ, không làm full auth platform.
-- [ ] `[THỰC HÀNH]` Verify bằng curl: token tenant 1 thấy data tenant 1, token tenant 2 thấy data tenant 2, missing/invalid token bị chặn.
+- [x] `[THỰC HÀNH]` Tự code JWT tạm: validate Bearer token local, đọc `tenant_id` claim, set `TenantContext`; giữ code rõ, không làm full auth platform.
+- [x] `[THỰC HÀNH]` Verify bằng curl: token tenant 1 thấy data tenant 1, token tenant 2 thấy data tenant 2, missing/invalid token bị chặn.
 - [ ] `[REVIEW]` Nhờ Codex review security flow: không tin request body, không hardcode secret thật, không nhầm JWT tạm với Keycloak production.
 - [ ] `[BÁO CÁO]` Ghi summary ngắn trong `docs/99-tong-ket/`: AuthN vs AuthZ, JWT, RBAC tenant-scope, Keycloak/OAuth2/OIDC dùng để làm gì.
 - [ ] `[MILESTONE]` Chốt Milestone #5 - backend tenant API có test leakage + JWT tạm + Keycloak awareness.

@@ -4,6 +4,8 @@
 
 Note này giúp hiểu phần cấu hình trước khi tự code JWT tạm. Mục tiêu không phải học full Spring Security, mà là biết chỗ nào validate token, chỗ nào set `TenantContext`, và vì sao config nên gom vào `JwtProperties`.
 
+Các khái niệm nền như `SecurityFilterChain`, `SecurityContext`, `Authentication` và stateless API được tách riêng trong `spring-security-core-concepts.md` để tránh lặp lại quá nhiều ở file này.
+
 ## SecurityConfig là gì?
 
 `SecurityConfig` là class cấu hình security cho Spring Boot app. Khi active, nó thường khai báo một `SecurityFilterChain` bean để nói với Spring Security:
@@ -13,7 +15,7 @@ Note này giúp hiểu phần cấu hình trước khi tự code JWT tạm. Mụ
 - app dùng cơ chế authentication nào;
 - custom filter nằm ở đâu trong security chain.
 
-Trong repo này, `SecurityConfig.java` hiện chỉ là skeleton. Chưa thêm `@Configuration`, chưa thêm dependency Spring Security, nên chưa thay đổi runtime.
+Trong repo này, `SecurityConfig.java` hiện đã active cho JWT tạm. Nó khai báo REST API stateless, cho phép dev token endpoint, bảo vệ `/api/master-data/**`, bật OAuth2 Resource Server JWT và gắn `JwtTenantContextFilter` sau bước Bearer token authentication.
 
 ## SecurityFilterChain là gì?
 
@@ -40,6 +42,8 @@ So với `TenantFilter` cũ:
 | Tenant đến từ header học tập | Tenant đến từ claim `tenant_id` đã validate |
 | Missing/invalid tenant trả `400` | Missing/invalid token thường trả `401` |
 | Dễ hiểu để học tenant flow | Gần production hơn nhưng vẫn chưa phải Keycloak |
+
+`TenantFilter` cũ chỉ active khi `app.jwt.enabled=false`, để tránh hai filter cùng set `TenantContext` trong một request.
 
 ## Vì sao phải validate JWT trước khi đọc tenant_id?
 
@@ -104,7 +108,7 @@ Trong repo này, `JwtProperties` bind các key:
 
 Các key này lấy default từ `application.yml`, và có thể override bằng env vars như `JWT_SECRET`, `JWT_ISSUER`.
 
-Trong skeleton hiện tại, `JwtProperties` dùng `@Component` để được Spring scan như một bean. Khi chuyển sang cấu hình security thật, có thể cân nhắc cách chuẩn hơn là `@EnableConfigurationProperties(JwtProperties.class)` trong một configuration class.
+Trong implementation hiện tại, `JwtProperties` dùng `@Component` để được Spring scan như một bean. Cách này đơn giản cho lab. Khi dự án lớn hơn, có thể cân nhắc cách chuẩn hơn là `@EnableConfigurationProperties(JwtProperties.class)` trong một configuration class.
 
 ## Secret local khác password user
 
@@ -112,21 +116,15 @@ Trong skeleton hiện tại, `JwtProperties` dùng `@Component` để được S
 
 Trong production với Keycloak/OIDC, backend thường không dùng shared secret kiểu demo. Backend validate token dựa trên issuer, audience và public keys/JWK do Identity Provider công bố.
 
-## Dependency hướng tới
+## Dependency đang dùng
 
-Khi thật sự implement, hướng sạch là dùng Spring Security OAuth2 Resource Server JWT thay vì tự parse token.
+Implementation hiện tại dùng `spring-boot-starter-oauth2-resource-server`. Dependency này kéo Spring Security và JWT support cần thiết để backend validate Bearer token.
 
-Tạm thời chưa thêm dependency để không làm đổi behavior hiện tại. Khi bắt đầu code, cần đọc lại docs và thêm tối thiểu các dependency phù hợp với Spring Boot version của project.
+Repo không thêm Keycloak adapter, không thêm full OAuth2 login, không thêm thư viện JWT custom riêng. Đây là lựa chọn cố ý để giữ task nhỏ và giải thích được.
 
 ## DataLeakageTest sẽ đổi thế nào?
 
-Hiện test gửi:
-
-```text
-X-Tenant-Id: 1
-```
-
-Sau khi JWT active, test nên gửi:
+Hiện test đã gửi:
 
 ```text
 Authorization: Bearer <token tenant 1>

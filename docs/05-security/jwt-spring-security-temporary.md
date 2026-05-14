@@ -15,6 +15,12 @@ Client
 
 Trong production, phần phát hành và quản lý token thường thuộc về Identity Provider như Keycloak. Trong lab này, JWT tạm chỉ giúp mình hiểu request flow và tenant context trước khi học Keycloak/OIDC đầy đủ.
 
+Nếu cần ôn thuật ngữ trước demo, đọc thêm:
+
+- `spring-security-core-concepts.md`
+- `oauth2-jwt-resource-server-concepts.md`
+- `jwt-implementation-walkthrough.md`
+
 ## AuthN và AuthZ
 
 | Khái niệm | Câu hỏi chính | Ví dụ trong demo |
@@ -135,26 +141,39 @@ HTTP request
 
 Ở task kế tiếp, mình chỉ cần làm mức tối thiểu để hiểu flow. Không thêm role matrix phức tạp, không tích hợp Keycloak thật, không làm refresh token.
 
-## Skeleton đề xuất cho task sau
+## Implementation hiện tại trong repo
 
-Không implement ngay trong note này. Khi bắt đầu code, có thể tạo các file theo hướng TODO:
+Task JWT tạm đã được implement ở mức lab:
 
 ```text
 lab-code/tenant-demo/src/main/java/com/viettel/demo/security/
 ├── JwtClaims.java             # object gom tenant_id, sub, roles sau validate
 ├── JwtProperties.java         # bind app.jwt từ application.yml/env vars
-├── JwtTokenService.java        # TODO: tạo dev token local, không tự validate production JWT
-├── JwtTenantContextFilter.java # TODO: đọc JWT đã validate từ SecurityContext, set TenantContext
-├── DevTokenController.java     # TODO: endpoint local-only nếu cần tạo token dev
-└── SecurityConfig.java         # TODO: cấu hình filter/security tối thiểu nếu dùng Spring Security
+├── JwtTokenService.java        # tạo dev token local, đọc claim từ Jwt đã validate
+├── JwtTenantContextFilter.java # đọc Jwt từ SecurityContext, set/clear TenantContext
+├── DevTokenController.java     # endpoint local-only để tạo token dev
+└── SecurityConfig.java         # stateless SecurityFilterChain + Resource Server JWT
 ```
 
-Checklist trước khi tự code:
+Flow implementation:
 
-- [ ] Đọc lại `TenantFilter` hiện tại để hiểu flow header-based.
-- [ ] Xác định dependency nào cần thêm, không thêm thừa.
-- [ ] Không hardcode secret thật; nếu có secret local thì dùng env var.
-- [ ] Token thiếu/sai/hết hạn phải bị chặn.
+```text
+Authorization: Bearer <token>
+-> Spring Security validate chữ ký/expiration/issuer
+-> JwtTenantContextFilter đọc tenant_id từ Jwt đã validate
+-> TenantContext.setCurrentTenant(tenantId)
+-> Service/Repository query tenant-aware như trước
+-> finally TenantContext.clear()
+```
+
+`TenantFilter` header-based cũ vẫn được giữ để học lại flow ban đầu, nhưng chỉ active khi `app.jwt.enabled=false`. Khi JWT bật, backend không đọc `X-Tenant-Id` làm tenant context chính nữa.
+
+Checklist khi verify:
+
+- [ ] `JWT_ENABLED=true`.
+- [ ] `JWT_SECRET` đủ dài và không phải secret production.
+- [ ] `JWT_DEV_TOKEN_ENABLED=true` nếu muốn dùng endpoint `/api/dev/tokens/...`.
+- [ ] Missing/invalid token trả `401`.
 - [ ] Token tenant 1 chỉ thấy data tenant 1.
 - [ ] Token tenant 2 chỉ thấy data tenant 2.
 - [ ] Request body không được quyết định `tenant_id`.

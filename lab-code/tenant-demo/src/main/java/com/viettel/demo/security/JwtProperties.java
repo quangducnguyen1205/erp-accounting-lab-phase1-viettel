@@ -3,6 +3,10 @@ package com.viettel.demo.security;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+
 /*
  * ==============================================================
  * JwtProperties — bind config JWT từ application.yml/env vars
@@ -27,7 +31,7 @@ import org.springframework.stereotype.Component;
  * - JWT_SECRET là secret local để ký/verify token tạm.
  * - Trong production/Keycloak, backend thường validate token qua issuer/JWK,
  *   không tự giữ shared secret kiểu lab này.
- * - Class này compile và bind được, nhưng JWT feature chưa active.
+ * - Secret ở đây KHÔNG phải password user.
  *
  * ==============================================================
  */
@@ -79,5 +83,22 @@ public class JwtProperties {
 
     public void setDevTokenEnabled(boolean devTokenEnabled) {
         this.devTokenEnabled = devTokenEnabled;
+    }
+
+    /*
+     * HS256 cần secret đủ dài để tránh key quá yếu.
+     * Đây là kiểm tra tối thiểu cho lab, không phải key management production.
+     */
+    public SecretKey hmacSecretKey() {
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException("JWT_SECRET must be configured when JWT is enabled");
+        }
+
+        byte[] secretBytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (secretBytes.length < 32) {
+            throw new IllegalStateException("JWT_SECRET should be at least 32 bytes for HS256");
+        }
+
+        return new SecretKeySpec(secretBytes, "HmacSHA256");
     }
 }

@@ -3,7 +3,8 @@
 # Điều kiện: backend đang chạy ở http://localhost:8080.
 #
 # Lưu ý học tập:
-# - Phase hiện tại dùng header X-Tenant-Id thay cho JWT thật.
+# - File này là legacy flow dùng X-Tenant-Id khi app.jwt.enabled=false.
+# - Flow chính sau task JWT nằm ở jwt-api.http với Authorization: Bearer.
 # - Không paste output dài vào report; chỉ ghi status code và behavior chính.
 # - Nếu local data khác, đổi @code hoặc @category cho khớp dữ liệu của bạn.
 

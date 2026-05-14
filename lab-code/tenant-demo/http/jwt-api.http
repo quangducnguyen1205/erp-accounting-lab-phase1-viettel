@@ -1,9 +1,8 @@
 # HTTP Client requests cho JWT tạm
-# Chạy trong IntelliJ IDEA sau khi bạn đã tự implement JWT flow.
+# Chạy trong IntelliJ IDEA sau khi backend đang chạy.
 #
-# Hiện tại backend vẫn dùng X-Tenant-Id qua TenantFilter.
-# Sau khi JWT active, các request chỉ dùng Authorization: Bearer.
-# File này là skeleton verify cho task JWT kế tiếp, không phải bằng chứng JWT đã xong.
+# Flow chính hiện tại dùng Authorization: Bearer.
+# Header X-Tenant-Id chỉ còn là legacy mode khi app.jwt.enabled=false.
 
 @baseUrl = http://localhost:8080
 @jwtTenant1 = TODO_PASTE_TOKEN_TENANT_1
@@ -12,13 +11,15 @@
 @code = LAPTOP-01
 @tenant2RecordId = TODO_COPY_TENANT_2_RECORD_ID
 
-### TODO: tạo/lấy dev token tenant 1
-# Nếu bạn tạo dev endpoint, request có thể giống:
-# GET {{baseUrl}}/api/dev/tokens/tenant-1
+### Tạo/lấy dev token tenant 1
+# Cần JWT_DEV_TOKEN_ENABLED=true trong .env.
+# Copy accessToken trong response vào biến @jwtTenant1 ở trên.
+GET {{baseUrl}}/api/dev/tokens/tenant-1
 
-### TODO: tạo/lấy dev token tenant 2
-# Nếu bạn tạo dev endpoint, request có thể giống:
-# GET {{baseUrl}}/api/dev/tokens/tenant-2
+### Tạo/lấy dev token tenant 2
+# Cần JWT_DEV_TOKEN_ENABLED=true trong .env.
+# Copy accessToken trong response vào biến @jwtTenant2 ở trên.
+GET {{baseUrl}}/api/dev/tokens/tenant-2
 
 ### JWT tenant 1 - list master data
 # Expected sau khi JWT active: 200, chỉ thấy data tenant 1.
@@ -31,11 +32,9 @@ GET {{baseUrl}}/api/master-data
 Authorization: Bearer {{jwtTenant2}}
 
 ### Missing Authorization - expected 401 sau khi JWT active
-# Hiện tại có thể vẫn trả 400 do TenantFilter header-based còn active.
 GET {{baseUrl}}/api/master-data
 
 ### Invalid Authorization - expected 401 sau khi JWT active
-# Hiện tại có thể vẫn trả 400 do TenantFilter header-based còn active.
 GET {{baseUrl}}/api/master-data
 Authorization: Bearer {{invalidJwt}}
 

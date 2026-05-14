@@ -57,17 +57,17 @@ logging:
 # JWT tạm cho Sprint security
 # ==============================================================
 #
-# Hiện tại các giá trị này chỉ là config chuẩn bị, chưa được production code đọc.
-# Không hardcode secret thật trong file này. Nếu tự implement JWT, đọc giá trị
-# từ environment variables hoặc `.env` đã được Makefile load vào process.
+# Đây là JWT tạm cho local lab, KHÔNG phải Keycloak/OIDC production.
+# Không hardcode secret thật trong file này. Khi chạy nghiêm túc hơn,
+# copy `.env.example` thành `.env` và đổi JWT_SECRET.
 #
 # JWT_SECRET là secret/private key local để ký/verify token tạm.
 # Nó KHÔNG phải password user.
 #
 app:
   jwt:
-    enabled: ${JWT_ENABLED:false}
-    secret: ${JWT_SECRET:}
+    enabled: ${JWT_ENABLED:true}
+    secret: ${JWT_SECRET:local-learning-secret-change-me-32-characters-minimum}
     issuer: ${JWT_ISSUER:tenant-demo-local}
     expiration-seconds: ${JWT_EXPIRATION_SECONDS:3600}
     dev-token-enabled: ${JWT_DEV_TOKEN_ENABLED:false}

@@ -1,51 +1,108 @@
 package com.viettel.demo.security;
 
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 /*
  * ==============================================================
- * JwtTokenService — TODO skeleton cho dev token local
+ * JwtTokenService — tạo dev token và đọc claim đã validate
  * ==============================================================
  *
- * [Thiết kế khuyến nghị]
- * Không dùng service này để tự viết JWT parser/validator thủ công.
+ * [Vai trò trong lab]
+ * Service này KHÔNG tự parse/verify JWT thủ công.
+ * Spring Security Resource Server/JwtDecoder chịu trách nhiệm validate
+ * chữ ký, expiration và issuer trước.
  *
- * JWT validation nên để Spring Security Resource Server/JwtDecoder xử lý.
- * Service này, nếu dùng, chỉ nên phục vụ phần local learning như:
+ * Service này chỉ làm hai việc học tập:
  * 1. tạo dev token cho tenant 1/tenant 2;
- * 2. gom logic tạo claim mẫu;
- * 3. hỗ trợ DevTokenController local-only.
- *
- * [Nguồn config dự kiến]
- * - JwtProperties.enabled
- * - JwtProperties.secret
- * - JwtProperties.issuer
- * - JwtProperties.expirationSeconds
- * - JwtProperties.devTokenEnabled
+ * 2. đọc claim từ Jwt object đã validate để JwtTenantContextFilter dùng.
  *
  * [Quan trọng]
  * - JWT_SECRET không phải password user.
  * - Không hardcode secret thật trong code.
  * - Không nhầm JWT tạm với Keycloak/OIDC production.
  *
- * [TODO khi bắt đầu code]
- * TODO 1: Chọn dependency JWT tối thiểu sau khi đọc lại docs.
- * TODO 2: Inject JwtProperties thay vì rải rác @Value.
- * TODO 3: Viết method tạo dev token cho tenant 1/tenant 2 nếu cần.
- * TODO 4: Không tự validate token ở đây nếu đã dùng Spring Security JwtDecoder.
- * TODO 5: Viết test/curl verification trước khi thay TenantFilter.
- *
- * Gợi ý method signature, chưa cần mở comment ngay:
- *
- * String createDevToken(Long tenantId, String subject)
- *
  * ==============================================================
  */
+@Service
 public class JwtTokenService {
-    /*
-     * TODO: Tự implement ở task sau.
-     *
-     * Giữ class rỗng ở bước skeleton để:
-     * - không kéo dependency JWT/Spring Security quá sớm;
-     * - không làm thay đổi runtime behavior hiện tại;
-     * - không phá DataLeakageTest đang dùng X-Tenant-Id.
-     */
+
+    private final JwtEncoder jwtEncoder;
+    private final JwtProperties jwtProperties;
+
+    public JwtTokenService(JwtEncoder jwtEncoder, JwtProperties jwtProperties) {
+        this.jwtEncoder = jwtEncoder;
+        this.jwtProperties = jwtProperties;
+    }
+
+    public String createDevToken(Long tenantId, String subject) {
+        return createDevToken(tenantId, subject, List.of("USER"));
+    }
+
+    public String createDevToken(Long tenantId, String subject, List<String> roles) {
+        if (tenantId == null || tenantId <= 0) {
+            throw new IllegalArgumentException("tenantId must be positive");
+        }
+        if (subject == null || subject.isBlank()) {
+            throw new IllegalArgumentException("subject cannot be blank");
+        }
+
+        Instant now = Instant.now();
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .issuer(jwtProperties.getIssuer())
+                .issuedAt(now)
+                .expiresAt(now.plusSeconds(jwtProperties.getExpirationSeconds()))
+                .subject(subject)
+                .claim("tenant_id", tenantId)
+                .claim("roles", roles == null ? List.of() : roles)
+                .build();
+
+        JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
+        return jwtEncoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
+    }
+
+    public JwtClaims extractClaims(Jwt jwt) {
+        Objects.requireNonNull(jwt, "jwt must not be null");
+        return new JwtClaims(
+                extractTenantId(jwt),
+                jwt.getSubject(),
+                extractRoles(jwt)
+        );
+    }
+
+    private Long extractTenantId(Jwt jwt) {
+        Object rawTenantId = jwt.getClaim("tenant_id");
+        if (rawTenantId instanceof Number number) {
+            return number.longValue();
+        }
+        if (rawTenantId instanceof String text && !text.isBlank()) {
+            return Long.parseLong(text);
+        }
+        throw new IllegalArgumentException("tenant_id claim is missing or invalid");
+    }
+
+    private List<String> extractRoles(Jwt jwt) {
+        Object rawRoles = jwt.getClaim("roles");
+        if (!(rawRoles instanceof List<?> values)) {
+            return List.of();
+        }
+
+        List<String> roles = new ArrayList<>();
+        for (Object value : values) {
+            if (value != null) {
+                roles.add(value.toString());
+            }
+        }
+        return roles;
+    }
 }

@@ -1,39 +1,81 @@
 package com.viettel.demo.security;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 /*
  * ==============================================================
- * DevTokenController — TODO skeleton tạo token local cho học tập
+ * DevTokenController — endpoint tạo token local cho học tập
  * ==============================================================
  *
- * [Trạng thái hiện tại]
- * Class này CHƯA active:
- * - chưa có @RestController;
- * - chưa có @RequestMapping;
- * - chưa tạo token thật.
- *
- * [Mục tiêu nếu cần ở task sau]
- * Tạo endpoint local/demo-only để lấy token tenant 1 và tenant 2,
- * giúp curl/HTTP Client verify JWT flow mà chưa cần Keycloak thật.
+ * [Vai trò]
+ * Endpoint local/demo-only để lấy token tenant 1 và tenant 2,
+ * giúp curl/HTTP Client verify JWT flow khi chưa có Keycloak thật.
  *
  * Ví dụ endpoint có thể cân nhắc:
  * - GET /api/dev/tokens/tenant-1
  * - GET /api/dev/tokens/tenant-2
+ * - GET /api/dev/tokens/tenant/{tenantId}
  *
  * [Cảnh báo]
  * - Endpoint này chỉ dành cho local learning.
- * - Phải bị tắt bằng config như app.jwt.dev-token-enabled=false theo mặc định.
+ * - Có thể tắt bằng app.jwt.dev-token-enabled=false.
  * - Không đưa dev token endpoint vào production.
- *
- * [TODO khi tự code]
- * TODO 1: Inject JwtProperties và helper tạo token.
- * TODO 2: Chỉ bật controller nếu dev-token-enabled=true.
- * TODO 3: Tạo token có sub, tenant_id, roles, iss, iat, exp.
- * TODO 4: Không log token trong production/report công khai.
  *
  * ==============================================================
  */
+@RestController
+@RequestMapping("/api/dev/tokens")
 public class DevTokenController {
-    /*
-     * TODO: Tự implement ở task sau nếu bạn chọn có dev token endpoint.
-     */
+
+    private final JwtTokenService jwtTokenService;
+    private final JwtProperties jwtProperties;
+
+    public DevTokenController(JwtTokenService jwtTokenService, JwtProperties jwtProperties) {
+        this.jwtTokenService = jwtTokenService;
+        this.jwtProperties = jwtProperties;
+    }
+
+    @GetMapping("/tenant-1")
+    public Map<String, Object> tenantOneToken() {
+        return createTokenResponse(1L);
+    }
+
+    @GetMapping("/tenant-2")
+    public Map<String, Object> tenantTwoToken() {
+        return createTokenResponse(2L);
+    }
+
+    @GetMapping("/tenant/{tenantId}")
+    public Map<String, Object> tokenForTenant(@PathVariable Long tenantId) {
+        return createTokenResponse(tenantId);
+    }
+
+    private Map<String, Object> createTokenResponse(Long tenantId) {
+        if (!jwtProperties.isDevTokenEnabled()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Dev token endpoint is disabled");
+        }
+        if (tenantId == null || tenantId <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "tenantId must be positive");
+        }
+
+        String subject = "dev-user-tenant-" + tenantId;
+        String token = jwtTokenService.createDevToken(tenantId, subject, List.of("USER"));
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("tokenType", "Bearer");
+        response.put("accessToken", token);
+        response.put("tenantId", tenantId);
+        response.put("subject", subject);
+        response.put("expiresIn", jwtProperties.getExpirationSeconds());
+        return response;
+    }
 }

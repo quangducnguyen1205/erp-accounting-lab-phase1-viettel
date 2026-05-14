@@ -274,3 +274,39 @@ MockMvc
 ### Giới hạn hiện tại
 
 Test hiện dùng PostgreSQL local của lab, chưa dùng Testcontainers hoặc test database tách riêng. Cách này đủ cho Phase 1 learning, nhưng khi dự án lớn hơn nên cân nhắc test profile/database riêng để không ảnh hưởng dữ liệu local dùng demo thủ công.
+
+## Ngày 14/05: JWT tạm cho tenant context
+
+Sau khi API tenant-aware đã chạy bằng `X-Tenant-Id`, demo được nâng lên một bước gần thực tế hơn: dùng `Authorization: Bearer <token>` để xác thực request ở mức lab, sau đó lấy `tenant_id` từ JWT claim đã validate.
+
+Flow hiện tại:
+
+```text
+Request có Bearer token
+-> Spring Security validate JWT
+-> SecurityContext chứa Jwt đã validate
+-> JwtTenantContextFilter đọc tenant_id
+-> TenantContext.setCurrentTenant(...)
+-> Service/Repository query theo tenantId
+```
+
+### Điểm đã verify
+
+`DataLeakageTest.java` đã được chuyển từ header `X-Tenant-Id` sang Bearer JWT và pass 6 test:
+
+- Token tenant 1 chỉ thấy dữ liệu tenant 1.
+- Token tenant 2 chỉ thấy dữ liệu tenant 2.
+- Tenant 1 không truy cập được id thuộc tenant 2.
+- Query theo cùng `code = LAPTOP-01` vẫn scoped đúng theo tenant hiện tại.
+- Request thiếu token trả `401`.
+- Request dùng token sai trả `401`.
+
+Runtime HTTP cũng đã verify pattern tương tự: dev token tenant 1/2 gọi API thành công, missing/invalid token bị chặn, cross-tenant id trả `404`.
+
+### Điều cần nhớ
+
+- JWT tạm này không phải Keycloak/OIDC production.
+- `JWT_SECRET` là secret local để ký/verify token, không phải password user.
+- Backend chỉ tin `tenant_id` sau khi JWT đã được validate.
+- `TenantContext.clear()` vẫn cần chạy sau request để tránh rò tenant giữa các request/thread.
+- Index và JWT không thay thế tenant-aware repository query; service/repository vẫn phải query theo `tenantId`.

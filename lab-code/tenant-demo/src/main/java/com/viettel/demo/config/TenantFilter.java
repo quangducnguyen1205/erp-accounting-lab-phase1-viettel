@@ -25,12 +25,11 @@ package com.viettel.demo.config;
  * tập trung học request flow và tenant isolation trước.
  *
  * [Migration path sang JWT tạm]
- * - Giữ filter này hoạt động cho đến khi JwtTenantFilter đã được tự code
- *   và verify bằng test/curl.
+ * - Filter này chỉ active khi app.jwt.enabled=false.
  * - Khi JWT flow sẵn sàng, tenant_id sẽ đến từ claim trong Bearer token,
  *   không đến trực tiếp từ X-Tenant-Id.
- * - Không bật đồng thời hai cơ chế một cách mơ hồ; cần quyết định rõ
- *   request nào dùng header học tập, request nào dùng JWT.
+ * - Không bật đồng thời hai cơ chế một cách mơ hồ; cấu hình hiện tại
+ *   ưu tiên JWT tạm và giữ filter này như legacy fallback cho học tập.
  *
  * [Kiến thức đã áp dụng]
  * - OncePerRequestFilter (Spring Web)
@@ -50,12 +49,14 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
 @Component
+@ConditionalOnProperty(name = "app.jwt.enabled", havingValue = "false")
 public class TenantFilter extends OncePerRequestFilter {
     private static final String TENANT_HEADER = "X-Tenant-Id";
 

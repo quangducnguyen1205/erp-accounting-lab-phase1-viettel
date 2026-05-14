@@ -1,12 +1,17 @@
 package com.viettel.demo;
 
+import com.viettel.demo.security.JwtTokenService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
+
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -25,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * - Tenant 2 chỉ thấy data tenant 2.
  * - Tenant 1 không truy cập được id thuộc tenant 2.
  * - Query by code vẫn scoped theo tenant hiện tại.
- * - Missing/invalid X-Tenant-Id bị chặn ở TenantFilter.
+ * - Missing/invalid Bearer JWT bị chặn bởi Spring Security.
  *
  * [Test strategy đề xuất]
  * 1. Dùng @SpringBootTest để load application context thật.
@@ -38,10 +43,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * [Vì sao dùng MockMvc?]
  * MockMvc cho request đi qua Spring MVC và filter chain, nên test được:
  *
- * MockMvc -> TenantFilter -> Controller -> Service -> Repository -> DB
+ * MockMvc -> Spring Security JWT -> JwtTenantContextFilter
+ *         -> Controller -> Service -> Repository -> DB
  *
  * Đây là đúng mục tiêu hơn so với gọi Service trực tiếp, vì gọi Service trực tiếp
- * sẽ bỏ qua hành vi thiếu/sai X-Tenant-Id ở TenantFilter.
+ * sẽ bỏ qua hành vi thiếu/sai token ở HTTP/security layer.
  *
  * [Fixture dùng trong test]
  * - tenant 1: id = 1, code = "TENANT_A"
@@ -54,7 +60,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * - Với fixture test, JdbcTemplate thường dễ hiểu hơn vì insert explicit tenant_id.
  *
  * [Điều không làm trong task này]
- * - Không thêm JWT/Spring Security.
  * - Không thêm Testcontainers.
  * - Không thêm Swagger/OpenAPI.
  * - Không sửa production service/controller/repository nếu không có lỗi compile.
@@ -64,17 +69,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * ==============================================================
  */
-@SpringBootTest
+@SpringBootTest(properties = {
+        "app.jwt.enabled=true",
+        "app.jwt.secret=test-learning-secret-change-me-32-characters-minimum",
+        "app.jwt.issuer=tenant-demo-test",
+        "app.jwt.dev-token-enabled=true"
+})
 @AutoConfigureMockMvc
 public class DataLeakageTest {
-
-    private static final String TENANT_HEADER = "X-Tenant-Id";
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private JwtTokenService jwtTokenService;
+
+    private String tenantOneToken;
+    private String tenantTwoToken;
 
     /*
      * Mỗi test tự chuẩn bị dữ liệu để không phụ thuộc vào DB local đang có gì.
@@ -97,6 +111,9 @@ public class DataLeakageTest {
                 "INSERT INTO master_data (id, tenant_id, code, name, category, is_active) VALUES (?, ?, ?, ?, ?, ?)",
                 201L, 2L, "LAPTOP-01", "Laptop HP EliteBook 840 G9", "ELECTRONICS", true
         );
+
+        tenantOneToken = jwtTokenService.createDevToken(1L, "test-user-tenant-1", List.of("USER"));
+        tenantTwoToken = jwtTokenService.createDevToken(2L, "test-user-tenant-2", List.of("USER"));
     }
 
     /*
@@ -106,7 +123,7 @@ public class DataLeakageTest {
     @Test
     void tenant_1_list_should_only_return_tenant_1_data() throws Exception {
         mockMvc.perform(get("/api/master-data")
-                        .header(TENANT_HEADER, "1"))
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantOneToken)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[*].tenantId", everyItem(is(1))));
@@ -118,7 +135,7 @@ public class DataLeakageTest {
     @Test
     void tenant_2_list_should_only_return_tenant_2_data() throws Exception {
         mockMvc.perform(get("/api/master-data")
-                        .header(TENANT_HEADER, "2"))
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantTwoToken)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[*].tenantId", everyItem(is(2))));
@@ -132,13 +149,13 @@ public class DataLeakageTest {
     @Test
     void tenant_1_should_not_access_tenant_2_id() throws Exception {
         mockMvc.perform(get("/api/master-data/201")
-                        .header(TENANT_HEADER, "2"))
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantTwoToken)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tenantId", is(2)))
                 .andExpect(jsonPath("$.id", is(201)));
 
         mockMvc.perform(get("/api/master-data/201")
-                        .header(TENANT_HEADER, "1"))
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantOneToken)))
                 .andExpect(status().isNotFound());
     }
 
@@ -149,34 +166,38 @@ public class DataLeakageTest {
     @Test
     void query_by_code_should_remain_scoped_by_tenant() throws Exception {
         mockMvc.perform(get("/api/master-data/code/LAPTOP-01")
-                        .header(TENANT_HEADER, "1"))
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantOneToken)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tenantId", is(1)))
                 .andExpect(jsonPath("$.id", is(101)));
 
         mockMvc.perform(get("/api/master-data/code/LAPTOP-01")
-                        .header(TENANT_HEADER, "2"))
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantTwoToken)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tenantId", is(2)))
                 .andExpect(jsonPath("$.id", is(201)));
     }
 
     /*
-     * TenantFilter phải chặn request thiếu tenant trước khi vào controller.
+     * Spring Security phải chặn request thiếu Bearer token trước khi vào controller.
      */
     @Test
-    void missing_tenant_header_should_return_400() throws Exception {
+    void missing_token_should_return_401() throws Exception {
         mockMvc.perform(get("/api/master-data"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
     }
 
     /*
-     * TenantFilter phải chặn tenant id không parse được thành số hợp lệ.
+     * Spring Security phải chặn Bearer token sai format/chữ ký.
      */
     @Test
-    void invalid_tenant_header_should_return_400() throws Exception {
+    void invalid_token_should_return_401() throws Exception {
         mockMvc.perform(get("/api/master-data")
-                        .header(TENANT_HEADER, "abc"))
-                .andExpect(status().isBadRequest());
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer invalid.jwt.token"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    private String bearer(String token) {
+        return "Bearer " + token;
     }
 }
