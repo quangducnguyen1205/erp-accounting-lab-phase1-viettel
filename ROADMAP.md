@@ -1,7 +1,8 @@
 # ROADMAP - Phase 1 Fast-track: ERP/Kế toán SaaS Multi-tenant
 
 > **Bắt đầu:** Thứ Ba 28/04/2026
-> **Deadline:** Thứ Hai 25/05/2026
+> **Deadline ban đầu:** Thứ Hai 25/05/2026
+> **Cửa sổ học mở rộng đề xuất:** đến Thứ Hai 01/06/2026
 > **Cập nhật roadmap:** 14/05/2026
 > **Chu kỳ báo cáo:** mỗi 2-3 ngày phải có output có thể trình bày
 > **Phương châm:** tự học + tự code trước, Codex tạo note/skeleton và review sau
@@ -12,14 +13,14 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 64% |
-| **Tổng task** | 53 |
-| **Đã hoàn thành** | 34 / 53 |
-| **Focus hiện tại** | Keycloak/OIDC + RBAC awareness summary |
-| **Milestone tiếp theo** | #5 - Data leakage tests + temporary JWT + Keycloak awareness |
-| **Demo cuối Phase 1** | Spring Boot + PostgreSQL/Flyway + tenant-aware API + JWT tạm + React UI nhỏ |
+| **Tiến độ** | 46% |
+| **Tổng task** | 79 |
+| **Đã hoàn thành** | 36 / 79 |
+| **Focus hiện tại** | Đóng JWT tạm + gap report sau feedback mentor |
+| **Milestone tiếp theo** | #5 - JWT bridge summary + mentor gap report |
+| **Demo cuối Phase 1** | Spring Boot + PostgreSQL/Flyway + tenant-aware API + JWT tạm, có hướng Keycloak mini-lab nếu kịp |
 
-Ghi chú: phần trăm giảm so với roadmap cũ vì phạm vi Phase 1 được mở rộng lại theo sơ đồ kiến trúc target, gồm cả React UI, JWT tạm và awareness package cho các công nghệ nền.
+Ghi chú: phần trăm giảm vì roadmap được mở rộng sau feedback mentor. Trọng tâm mới không chỉ demo chạy được, mà còn vá các lỗ hổng nền tảng về PostgreSQL index/query pattern, Flyway rollback/failure, ACID/isolation và học công nghệ theo ngữ cảnh thật.
 
 ---
 
@@ -41,10 +42,11 @@ Ghi chú: phần trăm giảm so với roadmap cũ vì phạm vi Phase 1 đượ
 1. **Không học tất cả lý thuyết upfront.** Công nghệ nào sắp dùng trong demo/mini-lab thì tạo note ngắn trước, rồi code.
 2. **Mỗi task kỹ thuật đi theo vòng lặp:** note từ nguồn chuẩn → skeleton/TODO → tự code → verify → Codex review → summary.
 3. **Demo chính phải chạy được.** Không biến Phase 1 thành full microservices stack.
-4. **Core demo thực hành sâu, công nghệ lớn học theo tầng.** JWT tạm và React UI vào demo; Keycloak/Kafka/Redis/MinIO/Elastic/Observability chủ yếu awareness hoặc mini-note.
-5. **Không overclaim production.** JWT tạm không phải Keycloak/OIDC production; React UI chỉ là demo tenant flow; backend chưa phải ERP thật.
+4. **Công nghệ học just-in-time nhưng phải thật nếu đã chạm feature.** Auth thì tiến tới Keycloak mini-lab nếu khả thi; file upload thì MinIO; cache thì Redis; search thì Elasticsearch.
+5. **Không overclaim production.** JWT tạm là bridge, không phải Keycloak/OIDC production; backend chưa phải ERP thật.
 6. **Giữ learning-first.** Codex không tự implement toàn bộ future feature nếu chưa được yêu cầu rõ.
 7. **Local notes chỉ là context.** `local/` có thể giúp nhớ phạm vi kiến trúc, nhưng source of truth public là `docs/`, `ROADMAP.md`, code và report đã chuẩn hóa.
+8. **Mentor feedback được xử lý bằng gap-driven learning.** Chủ đề nào mentor chỉ ra còn nông thì ưu tiên official docs + mini-lab nhỏ trước khi mở rộng sang feature mới.
 
 ---
 
@@ -55,23 +57,24 @@ Ghi chú: phần trăm giảm so với roadmap cũ vì phạm vi Phase 1 đượ
 - SQL playground có `01` đến `06`: schema baseline, sample data, EXPLAIN, index comparison, temp table experiment, data leakage proof, migration/locking observation.
 - Spring Boot tenant demo đã có Maven wrapper, `pom.xml`, `application.yml`, `.env.example`, PostgreSQL Docker Compose và Flyway `V1-V3`.
 - `TenantContext` / `TenantFilter` đã implement và từng được runtime verify bằng header `X-Tenant-Id`.
-- Entity/repository layer đã có `TenantAwareEntity`, `MasterData`, `MasterDataRepository`; repository method chính đều có `tenantId`.
-- Service/controller layer hiện đã có API `master_data` tenant-aware cơ bản.
-- `DataLeakageTest.java` đã có 6 regression tests pass bằng `make app-test`.
-- Các note Spring Boot đã có trong `docs/04-spring-boot/`: filter/threadlocal, JPA entity/repository, service/controller, database stack, component/bean/DI.
+- Entity/repository/service/controller layer đã có API `master_data` tenant-aware cơ bản.
+- `DataLeakageTest.java` đã có regression tests cho tenant isolation bằng `make app-test`.
+- JWT tạm đã implement bằng Spring Security: Bearer token local, `tenant_id` claim, `JwtTenantContextFilter`, dev token endpoint và test MockMvc.
+- Các note Spring Boot đã có trong `docs/04-spring-boot/`; các note JWT/Spring Security đã có trong `docs/05-security/`.
 
-### Còn thiếu hoặc chưa đóng
+### Gap mới sau feedback mentor
 
-- `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` đã có summary Milestone #4 cho Spring Boot tenant-aware API/curl demo.
-- JWT tạm đã implement bằng Spring Security Resource Server: Bearer token local, `tenant_id` claim, `JwtTenantContextFilter`, dev token endpoint và regression tests bằng MockMvc.
-- Chưa có Keycloak/OIDC awareness note public.
-- Chưa có React UI demo.
-- Chưa có public architecture coverage docs cho Redis, Kafka, Debezium, MinIO, Elasticsearch, gRPC, realtime, observability, LLM provider và external services.
-- `README.md` vẫn mô tả repo thiên về knowledge base; chưa phản ánh rõ demo fast-track mới.
+- PostgreSQL index hiện mới học ở mức baseline. Cần học sâu hơn query pattern: `LIKE 'abc%'`, `LIKE '%abc%'`, contains search, B-tree prefix, trigram/GIN, composite index leftmost prefix, expression index như `lower(column)`, selectivity và lý do planner vẫn chọn Seq Scan.
+- Migration/locking hiện mới có local observation. Cần bổ sung cách migration được execute bằng Flyway, schema history, validate/repair, migration fail giữa chừng, forward migration vs rollback và undo migration theo điều kiện của Flyway.
+- ACID/isolation levels chưa có note riêng. Cần học dirty read, non-repeatable read, phantom read, PostgreSQL default isolation và tác động với shared-table SaaS.
+- Keycloak/OIDC không nên chỉ dừng ở awareness mãi. Sau JWT tạm cần có mini-lab hoặc ít nhất một flow thật nhỏ nếu còn kịp.
+- Redis/MinIO/Elasticsearch nên học khi có feature tương ứng, không chỉ ghi lý thuyết rời rạc.
+- DDD là chủ đề hợp lý nhưng chưa urgent; để awareness/post-demo design improvement.
+- `README.md` vẫn mô tả repo thiên về knowledge base; có thể cập nhật sau khi demo scope ổn định hơn.
 
 ### Bài học từ sơ đồ kiến trúc target
 
-Sơ đồ target có React frontend, API Gateway/service discovery/load balancer, Keycloak/OAuth2/OIDC, nhiều backend services, PostgreSQL cluster, Redis, Kafka, Debezium CDC, MinIO, Elasticsearch/Elastic Stack, gRPC, realtime, observability, LLM providers và external services. Phase 1 cần hiểu vai trò của các phần này, nhưng không cần chạy toàn bộ.
+Sơ đồ target có React frontend, API Gateway/service discovery/load balancer, Keycloak/OAuth2/OIDC, nhiều backend services, PostgreSQL cluster, Redis, Kafka, Debezium CDC, MinIO, Elasticsearch/Elastic Stack, gRPC, realtime, observability, LLM providers và external services. Phase 1 cần hiểu vai trò của các phần này theo ngữ cảnh thật, nhưng chỉ implement sâu những phần phục vụ demo hoặc mini-lab gần nhất.
 
 ---
 
@@ -84,17 +87,24 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 - Shared-table multi-tenant với `tenant_id`.
 - Tenant-aware API cho `master_data`.
 - Test hoặc curl chứng minh không lộ data cross-tenant.
-- JWT tạm: token local có `tenant_id` claim, backend validate đơn giản để set tenant context.
-- React UI nhỏ: chọn/nhập token, gọi API, hiển thị data scoped theo tenant.
-- Report/presentation note có sơ đồ flow và giới hạn hiện tại.
+- JWT tạm: token local có `tenant_id` claim, backend validate để set tenant context.
+- Report/presentation note có sơ đồ flow, trade-off và giới hạn hiện tại.
+- Nếu còn thời gian sau các gap PostgreSQL/Flyway/ACID: React UI nhỏ để minh họa tenant-aware flow.
 
-### Không đưa vào demo chính
+### Demo/mini-lab mở rộng nếu khả thi
 
-- Keycloak thật.
+- Keycloak mini-lab: lấy token OIDC thật ở mức local/dev và so sánh với JWT tạm.
+- Redis mini-lab chỉ khi có bài cache tenant-aware.
+- MinIO mini-lab chỉ khi có bài upload file.
+- Elasticsearch mini-lab chỉ khi có bài search vượt quá `LIKE`/PostgreSQL đơn giản.
+
+### Không đưa vào Phase 1 implementation
+
+- Full production Keycloak/RBAC platform.
 - API Gateway/Kong thật.
-- Redis/Kafka/Debezium/MinIO/Elasticsearch/Grafana stack chạy thật.
+- Kafka/Debezium/Grafana stack chạy đầy đủ.
 - Full ERP/accounting workflow.
-- Full production RBAC, audit log, deployment pipeline hoặc HA database cluster.
+- Full production deployment, HA database cluster, audit/compliance hoàn chỉnh.
 
 ---
 
@@ -102,32 +112,36 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 
 | Topic trong kiến trúc | Mức phủ Phase 1 | Theory doc dự kiến | Code/demo artifact | Verification | Milestone | Trạng thái |
 |---|---|---|---|---|---:|---|
-| SaaS / ERP accounting context | Core theory | `docs/01-saas/`, `docs/00-gioi-thieu/` | Không cần code riêng | Report/presentation giải thích đúng | #1, #8 | Đã có nền |
-| Multi-tenant shared-table | Core demo | `docs/02-multi-tenant/` | SQL playground + Spring Boot `master_data` | SQL, curl, test | #1, #4 | SQL + API cơ bản đã xong |
-| PostgreSQL schema/index/EXPLAIN | Core demo | `docs/03-backend-database-mo-rong/` | `lab-code/sql-playground/01-04` | `make sql-*` | #1 | Đã xong baseline |
-| Migration/locking/rollback | Mini-lab | `docs/03-backend-database-mo-rong/migration-lock-rollback.md` | `06-migration-lock-observation.sql` | Local SQL observation | #2 | Đã đóng |
-| Spring Boot backend | Core demo | `docs/04-spring-boot/` | `lab-code/tenant-demo/` | `make app-run` | #3, #4 | App/API cơ bản đã có |
-| Flyway | Core demo | `docs/04-spring-boot/spring-boot-bootstrap-config.md` | `V1-V3` migrations | Startup logs/Flyway logs | #3 | Đã chạy baseline |
-| TenantContext/TenantFilter | Core demo | `docs/04-spring-boot/request-filter-threadlocal.md` | `TenantContext.java`, `TenantFilter.java` | curl/log | #3 | Đã implement/review |
-| Tenant-aware service/controller | Core demo | `docs/04-spring-boot/service-controller-curl-flow.md` | `MasterDataService`, `MasterDataController` | curl tenant 1/2 | #4 | Đã verify và đóng #4 |
-| Data leakage tests | Core demo | `docs/04-spring-boot/testing-tenant-isolation.md` | `DataLeakageTest.java` | `make app-test` | #4 | Đã pass 6 regression tests |
-| Temporary JWT auth | Core demo | `docs/05-security/jwt-spring-security-temporary.md` | `SecurityConfig`, `JwtTokenService`, `JwtTenantContextFilter`, dev token endpoint | MockMvc + runtime HTTP valid/invalid JWT | #5 | Đã implement + test pass |
-| Keycloak/OAuth2/OIDC | Awareness | `docs/05-security/keycloak-oauth2-oidc-awareness.md` | Không chạy Keycloak | Summary + diagram | #5, #7 | Chưa có public note |
-| RBAC/tenant-scope | Core concept + awareness | `docs/05-security/rbac-tenant-scope.md` | JWT tạm có claim đơn giản | curl/test role/tenant notes | #5 | Chưa có |
-| React frontend | Core demo | `docs/06-frontend/react-tenant-demo-ui.md` | `lab-code/tenant-ui/` | browser/UI + curl fallback | #6 | Chưa có |
-| API Gateway/service discovery/load balancer | Awareness | `docs/07-architecture/api-gateway-service-discovery.md` | Không chạy gateway | Architecture summary | #7 | Chưa có public note |
-| Redis cache strategy | Mini-lab/design note | `docs/07-architecture/redis-tenant-cache.md` | Optional pseudo-code/mini example | Explain tenant-safe key | #7 | Chưa có public note |
-| Kafka async messaging | Awareness | `docs/07-architecture/kafka-async-messaging.md` | Không chạy Kafka | Use-case summary | #7 | Chưa có public note |
-| Debezium CDC + Kafka | Awareness | `docs/07-architecture/debezium-cdc.md` | Không chạy CDC | CDC role summary | #7 | Chưa có public note |
-| MinIO / S3 object storage | Awareness | `docs/07-architecture/minio-object-storage.md` | Không chạy MinIO | Tenant file strategy note | #7 | Chưa có public note |
-| Elasticsearch / Elastic Stack | Awareness | `docs/07-architecture/elasticsearch-search-service.md` | Không chạy Elastic | Search vs DB query note | #7 | Chưa có public note |
-| gRPC internal communication | Awareness | `docs/07-architecture/grpc-internal-communication.md` | Không chạy gRPC | REST vs gRPC vs Kafka table | #7 | Chưa có public note |
-| Realtime: SignalR/Socket/SSE/Long polling | Awareness | `docs/07-architecture/realtime-communication.md` | Không chạy realtime | When to use which note | #7 | Chưa có public note |
-| Observability: Prometheus/Grafana/Loki | Mini-note | `docs/07-architecture/observability-prometheus-grafana-loki.md` | Optional log/health notes only | Explain metric/log/tracing role | #7 | Chưa có public note |
-| LLM providers: OpenAI/OpenRouter/others | Awareness | `docs/07-architecture/llm-provider-integration.md` | Không gọi API thật | Integration role note | #7 | Chưa có public note |
-| External services: e-contract, eCommerce, CRM, HR, documents, digital signing | Awareness | `docs/07-architecture/external-integrations-erp.md` | Không tích hợp thật | Boundary/use-case summary | #7 | Chưa có public note |
-| Full production microservices stack | Out of scope | Chỉ ghi giới hạn trong report | Không implement | Nêu rõ không thuộc Phase 1 | #8 | Out of scope |
-| Full ERP/accounting domain | Out of scope | Chỉ dùng ví dụ nghiệp vụ | Không implement | Nêu rõ `master_data` chỉ là slice demo | #8 | Out of scope |
+| SaaS / ERP accounting context | Core theory | `docs/01-saas/`, `docs/00-gioi-thieu/` | Không cần code riêng | Report/presentation giải thích đúng | #1, #12 | Đã có nền |
+| Multi-tenant shared-table | Core demo | `docs/02-multi-tenant/` | SQL playground + Spring Boot `master_data` | SQL, curl, test | #1, #4 | Đã có |
+| PostgreSQL schema/index/EXPLAIN baseline | Core demo | `docs/03-backend-database-mo-rong/index-va-query-tenant-aware.md` | `lab-code/sql-playground/01-04` | `make sql-*` | #1 | Đã có |
+| PostgreSQL index query patterns | Core mini-lab | `docs/03-backend-database-mo-rong/index-query-patterns-postgresql.md` | `07-index-query-patterns.sql` | EXPLAIN cho prefix/contains/function/composite cases | #6 | Gap mới |
+| Migration/locking baseline | Mini-lab | `docs/03-backend-database-mo-rong/migration-lock-rollback.md` | `06-migration-lock-observation.sql` | Local SQL observation | #2 | Đã có |
+| Flyway rollback/failure handling | Core theory + mini-lab | `docs/03-backend-database-mo-rong/flyway-rollback-failure-handling.md` | optional `08-flyway-failure-observation.md/sql` | Flyway command/log summary | #7 | Gap mới |
+| ACID/isolation levels | Core theory + mini-lab | `docs/03-backend-database-mo-rong/acid-isolation-levels-postgresql.md` | `09-acid-isolation-observation.sql` | Two-session observation nếu cần | #8 | Gap mới |
+| Spring Boot backend | Core demo | `docs/04-spring-boot/` | `lab-code/tenant-demo/` | `make app-run` | #3, #4 | Đã có |
+| Flyway schema baseline | Core demo | `docs/04-spring-boot/spring-boot-bootstrap-config.md` | `V1-V3` migrations | Startup logs/Flyway logs | #3 | Đã có |
+| TenantContext/TenantFilter | Core demo | `docs/04-spring-boot/request-filter-threadlocal.md` | `TenantContext.java`, `TenantFilter.java` | curl/log/test | #3, #4 | Đã có |
+| Tenant-aware service/controller | Core demo | `docs/04-spring-boot/service-controller-curl-flow.md` | `MasterDataService`, `MasterDataController` | curl tenant 1/2 | #4 | Đã có |
+| Data leakage tests | Core demo | `docs/04-spring-boot/testing-tenant-isolation.md` | `DataLeakageTest.java` | `make app-test` | #4 | Đã có |
+| Temporary JWT auth | Core bridge | `docs/05-security/jwt-spring-security-temporary.md` | `SecurityConfig`, `JwtTokenService`, `JwtTenantContextFilter` | MockMvc + HTTP valid/invalid JWT | #5 | Đã implement, cần summary đóng |
+| Keycloak/OAuth2/OIDC | Mini-lab nếu khả thi | `docs/05-security/keycloak-oauth2-oidc-awareness.md` | optional `lab-code/keycloak-lab/` hoặc Docker Compose profile | Lấy token local/dev, giải thích issuer/JWKS/claims | #9 | Nâng từ awareness lên mini-lab |
+| RBAC/tenant-scope | Important theory | `docs/05-security/rbac-tenant-scope.md` | JWT claim note, không role matrix lớn | Test/summary tenant vs role | #5, #9 | Chưa có |
+| React frontend | Optional core demo | `docs/06-frontend/react-tenant-demo-ui.md` | `lab-code/tenant-ui/` | browser/UI + curl fallback | #10 | Chưa có |
+| API Gateway/service discovery/load balancer | Awareness | `docs/07-architecture/api-gateway-service-discovery.md` | Không chạy gateway | Architecture summary | #11 | Chưa có |
+| Redis cache strategy | Mini-lab khi có cache need | `docs/07-architecture/redis-tenant-cache.md` | tenant-safe cache key mini example | Explain/cache-key review | #11 | Just-in-time |
+| Kafka async messaging | Awareness | `docs/07-architecture/kafka-async-messaging.md` | Không chạy Kafka | Use-case summary | #11 | Chưa có |
+| Debezium CDC + Kafka | Awareness | `docs/07-architecture/debezium-cdc.md` | Không chạy CDC | CDC role summary | #11 | Chưa có |
+| MinIO / S3 object storage | Mini-lab khi có file feature | `docs/07-architecture/minio-object-storage.md` | optional upload mini-lab | Upload/download nếu làm feature | #11 | Just-in-time |
+| Elasticsearch / Elastic Stack | Mini-lab khi có search need | `docs/07-architecture/elasticsearch-search-service.md` | optional search mini-lab | Search behavior summary | #11 | Just-in-time |
+| gRPC internal communication | Awareness | `docs/07-architecture/grpc-internal-communication.md` | Không chạy gRPC | REST vs gRPC vs Kafka table | #11 | Chưa có |
+| Realtime: SignalR/Socket/SSE/Long polling | Awareness | `docs/07-architecture/realtime-communication.md` | Không chạy realtime | When to use which note | #11 | Chưa có |
+| Observability: Prometheus/Grafana/Loki | Important mini-note | `docs/07-architecture/observability-prometheus-grafana-loki.md` | log/health/metric awareness only | Explain metric/log/tracing role | #11 | Chưa có |
+| LLM providers: OpenAI/OpenRouter/others | Awareness | `docs/07-architecture/llm-provider-integration.md` | Không gọi API thật | Integration role note | #11 | Chưa có |
+| External services: e-contract, eCommerce, CRM, HR, documents, digital signing | Awareness | `docs/07-architecture/external-integrations-erp.md` | Không tích hợp thật | Boundary/use-case summary | #11 | Chưa có |
+| DDD/domain boundaries | Later awareness | `docs/08-design/ddd-awareness.md` | Không refactor code theo DDD ở Phase 1 | Post-demo design note | #12 | Later |
+| Full production microservices stack | Out of scope | Chỉ ghi giới hạn trong report | Không implement | Nêu rõ không thuộc Phase 1 | #12 | Out of scope |
+| Full ERP/accounting domain | Out of scope | Chỉ dùng ví dụ nghiệp vụ | Không implement | Nêu rõ `master_data` chỉ là slice demo | #12 | Out of scope |
 
 ---
 
@@ -171,7 +185,7 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 
 ---
 
-## Kế hoạch fast-track từ 13/05
+## Kế hoạch sau feedback mentor từ 14/05
 
 ### Sprint 3.5 - 13/05: Đóng API tenant-aware và chuẩn bị test
 
@@ -191,7 +205,7 @@ Mục tiêu: khóa lại correctness của backend trước khi đổi cơ chế
 - [x] `[LÝ THUYẾT]` Đọc `docs/05-security/jwt-spring-security-temporary.md` từ Spring Security/JWT chuẩn - phân biệt JWT tạm trong lab với Keycloak/OIDC production.
 - [x] `[SKELETON]` Nhờ Codex tạo skeleton/TODO comments cho security package, không tự động fill toàn bộ logic JWT.
 
-### Sprint 5 - 16/05 đến 17/05: Temporary JWT auth + Keycloak awareness
+### Sprint 5 - 14/05: Temporary JWT auth bridge
 
 Mục tiêu: demo tenant context không còn dựa trực tiếp vào `X-Tenant-Id`, nhưng vẫn không overdo full Keycloak.
 
@@ -199,38 +213,89 @@ Mục tiêu: demo tenant context không còn dựa trực tiếp vào `X-Tenant-
 - [x] `[THỰC HÀNH]` Verify bằng curl: token tenant 1 thấy data tenant 1, token tenant 2 thấy data tenant 2, missing/invalid token bị chặn.
 - [ ] `[REVIEW]` Nhờ Codex review security flow: không tin request body, không hardcode secret thật, không nhầm JWT tạm với Keycloak production.
 - [ ] `[BÁO CÁO]` Ghi summary ngắn trong `docs/99-tong-ket/`: AuthN vs AuthZ, JWT, RBAC tenant-scope, Keycloak/OAuth2/OIDC dùng để làm gì.
-- [ ] `[MILESTONE]` Chốt Milestone #5 - backend tenant API có test leakage + JWT tạm + Keycloak awareness.
+- [ ] `[MILESTONE]` Chốt Milestone #5 - backend tenant API có test leakage + JWT tạm + gap report sau feedback mentor.
 
-### Sprint 6 - 18/05 đến 19/05: React UI nhỏ cho demo tenant flow
+### Sprint 5.5 - 14/05 đến 15/05: Mentor feedback gap report
 
-Mục tiêu: có một giao diện nhỏ để leader thấy flow tenant-aware, không chỉ curl.
+Mục tiêu: không nhảy ngay sang feature mới; trước tiên chốt JWT bridge và map rõ các lỗ hổng mentor đã chỉ ra.
+
+- [x] `[BÁO CÁO]` Tạo `docs/99-tong-ket/gap-report-sau-feedback-mentor-2026-05-14.md` - phân loại gap: index query pattern, Flyway rollback/failure, ACID/isolation, Keycloak/tech adoption, DDD later.
+- [x] `[LÝ THUYẾT]` Liệt kê official docs cần đọc cho PostgreSQL index pattern, Flyway failure/rollback, PostgreSQL isolation và Keycloak/OIDC; chưa viết textbook dài.
+- [ ] `[BÁO CÁO]` Cập nhật `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` bằng summary JWT tạm và giới hạn: vẫn là bridge trước Keycloak.
+- [ ] `[MILESTONE]` Chốt Milestone #5 - demo backend JWT tạm đã chạy + roadmap/gap report đã align theo mentor feedback.
+
+### Sprint 6 - 16/05 đến 17/05: PostgreSQL index query-pattern deepening
+
+Mục tiêu: sửa điểm mentor nhắc: index không chỉ là “create index”, mà phụ thuộc pattern query và planner.
+
+- [ ] `[LÝ THUYẾT]` Tạo/read `docs/03-backend-database-mo-rong/index-query-patterns-postgresql.md` từ PostgreSQL docs: B-tree, multicolumn leftmost prefix, pattern matching, expression index, `pg_trgm`.
+- [ ] `[SKELETON]` Tạo `lab-code/sql-playground/07-index-query-patterns.sql` với TODO comments: prefix `LIKE`, leading wildcard, contains search, `lower(name)`, tenant-aware `tenant_id + code/category/keyword`.
+- [ ] `[THỰC HÀNH]` Tự code mini-lab và chạy EXPLAIN: so sánh query có thể dùng B-tree index với query khó dùng index.
+- [ ] `[THỰC HÀNH]` Ghi quan sát định tính: khi nào Seq Scan vẫn hợp lý do selectivity/bảng nhỏ; không bịa số nếu output không lưu.
+- [ ] `[REVIEW]` Nhờ Codex review SQL/note: có hiểu đúng prefix search, leftmost prefix, trigram/GIN và expression index chưa.
+- [ ] `[MILESTONE]` Chốt Milestone #6 - index query-pattern mini-lab + summary mentor-facing.
+
+### Sprint 7 - 18/05 đến 19/05: Flyway rollback/failure handling
+
+Mục tiêu: bổ sung mindset “execute migration và rollback plan”, không chỉ biết `ALTER TABLE`.
+
+- [ ] `[LÝ THUYẾT]` Tạo/read `docs/03-backend-database-mo-rong/flyway-rollback-failure-handling.md` từ Flyway docs: versioned migration, schema history, validate, repair, failure midway, transaction behavior, undo migration điều kiện nào có.
+- [ ] `[SKELETON]` Tạo guided note hoặc mini-lab `lab-code/sql-playground/08-flyway-failure-observation.md` nếu phù hợp; không phá DB thật, ưu tiên local/dev database.
+- [ ] `[THỰC HÀNH]` Tự quan sát một failure/validate scenario ở mức an toàn hoặc ghi lại lý do không chạy nếu quá rủi ro.
+- [ ] `[REVIEW]` Nhờ Codex review phần giải thích forward migration vs rollback và SaaS shared-table migration checklist.
+- [ ] `[MILESTONE]` Chốt Milestone #7 - Flyway failure/rollback mindset summary.
+
+### Sprint 8 - 20/05 đến 21/05: ACID và isolation levels
+
+Mục tiêu: hiểu transaction behavior trước khi mở rộng backend feature, nhất là shared-table nhiều tenant.
+
+- [ ] `[LÝ THUYẾT]` Tạo/read `docs/03-backend-database-mo-rong/acid-isolation-levels-postgresql.md` từ PostgreSQL docs: ACID, isolation levels, dirty read, non-repeatable read, phantom read, default isolation.
+- [ ] `[SKELETON]` Tạo `lab-code/sql-playground/09-acid-isolation-observation.sql` với TODO comments cho quan sát 2 session ở mức cơ bản.
+- [ ] `[THỰC HÀNH]` Tự chạy một hoặc hai observation an toàn: concurrent read/write hoặc transaction visibility; không overdo lock internals.
+- [ ] `[BÁO CÁO]` Ghi summary: vì sao concurrent writes/reads và lock impact quan trọng trong SME SaaS shared table.
+- [ ] `[MILESTONE]` Chốt Milestone #8 - ACID/isolation note + observation summary.
+
+### Sprint 9 - 22/05 đến 24/05: Keycloak mini-lab nếu khả thi
+
+Mục tiêu: nâng auth từ JWT tạm sang hiểu công nghệ thật theo feedback mentor, nhưng vẫn giữ phạm vi nhỏ.
+
+- [ ] `[LÝ THUYẾT]` Tạo/read `docs/05-security/keycloak-oauth2-oidc-awareness.md` từ Keycloak/Spring Security docs: Authorization Server, Resource Server, issuer, JWKS, access token, client, realm.
+- [ ] `[SKELETON]` Chuẩn bị `lab-code/keycloak-lab/` hoặc Docker Compose profile có TODO comments nếu chạy Keycloak local là khả thi trên máy.
+- [ ] `[THỰC HÀNH]` Tự thử flow nhỏ: tạo realm/client/user hoặc lấy token dev; nếu không kịp thì ghi rõ blocker và giữ JWT tạm.
+- [ ] `[THỰC HÀNH]` So sánh JWT tạm hiện tại với Keycloak/OIDC thật: phần nào giống, phần nào khác, phần nào production mới cần.
+- [ ] `[REVIEW]` Nhờ Codex review note/lab: không biến Keycloak thành full IAM project, không overclaim RBAC production.
+- [ ] `[MILESTONE]` Chốt Milestone #9 - Keycloak/OIDC mini-lab hoặc awareness có evidence rõ.
+
+### Sprint 10 - 25/05 đến 26/05: React UI hoặc demo script thay thế
+
+Mục tiêu: nếu nền tảng backend/security/database đã ổn, thêm UI nhỏ; nếu không kịp, ưu tiên demo script backend chắc chắn.
 
 - [ ] `[LÝ THUYẾT]` Tạo/read `docs/06-frontend/react-tenant-demo-ui.md` - React gọi REST API, env config, CORS ở mức tối thiểu, không học frontend lan man.
-- [ ] `[SKELETON]` Nhờ Codex scaffold `lab-code/tenant-ui/` với TODO comments: nhập token, gọi list master data, search by code/category, hiển thị lỗi auth.
-- [ ] `[THỰC HÀNH]` Tự code UI cơ bản: tenant 1/tenant 2 token, danh sách `master_data`, trạng thái loading/error, không làm thiết kế phức tạp.
-- [ ] `[THỰC HÀNH]` Verify UI: backend running, UI gọi API thành công, đổi token thì data đổi theo tenant; curl vẫn là fallback.
-- [ ] `[REVIEW]` Nhờ Codex review UI flow và README/run commands; không thêm state management/library nặng nếu chưa cần.
-- [ ] `[MILESTONE]` Chốt Milestone #6 - runnable backend + React UI nhỏ chứng minh tenant-aware flow.
+- [ ] `[SKELETON]` Nhờ Codex scaffold `lab-code/tenant-ui/` với TODO comments nếu chọn UI; nếu không, tạo demo script backend chi tiết.
+- [ ] `[THỰC HÀNH]` Tự code UI tối thiểu hoặc hoàn thiện backend demo script: token tenant 1/2, danh sách `master_data`, lỗi auth, cross-tenant not found.
+- [ ] `[REVIEW]` Nhờ Codex review UI/script; không thêm state management/library nặng nếu chưa cần.
+- [ ] `[MILESTONE]` Chốt Milestone #10 - có đường demo mentor-facing, bằng UI nhỏ hoặc curl/script chắc chắn.
 
-### Sprint 7 - 20/05 đến 21/05: Architecture awareness package
+### Sprint 11 - 27/05 đến 29/05: Just-in-time architecture tech adoption map
 
-Mục tiêu: phủ bức tranh target architecture từ sơ đồ Viettel đủ để báo cáo, không chạy full stack.
+Mục tiêu: phủ các công nghệ trong sơ đồ kiến trúc theo ngữ cảnh thật, nhưng chỉ mini-lab khi có feature cần.
 
 - [ ] `[LÝ THUYẾT]` Tạo `docs/07-architecture/target-architecture-map.md` - map React, gateway, Keycloak, backend services, PostgreSQL, Redis, Kafka, MinIO, Elastic, observability, LLM, external systems vào vai trò tổng thể.
-- [ ] `[LÝ THUYẾT]` Tạo mini-note Redis + observability: tenant-safe cache key, log/metric/tracing cần tenant context; không chạy Redis/Grafana thật.
-- [ ] `[LÝ THUYẾT]` Tạo awareness summary ngắn cho Kafka, Debezium, Elasticsearch, MinIO, gRPC, realtime, LLM provider, external integrations; mỗi topic 3-5 bullet, ưu tiên đúng vai trò.
-- [ ] `[BÁO CÁO]` Cập nhật `presentation-notes/thuyet-trinh-saas-multi-tenant.md` - thêm sơ đồ demo hiện tại so với target architecture, nêu rõ phần nào implemented/awareness/out of scope.
-- [ ] `[MILESTONE]` Chốt Milestone #7 - architecture awareness package đủ nói chuyện với mentor.
+- [ ] `[LÝ THUYẾT]` Ghi chiến lược adoption: Redis khi cache, MinIO khi file upload, Elasticsearch khi search, Kafka khi async event, observability khi cần vận hành.
+- [ ] `[SKELETON]` Nếu còn thời gian, chọn đúng một mini-lab nhỏ nhất theo nhu cầu demo: Redis cache key hoặc MinIO upload; không làm nhiều stack cùng lúc.
+- [ ] `[BÁO CÁO]` Cập nhật `presentation-notes/thuyet-trinh-saas-multi-tenant.md` - phần implemented / mini-lab / awareness / out of scope.
+- [ ] `[MILESTONE]` Chốt Milestone #11 - architecture coverage map đủ nói chuyện với mentor.
 
-### Sprint 8 - 22/05 đến 25/05: Report, demo script và Phase 1 defense
+### Sprint 12 - 30/05 đến 01/06: Final report, demo script và DDD awareness
 
-Mục tiêu: đóng gói để trình bày sớm, tránh sát deadline mới gom tài liệu.
+Mục tiêu: đóng gói Phase 1 mở rộng, báo cáo trung thực: cái gì đã chạy, cái gì đã học, cái gì còn là awareness.
 
-- [ ] `[BÁO CÁO]` Cập nhật `reports/latex/bao-cao-saas-multi-tenant.tex` - SQL, migration, Spring Boot API, JWT tạm, React UI, architecture coverage; không overclaim production.
-- [ ] `[BÁO CÁO]` Cập nhật `presentation-notes/thuyet-trinh-saas-multi-tenant.md` - demo script: DB → backend → JWT → API → React UI → tests → architecture map.
-- [ ] `[THỰC HÀNH]` Dry-run demo: `make db-up`, `make app-run`, `make app-test`, chạy UI, verify tenant 1/2; ghi issue nếu có.
+- [ ] `[LÝ THUYẾT]` Tạo `docs/08-design/ddd-awareness.md` ngắn: entity/domain/service boundary ở mức nhận biết, không refactor demo theo DDD.
+- [ ] `[BÁO CÁO]` Cập nhật `reports/latex/bao-cao-saas-multi-tenant.tex` - SQL, migration, Spring Boot API, JWT/Keycloak gap, PostgreSQL mentor gaps, architecture coverage; không overclaim production.
+- [ ] `[BÁO CÁO]` Cập nhật `presentation-notes/thuyet-trinh-saas-multi-tenant.md` - demo script: DB → backend → auth → API → tests → PostgreSQL gaps → architecture map.
+- [ ] `[THỰC HÀNH]` Dry-run demo: `make db-up`, `make app-run`, `make app-test`, HTTP/curl/UI nếu có; ghi issue nếu có.
 - [ ] `[REVIEW]` Nhờ Codex review report/presentation/dry-run ở mức mạch lạc, đúng phạm vi, không overclaim.
-- [ ] `[MILESTONE]` Trình bày Phase 1: runnable demo + Q&A + giới hạn hiện tại + next steps sau Phase 1.
+- [ ] `[MILESTONE]` Trình bày Phase 1 mở rộng: runnable demo + gap learning + Q&A + giới hạn hiện tại + next steps sau Phase 1.
 
 ---
 
@@ -242,10 +307,14 @@ Mục tiêu: đóng gói để trình bày sớm, tránh sát deadline mới gom
 | 2 | 08/05 | Migration & locking safety summary | Đã đóng |
 | 3 | 10/05 | Spring Boot start + Flyway + TenantFilter | Practice đã xong, summary gộp vào #4 |
 | 4 | 13/05 | Tenant-aware API demo + curl proof | Đã đóng |
-| 5 | 17/05 | Data leakage tests + temporary JWT + Keycloak awareness | Kế tiếp |
-| 6 | 19/05 | React UI tenant demo | Planned |
-| 7 | 21/05 | Target architecture awareness package | Planned |
-| 8 | 25/05 | Final report + runnable demo + Q&A | Planned |
+| 5 | 15/05 | Temporary JWT bridge + mentor gap report | Kế tiếp |
+| 6 | 17/05 | PostgreSQL index query-pattern mini-lab | Planned |
+| 7 | 19/05 | Flyway rollback/failure handling | Planned |
+| 8 | 21/05 | ACID/isolation levels observation | Planned |
+| 9 | 24/05 | Keycloak/OIDC mini-lab hoặc awareness evidence | Planned |
+| 10 | 26/05 | React UI nhỏ hoặc backend demo script chắc chắn | Planned |
+| 11 | 29/05 | Target architecture adoption map | Planned |
+| 12 | 01/06 | Final report + runnable demo + Q&A | Planned |
 
 ---
 
@@ -256,10 +325,14 @@ Mục tiêu: đóng gói để trình bày sớm, tránh sát deadline mới gom
 | SaaS lý thuyết | `docs/01-saas/tong-quan-saas.md` |
 | Multi-tenant | `docs/02-multi-tenant/*.md` |
 | PostgreSQL/backend DB | `docs/03-backend-database-mo-rong/*.md` |
+| PostgreSQL index query patterns | `docs/03-backend-database-mo-rong/index-query-patterns-postgresql.md`, `lab-code/sql-playground/07-index-query-patterns.sql` |
+| Flyway rollback/failure | `docs/03-backend-database-mo-rong/flyway-rollback-failure-handling.md` |
+| ACID/isolation | `docs/03-backend-database-mo-rong/acid-isolation-levels-postgresql.md`, `lab-code/sql-playground/09-acid-isolation-observation.sql` |
 | Spring Boot learning notes | `docs/04-spring-boot/*.md` |
-| Security/JWT notes | `docs/05-security/` - đã có note JWT tạm, còn thiếu Keycloak/RBAC awareness |
+| Security/JWT/Keycloak notes | `docs/05-security/` - đã có JWT tạm, cần Keycloak/RBAC awareness hoặc mini-lab |
 | React UI notes | `docs/06-frontend/` - tạo khi tới task UI |
 | Architecture awareness notes | `docs/07-architecture/` - tạo khi tới Sprint 7 |
+| DDD awareness | `docs/08-design/ddd-awareness.md` - để cuối Phase 1 mở rộng |
 | Tổng kết tiến độ | `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` |
 | SQL thực hành | `lab-code/sql-playground/*.sql` |
 | Spring Boot PoC | `lab-code/tenant-demo/` |
@@ -273,34 +346,33 @@ Mục tiêu: đóng gói để trình bày sớm, tránh sát deadline mới gom
 
 ## Việc làm ngay trong 1-2 ngày tới
 
-### Ngày 14/05 - đã hoàn thành
+### Ngày 14/05 đến 15/05 - đóng JWT bridge và gap report
 
-1. `DataLeakageTest.java` đã verify tenant 1/2, missing/invalid header, cross-tenant id và query by code scoped theo tenant.
-2. Verify:
+1. Mở `docs/99-tong-ket/gap-report-sau-feedback-mentor-2026-05-14.md`.
+2. Đọc lại gap theo mentor feedback: index query pattern, Flyway rollback/failure, ACID/isolation, Keycloak mini-lab, DDD later.
+3. Cập nhật summary JWT tạm trong `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` nếu còn thiếu.
+4. Verify lại baseline nếu cần:
 
 ```bash
 cd lab-code
 make app-test
 ```
 
-3. Summary đã cập nhật trong `docs/99-tong-ket/nhung-gi-da-nam-duoc.md`.
+5. Nhờ Codex review JWT summary/gap report trước khi chuyển sang PostgreSQL index query-pattern mini-lab.
 
-### Ngày 15/05 - việc mở đầu JWT tạm
+### Task đầu tiên sau gap report
 
-1. Đã đọc `docs/05-security/jwt-spring-security-temporary.md`.
-2. Đã có skeleton/TODO comments cho security package:
-   - `JwtTokenService`
-   - `JwtTenantFilter`
-   - `SecurityConfig`
-3. Việc tiếp theo: xác định dependency tối thiểu cần thêm cho Spring Security/JWT.
-4. Sau đó tự code từng bước và verify bằng curl token tenant 1/2.
+1. Tạo/read `docs/03-backend-database-mo-rong/index-query-patterns-postgresql.md`.
+2. Nguồn chuẩn cần đọc trước: PostgreSQL docs về indexes, multicolumn indexes, pattern matching, expression indexes và `pg_trgm`.
+3. Sau đó tạo skeleton `lab-code/sql-playground/07-index-query-patterns.sql`.
+4. Tự code mini-lab và verify bằng `EXPLAIN`, không học tối ưu hóa quá sâu.
 
 ---
 
 ## Nguyên tắc out-of-scope cho Phase 1
 
-1. Không triển khai full Keycloak/OIDC flow.
-2. Không chạy Kafka, Debezium, Redis, MinIO, Elastic, Grafana stack thật nếu không phục vụ trực tiếp demo.
+1. Không triển khai full production Keycloak/OIDC/IAM platform; Keycloak mini-lab nhỏ vẫn có thể làm nếu kịp.
+2. Không chạy Kafka, Debezium, Redis, MinIO, Elastic, Grafana stack thật nếu chưa có feature trực tiếp cần.
 3. Không biến `master_data` demo thành full ERP/accounting domain.
-4. Không thêm Swagger/OpenAPI, pagination nâng cao, role matrix phức tạp hoặc UI design lớn trước khi JWT/test/UI tối thiểu xong.
+4. Không thêm Swagger/OpenAPI, pagination nâng cao, role matrix phức tạp hoặc UI design lớn trước khi các gap nền tảng mentor chỉ ra được xử lý.
 5. Không commit local/private notes, mentor feedback riêng tư hoặc prompt thô.

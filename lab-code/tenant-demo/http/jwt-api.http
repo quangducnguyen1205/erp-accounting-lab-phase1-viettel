@@ -5,11 +5,11 @@
 # Header X-Tenant-Id chỉ còn là legacy mode khi app.jwt.enabled=false.
 
 @baseUrl = http://localhost:8080
-@jwtTenant1 = TODO_PASTE_TOKEN_TENANT_1
-@jwtTenant2 = TODO_PASTE_TOKEN_TENANT_2
+@jwtTenant1 = eyJhbGciOiJIUzI1NiJ9.eyJ0ZW5hbnRfaWQiOjEsImlzcyI6InRlbmFudC1kZW1vLWxvY2FsIiwic3ViIjoiZGV2LXVzZXItdGVuYW50LTEiLCJleHAiOjE3Nzg3MzM5MjUsImlhdCI6MTc3ODczMDMyNSwicm9sZXMiOlsiVVNFUiJdfQ.dbd5QzJMC_IPDLPLTKAdkaoxsiNYdCU_iKL6VRwUk04
+@jwtTenant2 = eyJhbGciOiJIUzI1NiJ9.eyJ0ZW5hbnRfaWQiOjIsImlzcyI6InRlbmFudC1kZW1vLWxvY2FsIiwic3ViIjoiZGV2LXVzZXItdGVuYW50LTIiLCJleHAiOjE3Nzg3MzM5NDUsImlhdCI6MTc3ODczMDM0NSwicm9sZXMiOlsiVVNFUiJdfQ.tFK2JgDsjhHVUUKOB9J1wHqxErtl6f24icQ3yTj6zqg
 @invalidJwt = invalid.jwt.token
 @code = LAPTOP-01
-@tenant2RecordId = TODO_COPY_TENANT_2_RECORD_ID
+@tenant2RecordId = 10
 
 ### Tạo/lấy dev token tenant 1
 # Cần JWT_DEV_TOKEN_ENABLED=true trong .env.
