@@ -54,6 +54,14 @@ Ghi nhớ ở mức Phase 1:
 
 Không nên kết luận cứng rằng mọi database đều giống PostgreSQL, hoặc mọi PostgreSQL setup đều ra cùng plan. Luôn dùng `EXPLAIN` để verify.
 
+Trong lab 07 có dùng `text_pattern_ops` cho index prefix search:
+
+```sql
+CREATE INDEX ... ON master_data_pattern_lab (tenant_id, name text_pattern_ops);
+```
+
+Đây là cách giúp PostgreSQL dùng B-tree rõ hơn cho pattern dạng `LIKE 'Laptop%'` trong bài lab. Chưa cần học sâu operator class ở giai đoạn này; chỉ cần hiểu rằng prefix search có điều kiện kỹ thuật riêng, và phải verify bằng `EXPLAIN`.
+
 ## Contains search và `pg_trgm`
 
 Khi bài toán thật cần tìm chứa chuỗi như:
@@ -134,6 +142,86 @@ Trong lab, nếu thấy `Seq Scan` dù đã tạo index, chưa vội kết luậ
 - đã `ANALYZE` chưa;
 - index có đúng thứ tự cột không;
 - điều kiện có dùng function/wildcard làm index khó dùng không.
+
+## Đọc EXPLAIN trong bài lab 07
+
+Ở bài lab 07, không nên chỉ nhìn `Execution Time`. Thời gian chạy có thể dao động do cache, máy local, Docker, dữ liệu vừa mới đọc, hoặc lần chạy đầu/chạy sau. Hãy đọc thêm các phần sau:
+
+### `Index Cond` và `Filter`
+
+`Index Cond` cho biết điều kiện nào được dùng để truy cập index.
+
+Ví dụ tốt:
+
+```text
+Index Cond: ((tenant_id = 1) AND (code = 'ITEM-01-000001'))
+```
+
+Nghĩa là PostgreSQL dùng cả `tenant_id` và `code` trong index lookup.
+
+`Filter` cho biết điều kiện được áp dụng sau khi PostgreSQL đã lấy candidate rows.
+
+Ví dụ cần chú ý:
+
+```text
+Index Cond: (tenant_id = 1)
+Filter: (name ~~ '%Dell%')
+```
+
+Plan này vẫn dùng index, nhưng chủ yếu dùng index để giới hạn `tenant_id`. Điều kiện contains search `name LIKE '%Dell%'` không thật sự giúp truy cập B-tree index; nó chỉ lọc sau.
+
+Đây là lý do trong multi-tenant query bạn có thể thấy index xuất hiện rất nhiều: vì `tenant_id` gần như luôn có trong query. Muốn biết điều kiện search có dùng index không, hãy xem điều kiện đó nằm ở `Index Cond` hay chỉ ở `Filter`.
+
+### Estimated rows và actual rows
+
+Trong plan thường có:
+
+```text
+rows=...
+actual rows=...
+```
+
+- `rows` là số dòng planner ước lượng.
+- `actual rows` là số dòng thật sự trả về khi chạy `EXPLAIN ANALYZE`.
+
+Nếu hai con số lệch nhiều, planner có thể chọn plan chưa tối ưu vì thống kê dữ liệu không phản ánh đúng thực tế hoặc điều kiện query khó ước lượng. Ở mức hiện tại, chỉ cần biết sự lệch này là tín hiệu cần xem lại data distribution, statistics hoặc query pattern.
+
+### `Rows Removed by Filter`
+
+`Rows Removed by Filter` cho biết PostgreSQL đã lấy một số candidate rows rồi loại bỏ sau bằng `Filter`.
+
+Nếu con số này lớn, nghĩa là index chỉ giúp thu hẹp một phần, còn điều kiện lọc chính vẫn phải làm nhiều việc sau đó.
+
+Trong lab 07, case contains search có thể cho thấy:
+
+- `tenant_id` nằm trong `Index Cond`;
+- `name LIKE '%Dell%'` nằm trong `Filter`;
+- nhiều dòng bị loại bởi filter.
+
+Kết luận: plan có index-assisted, nhưng B-tree chưa giải quyết tốt contains search.
+
+### Buffers ở mức cơ bản
+
+`BUFFERS` cho biết PostgreSQL đụng tới bao nhiêu block dữ liệu/index.
+
+Ở mức học hiện tại:
+
+- buffer ít hơn thường là tín hiệu tốt;
+- buffer nhiều nghĩa là query phải đọc/chạm nhiều dữ liệu hơn;
+- không cần tối ưu buffer sâu trong Phase 1.
+
+Đừng dùng buffer như chỉ số duy nhất. Hãy đọc cùng scan type, `Index Cond`, `Filter`, rows estimate và actual rows.
+
+### Cách kết luận trong lab này
+
+Khi so sánh hai plan, hãy tự hỏi:
+
+1. Scan type là gì: `Seq Scan`, `Index Scan`, `Bitmap Index Scan`, `Bitmap Heap Scan`?
+2. Điều kiện nào nằm trong `Index Cond`?
+3. Điều kiện nào nằm trong `Filter`?
+4. Có nhiều `Rows Removed by Filter` không?
+5. Estimated rows và actual rows lệch nhiều không?
+6. `Execution Time` có khác biệt ổn định qua nhiều lần chạy không, hay chỉ nhiễu local?
 
 ## Query pattern nên nhớ cho tenant-aware backend
 

@@ -15,66 +15,40 @@
  * - Trong shared-table multi-tenant, tenant_id vẫn là điều kiện correctness,
  *   không chỉ là điều kiện performance.
  *
- * Cách dùng đề xuất:
- * 1. Chạy baseline trước:
- *      make sql-reset
- *      make sql-all
- * 2. Mở file này và tự điền từng TODO.
- * 3. Chạy từng phần, đọc EXPLAIN, ghi nhận scan type.
- *
- * Lưu ý:
- * - Đây là guided skeleton. Không có full lời giải sẵn.
- * - Nếu bảng nhỏ, PostgreSQL có thể chọn Seq Scan dù có index.
- * - Sau khi tạo/sinh nhiều dữ liệu hoặc tạo index, nhớ ANALYZE.
+ * Cách đọc bài này:
+ * - Xem Index Cond để biết phần nào thật sự được dùng để truy cập index.
+ * - Xem Filter / Rows Removed by Filter để biết phần nào chỉ lọc sau khi lấy
+ *   candidate rows.
+ * - Nếu query tenant-aware luôn có tenant_id, PostgreSQL có thể dùng index
+ *   nhờ tenant_id. Điều đó chưa chứng minh điều kiện LIKE/lower(...) cũng
+ *   dùng index.
  *
  * ==============================================================
  */
 
--- ==============================================================
--- 0. Pre-check: đọc lại bảng thật
--- ==============================================================
+\echo '=============================================================='
+\echo '0. Pre-check: bảng thật master_data'
+\echo '=============================================================='
 
--- TODO:
--- - Inspect bảng master_data hiện có bao nhiêu dòng.
--- - Inspect index/constraint hiện có trên master_data.
--- - Nhắc lại vì sao không drop constraint thật UNIQUE (tenant_id, code).
+SELECT COUNT(*) AS master_data_rows
+FROM master_data;
 
-SELECT COUNT(*) FROM master_data;
 SELECT schemaname, tablename, indexname, indexdef
 FROM pg_indexes
 WHERE tablename = 'master_data'
   AND schemaname = 'public'
-ORDER by indexname;
+ORDER BY indexname;
 
--- Gợi ý một phần:
--- SELECT COUNT(*) FROM master_data;
--- SELECT indexname, indexdef FROM pg_indexes WHERE tablename = 'master_data';
+/*
+ * Ghi nhớ:
+ * - master_data thật có business constraint UNIQUE (tenant_id, code).
+ * - PostgreSQL tự tạo index để enforce unique constraint đó.
+ * - Không drop constraint thật chỉ để benchmark.
+ */
 
-
--- ==============================================================
--- 1. Chuẩn bị bảng tạm cho lab
--- ==============================================================
-
--- TODO:
--- - Tạo TEMP TABLE master_data_pattern_lab copy từ master_data.
--- - Sinh thêm dữ liệu vừa đủ lớn để planner có cơ hội chọn index.
--- - Dữ liệu nên có nhiều tenant, nhiều category, name/code có prefix lặp lại.
--- - Không cần tạo constraint business trên bảng tạm.
--- - Sau khi chuẩn bị dữ liệu, chạy ANALYZE.
-
--- Gợi ý một phần:
--- DROP TABLE IF EXISTS master_data_pattern_lab;
--- CREATE TEMP TABLE master_data_pattern_lab AS
--- SELECT * FROM master_data;
-
--- TODO:
--- - Dùng generate_series để thêm dữ liệu lab.
--- - Có thể tạo code dạng 'ITEM-' || tenant_id || '-' || n.
--- - Có thể tạo name dạng 'Laptop ...', 'Monitor ...', 'Mouse ...'
---   để test prefix/contains search.
-
--- TODO:
--- ANALYZE master_data_pattern_lab;
+\echo '=============================================================='
+\echo '1. Chuẩn bị bảng tạm cho lab'
+\echo '=============================================================='
 
 DROP TABLE IF EXISTS master_data_pattern_lab;
 
@@ -82,12 +56,29 @@ CREATE TEMP TABLE master_data_pattern_lab AS
 SELECT id, tenant_id, code, name, category, is_active, created_at
 FROM master_data;
 
+/*
+ * Dataset vừa phải cho máy local:
+ * - 200.000 row lab.
+ * - 49 tenant, mỗi tenant khoảng 4.000 row.
+ * - Có category/name lặp lại để test prefix và contains search.
+ *
+ * Lưu ý: công thức tenant_id phải là ((gs - 1) % 49) + 1.
+ * Nếu viết sai precedence, tenant_id có thể tăng theo gs và làm lab lệch.
+ * Không dùng 50 tenant ở đây vì 50 chia hết cho 5 category, dễ làm mỗi tenant
+ * bị lệch về một category cố định.
+ */
 INSERT INTO master_data_pattern_lab (id, tenant_id, code, name, category, is_active, created_at)
 SELECT
     1000000 + gs AS id,
-    (gs - 1 % 100) + 1 AS tenant_id, -- 100 tenants
-    'ITEM-' || lpad(gs::text, 8, '0') AS code,
-    'Du lieu lab ' || gs AS name,
+    ((gs - 1) % 49) + 1 AS tenant_id,
+    'ITEM-' || lpad((((gs - 1) % 49) + 1)::text, 2, '0') || '-' || lpad(gs::text, 6, '0') AS code,
+    CASE gs % 5
+        WHEN 0 THEN 'Laptop Dell Lab ' || gs
+        WHEN 1 THEN 'Monitor Dell Lab ' || gs
+        WHEN 2 THEN 'Mouse Logitech Lab ' || gs
+        WHEN 3 THEN 'Keyboard Mechanical Lab ' || gs
+        ELSE 'Accessory USB Lab ' || gs
+    END AS name,
     CASE gs % 5
         WHEN 0 THEN 'Laptop'
         WHEN 1 THEN 'Monitor'
@@ -97,191 +88,219 @@ SELECT
     END AS category,
     TRUE AS is_active,
     now() - ((gs % 365) * interval '1 day') AS created_at
-FROM generate_series(1, 5000000) AS gs; -- 5 triệu bản ghi
+FROM generate_series(1, 200000) AS gs;
 
--- ==============================================================
--- 2. Case A: exact match và B-tree index
--- ==============================================================
+ANALYZE master_data_pattern_lab;
 
--- Mục tiêu:
--- - So sánh query exact match trước/sau khi có index.
--- - Quan sát Seq Scan, Index Scan hoặc Bitmap Scan.
+SELECT COUNT(*) AS lab_rows
+FROM master_data_pattern_lab;
 
--- TODO:
--- - Chạy EXPLAIN (ANALYZE, BUFFERS) với:
---   WHERE tenant_id = ... AND code = ...
--- - Ghi nhận plan khi chưa có index thử nghiệm.
+SELECT tenant_id, COUNT(*) AS rows_per_tenant
+FROM master_data_pattern_lab
+GROUP BY tenant_id
+ORDER BY tenant_id
+LIMIT 5;
+
+\echo '=============================================================='
+\echo '2. Case A: exact match trước/sau composite B-tree index'
+\echo '=============================================================='
+
+\echo 'Case A1 - Chưa có index thử nghiệm: thường Seq Scan'
 EXPLAIN (ANALYZE, BUFFERS)
-SELECT * FROM master_data_pattern_lab
-WHERE tenant_id = 1 AND code = 'ITEM-00000001';
--- Chạy Seq Scan
+SELECT *
+FROM master_data_pattern_lab
+WHERE tenant_id = 1
+  AND code = 'ITEM-01-000001';
 
--- TODO:
--- - Tạo index phù hợp trên bảng tạm.
--- - Chạy ANALYZE.
--- - Chạy lại cùng query.
-CREATE INDEX idx_master_data_pattern_lab_code ON master_data_pattern_lab (tenant_id, code);
+CREATE INDEX idx_pattern_lab_tenant_code
+ON master_data_pattern_lab (tenant_id, code);
 
+ANALYZE master_data_pattern_lab;
+
+\echo 'Case A2 - Có index (tenant_id, code): search condition nên nằm trong Index Cond'
 EXPLAIN (ANALYZE, BUFFERS)
-SELECT * FROM master_data_pattern_lab
-WHERE tenant_id = 1 AND code = 'ITEM-00000001';
+SELECT *
+FROM master_data_pattern_lab
+WHERE tenant_id = 1
+  AND code = 'ITEM-01-000001';
 
--- Câu hỏi tự trả lời:
--- - Scan type thay đổi không? -- Thay đổi sang Bitmap Scan.
--- - Estimated rows và actual rows có gần nhau không? -- Với riêng query hiện tại thì lệch rất nhiều
--- - Query có selective không? -- Rất selective, chỉ trả về 1 dòng.
+/*
+ * Kết luận kỳ vọng:
+ * - Trước index: Seq Scan.
+ * - Sau index: Index Scan hoặc Bitmap Index Scan.
+ * - Nếu nhìn thấy Index Cond gồm cả tenant_id và code, nghĩa là cả hai điều kiện
+ *   đều giúp truy cập index.
+ */
 
+\echo '=============================================================='
+\echo '3. Case B: prefix LIKE và tenant_id index confounding'
+\echo '=============================================================='
 
--- ==============================================================
--- 3. Case B: prefix LIKE
--- ==============================================================
-
--- Mục tiêu:
--- - Quan sát pattern dạng name LIKE 'Lap%'.
--- - Đây là prefix search, PostgreSQL có thể cân nhắc B-tree index
---   nếu điều kiện/collation/operator class phù hợp.
-
--- TODO:
--- - Chạy EXPLAIN cho query tenant-aware:
---   WHERE tenant_id = ... AND name LIKE 'Lap%'
--- - Tạo index phù hợp để thử.
--- - Nếu PostgreSQL vẫn chọn Seq Scan, ghi lại giả thuyết:
---   bảng nhỏ, selectivity thấp, collation/operator class, hoặc cost estimate.
-CREATE INDEX idx_master_data_pattern_lab_category ON master_data_pattern_lab (tenant_id, category);
-
+\echo 'Case B1 - Prefix LIKE khi chỉ có index (tenant_id, code)'
 EXPLAIN (ANALYZE, BUFFERS)
-SELECT * FROM master_data_pattern_lab
-WHERE tenant_id = 1 AND category LIKE 'Lap%';
+SELECT *
+FROM master_data_pattern_lab
+WHERE tenant_id = 1
+  AND name LIKE 'Laptop%';
 
--- Không cần xử lý mọi vấn đề collation trong bài này.
--- Chỉ cần biết prefix search khác contains search.
+/*
+ * Nếu plan dùng idx_pattern_lab_tenant_code, hãy đọc kỹ:
+ * - Index Cond thường chỉ có tenant_id.
+ * - name LIKE 'Laptop%' thường nằm ở Filter.
+ * Điều này nghĩa là index giúp giới hạn tenant, chưa chắc giúp search theo name.
+ */
 
+CREATE INDEX idx_pattern_lab_tenant_name_prefix
+ON master_data_pattern_lab (tenant_id, name text_pattern_ops);
 
--- ==============================================================
--- 4. Case C: leading wildcard / contains LIKE
--- ==============================================================
+ANALYZE master_data_pattern_lab;
 
--- Mục tiêu:
--- - Quan sát pattern name LIKE '%top%' hoặc '%Laptop%'.
--- - B-tree index thường không phù hợp tự nhiên với contains search.
-
--- TODO:
--- - Chạy EXPLAIN cho:
---   WHERE tenant_id = ... AND name LIKE '%top%'
--- - So sánh với prefix search ở Case B.
-
+\echo 'Case B2 - Prefix LIKE sau index (tenant_id, name text_pattern_ops)'
 EXPLAIN (ANALYZE, BUFFERS)
-SELECT * FROM master_data_pattern_lab
-WHERE tenant_id = 1 AND category LIKE '%top%';
+SELECT *
+FROM master_data_pattern_lab
+WHERE tenant_id = 1
+  AND name LIKE 'Laptop%';
 
--- Câu hỏi tự trả lời:
--- - PostgreSQL có dùng B-tree index không?
--- - Nếu vẫn Seq Scan, điều đó có hợp lý không?
--- - Vì sao contains search thường cần chiến lược khác?
+/*
+ * Kết luận kỳ vọng:
+ * - Prefix search có cơ hội dùng B-tree tốt hơn contains search.
+ * - Với text_pattern_ops, điều kiện prefix có thể xuất hiện trong Index Cond
+ *   dưới dạng range trên name.
+ */
 
--- Thấy cả 2 vẫn sử dụng Bitmap Heap Scan, chắc là nhờ Codex tự chạy và review lại
+\echo '=============================================================='
+\echo '4. Case C: leading wildcard / contains LIKE'
+\echo '=============================================================='
 
--- ==============================================================
--- 5. Case D: expression index với lower(name)
--- ==============================================================
+\echo 'Case C - Contains LIKE với cùng index prefix'
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT *
+FROM master_data_pattern_lab
+WHERE tenant_id = 1
+  AND name LIKE '%Dell%';
 
--- Mục tiêu:
--- - Hiểu vì sao query dùng lower(name) có thể cần expression index.
+/*
+ * Kết luận kỳ vọng:
+ * - Plan vẫn có thể dùng index vì tenant_id.
+ * - Nhưng name LIKE '%Dell%' thường nằm ở Filter, không phải Index Cond.
+ * - Đây là điểm dễ nhầm: có index-assisted plan không đồng nghĩa contains search
+ *   đã được B-tree index hỗ trợ tốt.
+ *
+ * Nếu requirement thật là contains/fuzzy search, cân nhắc pg_trgm + GIN/GiST.
+ */
 
--- TODO:
--- - Chạy EXPLAIN cho:
---   WHERE tenant_id = ... AND lower(name) = lower('...')
--- - Sau đó tự tạo expression index phù hợp trên bảng tạm.
--- - Chạy ANALYZE và chạy lại EXPLAIN.
-EXPLAIN(ANALYZE, BUFFERS)
-SELECT * FROM master_data_pattern_lab
-WHERE tenant_id = 1 AND lower(name) = lower('Du lieu lab 1');
+\echo '=============================================================='
+\echo '5. Case D: lower(name) và expression index'
+\echo '=============================================================='
 
-CREATE INDEX idx_master_data_pattern_lab_lower_name ON master_data_pattern_lab (tenant_id, lower(name));
-EXPLAIN(ANALYZE, BUFFERS)
-SELECT * FROM master_data_pattern_lab
-WHERE tenant_id = 1 AND lower(name) = lower('Du lieu lab 1');
+\echo 'Case D1 - lower(name) trước expression index'
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT *
+FROM master_data_pattern_lab
+WHERE tenant_id = 1
+  AND lower(name) = lower('Laptop Dell Lab 50');
 
--- Câu hỏi tự trả lời:
--- - Index thường trên name có đủ không?
--- - Expression index có giúp query lower(name) không?
--- - Trade-off khi dùng expression index là gì?
+CREATE INDEX idx_pattern_lab_tenant_lower_name
+ON master_data_pattern_lab (tenant_id, lower(name));
 
+ANALYZE master_data_pattern_lab;
 
--- ==============================================================
--- 6. Case E: composite index và leftmost prefix
--- ==============================================================
+\echo 'Case D2 - lower(name) sau expression index'
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT *
+FROM master_data_pattern_lab
+WHERE tenant_id = 1
+  AND lower(name) = lower('Laptop Dell Lab 50');
 
--- Mục tiêu:
--- - Quan sát index nhiều cột như (tenant_id, category, code/name).
--- - Hiểu cột bên trái trong B-tree multicolumn index quan trọng thế nào.
+/*
+ * Kết luận kỳ vọng:
+ * - Trước expression index: có thể chỉ dùng tenant_id rồi Filter lower(name).
+ * - Sau expression index: lower(name) có thể đi vào Index Cond.
+ * - Expression index hữu ích khi query thật sự dùng expression đó thường xuyên.
+ */
 
--- TODO:
--- - Tạo một composite index trên bảng tạm, ví dụ bắt đầu bằng tenant_id.
--- - Chạy EXPLAIN cho các pattern:
---   1. WHERE tenant_id = ...
---   2. WHERE tenant_id = ... AND category = ...
---   3. WHERE category = ...    -- thiếu tenant_id, chỉ dùng để quan sát
---
--- Lưu ý:
--- - Pattern 3 không phải query backend an toàn.
--- - Dùng nó để quan sát leftmost prefix, không dùng làm design production.
+\echo '=============================================================='
+\echo '6. Case E: composite index và leftmost prefix'
+\echo '=============================================================='
 
--- Câu hỏi tự trả lời:
--- - Pattern nào tận dụng index tốt hơn?
--- - Vì sao query thiếu tenant_id vừa nguy hiểm, vừa có thể không hợp index?
-CREATE INDEX idx_master_data_pattern_lab_tenant_category_code ON master_data_pattern_lab (tenant_id, category, code);
+CREATE INDEX idx_pattern_lab_tenant_category_code
+ON master_data_pattern_lab (tenant_id, category, code);
 
-EXPLAIN(ANALYZE, BUFFERS)
-SELECT * FROM master_data_pattern_lab
+ANALYZE master_data_pattern_lab;
+
+\echo 'Case E1 - WHERE tenant_id = ...'
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT *
+FROM master_data_pattern_lab
 WHERE tenant_id = 1;
 
-EXPLAIN(ANALYZE, BUFFERS)
-SELECT * FROM master_data_pattern_lab
-WHERE tenant_id = 1 AND category = 'Laptop';
+\echo 'Case E2 - WHERE tenant_id = ... AND category = ...'
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT *
+FROM master_data_pattern_lab
+WHERE tenant_id = 1
+  AND category = 'Laptop';
 
-EXPLAIN(ANALYZE, BUFFERS)
-SELECT * FROM master_data_pattern_lab
+\echo 'Case E3 - WHERE category = ... thiếu tenant_id, chỉ quan sát leftmost prefix'
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT *
+FROM master_data_pattern_lab
 WHERE category = 'Laptop';
 
--- ==============================================================
--- 7. Optional: pg_trgm / GIN cho contains search
--- ==============================================================
+/*
+ * Kết luận kỳ vọng:
+ * - E1 có thể dùng phần tenant_id của index.
+ * - E2 có thể dùng tenant_id + category tốt hơn.
+ * - E3 thiếu cột leftmost tenant_id nên thường kém phù hợp với index này.
+ * - Trong backend thật, E3 còn là query không tenant-aware nên nguy hiểm.
+ */
 
--- Mục tiêu:
--- - Chỉ nhận biết hướng xử lý khi cần contains/fuzzy search thật.
--- - Không bắt buộc làm trong Phase 1 nếu chưa sẵn sàng.
+\echo '=============================================================='
+\echo '7. Optional: pg_trgm / GIN cho contains search'
+\echo '=============================================================='
 
--- TODO optional:
--- - Đọc docs PostgreSQL về pg_trgm.
--- - Nếu database cho phép CREATE EXTENSION, thử trên bảng tạm.
--- - Nếu không làm, ghi comment giải thích khi nào sẽ cân nhắc pg_trgm/GIN.
+/*
+ * Không bắt buộc chạy trong Phase 1.
+ *
+ * Nếu sau này cần search kiểu contains/fuzzy:
+ * - Đọc docs pg_trgm.
+ * - Cân nhắc CREATE EXTENSION IF NOT EXISTS pg_trgm.
+ * - Cân nhắc GIN/GiST index với gin_trgm_ops.
+ * - Đo lại bằng EXPLAIN và cân nhắc index size/write cost.
+ *
+ * Gợi ý KHÔNG hoàn chỉnh:
+ * -- CREATE EXTENSION IF NOT EXISTS pg_trgm;
+ * -- CREATE INDEX ... USING GIN (name gin_trgm_ops);
+ */
 
--- Gợi ý KHÔNG hoàn chỉnh:
--- -- CREATE EXTENSION IF NOT EXISTS pg_trgm;
--- -- CREATE INDEX ... USING GIN (... gin_trgm_ops);
+\echo '=============================================================='
+\echo '8. Reflection'
+\echo '=============================================================='
 
--- ==============================================================
--- 8. Reflection
--- ==============================================================
+/*
+ * Tự trả lời sau khi chạy:
+ *
+ * 1. Query pattern nào dễ dùng B-tree index?
+ *    - Exact match và prefix search phù hợp điều kiện/operator class.
+ *
+ * 2. Pattern nào khó dùng B-tree index?
+ *    - Leading wildcard / contains LIKE như '%Dell%'.
+ *
+ * 3. Vì sao PostgreSQL vẫn có thể chọn Seq Scan?
+ *    - Bảng nhỏ, điều kiện ít selective, statistics/cost estimate, hoặc pattern
+ *      không phù hợp index.
+ *
+ * 4. Làm sao biết search condition thật sự dùng index?
+ *    - Xem điều kiện đó có nằm trong Index Cond không.
+ *    - Nếu chỉ nằm trong Filter, PostgreSQL lấy candidate rows trước rồi lọc sau.
+ *
+ * 5. Rule backend multi-tenant là gì?
+ *    - Query nghiệp vụ phải scoped theo tenant_id từ trusted context.
+ */
 
--- TODO trả lời ngắn sau khi tự chạy:
--- - Query pattern nào dễ dùng B-tree index?
--- - Pattern nào khó dùng B-tree index?
--- - Vì sao PostgreSQL vẫn có thể chọn Seq Scan?
--- - Composite index leftmost prefix ảnh hưởng gì?
--- - Trong backend multi-tenant, rule query tenant-aware là gì?
--- - Khi nào nên cân nhắc pg_trgm/GIN thay vì B-tree?
+\echo '=============================================================='
+\echo '9. Cleanup'
+\echo '=============================================================='
 
-
--- ==============================================================
--- 9. Cleanup
--- ==============================================================
-
--- TODO:
--- - Drop bảng tạm nếu muốn cleanup rõ ràng.
--- - TEMP TABLE cũng tự biến mất khi session kết thúc, nhưng explicit cleanup
---   giúp lab dễ đọc hơn.
-
--- Gợi ý:
 DROP TABLE IF EXISTS master_data_pattern_lab;

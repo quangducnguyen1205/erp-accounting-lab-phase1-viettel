@@ -325,3 +325,36 @@ Vì vậy JWT tạm chỉ là bridge học tập:
 ### Liên hệ với feedback mentor
 
 Mentor nhắc rằng khi đã chạm tới một công nghệ trong feature thật thì nên học công nghệ đó theo ngữ cảnh thật nếu feasible. Vì vậy roadmap mới giữ JWT tạm như bước cầu nối, nhưng đưa Keycloak/OIDC lên thành mini-lab hoặc awareness có evidence rõ. Điều quan trọng là không overclaim: demo hiện tại đã tenant-aware và có regression test, nhưng auth vẫn là lab-level.
+
+## Milestone #6: PostgreSQL index query-pattern mini-lab
+
+Milestone #6 bổ sung phần mentor feedback: index không chỉ là `CREATE INDEX`, mà phụ thuộc rất nhiều vào query pattern và cách PostgreSQL planner ước lượng chi phí.
+
+### Những pattern đã quan sát trong lab 07
+
+Lab dùng bảng tạm `master_data_pattern_lab`, sinh khoảng 200.000 dòng local và không đụng vào business constraint thật của `master_data`.
+
+Kết quả verify định tính:
+
+- Exact match `tenant_id + code`: trước index dùng `Seq Scan`; sau index `(tenant_id, code)` dùng `Index Scan`, `Index Cond` có cả `tenant_id` và `code`.
+- Prefix search `name LIKE 'Laptop%'`: nếu chỉ có index bắt đầu bằng `tenant_id`, PostgreSQL có thể dùng index để giới hạn tenant nhưng `name LIKE` vẫn nằm ở `Filter`. Sau index `(tenant_id, name text_pattern_ops)`, điều kiện prefix trên `name` xuất hiện trong `Index Cond`.
+- Contains search `name LIKE '%Dell%'`: plan vẫn có thể dùng index nhờ `tenant_id`, nhưng `%Dell%` nằm ở `Filter`. Đây là dấu hiệu B-tree chưa thật sự hỗ trợ tốt contains search.
+- `lower(name)`: trước expression index, `lower(name)` nằm ở `Filter`; sau index `(tenant_id, lower(name))`, expression này đi vào `Index Cond`.
+- Composite index `(tenant_id, category, code)`: query có `tenant_id + category` dùng index tốt hơn; query chỉ có `category` thiếu leftmost column nên quay về `Seq Scan` trong lab.
+
+### Cách đọc EXPLAIN rút ra
+
+- `Index Cond` cho biết điều kiện nào được dùng để truy cập index.
+- `Filter` cho biết điều kiện nào chỉ lọc sau khi đã lấy candidate rows.
+- `Rows Removed by Filter` lớn nghĩa là PostgreSQL đã lấy nhiều row rồi loại bỏ sau.
+- Estimated rows và actual rows nên được so sánh để xem planner ước lượng có gần thực tế không.
+- `Execution Time` hữu ích nhưng dễ nhiễu do cache/máy local; không nên kết luận chỉ dựa trên thời gian một lần chạy.
+
+### Kết luận học được
+
+- B-tree rất phù hợp với exact match và có thể hỗ trợ prefix search nếu index/operator class phù hợp.
+- Leading wildcard hoặc contains search như `%abc%` thường không phù hợp với B-tree thông thường; khi có requirement thật nên cân nhắc `pg_trgm` + GIN/GiST.
+- Query dùng function như `lower(name)` có thể cần expression index.
+- Composite index phải theo query pattern thật; với shared-table multi-tenant, `tenant_id` thường nên đứng đầu.
+- Việc plan có dùng index không có nghĩa toàn bộ điều kiện search đã dùng index. Phải phân biệt `Index Cond` và `Filter`.
+- Query thiếu `tenant_id` vẫn là lỗi isolation trước khi là lỗi performance.
