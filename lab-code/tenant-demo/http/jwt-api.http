@@ -5,8 +5,14 @@
 # Header X-Tenant-Id chỉ còn là legacy mode khi app.jwt.enabled=false.
 
 @baseUrl = http://localhost:8080
-@jwtTenant1 = eyJhbGciOiJIUzI1NiJ9.eyJ0ZW5hbnRfaWQiOjEsImlzcyI6InRlbmFudC1kZW1vLWxvY2FsIiwic3ViIjoiZGV2LXVzZXItdGVuYW50LTEiLCJleHAiOjE3Nzg3MzM5MjUsImlhdCI6MTc3ODczMDMyNSwicm9sZXMiOlsiVVNFUiJdfQ.dbd5QzJMC_IPDLPLTKAdkaoxsiNYdCU_iKL6VRwUk04
-@jwtTenant2 = eyJhbGciOiJIUzI1NiJ9.eyJ0ZW5hbnRfaWQiOjIsImlzcyI6InRlbmFudC1kZW1vLWxvY2FsIiwic3ViIjoiZGV2LXVzZXItdGVuYW50LTIiLCJleHAiOjE3Nzg3MzM5NDUsImlhdCI6MTc3ODczMDM0NSwicm9sZXMiOlsiVVNFUiJdfQ.tFK2JgDsjhHVUUKOB9J1wHqxErtl6f24icQ3yTj6zqg
+# Không commit token thật vào file .http.
+# Cách an toàn cho lab:
+# 1. Gọi endpoint dev token ở dưới.
+# 2. Copy accessToken từ response.
+# 3. Paste tạm vào biến dưới trong working tree local, hoặc dùng private env
+#    của IntelliJ HTTP Client nếu muốn tái sử dụng nhiều lần.
+@jwtTenant1 = <paste-dev-token-tenant-1-here>
+@jwtTenant2 = <paste-dev-token-tenant-2-here>
 @invalidJwt = invalid.jwt.token
 @code = LAPTOP-01
 @tenant2RecordId = 10

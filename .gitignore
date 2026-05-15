@@ -21,6 +21,10 @@ scratch/
 .env.local
 **/.env.local
 
+# IntelliJ HTTP Client private variables/tokens
+http-client.private.env.json
+**/http-client.private.env.json
+
 # File build sinh bởi Maven/Gradle
 target/
 **/target/

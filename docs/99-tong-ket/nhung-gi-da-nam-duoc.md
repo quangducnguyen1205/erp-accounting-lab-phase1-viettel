@@ -310,3 +310,18 @@ Runtime HTTP cũng đã verify pattern tương tự: dev token tenant 1/2 gọi 
 - Backend chỉ tin `tenant_id` sau khi JWT đã được validate.
 - `TenantContext.clear()` vẫn cần chạy sau request để tránh rò tenant giữa các request/thread.
 - Index và JWT không thay thế tenant-aware repository query; service/repository vẫn phải query theo `tenantId`.
+
+### Khác gì với Keycloak/OIDC production?
+
+Trong lab hiện tại, backend tự tạo dev token và tự validate bằng shared secret local để học flow bảo mật tối thiểu. Trong hệ thống production, phần phát hành token thường thuộc về Authorization Server như Keycloak. Backend lúc đó đóng vai trò Resource Server: kiểm tra issuer, chữ ký/JWK, expiration, scope/role/claim rồi mới tin các thông tin như `tenant_id`.
+
+Vì vậy JWT tạm chỉ là bridge học tập:
+
+- giúp bỏ dần cơ chế `X-Tenant-Id` trực tiếp;
+- giúp hiểu `Authorization: Bearer <token>` và Spring Security filter chain;
+- giúp chứng minh tenant context có thể lấy từ claim đã validate;
+- chưa thay thế Keycloak/OIDC, RBAC production, key rotation hoặc user/session management thật.
+
+### Liên hệ với feedback mentor
+
+Mentor nhắc rằng khi đã chạm tới một công nghệ trong feature thật thì nên học công nghệ đó theo ngữ cảnh thật nếu feasible. Vì vậy roadmap mới giữ JWT tạm như bước cầu nối, nhưng đưa Keycloak/OIDC lên thành mini-lab hoặc awareness có evidence rõ. Điều quan trọng là không overclaim: demo hiện tại đã tenant-aware và có regression test, nhưng auth vẫn là lab-level.
