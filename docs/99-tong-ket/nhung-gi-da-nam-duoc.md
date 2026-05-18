@@ -358,3 +358,36 @@ Kết quả verify định tính:
 - Composite index phải theo query pattern thật; với shared-table multi-tenant, `tenant_id` thường nên đứng đầu.
 - Việc plan có dùng index không có nghĩa toàn bộ điều kiện search đã dùng index. Phải phân biệt `Index Cond` và `Filter`.
 - Query thiếu `tenant_id` vẫn là lỗi isolation trước khi là lỗi performance.
+
+## Milestone #7: Flyway rollback/failure handling
+
+Milestone #7 bổ sung phần mentor feedback: migration không chỉ là viết SQL thay đổi schema, mà cần hiểu cách migration được execute, fail, rollback/repair và quản lý lịch sử.
+
+### Những điểm đã nắm
+
+- Flyway chạy versioned migration theo thứ tự và ghi lịch sử vào `flyway_schema_history`.
+- `migrate` chạy migration pending; `validate` kiểm tra migration files với history; `repair` sửa metadata trong history nhưng không sửa schema/data thật.
+- Không nên sửa migration đã apply vì checksum/history sẽ lệch giữa các môi trường.
+- Undo migration của Flyway tồn tại nhưng có giới hạn edition và không phải cơ chế rollback tự động cho mọi lỗi.
+
+### Quan sát từ mini-lab
+
+Mini-lab dùng schema riêng `flyway_failure_lab`, không đụng chain `tenant-demo` `V1/V2/V3`.
+
+Kết quả verify:
+
+- `V1` và `V2` chạy thành công, được ghi vào `flyway_schema_history`.
+- `V3__intentional_failure.sql` fail vì thêm trùng cột `broken_note`.
+- Với PostgreSQL transactional DDL, Flyway rollback sạch migration `V3`; cột `broken_note` không còn lại.
+- `flyway_schema_history` không có row `V3` failed trong scenario này; `flyway info` xem `V3` là `Pending`.
+- `validate` báo còn migration `V3` resolved nhưng chưa applied; đây không phải dấu hiệu phải chạy `repair`.
+
+### Kết luận về `repair`
+
+`repair` không phải lệnh cần chạy sau mọi migration failure. Trong lab PostgreSQL này, failure được rollback sạch nên không cần `repair`.
+
+`repair` phù hợp hơn khi schema history thật sự cần sửa metadata, ví dụ có failed migration entry, checksum/description/type lệch, hoặc migration missing đã được team quyết định xử lý. Nếu database object thật bị tạo dở dang, phải cleanup object/data bằng SQL phù hợp trước; `repair` không tự làm việc đó.
+
+### Liên hệ shared-table SaaS
+
+Trong shared-table multi-tenant, một migration lỗi trên bảng chung có thể ảnh hưởng tất cả tenant. Vì vậy trước khi chạy migration cần có rollback/forward-fix plan, kiểm tra lock/transaction behavior, ưu tiên backward-compatible migration và test trên local/staging trước.
