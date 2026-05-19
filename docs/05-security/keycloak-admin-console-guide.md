@@ -48,17 +48,35 @@ PostgreSQL
 
 ## Screenshot checklist
 
-Hiện tại tài liệu dùng placeholder để không ép phải chạy Keycloak/chụp màn hình trong repo. Khi chạy mini-lab thật, có thể thay các dòng này bằng ảnh nếu cần.
+Các ảnh dưới đây được chụp từ Keycloak local dev tại `http://localhost:18080` với dữ liệu mini-lab `viettel-lab`. Không có access token thật hoặc secret production trong ảnh.
 
-> [Screenshot: màn hình đăng nhập Keycloak Admin Console tại `http://localhost:18080`]
+![Màn hình đăng nhập Keycloak Admin Console](../assets/keycloak/01-admin-login.jpg)
 
-> [Screenshot: realm selector và nút tạo realm `viettel-lab`]
+*Màn hình đăng nhập Admin Console. Lab dùng tài khoản dev-only `admin/admin` từ `docker-compose.yml`.*
 
-> [Screenshot: trang cấu hình client `tenant-demo-api-client`]
+![Trang landing sau khi đăng nhập](../assets/keycloak/02-admin-landing.jpg)
 
-> [Screenshot: user `tenant1-user` với attribute `tenant_id = 1`]
+*Sau khi đăng nhập, menu bên trái là nơi đi tới Clients, Users, Realm settings, Events, Sessions và các phần cấu hình khác.*
 
-> [Screenshot: protocol mapper đưa `tenant_id` vào access token]
+![Manage realms và nút tạo realm](../assets/keycloak/03-manage-realms-create.jpg)
+
+*Trang quản lý realm. Mini-lab tạo realm riêng `viettel-lab` để không cấu hình trực tiếp trên realm `master`.*
+
+![Trang cấu hình client tenant-demo-api-client](../assets/keycloak/04-client-settings.jpg)
+
+*Client `tenant-demo-api-client` là client local để xin token trong mini-lab. Direct Access Grants chỉ dùng để học local nhanh.*
+
+![User tenant1-user với attribute tenant_id](../assets/keycloak/05-user-tenant-attribute.jpg)
+
+*User `tenant1-user` có attribute `tenant_id = 1`. Claim này chỉ đáng tin sau khi token đã được Keycloak ký và backend validate.*
+
+![Protocol mapper tenant-id](../assets/keycloak/06-tenant-id-mapper.jpg)
+
+*Mapper `tenant-id` đưa user attribute `tenant_id` vào token claim `tenant_id`, để backend có thể set `TenantContext` sau khi token hợp lệ.*
+
+![Realm settings và endpoint metadata](../assets/keycloak/07-realm-settings.jpg)
+
+*Realm settings có phần Endpoints. `OpenID Endpoint Configuration` dẫn tới metadata OIDC, nơi có `issuer`, `token_endpoint`, `jwks_uri`.*
 
 ## Cần dùng ngay trong giai đoạn hiện tại
 
