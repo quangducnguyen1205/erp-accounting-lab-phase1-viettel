@@ -69,6 +69,10 @@ sql-6: ## Nạp 06-migration-lock-observation.sql (migration/lock lab)
 sql-7: ## Nạp 07-index-query-patterns.sql (index/query pattern lab)
 	docker exec -i $(CONTAINER_NAME) psql -U $(DB_USER) -d $(DB_NAME) < $(SQL_DIR)/07-index-query-patterns.sql
 
+.PHONY: sql-9
+sql-9: ## Setup 09-acid-isolation-observation.sql (phần quan sát cần 2 session thủ công)
+	docker exec -i $(CONTAINER_NAME) psql -U $(DB_USER) -d $(DB_NAME) < $(SQL_DIR)/09-acid-isolation-observation.sql
+
 .PHONY: sql-all
 sql-all: sql-1 sql-2 ## Nạp bảng + data mẫu (setup nhanh)
 

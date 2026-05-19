@@ -13,10 +13,10 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 66% |
+| **Tiến độ** | 68% |
 | **Tổng task** | 79 |
-| **Đã hoàn thành** | 52 / 79 |
-| **Focus hiện tại** | ACID và isolation levels |
+| **Đã hoàn thành** | 54 / 79 |
+| **Focus hiện tại** | ACID và isolation levels - thực hành observation |
 | **Milestone tiếp theo** | #8 - ACID/isolation levels observation |
 | **Demo cuối Phase 1** | Spring Boot + PostgreSQL/Flyway + tenant-aware API + JWT tạm, có hướng Keycloak mini-lab nếu kịp |
 
@@ -249,8 +249,8 @@ Mục tiêu: bổ sung mindset “execute migration và rollback plan”, không
 
 Mục tiêu: hiểu transaction behavior trước khi mở rộng backend feature, nhất là shared-table nhiều tenant.
 
-- [ ] `[LÝ THUYẾT]` Tạo/read `docs/03-backend-database-mo-rong/acid-isolation-levels-postgresql.md` từ PostgreSQL docs: ACID, isolation levels, dirty read, non-repeatable read, phantom read, default isolation.
-- [ ] `[SKELETON]` Tạo `lab-code/sql-playground/09-acid-isolation-observation.sql` với TODO comments cho quan sát 2 session ở mức cơ bản.
+- [x] `[LÝ THUYẾT]` Tạo/read `docs/03-backend-database-mo-rong/acid-isolation-levels-postgresql.md` từ PostgreSQL docs: ACID, isolation levels, dirty read, non-repeatable read, phantom read, default isolation.
+- [x] `[SKELETON]` Tạo `lab-code/sql-playground/09-acid-isolation-observation.sql` với TODO comments cho quan sát 2 session ở mức cơ bản.
 - [ ] `[THỰC HÀNH]` Tự chạy một hoặc hai observation an toàn: concurrent read/write hoặc transaction visibility; không overdo lock internals.
 - [ ] `[BÁO CÁO]` Ghi summary: vì sao concurrent writes/reads và lock impact quan trọng trong SME SaaS shared table.
 - [ ] `[MILESTONE]` Chốt Milestone #8 - ACID/isolation note + observation summary.

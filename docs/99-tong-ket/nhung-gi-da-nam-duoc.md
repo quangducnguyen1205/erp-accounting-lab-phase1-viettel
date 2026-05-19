@@ -391,3 +391,29 @@ Kết quả verify:
 ### Liên hệ shared-table SaaS
 
 Trong shared-table multi-tenant, một migration lỗi trên bảng chung có thể ảnh hưởng tất cả tenant. Vì vậy trước khi chạy migration cần có rollback/forward-fix plan, kiểm tra lock/transaction behavior, ưu tiên backward-compatible migration và test trên local/staging trước.
+
+## Milestone #8: ACID và isolation levels — ghi chú sau thực hành
+
+Phần này là placeholder để điền sau khi hoàn thành lab transaction/isolation. Mục tiêu là chốt cách đọc behavior cơ bản, không đi quá sâu vào lock internals.
+
+### TODO sau khi đọc theory
+
+- ACID gồm bốn ý nào?
+- `BEGIN`, `COMMIT`, `ROLLBACK` dùng để làm gì?
+- PostgreSQL default isolation level là gì?
+- Dirty read, non-repeatable read, phantom read, serialization anomaly khác nhau thế nào?
+- PostgreSQL thực tế cho phép/ngăn hiện tượng nào ở từng isolation level?
+
+### TODO sau khi chạy lab 09
+
+- Session B có thấy thay đổi chưa commit của Session A không?
+- Hai lần `SELECT` trong `READ COMMITTED` có thể khác nhau thế nào?
+- `REPEATABLE READ` giữ snapshot ra sao?
+- Commit và rollback làm dữ liệu hiển thị khác nhau thế nào?
+
+### TODO liên hệ shared-table SaaS
+
+- Tenant isolation và transaction isolation khác nhau thế nào?
+- Vì sao cùng bảng shared-table nhưng khác tenant chưa chắc cùng row?
+- Khi nào concurrent update trên cùng row trở thành rủi ro nghiệp vụ?
+- Rule thực dụng nào cần nhớ cho backend SME SaaS?
