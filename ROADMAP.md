@@ -13,10 +13,10 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 72% |
+| **Tiến độ** | 75% |
 | **Tổng task** | 79 |
-| **Đã hoàn thành** | 57 / 79 |
-| **Focus hiện tại** | Keycloak/OIDC mini-lab |
+| **Đã hoàn thành** | 59 / 79 |
+| **Focus hiện tại** | Keycloak/OIDC mini-lab - manual token flow |
 | **Milestone tiếp theo** | #9 - Keycloak/OIDC mini-lab hoặc awareness evidence |
 | **Demo cuối Phase 1** | Spring Boot + PostgreSQL/Flyway + tenant-aware API + JWT tạm, có hướng Keycloak mini-lab nếu kịp |
 
@@ -125,7 +125,7 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 | Tenant-aware service/controller | Core demo | `docs/04-spring-boot/service-controller-curl-flow.md` | `MasterDataService`, `MasterDataController` | curl tenant 1/2 | #4 | Đã có |
 | Data leakage tests | Core demo | `docs/04-spring-boot/testing-tenant-isolation.md` | `DataLeakageTest.java` | `make app-test` | #4 | Đã có |
 | Temporary JWT auth | Core bridge | `docs/05-security/jwt-spring-security-temporary.md` | `SecurityConfig`, `JwtTokenService`, `JwtTenantContextFilter` | MockMvc + HTTP valid/invalid JWT | #5 | Đã implement, cần summary đóng |
-| Keycloak/OAuth2/OIDC | Mini-lab nếu khả thi | `docs/05-security/keycloak-oauth2-oidc-awareness.md` | optional `lab-code/keycloak-lab/` hoặc Docker Compose profile | Lấy token local/dev, giải thích issuer/JWKS/claims | #9 | Nâng từ awareness lên mini-lab |
+| Keycloak/OAuth2/OIDC | Mini-lab nếu khả thi | `docs/05-security/keycloak-oauth2-oidc-awareness.md`, `docs/05-security/keycloak-admin-console-guide.md` | optional `lab-code/keycloak-lab/` hoặc Docker Compose profile | Lấy token local/dev, giải thích issuer/JWKS/claims | #9 | Nâng từ awareness lên mini-lab |
 | RBAC/tenant-scope | Important theory | `docs/05-security/rbac-tenant-scope.md` | JWT claim note, không role matrix lớn | Test/summary tenant vs role | #5, #9 | Chưa có |
 | React frontend | Optional core demo | `docs/06-frontend/react-tenant-demo-ui.md` | `lab-code/tenant-ui/` | browser/UI + curl fallback | #10 | Chưa có |
 | API Gateway/service discovery/load balancer | Awareness | `docs/07-architecture/api-gateway-service-discovery.md` | Không chạy gateway | Architecture summary | #11 | Chưa có |
@@ -259,8 +259,8 @@ Mục tiêu: hiểu transaction behavior trước khi mở rộng backend featur
 
 Mục tiêu: nâng auth từ JWT tạm sang hiểu công nghệ thật theo feedback mentor, nhưng vẫn giữ phạm vi nhỏ.
 
-- [ ] `[LÝ THUYẾT]` Tạo/read `docs/05-security/keycloak-oauth2-oidc-awareness.md` từ Keycloak/Spring Security docs: Authorization Server, Resource Server, issuer, JWKS, access token, client, realm.
-- [ ] `[SKELETON]` Chuẩn bị `lab-code/keycloak-lab/` hoặc Docker Compose profile có TODO comments nếu chạy Keycloak local là khả thi trên máy.
+- [x] `[LÝ THUYẾT]` Tạo/read `docs/05-security/keycloak-oauth2-oidc-awareness.md` và `docs/05-security/keycloak-admin-console-guide.md` từ Keycloak/Spring Security docs: Authorization Server, Resource Server, issuer, JWKS, access token, client, realm, Admin Console cơ bản.
+- [x] `[SKELETON]` Chuẩn bị `lab-code/keycloak-lab/` hoặc Docker Compose profile có TODO comments nếu chạy Keycloak local là khả thi trên máy.
 - [ ] `[THỰC HÀNH]` Tự thử flow nhỏ: tạo realm/client/user hoặc lấy token dev; nếu không kịp thì ghi rõ blocker và giữ JWT tạm.
 - [ ] `[THỰC HÀNH]` So sánh JWT tạm hiện tại với Keycloak/OIDC thật: phần nào giống, phần nào khác, phần nào production mới cần.
 - [ ] `[REVIEW]` Nhờ Codex review note/lab: không biến Keycloak thành full IAM project, không overclaim RBAC production.
@@ -360,10 +360,11 @@ make app-test
 
 ### Task tiếp theo: Keycloak/OIDC mini-lab
 
-1. Tạo/read `docs/05-security/keycloak-oauth2-oidc-awareness.md`.
-2. Tập trung Authorization Server, Resource Server, realm/client/user, issuer, JWKS, access token và claims.
-3. Chỉ chuẩn bị mini-lab nếu chạy Keycloak local khả thi; nếu không, ghi blocker và giữ JWT tạm làm bridge.
-4. Không chuyển sang React trước khi có Keycloak/OIDC awareness evidence hoặc mini-lab result rõ.
+1. Đọc `docs/05-security/keycloak-oauth2-oidc-awareness.md` và `docs/05-security/keycloak-mini-lab-plan.md`.
+2. Chạy `cd lab-code/keycloak-lab && docker compose up -d`.
+3. Tạo realm/client/user theo `lab-code/keycloak-lab/README.md`.
+4. Dùng `lab-code/keycloak-lab/http/keycloak-token-flow.http` để lấy token và kiểm tra `issuer`, `jwks_uri`, `tenant_id`.
+5. Chưa chuyển sang React trước khi có Keycloak/OIDC awareness evidence hoặc mini-lab result rõ.
 
 ---
 

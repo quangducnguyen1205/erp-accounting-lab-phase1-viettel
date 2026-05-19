@@ -1,0 +1,12 @@
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.6.1
+    container_name: viettel-keycloak
+    command: start-dev
+    environment:
+      # Dev-only admin user cho mini-lab local.
+      # Không dùng giá trị này cho production.
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    ports:
+      - "18080:8080"

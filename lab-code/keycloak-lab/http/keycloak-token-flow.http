@@ -1,0 +1,39 @@
+# Keycloak token flow cho mini-lab
+# Điều kiện:
+# - Keycloak đang chạy tại http://localhost:18080.
+# - Realm `viettel-lab` đã được tạo.
+# - Client `tenant-demo-api-client` đã bật Direct access grants.
+# - User `tenant1-user`, `tenant2-user` đã có password và attribute tenant_id.
+#
+# Không commit access token thật vào file này.
+
+@keycloakUrl = http://localhost:18080
+@realm = viettel-lab
+@clientId = tenant-demo-api-client
+@tenant1User = tenant1-user
+@tenant2User = tenant2-user
+@password = password
+
+### OpenID Provider metadata
+GET {{keycloakUrl}}/realms/{{realm}}/.well-known/openid-configuration
+
+### JWKS endpoint
+# Lấy jwks_uri từ request metadata ở trên nếu path khác.
+GET {{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/certs
+
+### Token tenant 1 bằng password grant - local lab only
+POST {{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id={{clientId}}&username={{tenant1User}}&password={{password}}
+
+### Token tenant 2 bằng password grant - local lab only
+POST {{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id={{clientId}}&username={{tenant2User}}&password={{password}}
+
+### TODO: sau khi lấy token
+# - Decode access_token ở local để xem `iss`, `sub`, `exp`, `tenant_id`.
+# - Không paste token thật vào repo/report.
+# - Chưa gọi tenant-demo bằng token Keycloak cho tới khi app có Keycloak mode.
