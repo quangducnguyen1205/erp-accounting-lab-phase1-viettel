@@ -43,3 +43,5 @@ target/
 .DS_Store
 .idea/
 .vscode/
+.junie/
+**/.junie/

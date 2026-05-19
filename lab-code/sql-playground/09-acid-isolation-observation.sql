@@ -3,14 +3,11 @@
 -- ==============================================================
 --
 -- Mục tiêu:
--- - Quan sát transaction visibility và isolation level ở mức cơ bản.
--- - Hiểu READ COMMITTED khác REPEATABLE READ thế nào qua 2 session.
+-- - Quan sát ACID/isolation bằng ví dụ local nhỏ.
+-- - Thấy READ COMMITTED, REPEATABLE READ, row lock và SELECT FOR UPDATE.
 -- - Liên hệ với shared-table multi-tenant mà không đụng dữ liệu demo thật.
 --
--- Đây KHÔNG phải bài benchmark hay bài đào sâu lock internals.
--- Các phần quan trọng cần tự thao tác bằng hai terminal/session psql.
---
--- Cách chuẩn bị:
+-- Cách chạy setup:
 --   cd lab-code
 --   make db-up
 --   make db-status
@@ -20,16 +17,18 @@
 --   Terminal A: make db-shell
 --   Terminal B: make db-shell
 --
--- Ghi chú:
--- - TEMP table không phù hợp cho bài này vì mỗi session có temp table riêng.
--- - Vì vậy dùng bảng lab riêng `acid_isolation_lab`.
--- - Bảng này chỉ chứa dữ liệu học local và có thể drop sau khi xong.
+-- Quan trọng:
+-- - `make sql-9` chỉ setup bảng lab và in trạng thái ban đầu.
+-- - Các phần Session A/B bên dưới là hướng dẫn copy thủ công, không chạy tự động.
+-- - TEMP table không phù hợp ở đây vì mỗi session có temp table riêng.
+-- - Bảng lab dùng riêng cho học local, có thể DROP sau khi xong.
 -- ==============================================================
 
 -- ==============================================================
 -- 0. Safe setup chạy được bằng `make sql-9`
 -- ==============================================================
 
+DROP TABLE IF EXISTS acid_booking_lab;
 DROP TABLE IF EXISTS acid_isolation_lab;
 
 CREATE TABLE acid_isolation_lab (
@@ -37,186 +36,381 @@ CREATE TABLE acid_isolation_lab (
     tenant_id BIGINT NOT NULL,
     account_code VARCHAR(50) NOT NULL,
     balance NUMERIC(12, 2) NOT NULL,
-    note VARCHAR(255) NOT NULL
+    note VARCHAR(255) NOT NULL,
+    CONSTRAINT uq_acid_isolation_tenant_account UNIQUE (tenant_id, account_code)
 );
+
+CREATE INDEX idx_acid_isolation_tenant_account
+ON acid_isolation_lab (tenant_id, account_code);
 
 INSERT INTO acid_isolation_lab (tenant_id, account_code, balance, note)
 VALUES
-    (1, 'CASH', 1000.00, 'Tenant 1 baseline'),
-    (2, 'CASH', 2000.00, 'Tenant 2 baseline');
+    (1, 'CASH', 1000.00, 'Tenant 1 cash baseline'),
+    (1, 'BANK', 5000.00, 'Tenant 1 bank baseline'),
+    (2, 'CASH', 2000.00, 'Tenant 2 cash baseline');
+
+CREATE TABLE acid_booking_lab (
+    id BIGSERIAL PRIMARY KEY,
+    tenant_id BIGINT NOT NULL,
+    booking_code VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_acid_booking_tenant
+ON acid_booking_lab (tenant_id);
 
 SELECT tenant_id, account_code, balance, note
 FROM acid_isolation_lab
-ORDER BY tenant_id;
+ORDER BY tenant_id, account_code;
 
--- TODO: chạy và ghi lại isolation level mặc định hiện tại.
 SHOW transaction_isolation;
--- read committed
+
+-- Expected setup result:
+-- - Có 3 row: tenant 1/CASH, tenant 1/BANK, tenant 2/CASH.
+-- - PostgreSQL default isolation thường là `read committed`.
 
 -- ==============================================================
--- 1. Transaction visibility + ROLLBACK
--- ==============================================================
--- Mục tiêu:
--- - Thấy rằng transaction khác không đọc được thay đổi chưa commit.
--- - Thấy ROLLBACK hủy thay đổi chưa commit.
---
--- Terminal A:
-  BEGIN;
-  UPDATE acid_isolation_lab
-  SET balance = balance + 100
-  WHERE tenant_id = 1 AND account_code = 'CASH';
-  SELECT tenant_id, account_code, balance
-  FROM acid_isolation_lab
-  WHERE tenant_id = 1 AND account_code = 'CASH';
---
--- Terminal B:
-  SELECT tenant_id, account_code, balance
-  FROM acid_isolation_lab
-  WHERE tenant_id = 1 AND account_code = 'CASH';
---
--- TODO tự quan sát:
--- - Terminal A thấy balance nào?
--- Thấy balance sau khi đã update, tức là 1100.00.
--- - Terminal B có thấy +100 trước khi A commit không?
--- Không thấy, vẫn là 1000.00.
--- - Đây liên hệ gì với dirty read?
--- Không có dirty read vì Terminal B không đọc được thay đổi chưa commit của Terminal A.
--- Theo như tôi chạy thì cũng không có các thuộc tính còn lại như non-repeatable read hay
--- phantom read, vì Terminal A chỉ thực hiện một UPDATE và một SELECT, và Terminal B chỉ
--- thực hiện một SELECT. Tuy nhiên, nếu Terminal A thực hiện thêm một UPDATE hoặc một SELECT
--- khác sau khi Terminal B đã thực hiện SELECT đầu tiên, thì có thể sẽ thấy các hiện tượng này
--- tùy thuộc vào isolation level.
---
--- Terminal A:
-  ROLLBACK;
---
--- Terminal B:
-  SELECT tenant_id, account_code, balance
-  FROM acid_isolation_lab
-  WHERE tenant_id = 1 AND account_code = 'CASH';
---
--- TODO: sau ROLLBACK, balance trở về bao nhiêu?
-
--- ==============================================================
--- 2. READ COMMITTED: hai SELECT trong cùng transaction có thể khác nhau
+-- 1. Atomicity + ROLLBACK visibility
 -- ==============================================================
 --
 -- Mục tiêu:
--- - Quan sát default PostgreSQL READ COMMITTED.
--- - Mỗi statement có snapshot tại lúc statement bắt đầu.
+-- - Thấy transaction khác không đọc được thay đổi chưa commit.
+-- - Thấy ROLLBACK hủy thay đổi.
+-- - Không có dirty read trong PostgreSQL.
 --
--- Terminal A:
-  BEGIN ISOLATION LEVEL READ COMMITTED;
-  SELECT tenant_id, account_code, balance
-  FROM acid_isolation_lab
-  WHERE tenant_id = 1 AND account_code = 'CASH';
+-- Session A:
+--   BEGIN;
+--   UPDATE acid_isolation_lab
+--   SET balance = balance + 100
+--   WHERE tenant_id = 1 AND account_code = 'CASH';
 --
--- Terminal B:
-  UPDATE acid_isolation_lab
-  SET balance = balance + 50
-  WHERE tenant_id = 1 AND account_code = 'CASH';
---   -- Nếu không viết BEGIN, statement này tự commit khi thành công.
+--   SELECT tenant_id, account_code, balance
+--   FROM acid_isolation_lab
+--   WHERE tenant_id = 1 AND account_code = 'CASH';
 --
--- Terminal A:
-  SELECT tenant_id, account_code, balance
-  FROM acid_isolation_lab
-  WHERE tenant_id = 1 AND account_code = 'CASH';
-  COMMIT;
+-- Expected A:
+--   balance = 1100.00 vì transaction thấy update của chính nó.
 --
--- TODO tự quan sát:
--- - Hai lần SELECT ở Terminal A có giống nhau không?
--- Khác nhau, lần đầu thấy balance là 1000.00, lần thứ hai thấy balance là 1050.00.
--- - Đây là ví dụ của hiện tượng nào?
--- Vì đây là xem các bản ghi nên sẽ là non-repeatable read.
--- - Vì sao READ COMMITTED vẫn không phải dirty read?
--- Vì Terminal A không đọc được thay đổi chưa commit của Terminal B, nên không có dirty read.
+-- Session B, trong lúc A chưa COMMIT/ROLLBACK:
+--   SELECT tenant_id, account_code, balance
+--   FROM acid_isolation_lab
+--   WHERE tenant_id = 1 AND account_code = 'CASH';
+--
+-- Expected B:
+--   balance vẫn là 1000.00. B không thấy dữ liệu chưa commit của A.
+--
+-- Session A:
+--   ROLLBACK;
+--
+-- Session B:
+--   SELECT tenant_id, account_code, balance
+--   FROM acid_isolation_lab
+--   WHERE tenant_id = 1 AND account_code = 'CASH';
+--
+-- Expected B:
+--   balance vẫn là 1000.00.
+--
+-- Kết luận:
+-- - Đây là Atomicity: update +100 không được giữ lại sau rollback.
+-- - Đây cũng cho thấy PostgreSQL không cho dirty read.
 
 -- ==============================================================
--- 3. Optional: REPEATABLE READ giữ snapshot ổn định
+-- 2. COMMIT visibility
 -- ==============================================================
 --
 -- Mục tiêu:
--- - Thấy sự khác biệt với READ COMMITTED.
+-- - Thấy COMMIT làm thay đổi trở thành trạng thái thật.
 --
--- Terminal A:
-  BEGIN ISOLATION LEVEL REPEATABLE READ;
-  SELECT tenant_id, account_code, balance
-  FROM acid_isolation_lab
-  WHERE tenant_id = 1 AND account_code = 'CASH';
+-- Session A:
+--   BEGIN;
+--   UPDATE acid_isolation_lab
+--   SET balance = balance + 50
+--   WHERE tenant_id = 1 AND account_code = 'CASH';
+--   COMMIT;
 --
--- Terminal B:
-  UPDATE acid_isolation_lab
-  SET balance = balance + 25
-  WHERE tenant_id = 1 AND account_code = 'CASH';
+-- Session B:
+--   SELECT tenant_id, account_code, balance
+--   FROM acid_isolation_lab
+--   WHERE tenant_id = 1 AND account_code = 'CASH';
 --
--- Terminal A:
-  SELECT tenant_id, account_code, balance
-  FROM acid_isolation_lab
-  WHERE tenant_id = 1 AND account_code = 'CASH';
-  COMMIT;
---
--- Terminal A sau COMMIT:
-  SELECT tenant_id, account_code, balance
-  FROM acid_isolation_lab
-  WHERE tenant_id = 1 AND account_code = 'CASH';
---
--- TODO tự quan sát:
--- - Trong transaction REPEATABLE READ, lần SELECT thứ hai có thấy +25 không?
--- Không thấy, vẫn là balance trước khi Terminal B update, tức là 1050.00.
--- - Sau COMMIT và query mới, giá trị có thay đổi không?
--- Có, giá trị được thay đổi thành 1075.00.
+-- Expected B:
+--   balance = 1050.00.
+
 -- ==============================================================
--- 4. Optional: cùng shared table nhưng khác tenant
+-- 3. READ COMMITTED: non-repeatable read
 -- ==============================================================
 --
 -- Mục tiêu:
--- - Nhắc lại tenant-aware filtering và concurrency là hai vấn đề khác nhau.
+-- - Thấy mỗi statement trong READ COMMITTED có snapshot mới.
+-- - Hai SELECT trong cùng transaction có thể thấy giá trị khác nhau.
 --
--- Terminal A:
-  BEGIN;
-  UPDATE acid_isolation_lab
-  SET balance = balance + 10
-  WHERE tenant_id = 1 AND account_code = 'CASH';
+-- Nếu muốn reset trước case này:
+--   UPDATE acid_isolation_lab
+--   SET balance = 1000.00
+--   WHERE tenant_id = 1 AND account_code = 'CASH';
 --
--- Terminal B:
-  UPDATE acid_isolation_lab
-  SET balance = balance + 10
-  WHERE tenant_id = 2 AND account_code = 'CASH';
+-- Session A:
+--   BEGIN ISOLATION LEVEL READ COMMITTED;
+--   SELECT tenant_id, account_code, balance
+--   FROM acid_isolation_lab
+--   WHERE tenant_id = 1 AND account_code = 'CASH';
 --
--- TODO tự suy nghĩ:
--- - Hai câu UPDATE này đụng cùng bảng nhưng có đụng cùng row không?
--- Không đụng cùng row vì tenant_id khác nhau, nên mỗi câu UPDATE chỉ ảnh hưởng đến một row riêng biệt.
--- - Nếu Terminal B cũng update tenant_id = 1 thì điều gì có thể xảy ra?
--- Tôi nghĩ là do PostgreSQL mặc định sẽ là read committed, nên nếu terminal B cũng update
--- tenant_id = 1 thì có thể bị lock không nhỉ, hay là sẽ chạy được cái update của terminal B dẫn tới
--- không consistent giữa các biến
--- - Vì sao shared-table SaaS vẫn cần transaction mindset dù query đã có tenant_id?
+-- Session B:
+--   UPDATE acid_isolation_lab
+--   SET balance = balance + 50
+--   WHERE tenant_id = 1 AND account_code = 'CASH';
+--   -- Không viết BEGIN nên statement tự commit khi thành công.
 --
+-- Session A:
+--   SELECT tenant_id, account_code, balance
+--   FROM acid_isolation_lab
+--   WHERE tenant_id = 1 AND account_code = 'CASH';
+--   COMMIT;
 --
--- Terminal A:
-  ROLLBACK;
---
--- Gợi ý:
--- - Không cần học toàn bộ lock mode ở bài này.
--- - Chỉ cần hiểu: cùng bảng chưa chắc cùng row; cùng row thì concurrency conflict dễ xuất hiện hơn.
+-- Expected:
+-- - SELECT đầu của A thấy 1000.00 nếu đã reset.
+-- - SELECT sau của A thấy 1050.00 sau khi B commit.
+-- - Đây là non-repeatable read.
+-- - Vẫn không phải dirty read, vì A chỉ thấy dữ liệu B sau khi B commit.
 
 -- ==============================================================
--- 5. Reflection tự điền sau khi làm
+-- 4. REPEATABLE READ: stable snapshot
 -- ==============================================================
 --
--- TODO:
--- - PostgreSQL default isolation level là gì?
--- - Dirty read có xảy ra trong các quan sát trên không?
--- - READ COMMITTED cho phép hiện tượng gì?
--- - REPEATABLE READ khác READ COMMITTED ở điểm nào?
--- - Tenant isolation và transaction isolation khác nhau thế nào?
--- - Với backend SME SaaS, rule nào mình cần nhớ nhất?
+-- Mục tiêu:
+-- - Thấy snapshot ổn định trong transaction.
+--
+-- Reset nếu cần:
+--   UPDATE acid_isolation_lab
+--   SET balance = 1000.00
+--   WHERE tenant_id = 1 AND account_code = 'CASH';
+--
+-- Session A:
+--   BEGIN ISOLATION LEVEL REPEATABLE READ;
+--   SELECT tenant_id, account_code, balance
+--   FROM acid_isolation_lab
+--   WHERE tenant_id = 1 AND account_code = 'CASH';
+--
+-- Session B:
+--   UPDATE acid_isolation_lab
+--   SET balance = balance + 25
+--   WHERE tenant_id = 1 AND account_code = 'CASH';
+--
+-- Session A:
+--   SELECT tenant_id, account_code, balance
+--   FROM acid_isolation_lab
+--   WHERE tenant_id = 1 AND account_code = 'CASH';
+--   COMMIT;
+--
+-- Session A sau COMMIT, query mới:
+--   SELECT tenant_id, account_code, balance
+--   FROM acid_isolation_lab
+--   WHERE tenant_id = 1 AND account_code = 'CASH';
+--
+-- Expected:
+-- - Trong transaction REPEATABLE READ, A vẫn thấy snapshot cũ.
+-- - Sau COMMIT và query mới, A thấy update của B.
 
 -- ==============================================================
--- 6. Cleanup sau khi hoàn thành
+-- 5. UPDATE cùng row gây waiting/blocking
+-- ==============================================================
+--
+-- Mục tiêu:
+-- - Hiểu lock thực dụng: write cùng row có thể chờ nhau.
+-- - Normal SELECT vẫn có thể đọc snapshot cũ.
+--
+-- Reset nếu cần:
+--   UPDATE acid_isolation_lab
+--   SET balance = 1000.00
+--   WHERE tenant_id = 1 AND account_code = 'CASH';
+--
+-- Session A:
+--   BEGIN;
+--   UPDATE acid_isolation_lab
+--   SET balance = balance + 10
+--   WHERE tenant_id = 1 AND account_code = 'CASH';
+--   -- Giữ transaction mở, chưa COMMIT/ROLLBACK.
+--
+-- Session B:
+--   SELECT tenant_id, account_code, balance
+--   FROM acid_isolation_lab
+--   WHERE tenant_id = 1 AND account_code = 'CASH';
+--
+-- Expected B:
+--   SELECT thường không bị block; nó thấy giá trị committed cũ.
+--
+-- Session B:
+--   UPDATE acid_isolation_lab
+--   SET balance = balance + 20
+--   WHERE tenant_id = 1 AND account_code = 'CASH';
+--
+-- Expected B:
+--   UPDATE bị chờ cho tới khi A COMMIT hoặc ROLLBACK.
+--
+-- Session A:
+--   COMMIT;
+--
+-- Expected:
+-- - Sau khi A COMMIT, B tiếp tục chạy UPDATE.
+-- - Nếu A ROLLBACK, B tiếp tục dựa trên giá trị cũ.
+--
+-- Kết luận:
+-- - Không phải transaction nào cũng block nhau.
+-- - Row write cùng row mới là case dễ thấy blocking.
+
+-- ==============================================================
+-- 6. SELECT FOR UPDATE row lock
+-- ==============================================================
+--
+-- Mục tiêu:
+-- - Thấy `SELECT FOR UPDATE` lock row dù chưa update.
+-- - Hữu ích khi backend cần đọc row rồi quyết định update dựa trên row đó.
+--
+-- Session A:
+--   BEGIN;
+--   SELECT tenant_id, account_code, balance
+--   FROM acid_isolation_lab
+--   WHERE tenant_id = 1 AND account_code = 'CASH'
+--   FOR UPDATE;
+--   -- Giữ transaction mở.
+--
+-- Session B:
+--   UPDATE acid_isolation_lab
+--   SET balance = balance + 30
+--   WHERE tenant_id = 1 AND account_code = 'CASH';
+--
+-- Expected B:
+--   UPDATE chờ tới khi A COMMIT/ROLLBACK.
+--
+-- Session A:
+--   ROLLBACK;
+--
+-- Expected:
+--   B tiếp tục sau khi lock được thả.
+--
+-- Ghi nhớ:
+-- - `SELECT FOR UPDATE` không dùng cho mọi SELECT.
+-- - Chỉ dùng khi thật sự cần chặn transaction khác sửa row mình vừa đọc.
+
+-- ==============================================================
+-- 7. Optional: DDL lock bằng ALTER TABLE trên bảng lab
+-- ==============================================================
+--
+-- Mục tiêu:
+-- - Liên hệ với migration/locking milestone.
+--
+-- Session A:
+--   BEGIN;
+--   ALTER TABLE acid_isolation_lab ADD COLUMN ddl_lock_note VARCHAR(50);
+--   -- Giữ transaction mở.
+--
+-- Session B:
+--   SELECT COUNT(*) FROM acid_isolation_lab;
+--
+-- Expected:
+-- - Tùy lock mode của ALTER TABLE, SELECT có thể bị chờ.
+-- - Không cần học toàn bộ lock mode; chỉ cần nhớ DDL có thể block mạnh hơn DML thường.
+--
+-- Session A:
+--   ROLLBACK;
+--
+-- Nếu bạn đã COMMIT nhầm và muốn cleanup:
+--   ALTER TABLE acid_isolation_lab DROP COLUMN IF EXISTS ddl_lock_note;
+
+-- ==============================================================
+-- 8. Optional: SERIALIZABLE anomaly prevention
+-- ==============================================================
+--
+-- Mục tiêu:
+-- - Thấy SERIALIZABLE có thể abort một transaction để bảo vệ invariant.
+-- - Behavior có thể phụ thuộc timing; nếu không reproduce ngay, đọc output và thử lại.
+--
+-- Invariant giả lập:
+--   Mỗi tenant chỉ được có tối đa 1 booking active trong bảng lab.
+--
+-- Reset:
+--   DELETE FROM acid_booking_lab WHERE tenant_id = 1;
+--
+-- Session A:
+--   BEGIN ISOLATION LEVEL SERIALIZABLE;
+--   SELECT COUNT(*) FROM acid_booking_lab WHERE tenant_id = 1;
+--   -- Nếu count = 0, chuẩn bị insert nhưng đừng commit vội.
+--   INSERT INTO acid_booking_lab (tenant_id, booking_code)
+--   VALUES (1, 'BOOKING-A');
+--
+-- Session B:
+--   BEGIN ISOLATION LEVEL SERIALIZABLE;
+--   SELECT COUNT(*) FROM acid_booking_lab WHERE tenant_id = 1;
+--   INSERT INTO acid_booking_lab (tenant_id, booking_code)
+--   VALUES (1, 'BOOKING-B');
+--
+-- Session A:
+--   COMMIT;
+--
+-- Session B:
+--   COMMIT;
+--
+-- Expected:
+-- - Một transaction có thể fail với serialization failure.
+-- - App thật phải retry toàn bộ transaction.
+--
+-- Nếu cả hai COMMIT trong môi trường local do timing chưa tạo conflict rõ:
+-- - Ghi lại là chưa reproduce được.
+-- - Không ép kết luận; chỉ cần nhớ SERIALIZABLE có thể abort và cần retry.
+
+-- ==============================================================
+-- 9. Shared-table tenant-aware example
+-- ==============================================================
+--
+-- Mục tiêu:
+-- - Phân biệt tenant isolation và transaction isolation.
+--
+-- Session A:
+--   BEGIN;
+--   UPDATE acid_isolation_lab
+--   SET balance = balance + 10
+--   WHERE tenant_id = 1 AND account_code = 'CASH';
+--
+-- Session B:
+--   UPDATE acid_isolation_lab
+--   SET balance = balance + 10
+--   WHERE tenant_id = 2 AND account_code = 'CASH';
+--
+-- Expected:
+-- - Hai UPDATE đụng cùng bảng nhưng khác row, nên thường không chờ nhau ở row-level.
+--
+-- Nếu Session B cũng update tenant_id = 1/account_code = CASH:
+-- - B sẽ chờ A kết thúc vì cùng row.
+--
+-- Kết luận:
+-- - `tenant_id` filtering giải quyết quyền sở hữu dữ liệu.
+-- - Transaction/isolation/lock giải quyết concurrent behavior.
+-- - Index `(tenant_id, account_code)` giúp PostgreSQL tìm đúng row hẹp hơn.
+--
+-- Session A:
+--   ROLLBACK;
+
+-- ==============================================================
+-- 10. Reflection đã chốt ở mức Milestone #8
+-- ==============================================================
+--
+-- - PostgreSQL default isolation level là READ COMMITTED.
+-- - Dirty read không xảy ra trong PostgreSQL, kể cả khi request READ UNCOMMITTED.
+-- - READ COMMITTED có thể có non-repeatable read và phantom read.
+-- - REPEATABLE READ giữ snapshot ổn định trong transaction; PostgreSQL cũng ngăn phantom read ở mức này.
+-- - SERIALIZABLE mạnh nhất nhưng có thể abort transaction; backend phải retry toàn bộ transaction.
+-- - Transaction là unit of work; isolation là quy tắc nhìn thấy dữ liệu; lock/MVCC là cơ chế thực thi.
+-- - Normal SELECT thường không block UPDATE trong PostgreSQL MVCC.
+-- - UPDATE/DELETE/SELECT FOR UPDATE trên cùng row có thể block nhau.
+-- - Tenant isolation khác transaction isolation: tenant_id trả lời "dữ liệu của ai", transaction isolation trả lời "dữ liệu ở thời điểm/concurrency nào".
+-- - Rule thực dụng: query tenant-aware, index đúng pattern, transaction ngắn, retry khi dùng isolation mạnh.
+
+-- ==============================================================
+-- 11. Cleanup sau khi hoàn thành
 -- ==============================================================
 --
 -- Khi đã ghi xong kết luận, có thể chạy:
+--   DROP TABLE IF EXISTS acid_booking_lab;
 --   DROP TABLE IF EXISTS acid_isolation_lab;
 --
 -- Không drop tự động ở cuối file, vì bảng cần còn tồn tại để hai session cùng quan sát.

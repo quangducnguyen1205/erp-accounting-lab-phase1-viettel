@@ -392,28 +392,46 @@ Kết quả verify:
 
 Trong shared-table multi-tenant, một migration lỗi trên bảng chung có thể ảnh hưởng tất cả tenant. Vì vậy trước khi chạy migration cần có rollback/forward-fix plan, kiểm tra lock/transaction behavior, ưu tiên backward-compatible migration và test trên local/staging trước.
 
-## Milestone #8: ACID và isolation levels — ghi chú sau thực hành
+## Milestone #8: ACID và isolation levels
 
-Phần này là placeholder để điền sau khi hoàn thành lab transaction/isolation. Mục tiêu là chốt cách đọc behavior cơ bản, không đi quá sâu vào lock internals.
+Milestone #8 bổ sung nền tảng transaction/concurrency cho PostgreSQL. Mục tiêu không phải học hết lock internals, mà là hiểu đủ để không nhầm transaction, isolation và lock khi làm backend shared-table SaaS.
 
-### TODO sau khi đọc theory
+### Những điểm đã nắm
 
-- ACID gồm bốn ý nào?
-- `BEGIN`, `COMMIT`, `ROLLBACK` dùng để làm gì?
-- PostgreSQL default isolation level là gì?
-- Dirty read, non-repeatable read, phantom read, serialization anomaly khác nhau thế nào?
-- PostgreSQL thực tế cho phép/ngăn hiện tượng nào ở từng isolation level?
+- ACID gồm Atomicity, Consistency, Isolation và Durability.
+- `BEGIN` mở transaction, `COMMIT` giữ thay đổi, `ROLLBACK` hủy thay đổi chưa commit.
+- PostgreSQL default isolation là `READ COMMITTED`.
+- PostgreSQL không cho dirty read; `READ UNCOMMITTED` cư xử như `READ COMMITTED`.
+- `READ COMMITTED` có thể có non-repeatable read và phantom read.
+- `REPEATABLE READ` giữ snapshot ổn định; trong PostgreSQL mức này cũng ngăn phantom read.
+- `SERIALIZABLE` mạnh nhất nhưng có thể abort transaction; application phải retry toàn bộ transaction.
 
-### TODO sau khi chạy lab 09
+### Transaction và lock
 
-- Session B có thấy thay đổi chưa commit của Session A không?
-- Hai lần `SELECT` trong `READ COMMITTED` có thể khác nhau thế nào?
-- `REPEATABLE READ` giữ snapshot ra sao?
-- Commit và rollback làm dữ liệu hiển thị khác nhau thế nào?
+Transaction là unit of work. Isolation là quy tắc transaction nhìn thấy dữ liệu của nhau. Lock/MVCC là cơ chế PostgreSQL dùng để thực thi consistency/concurrency.
 
-### TODO liên hệ shared-table SaaS
+Điểm thực dụng:
 
-- Tenant isolation và transaction isolation khác nhau thế nào?
-- Vì sao cùng bảng shared-table nhưng khác tenant chưa chắc cùng row?
-- Khi nào concurrent update trên cùng row trở thành rủi ro nghiệp vụ?
-- Rule thực dụng nào cần nhớ cho backend SME SaaS?
+- `SELECT` thường đọc snapshot và không block writer.
+- `UPDATE`/`DELETE` cùng một row có thể block nhau.
+- `SELECT FOR UPDATE` lock row dù chưa update, dùng khi backend cần đọc rồi quyết định update an toàn.
+- DDL như `ALTER TABLE` có thể giữ lock mạnh hơn DML thường.
+- Long transaction nguy hiểm vì giữ lock/snapshot lâu và làm request khác dễ chờ.
+
+### Liên hệ shared-table SaaS
+
+`tenant_id` filtering giải quyết ownership isolation: dữ liệu thuộc tenant nào. Transaction isolation giải quyết concurrency: transaction nhìn thấy dữ liệu ở thời điểm nào và có va chạm update không.
+
+Trong shared-table, một bảng lớn có thể nhận nhiều write từ nhiều tenant. Query/update càng rộng, thiếu index hoặc giữ transaction càng lâu thì càng dễ tạo noisy neighbor. Vì vậy rule thực dụng là: query tenant-aware, index đúng pattern, transaction ngắn, tránh external call lâu trong transaction, và chuẩn bị retry khi dùng isolation mạnh.
+
+### Lab 09
+
+`lab-code/sql-playground/09-acid-isolation-observation.sql` hiện setup bảng lab riêng và hướng dẫn quan sát hai session:
+
+- rollback/commit visibility;
+- `READ COMMITTED` non-repeatable read;
+- `REPEATABLE READ` stable snapshot;
+- update cùng row gây waiting;
+- `SELECT FOR UPDATE`;
+- optional `SERIALIZABLE` anomaly prevention;
+- shared-table tenant-aware row-level behavior.

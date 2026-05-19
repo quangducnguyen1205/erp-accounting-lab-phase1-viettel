@@ -1,166 +1,216 @@
-# ACID và isolation levels trong PostgreSQL
+# ACID, isolation levels và lock trong PostgreSQL
 
 ## Mục tiêu học
 
-Tài liệu này giúp mình hiểu transaction ở mức backend engineer cần dùng trong Phase 1: vì sao nhiều câu SQL cần được gom thành một đơn vị, các transaction đồng thời có thể nhìn thấy gì, và vì sao điều đó quan trọng trong shared-table multi-tenant SaaS.
+Tài liệu này giúp mình nhớ transaction bằng ví dụ backend thực tế, không chỉ bằng định nghĩa. Trọng tâm là PostgreSQL trong bối cảnh shared-table multi-tenant SaaS: nhiều tenant dùng chung bảng, nhiều request chạy đồng thời, và backend phải vừa đúng dữ liệu vừa tránh giữ transaction quá lâu.
 
-Không xem đây là tài liệu tuning lock hoặc thiết kế hệ thống tài chính hoàn chỉnh. Mục tiêu hiện tại là đọc được behavior cơ bản và biết lúc nào cần cẩn trọng hơn.
+Không cần học sâu toàn bộ lock mode ở Milestone #8. Chỉ cần nắm: transaction là unit of work, isolation quyết định transaction nhìn thấy gì, còn lock/MVCC là cơ chế PostgreSQL dùng để giữ dữ liệu nhất quán.
 
-## ACID là gì?
+## ACID bằng ví dụ backend
 
-| Chữ | Ý nghĩa thực tế |
-|---|---|
-| **A - Atomicity** | Một transaction hoặc thành công toàn bộ, hoặc không để lại thay đổi nào. |
-| **C - Consistency** | Transaction đưa database từ trạng thái hợp lệ này sang trạng thái hợp lệ khác, vẫn tôn trọng constraint/rule đã đặt ra. |
-| **I - Isolation** | Transaction đang chạy không nên thấy trạng thái dở dang của transaction khác; mức cô lập quyết định nó thấy snapshot nào. |
-| **D - Durability** | Khi database đã báo commit thành công, thay đổi phải được ghi bền vững ngay cả khi sau đó có crash. |
+| Thuộc tính | Nghĩa thực tế | Ví dụ backend |
+|---|---|---|
+| Atomicity | Thành công toàn bộ hoặc hủy toàn bộ | Tạo chứng từ kế toán: nếu insert header thành công nhưng insert lines lỗi thì rollback cả chứng từ. |
+| Consistency | Sau transaction, dữ liệu vẫn hợp lệ theo constraint/rule | `UNIQUE (tenant_id, code)` vẫn được giữ; số tiền không bị ghi thành trạng thái vô nghĩa. |
+| Isolation | Transaction không đọc trạng thái dở dang của transaction khác | Request B không thấy số dư request A vừa update nhưng chưa commit. |
+| Durability | Commit xong thì thay đổi được lưu bền vững | API trả success sau commit thì dữ liệu không biến mất vì request kết thúc. |
 
-Ví dụ kế toán đơn giản: chuyển tiền giữa hai tài khoản không được trừ tiền bên A rồi crash trước khi cộng tiền bên B. PostgreSQL tutorial nhấn mạnh transaction là một thao tác “all-or-nothing”, trạng thái trung gian không lộ ra cho transaction khác và thay đổi đã commit phải được lưu bền vững.
+Ví dụ service flow:
 
-## Transaction basics
+```text
+POST /api/accounting/posting
+-> validate request
+-> BEGIN transaction
+-> insert journal header
+-> insert journal lines
+-> update balance
+-> COMMIT nếu tất cả thành công
+-> ROLLBACK nếu bất kỳ bước nào lỗi
+```
+
+Ở Spring Boot, flow này thường được biểu diễn bằng transaction boundary ở service layer, ví dụ conceptually là `@Transactional`. Phase này chưa cần đi sâu annotation, nhưng cần hiểu ý nghĩa database phía dưới.
+
+## BEGIN / COMMIT / ROLLBACK
 
 ```sql
 BEGIN;
--- nhiều câu SQL thuộc cùng một nghiệp vụ
+
+UPDATE acid_isolation_lab
+SET balance = balance - 100
+WHERE tenant_id = 1 AND account_code = 'CASH';
+
+UPDATE acid_isolation_lab
+SET balance = balance + 100
+WHERE tenant_id = 1 AND account_code = 'BANK';
+
 COMMIT;
 ```
 
-- `BEGIN` mở một transaction block.
-- `COMMIT` xác nhận toàn bộ thay đổi trong transaction.
-- `ROLLBACK` hủy toàn bộ thay đổi chưa commit.
+- `BEGIN`: bắt đầu transaction.
+- `COMMIT`: giữ lại toàn bộ thay đổi.
+- `ROLLBACK`: hủy toàn bộ thay đổi chưa commit.
+- Nếu không viết `BEGIN`, mỗi statement thường chạy trong transaction ngầm riêng.
 
-```sql
-BEGIN;
-UPDATE account_balance
-SET amount = amount - 100
-WHERE tenant_id = 1 AND account_code = 'CASH';
+Rule thực dụng: một use case nghiệp vụ có nhiều statement phụ thuộc nhau thì nên nghĩ “chúng có cần chung transaction không?”.
 
--- Nếu phát hiện sai điều kiện nghiệp vụ:
-ROLLBACK;
-```
+## Các hiện tượng isolation
 
-Nếu không viết `BEGIN`, PostgreSQL vẫn chạy mỗi statement trong một transaction ngầm riêng. Với backend service, nhiều thay đổi cùng một use case thường cần nằm trong cùng transaction để tránh trạng thái nửa chừng.
-
-## Các hiện tượng cần biết
-
-| Hiện tượng | Mô tả ngắn |
-|---|---|
-| **Dirty read** | Transaction A đọc dữ liệu transaction B đã viết nhưng chưa commit. |
-| **Non-repeatable read** | Cùng một transaction đọc lại một row và thấy giá trị đã đổi vì transaction khác vừa commit. |
-| **Phantom read** | Chạy lại cùng một query điều kiện và thấy tập row phù hợp đã thay đổi vì transaction khác vừa commit insert/delete. |
-| **Serialization anomaly** | Kết quả nhiều transaction concurrent không tương đương với bất kỳ thứ tự chạy tuần tự nào. |
-
-Đây là các tên gọi để mô tả “mức độ lạ” có thể xảy ra khi nhiều transaction chạy cùng lúc.
+| Hiện tượng | Cách nhớ | Ví dụ |
+|---|---|---|
+| Dirty read | Đọc dữ liệu bẩn chưa commit | Request B thấy balance A vừa update nhưng A rollback sau đó. PostgreSQL không cho hiện tượng này. |
+| Non-repeatable read | Đọc lại cùng row, thấy giá trị khác | Trong `READ COMMITTED`, SELECT balance lần 1 thấy `1000`, request khác commit update, SELECT lần 2 thấy `1050`. |
+| Phantom read | Query lại cùng điều kiện, tập row thay đổi | SELECT danh sách invoice pending lần 1 có 10 dòng, request khác insert thêm pending invoice, SELECT lần 2 có 11 dòng. |
+| Serialization anomaly | Kết quả concurrent không tương đương thứ tự tuần tự nào | Hai transaction cùng kiểm tra quota còn chỗ rồi cùng insert, cuối cùng vượt quota. |
 
 ## PostgreSQL isolation levels
 
-Theo tài liệu PostgreSQL hiện tại:
+Theo tài liệu PostgreSQL:
 
-| Isolation level yêu cầu | Dirty read | Non-repeatable read | Phantom read | Serialization anomaly |
+| Isolation level | Dirty read | Non-repeatable read | Phantom read | Serialization anomaly |
 |---|---:|---:|---:|---:|
-| `READ UNCOMMITTED` | PostgreSQL không cho dirty read; thực tế cư xử như `READ COMMITTED` | Có thể | Có thể | Có thể |
+| `READ UNCOMMITTED` | Không xảy ra trong PostgreSQL; cư xử như `READ COMMITTED` | Có thể | Có thể | Có thể |
 | `READ COMMITTED` | Không | Có thể | Có thể | Có thể |
 | `REPEATABLE READ` | Không | Không | PostgreSQL cũng ngăn được | Có thể |
 | `SERIALIZABLE` | Không | Không | Không | Không |
 
-Điểm dễ nhầm:
+Điểm cần nhớ:
 
-- PostgreSQL cho phép request cả bốn tên chuẩn SQL, nhưng bên trong chỉ có ba behavior khác nhau; `READ UNCOMMITTED` hoạt động như `READ COMMITTED`.
-- PostgreSQL `REPEATABLE READ` mạnh hơn yêu cầu tối thiểu của standard vì nó cũng không cho phantom read.
-- Default của PostgreSQL là `READ COMMITTED`.
+- PostgreSQL default là `READ COMMITTED`.
+- PostgreSQL cho phép viết `READ UNCOMMITTED`, nhưng behavior thực tế như `READ COMMITTED`.
+- PostgreSQL `REPEATABLE READ` mạnh hơn mức tối thiểu của SQL standard vì không cho phantom read.
+- `SERIALIZABLE` có thể abort transaction bằng lỗi serialization; app phải retry cả transaction.
 
-## Hiểu từng mức ở mức thực dụng
+## READ COMMITTED dùng khi nào?
 
-### `READ COMMITTED`
+`READ COMMITTED` là mức mặc định và phù hợp với nhiều CRUD/API thông thường.
 
-Đây là default. Mỗi statement thấy snapshot mới tại lúc statement bắt đầu. Vì vậy:
+Behavior:
 
-- không thấy dữ liệu chưa commit của transaction khác;
-- hai câu `SELECT` liên tiếp trong cùng transaction có thể thấy kết quả khác nhau nếu có transaction khác commit ở giữa;
-- phù hợp nhiều use case đơn giản vì nhanh và dễ dùng.
+- Một `SELECT` thường chỉ thấy dữ liệu đã commit trước lúc statement bắt đầu.
+- Không thấy dữ liệu chưa commit của transaction khác.
+- Hai câu `SELECT` trong cùng transaction có thể thấy dữ liệu khác nhau nếu transaction khác commit ở giữa.
+- `UPDATE`/`DELETE` cùng row có thể phải chờ transaction khác commit/rollback.
 
-### `REPEATABLE READ`
+Ví dụ phù hợp:
 
-Transaction thấy snapshot ổn định từ đầu transaction:
+- list master data;
+- update một record theo id;
+- create/update đơn giản có constraint bảo vệ;
+- API không cần snapshot báo cáo ổn định nhiều query.
 
-- `SELECT` lặp lại trong cùng transaction thấy cùng một dữ liệu;
-- không thấy commit mới của transaction khác trong lúc transaction còn mở;
-- nếu cố update row đã bị transaction khác thay đổi sau khi snapshot bắt đầu, có thể gặp serialization failure và cần retry.
+## REPEATABLE READ dùng khi nào?
 
-### `SERIALIZABLE`
+`REPEATABLE READ` giữ snapshot ổn định trong suốt transaction.
 
-Mức mạnh nhất: kết quả phải tương đương một thứ tự chạy tuần tự nào đó. Đổi lại:
+Behavior:
 
-- transaction có thể bị abort với serialization failure;
-- application phải sẵn sàng retry;
-- không nên bật chỉ vì “nghe an toàn hơn” mà chưa hiểu workload.
+- Các `SELECT` lặp lại thấy cùng snapshot.
+- Không thấy commit mới từ transaction khác sau khi transaction đã bắt đầu.
+- Nếu cố update/lock row đã bị transaction khác thay đổi sau snapshot, có thể gặp serialization failure và cần retry.
 
-## Vì sao isolation quan trọng trong shared-table multi-tenant?
+Ví dụ có thể cân nhắc:
 
-Shared-table nghĩa là nhiều tenant cùng dùng bảng vật lý như:
+- báo cáo cần nhiều query nhưng muốn cùng một snapshot dữ liệu;
+- export dữ liệu cần nhất quán trong một khoảng đọc;
+- xử lý batch đọc nhiều bước, nơi `READ COMMITTED` dễ làm kết quả khó giải thích.
+
+## SERIALIZABLE dùng khi nào?
+
+`SERIALIZABLE` là mức mạnh nhất. PostgreSQL cố đảm bảo kết quả tương đương một thứ tự chạy tuần tự nào đó.
+
+Trade-off:
+
+- Có overhead theo dõi dependency.
+- Transaction có thể bị abort với SQLSTATE `40001` (`serialization_failure`).
+- Backend phải retry toàn bộ transaction, bao gồm cả logic quyết định SQL/value, không chỉ retry riêng câu SQL cuối.
+
+Ví dụ có thể cần:
+
+- invariant nghiêm ngặt kiểu “mỗi tenant chỉ được có N bản ghi active”;
+- luồng tài chính/quota mà constraint đơn giản chưa đủ;
+- business rule phụ thuộc vào việc đọc trước rồi ghi sau.
+
+Không nên bật `SERIALIZABLE` toàn hệ thống chỉ vì “nghe an toàn”. Cần hiểu contention và có retry strategy.
+
+## Transaction liên hệ với lock như thế nào?
+
+Ba khái niệm dễ nhầm:
+
+| Khái niệm | Nghĩa |
+|---|---|
+| Transaction | Đơn vị công việc: bắt đầu, commit hoặc rollback. |
+| Isolation | Quy tắc transaction này thấy dữ liệu của transaction khác như thế nào. |
+| Lock/MVCC | Cơ chế PostgreSQL dùng để bảo vệ consistency và concurrency. |
+
+PostgreSQL dùng MVCC nên đọc và ghi thường không chặn nhau như database lock-based đơn giản:
+
+- `SELECT` thường không block `UPDATE`.
+- `UPDATE` cùng một row sẽ block `UPDATE` khác trên row đó.
+- `SELECT FOR UPDATE` chủ động lock row để transaction khác không update/delete/lock row đó cho tới khi transaction hiện tại kết thúc.
+- DDL như `ALTER TABLE`, `DROP TABLE`, `TRUNCATE` có thể lấy lock mạnh; một số dạng có thể block cả đọc/ghi.
+- Transaction càng dài thì lock/snapshot giữ càng lâu, làm request khác dễ chờ hơn.
+
+Ví dụ dễ nhớ:
 
 ```text
-account_balance
-├── tenant_id = 1
-├── tenant_id = 2
+SELECT bình thường      -> thường đọc snapshot, không giữ row lock để chặn writer
+UPDATE row A            -> giữ row lock trên row A tới COMMIT/ROLLBACK
+SELECT row A FOR UPDATE -> giữ row lock dù chưa update
+ALTER TABLE             -> có thể cần table lock mạnh
+```
+
+Tóm lại: transaction không tự động block mọi thứ. Chỉ các operation đụng cùng row/object với lock conflict mới chờ nhau.
+
+## Shared-table multi-tenant trade-off
+
+Trong shared-table:
+
+```text
+acid_isolation_lab
+├── tenant_id = 1, account_code = CASH
+├── tenant_id = 2, account_code = CASH
 └── ...
 ```
 
-Một query thiếu `tenant_id` là lỗi isolation theo nghĩa tenant. Nhưng ngay cả khi query đã có `tenant_id`, nhiều request đồng thời của cùng hoặc khác tenant vẫn có thể:
+`tenant_id` filtering giải quyết câu hỏi “dữ liệu thuộc tenant nào?”. Nó không tự giải quyết câu hỏi “hai transaction đồng thời nhìn thấy dữ liệu ở thời điểm nào?”.
 
-- cập nhật cùng một row;
-- đọc tổng hợp trong lúc dữ liệu đang đổi;
-- chờ lock vì cùng đụng một tài nguyên;
-- tạo kết quả business khó hiểu nếu transaction boundary đặt sai.
+Trade-off thực tế:
 
-Ví dụ ERP/kế toán:
+- Một bảng lớn dùng chung nhiều tenant có thể có nhiều write đồng thời.
+- Query/update càng rộng, càng thiếu index, càng dễ chạm nhiều row và giữ lock lâu.
+- Query có `tenant_id` + index phù hợp giúp thao tác hẹp hơn, giảm contention.
+- Long transaction của một tenant có thể ảnh hưởng tenant khác nếu nó giữ lock ở mức bảng, chạy DDL, hoặc scan/update quá rộng.
+- Noisy write cũng là một dạng noisy neighbor, không chỉ noisy read.
 
-- hai request cùng cập nhật số dư tồn kho của tenant 1;
-- một báo cáo tổng hợp đọc dữ liệu trong lúc batch posting đang commit;
-- cùng bảng shared-table bị nhiều tenant ghi đồng thời, làm concurrency/lock trở thành chuyện production thật chứ không chỉ lý thuyết.
+Rule cho SME SaaS:
 
-Tenant isolation và transaction isolation là hai lớp khác nhau:
-
-- tenant isolation trả lời “dữ liệu của ai?”;
-- transaction isolation trả lời “dữ liệu ở thời điểm nào và dưới cạnh tranh đồng thời nào?”.
-
-## Trade-off cần nhớ
-
-| Muốn tăng | Thường phải trả giá bằng |
-|---|---|
-| Tính nhất quán snapshot mạnh hơn | Ít concurrency hơn hoặc nhiều retry hơn |
-| Transaction dài hơn | Giữ tài nguyên lâu hơn, dễ va chạm hơn |
-| Lock chặt hơn | Request khác có thể chờ lâu hơn |
-| Throughput cao hơn | Có thể phải chấp nhận behavior yếu hơn ở một số use case |
-
-Không có isolation level “tốt nhất cho mọi thứ”. Backend engineer cần chọn theo nghiệp vụ, query pattern và hậu quả nếu đọc/ghi concurrent bị lệch.
-
-## Rule thực dụng cho backend shared-table SME SaaS
-
-1. Query nghiệp vụ luôn tenant-aware bằng `tenant_id`; transaction không thay thế tenant filtering.
-2. Giữ transaction ngắn, gom đúng những statement cùng một use case.
-3. Không gọi external service lâu bên trong transaction nếu tránh được.
-4. Với update quan trọng, biết row nào có thể bị concurrent update và chuẩn bị retry khi dùng mức cô lập cao hơn.
-5. Dùng `READ COMMITTED` mặc định nếu nghiệp vụ không cần snapshot mạnh hơn; tăng isolation chỉ khi có lý do rõ.
-6. Với báo cáo/tổng hợp cần snapshot ổn định, cân nhắc `REPEATABLE READ` hoặc chiến lược khác sau khi hiểu trade-off.
-7. Luôn test concurrent behavior trên local/staging cho luồng dễ va chạm như balance, inventory, posting.
-8. Ghi rõ transaction boundary ở service layer; đừng để nhiều statement quan trọng rơi vào autocommit rời rạc ngoài ý muốn.
+1. Luôn filter theo `tenant_id` ở repository/service.
+2. Index theo query pattern tenant-aware để update/select hẹp.
+3. Giữ transaction ngắn.
+4. Không gọi external API khi đang giữ transaction nếu tránh được.
+5. Với nghiệp vụ quan trọng, biết rõ có cần lock row bằng `SELECT FOR UPDATE` không.
+6. Với `SERIALIZABLE` hoặc `REPEATABLE READ`, chuẩn bị retry.
+7. DDL/migration phải được thiết kế riêng, không xem như request thường.
 
 ## Liên hệ với bài lab 09
 
-Sau khi đọc tài liệu này, dùng `lab-code/sql-playground/09-acid-isolation-observation.sql` để quan sát:
+Dùng `lab-code/sql-playground/09-acid-isolation-observation.sql` để quan sát:
 
-- default isolation hiện tại;
-- transaction chưa commit không lộ sang session khác;
-- `READ COMMITTED` có thể thấy giá trị mới ở lần `SELECT` sau;
+- default isolation là `read committed`;
+- update chưa commit không lộ sang session khác;
+- `READ COMMITTED` có non-repeatable read;
 - `REPEATABLE READ` giữ snapshot ổn định;
-- commit/rollback thay đổi điều gì;
-- vì sao hai session cùng đụng dữ liệu tenant-aware vẫn cần transaction mindset.
+- update cùng row gây chờ;
+- `SELECT FOR UPDATE` lock row dù chưa update;
+- `SERIALIZABLE` có thể abort và cần retry;
+- cùng bảng shared-table nhưng khác tenant thường là khác row, còn query rộng/DDL/transaction dài vẫn có thể ảnh hưởng lớn.
 
 ## Nguồn tham khảo chuẩn
 
 - [PostgreSQL - Transactions tutorial](https://www.postgresql.org/docs/current/tutorial-transactions.html)
 - [PostgreSQL - Transaction Isolation](https://www.postgresql.org/docs/current/transaction-iso.html)
+- [PostgreSQL - Explicit Locking](https://www.postgresql.org/docs/current/explicit-locking.html)
+- [PostgreSQL - Serialization Failure Handling](https://www.postgresql.org/docs/current/mvcc-serialization-failure-handling.html)
 - [PostgreSQL - BEGIN](https://www.postgresql.org/docs/current/sql-begin.html)
 - [PostgreSQL - COMMIT](https://www.postgresql.org/docs/current/sql-commit.html)
 - [PostgreSQL - ROLLBACK](https://www.postgresql.org/docs/current/sql-rollback.html)
