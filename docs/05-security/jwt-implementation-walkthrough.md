@@ -114,3 +114,4 @@ Expected pattern:
 - `spring-security-core-concepts.md`
 - `oauth2-jwt-resource-server-concepts.md`
 - `spring-security-config-and-properties.md`
+- `keycloak-oidc-mental-model.md`

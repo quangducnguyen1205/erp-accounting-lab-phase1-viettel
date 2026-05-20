@@ -23,6 +23,10 @@ Nếu lần đầu mở Keycloak Admin Console, đọc thêm bản hướng dẫ
 
 - `docs/05-security/keycloak-admin-console-guide.md`
 
+Nếu còn lẫn lộn realm/client/user/JWKS/issuer hoặc JWT tạm vs Keycloak, đọc file mental model trước:
+
+- `docs/05-security/keycloak-oidc-mental-model.md`
+
 ## Done criteria
 
 - [ ] Chạy được Keycloak local ở `http://localhost:18080`.
@@ -155,13 +159,16 @@ Cần thấy:
 
 ### 7. So sánh với JWT tạm
 
-| Câu hỏi | JWT tạm | Keycloak |
-|---|---|---|
-| Ai phát hành token? | `tenant-demo` dev endpoint | Keycloak |
-| Backend verify bằng gì? | HS256 secret local | issuer + JWKS |
-| User nằm ở đâu? | chưa có thật | Keycloak user |
-| Tenant claim đến từ đâu? | dev token service | user attribute/protocol mapper |
-| Production readiness? | không | gần kiến trúc thật hơn nhưng lab vẫn chưa production |
+Không lặp lại bảng dài ở đây. Sau khi lấy được token, tự đối chiếu với:
+
+- `docs/05-security/keycloak-oidc-mental-model.md`
+- `docs/05-security/jwt-implementation-walkthrough.md`
+
+Cần trả lời được 3 câu:
+
+- token hiện tại do ai phát hành?
+- backend verify bằng local secret hay issuer/JWKS?
+- `tenant_id` đến từ dev token service hay từ user attribute + mapper?
 
 ### 8. Bước code sau mini-lab
 

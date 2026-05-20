@@ -73,7 +73,7 @@ Trong production, Keycloak thường đóng vai trò Authorization Server/OpenID
 - công bố public keys/JWK để backend validate token;
 - hỗ trợ OAuth2/OIDC flows.
 
-Trong Phase 1, repo chưa chạy Keycloak thật. Demo JWT tạm chỉ giúp hiểu backend side: nhận token, validate, đọc `tenant_id`, set `TenantContext`.
+Trong Phase 1, `tenant-demo` hiện vẫn dùng JWT tạm ở backend, còn `lab-code/keycloak-lab/` dùng để chạy Keycloak mini-lab riêng. Demo JWT tạm giúp hiểu backend side: nhận token, validate, đọc `tenant_id`, set `TenantContext`. Keycloak mini-lab giúp hiểu Authorization Server/OpenID Provider thật trước khi tích hợp vào backend.
 
 ## Vì sao lab dùng JWT local tạm?
 
@@ -107,10 +107,13 @@ Tenant isolation vẫn cần:
 
 Nếu repository có method nguy hiểm như `findByCode(...)` thiếu tenant, JWT vẫn không cứu được data leakage.
 
+## Đọc tiếp khi chuẩn bị tích hợp Keycloak
+
+- `docs/05-security/keycloak-oidc-mental-model.md`
+
 ## Nguồn tham khảo chuẩn
 
 - Spring Security OAuth2 Resource Server JWT: https://docs.spring.io/spring-security/reference/servlet/oauth2/resource-server/jwt.html
 - RFC 6750 - OAuth 2.0 Bearer Token Usage: https://www.rfc-editor.org/rfc/rfc6750.html
 - RFC 7519 - JSON Web Token: https://www.rfc-editor.org/rfc/rfc7519.html
 - OpenID Connect Core 1.0: https://openid.net/specs/openid-connect-core-1_0-18.html
-

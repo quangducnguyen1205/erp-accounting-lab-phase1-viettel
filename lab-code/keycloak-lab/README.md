@@ -12,6 +12,12 @@ Nếu Admin Console nhìn quá nhiều mục, đọc trước:
 docs/05-security/keycloak-admin-console-guide.md
 ```
 
+Nếu chưa chắc realm/client/user/mapper/JWKS liên hệ với Spring Boot như thế nào, đọc trước:
+
+```text
+docs/05-security/keycloak-oidc-mental-model.md
+```
+
 ## Chạy Keycloak
 
 ```bash

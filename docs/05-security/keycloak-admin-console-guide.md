@@ -20,28 +20,16 @@ Không mục tiêu lúc này:
 
 ## Bản đồ tư duy nhanh
 
+File này tập trung vào việc bấm UI trong Admin Console. Nếu cần hiểu kỹ flow JWT tạm vs Keycloak/OIDC, đọc file trung tâm:
+
+- `docs/05-security/keycloak-oidc-mental-model.md`
+
+Tóm tắt ngắn:
+
 ```text
-Người dùng / HTTP Client
-    |
-    | 1. Đăng nhập / xin token
-    v
-Keycloak
-    |
-    | 2. Phát access token có iss, exp, sub, tenant_id
-    v
-Client gọi API: Authorization: Bearer <token>
-    |
-    | 3. Spring Security Resource Server validate token bằng issuer/JWKS
-    v
-JwtTenantContextFilter
-    |
-    | 4. Đọc tenant_id đã được validate -> TenantContext
-    v
-Service / Repository tenant-aware
-    |
-    | 5. Query luôn có tenantId
-    v
-PostgreSQL
+Keycloak phát token
+-> Spring Boot Resource Server validate bằng issuer/JWKS
+-> tenant_id claim đã validate được đưa vào TenantContext
 ```
 
 Điểm quan trọng: Keycloak giúp backend tin được danh tính/token, nhưng **không thay thế** việc query theo `tenantId`.
@@ -492,6 +480,7 @@ Done ở giai đoạn này không phải là “tích hợp full Keycloak vào c
 
 ## Đọc liên quan
 
+- `docs/05-security/keycloak-oidc-mental-model.md`
 - `docs/05-security/keycloak-oauth2-oidc-awareness.md`
 - `docs/05-security/keycloak-mini-lab-plan.md`
 - `lab-code/keycloak-lab/README.md`
