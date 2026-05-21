@@ -70,10 +70,10 @@ app:
   # ==============================================================
   #
   # local-jwt: mode hiện tại, dùng JWT tạm HS256 do tenant-demo tạo.
-  # keycloak: skeleton cho mode dùng token từ Keycloak local.
+  # keycloak: mode dùng token từ Keycloak local.
   #
-  # Lưu ý: keycloak mode chưa bật mặc định vì cần tự code JwtDecoder
-  # issuer-uri/JWKS switch trong SecurityConfig trước.
+  # Lưu ý: keycloak mode chưa bật mặc định vì cần Keycloak local đang chạy.
+  # Test tự động hiện vẫn dùng local-jwt để không phụ thuộc container Keycloak.
   auth:
     mode: ${APP_AUTH_MODE:local-jwt}
     keycloak:

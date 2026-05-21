@@ -2,7 +2,7 @@
 #
 # Mục tiêu:
 # - lấy access token từ Keycloak local;
-# - sau khi tự code Keycloak JwtDecoder switch, dùng token đó gọi tenant-demo API;
+# - dùng token đó gọi tenant-demo API ở APP_AUTH_MODE=keycloak;
 # - không commit access token thật vào repo.
 #
 # Điều kiện:
@@ -10,7 +10,7 @@
 # - Realm `viettel-lab`, client `tenant-demo-api-client`,
 #   user `tenant1-user`/`tenant2-user` đã được tạo.
 # - Token có claim `tenant_id`.
-# - tenant-demo đã được chạy với APP_AUTH_MODE=keycloak sau khi tự hoàn thiện code.
+# - tenant-demo đã được chạy với APP_AUTH_MODE=keycloak.
 
 @keycloakUrl = http://localhost:18080
 @realm = viettel-lab
@@ -50,12 +50,12 @@ Content-Type: application/x-www-form-urlencoded
 
 grant_type=password&client_id={{clientId}}&username={{tenant2User}}&password={{password}}
 
-### TODO sau khi tự code Keycloak mode: tenant 1 list master data
+### Keycloak mode: tenant 1 list master data
 # Expected: 200, chỉ thấy tenantId = 1.
 GET {{tenantDemoUrl}}/api/master-data
 Authorization: Bearer {{keycloakTenant1Token}}
 
-### TODO sau khi tự code Keycloak mode: tenant 2 list master data
+### Keycloak mode: tenant 2 list master data
 # Expected: 200, chỉ thấy tenantId = 2.
 GET {{tenantDemoUrl}}/api/master-data
 Authorization: Bearer {{keycloakTenant2Token}}

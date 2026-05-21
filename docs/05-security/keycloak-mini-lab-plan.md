@@ -2,20 +2,20 @@
 
 ## Mục tiêu mini-lab
 
-Mini-lab này chỉ cần chứng minh mình hiểu đường đi thật của OAuth2/OIDC trước khi đụng code:
+Mini-lab này chứng minh mình hiểu đường đi thật của OAuth2/OIDC và đã nối được token Keycloak vào backend demo ở mức local:
 
 ```text
 Keycloak realm/client/user
 -> lấy access token
 -> token có issuer/JWKS/claims
--> Spring Boot sau này có thể validate bằng issuer-uri
+-> Spring Boot validate bằng issuer-uri/JWKS khi APP_AUTH_MODE=keycloak
 -> tenant_id claim sau validate mới được đưa vào TenantContext
 ```
 
 Không mục tiêu production:
 
 - chưa làm full RBAC;
-- chưa thay code JWT tạm ngay;
+- không xóa JWT tạm vì vẫn dùng làm fallback/test path;
 - chưa làm React login;
 - chưa triển khai Keycloak cluster/HTTPS/database production.
 
@@ -29,15 +29,15 @@ Nếu còn lẫn lộn realm/client/user/JWKS/issuer hoặc JWT tạm vs Keycloa
 
 ## Done criteria
 
-- [ ] Chạy được Keycloak local ở `http://localhost:18080`.
-- [ ] Tạo realm `viettel-lab`.
-- [ ] Tạo client local để lấy token.
-- [ ] Tạo ít nhất 2 user: `tenant1-user`, `tenant2-user`.
-- [ ] User/token có claim `tenant_id` tương ứng `1` và `2`.
-- [ ] Gọi token endpoint lấy access token.
-- [ ] Mở `.well-known/openid-configuration` và nhận ra `issuer`, `jwks_uri`.
-- [ ] So sánh được JWT tạm hiện tại với Keycloak token.
-- [ ] Ghi rõ bước code tiếp theo để Spring Boot dùng `issuer-uri`, nhưng chưa phá flow hiện tại.
+- [x] Chạy được Keycloak local ở `http://localhost:18080`.
+- [x] Tạo realm `viettel-lab`.
+- [x] Tạo client local để lấy token.
+- [x] Tạo ít nhất 2 user: `tenant1-user`, `tenant2-user`.
+- [x] User/token có claim `tenant_id` tương ứng `1` và `2`.
+- [x] Gọi token endpoint lấy access token.
+- [x] Mở `.well-known/openid-configuration` và nhận ra `issuer`, `jwks_uri`.
+- [x] So sánh được JWT tạm hiện tại với Keycloak token.
+- [x] Spring Boot dùng `issuer-uri` ở `APP_AUTH_MODE=keycloak` nhưng vẫn giữ local JWT fallback cho test.
 
 ## Thứ tự làm khuyến nghị
 
@@ -170,15 +170,15 @@ Cần trả lời được 3 câu:
 - backend verify bằng local secret hay issuer/JWKS?
 - `tenant_id` đến từ dev token service hay từ user attribute + mapper?
 
-### 8. Bước code sau mini-lab
+### 8. Bước code đã nối vào backend
 
-Chưa làm trong task này, nhưng hướng sau là:
+Backend đã có hướng:
 
-- thêm profile/config mode `keycloak`;
-- để Spring Security Resource Server dùng `issuer-uri`;
-- bỏ custom HMAC decoder khi ở Keycloak mode;
+- thêm config mode `keycloak`;
+- để Spring Security Resource Server dùng `issuer-uri`/JWKS;
+- không dùng local HMAC decoder khi ở Keycloak mode;
 - giữ `JwtTenantContextFilter` đọc claim `tenant_id` từ `Jwt` đã validate;
-- update tests để có path JWT local hoặc test profile riêng.
+- giữ tests ở local JWT mode để không phụ thuộc Keycloak container.
 
 ## Câu hỏi tự trả lời sau mini-lab
 

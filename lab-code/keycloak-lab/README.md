@@ -104,6 +104,10 @@ Add to access token: On
 
 Backend hiện đọc được cả `tenant_id` dạng number hoặc string.
 
+Ghi chú với Keycloak 26.x: nếu set user attribute bằng Admin Console thì thường dễ thấy ngay trong UI. Nếu setup bằng CLI/API, cần nhớ User Profile có thể chặn unmanaged attributes. Cách kiểm tra nhanh là lấy token và decode access token: phải thấy claim `tenant_id`.
+
+Khi `kcadm.sh update ... -s attributes...` không lưu attribute như mong đợi, dùng Admin REST `PUT /admin/realms/{realm}/users/{id}` với body `UserRepresentation` đầy đủ là cách verify rõ hơn trong lab. Không cần đưa access token admin hoặc token user vào repo.
+
 ## Lấy token
 
 Dùng:

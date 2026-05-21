@@ -2,7 +2,7 @@
 
 ## Mục tiêu
 
-Tài liệu này chuẩn bị bước tích hợp Keycloak-issued JWT vào `tenant-demo` mà không phá local JWT mode đang chạy. Đây là kế hoạch/skeleton trước khi tự code phần switch thật.
+Tài liệu này ghi lại cách tích hợp Keycloak-issued JWT vào `tenant-demo` mà không phá local JWT mode đang chạy. Đây vẫn là mini-lab học tập, chưa phải production IAM/RBAC.
 
 Đọc trước:
 
@@ -51,7 +51,7 @@ Keycloak
 -> Service/Repository tenant-aware
 ```
 
-Config skeleton đã chuẩn bị:
+Config đã chuẩn bị:
 
 ```yaml
 app:
@@ -81,19 +81,19 @@ Rule vẫn giữ:
 3. Thiếu hoặc sai `tenant_id` phải fail rõ ràng.
 4. Repository/service vẫn query theo `tenantId`.
 
-## 4. Code skeleton đã chuẩn bị
+## 4. Code/config đã chuẩn bị
 
 | File | Vai trò |
 |---|---|
 | `AuthProperties.java` | Bind `app.auth.mode` và `app.auth.keycloak.*`. |
-| `SecurityConfig.java` | Có TODO marker cho `app.auth.mode=keycloak`. |
+| `SecurityConfig.java` | Chọn JwtDecoder theo `app.auth.mode`: local HS256 hoặc Keycloak issuer-uri/JWKS. |
 | `application.yml` | Có placeholder `APP_AUTH_MODE`, `KEYCLOAK_ISSUER_URI`, `KEYCLOAK_JWK_SET_URI`. |
 | `.env.example` | Có biến mẫu cho Keycloak local lab. |
 | `http/keycloak-api.http` | Có request lấy token Keycloak và gọi tenant-demo API sau khi integration xong. |
 
-Hiện tại nếu bật `APP_AUTH_MODE=keycloak`, app sẽ fail rõ với thông báo skeleton vì `JwtDecoder` issuer-uri/JWKS switch chưa được tự code. Đây là cố ý để không làm bạn tưởng Keycloak mode đã hoàn tất.
+`APP_AUTH_MODE=keycloak` đã được verify thủ công với Keycloak local. `DataLeakageTest` vẫn ép `app.auth.mode=local-jwt` để regression test không phụ thuộc container Keycloak.
 
-## 5. Việc cần tự code ở task tiếp theo
+## 5. Điểm cần hiểu trong `SecurityConfig`
 
 Trong `SecurityConfig.jwtDecoder(...)`:
 
@@ -113,7 +113,9 @@ JwtDecoders.fromIssuerLocation(authProperties.getKeycloak().getIssuerUri())
 NimbusJwtDecoder.withJwkSetUri(authProperties.getKeycloak().getJwkSetUri()).build()
 ```
 
-Chỉ chọn một hướng trước. Với beginner lab, `issuer-uri` dễ giải thích hơn.
+Với beginner lab, `issuer-uri` dễ giải thích hơn vì Spring Security tự đọc OIDC metadata rồi tìm `jwks_uri`.
+
+Lưu ý hiện tại: `JwtEncoder`/`JwtTokenService` vẫn tồn tại để phục vụ local JWT fallback và test. Vì vậy `.env` vẫn cần `JWT_SECRET` hợp lệ, dù khi `APP_AUTH_MODE=keycloak` thì request API dùng token từ Keycloak.
 
 ## 6. Test strategy
 
@@ -127,7 +129,7 @@ Giai đoạn này:
 
 Lý do: test tự động không nên phụ thuộc một Keycloak container thủ công nếu chưa có Testcontainers/profile rõ ràng.
 
-## 7. Manual verification sau khi tự code decoder switch
+## 7. Manual verification Keycloak mode
 
 1. Chạy Keycloak:
 

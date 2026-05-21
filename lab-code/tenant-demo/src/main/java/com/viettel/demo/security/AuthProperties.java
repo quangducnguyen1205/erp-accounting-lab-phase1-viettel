@@ -12,9 +12,8 @@ import org.springframework.stereotype.Component;
  * - local-jwt: mode đang chạy ổn, dùng JWT tạm do tenant-demo tạo.
  *
  * [Chuẩn bị]
- * - keycloak: mode sẽ dùng token do Keycloak phát hành.
- *   Mode này mới là skeleton cấu hình; phần JwtDecoder issuer-uri/JWKS
- *   sẽ được tự code ở task tích hợp tiếp theo.
+ * - keycloak: mode dùng token do Keycloak phát hành.
+ *   SecurityConfig sẽ tạo JwtDecoder từ issuer-uri/JWKS.
  *
  * Mục tiêu của class này là gom config chuyển mode vào một nơi rõ ràng,
  * không rải rác string env var trong SecurityConfig.
@@ -31,7 +30,7 @@ public class AuthProperties {
      * - keycloak: dùng issuer-uri/JWKS từ Keycloak local.
      *
      * Không bật keycloak mode mặc định để DataLeakageTest và demo JWT tạm
-     * vẫn chạy ổn trong lúc mình tự code phần integration.
+     * vẫn chạy ổn khi không khởi động Keycloak.
      */
     private String mode = "local-jwt";
 

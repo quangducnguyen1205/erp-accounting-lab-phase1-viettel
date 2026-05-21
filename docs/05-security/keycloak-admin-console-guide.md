@@ -193,6 +193,8 @@ Users -> chọn user -> Attributes -> Add attribute
 
 Nếu UI Keycloak version mới đổi vị trí tab, hãy tìm trong trang chi tiết user phần `Attributes` hoặc `User profile`. Không cần chỉnh sâu user profile policy trong mini-lab nếu Admin Console vẫn cho thêm attribute thủ công.
 
+Ghi chú thực tế với Keycloak 26.x: custom user attribute có thể bị User Profile policy quản lý chặt hơn. Nếu dùng CLI/API mà `tenant_id` không được lưu, kiểm tra `Realm settings -> User profile` hoặc dùng Admin REST để update user representation đầy đủ. Dấu hiệu verify cuối cùng vẫn là access token có claim `tenant_id`.
+
 ### Client scopes / Mappers
 
 User attribute tự nó chưa chắc xuất hiện trong access token. Cần protocol mapper để biến `tenant_id` thành claim.
