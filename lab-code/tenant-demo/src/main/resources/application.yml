@@ -65,6 +65,23 @@ logging:
 # Nó KHÔNG phải password user.
 #
 app:
+  # ==============================================================
+  # Auth mode
+  # ==============================================================
+  #
+  # local-jwt: mode hiện tại, dùng JWT tạm HS256 do tenant-demo tạo.
+  # keycloak: skeleton cho mode dùng token từ Keycloak local.
+  #
+  # Lưu ý: keycloak mode chưa bật mặc định vì cần tự code JwtDecoder
+  # issuer-uri/JWKS switch trong SecurityConfig trước.
+  auth:
+    mode: ${APP_AUTH_MODE:local-jwt}
+    keycloak:
+      issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:18080/realms/viettel-lab}
+      # Optional. Thường Spring Security discovery JWKS từ issuer-uri.
+      # Chỉ set nếu muốn trỏ thẳng tới endpoint certs/JWKS.
+      jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:}
+
   jwt:
     enabled: ${JWT_ENABLED:true}
     secret: ${JWT_SECRET:local-learning-secret-change-me-32-characters-minimum}

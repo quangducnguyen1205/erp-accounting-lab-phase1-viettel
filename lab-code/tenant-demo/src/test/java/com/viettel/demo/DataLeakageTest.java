@@ -70,6 +70,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * ==============================================================
  */
 @SpringBootTest(properties = {
+        "app.auth.mode=local-jwt",
         "app.jwt.enabled=true",
         "app.jwt.secret=test-learning-secret-change-me-32-characters-minimum",
         "app.jwt.issuer=tenant-demo-test",

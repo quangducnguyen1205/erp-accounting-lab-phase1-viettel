@@ -3,7 +3,7 @@
 > **Bắt đầu:** Thứ Ba 28/04/2026
 > **Deadline ban đầu:** Thứ Hai 25/05/2026
 > **Cửa sổ học mở rộng đề xuất:** đến Thứ Hai 01/06/2026
-> **Cập nhật roadmap:** 19/05/2026
+> **Cập nhật roadmap:** 20/05/2026
 > **Chu kỳ báo cáo:** mỗi 2-3 ngày phải có output có thể trình bày
 > **Phương châm:** tự học + tự code trước, Codex tạo note/skeleton và review sau
 
@@ -14,9 +14,9 @@
 | Chỉ số | Giá trị |
 |--------|:-------:|
 | **Tiến độ** | 75% |
-| **Tổng task** | 79 |
-| **Đã hoàn thành** | 59 / 79 |
-| **Focus hiện tại** | Keycloak/OIDC mini-lab - manual token flow |
+| **Tổng task** | 80 |
+| **Đã hoàn thành** | 60 / 80 |
+| **Focus hiện tại** | Keycloak/OIDC - tự code decoder switch và manual verification |
 | **Milestone tiếp theo** | #9 - Keycloak/OIDC mini-lab hoặc awareness evidence |
 | **Demo cuối Phase 1** | Spring Boot + PostgreSQL/Flyway + tenant-aware API + JWT tạm, có hướng Keycloak mini-lab nếu kịp |
 
@@ -261,6 +261,7 @@ Mục tiêu: nâng auth từ JWT tạm sang hiểu công nghệ thật theo feed
 
 - [x] `[LÝ THUYẾT]` Tạo/read `docs/05-security/keycloak-oidc-mental-model.md`, `docs/05-security/keycloak-oauth2-oidc-awareness.md` và `docs/05-security/keycloak-admin-console-guide.md` từ Keycloak/Spring Security docs: Authorization Server, Resource Server, issuer, JWKS, access token, client, realm, Admin Console cơ bản.
 - [x] `[SKELETON]` Chuẩn bị `lab-code/keycloak-lab/` hoặc Docker Compose profile có TODO comments nếu chạy Keycloak local là khả thi trên máy.
+- [x] `[SKELETON]` Chuẩn bị Spring Boot Keycloak integration skeleton: `app.auth.mode`, `KEYCLOAK_ISSUER_URI`, TODO trong `SecurityConfig`, HTTP Client verify; chưa implement decoder switch.
 - [ ] `[THỰC HÀNH]` Tự thử flow nhỏ: tạo realm/client/user hoặc lấy token dev; nếu không kịp thì ghi rõ blocker và giữ JWT tạm.
 - [ ] `[THỰC HÀNH]` So sánh JWT tạm hiện tại với Keycloak/OIDC thật: phần nào giống, phần nào khác, phần nào production mới cần.
 - [ ] `[REVIEW]` Nhờ Codex review note/lab: không biến Keycloak thành full IAM project, không overclaim RBAC production.
@@ -358,13 +359,13 @@ make app-test
 
 3. File HTTP Client đã được làm sạch token thật; nếu cần token lặp lại, dùng private env local hoặc paste thủ công.
 
-### Task tiếp theo: Keycloak/OIDC mini-lab
+### Task tiếp theo: tự code Keycloak decoder switch
 
-1. Đọc `docs/05-security/keycloak-oauth2-oidc-awareness.md` và `docs/05-security/keycloak-mini-lab-plan.md`.
-2. Chạy `cd lab-code/keycloak-lab && docker compose up -d`.
-3. Tạo realm/client/user theo `lab-code/keycloak-lab/README.md`.
-4. Dùng `lab-code/keycloak-lab/http/keycloak-token-flow.http` để lấy token và kiểm tra `issuer`, `jwks_uri`, `tenant_id`.
-5. Chưa chuyển sang React trước khi có Keycloak/OIDC awareness evidence hoặc mini-lab result rõ.
+1. Đọc `docs/05-security/keycloak-oidc-mental-model.md` và `docs/05-security/spring-boot-keycloak-integration-plan.md`.
+2. Mở `SecurityConfig.java`, hoàn thiện TODO `JwtDecoder` cho `app.auth.mode=keycloak`.
+3. Giữ `app.auth.mode=local-jwt` làm default để `DataLeakageTest` vẫn pass.
+4. Chạy `cd lab-code && make app-test` để đảm bảo local JWT mode không vỡ.
+5. Sau đó chạy Keycloak và dùng `lab-code/tenant-demo/http/keycloak-api.http` để verify thủ công Keycloak token.
 
 ---
 
