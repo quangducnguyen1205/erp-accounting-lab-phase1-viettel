@@ -6,9 +6,9 @@ Mục tiêu của repo không phải là lưu mọi nháp học tập, mà là l
 
 ## Trạng thái học hiện tại
 
-- Đã gần hoàn tất nền tảng về SaaS và kiến trúc multi-tenant.
-- Đang tổng hợp lại kiến thức và đi sâu thêm vào backend/database.
-- Trọng tâm mở rộng hiện tại: PostgreSQL, index, query planning, locking, migration strategy, partitioning, read replica và hành vi backend trong môi trường production.
+- Đã hoàn thành nền tảng SaaS, multi-tenant, SQL playground, migration/locking, ACID/isolation và tenant-aware backend API.
+- Đã có demo Spring Boot nhỏ trong `lab-code/tenant-demo` với PostgreSQL/Flyway, tenant-aware API, JWT tạm và Keycloak mode.
+- Trọng tâm hiện tại: đóng gói demo mentor-facing và map các công nghệ trong kiến trúc target theo hướng just-in-time.
 
 ## Cấu trúc thư mục
 
@@ -19,7 +19,14 @@ Mục tiêu của repo không phải là lưu mọi nháp học tập, mà là l
 │   ├── 01-saas/
 │   ├── 02-multi-tenant/
 │   ├── 03-backend-database-mo-rong/
+│   ├── 04-spring-boot/
+│   ├── 05-security/
+│   ├── 07-architecture/
 │   └── 99-tong-ket/
+├── lab-code/
+│   ├── sql-playground/
+│   ├── tenant-demo/
+│   └── keycloak-lab/
 ├── reports/
 │   └── latex/
 ├── presentation-notes/
@@ -34,6 +41,7 @@ Mục tiêu của repo không phải là lưu mọi nháp học tập, mà là l
 - Ghi chú lý thuyết markdown đã được tổng hợp.
 - Báo cáo LaTeX dạng nguồn `.tex`.
 - Tài liệu thuyết trình dạng markdown có sơ đồ, bảng và ghi chú nói ngắn.
+- Lab code nhỏ phục vụ việc học Phase 1, bao gồm SQL playground, Spring Boot tenant demo và Keycloak mini-lab.
 - Các README giải thích cách sử dụng repo.
 
 ## Nội dung local-only
@@ -79,12 +87,19 @@ presentation-notes/thuyet-trinh-saas-multi-tenant.md
 
 ## Quyết định về code demo
 
-Hiện tại repository này được ưu tiên làm kho kiến thức Phase 1. Chưa bắt đầu full coding project trong repo này.
+Repository này vẫn được ưu tiên làm kho kiến thức Phase 1, nhưng hiện đã có lab code nhỏ để chứng minh lý thuyết:
 
-Khi đến thời điểm phù hợp:
+- `lab-code/sql-playground/`: thực hành PostgreSQL multi-tenant.
+- `lab-code/tenant-demo/`: Spring Boot + PostgreSQL/Flyway + tenant-aware API.
+- `lab-code/keycloak-lab/`: Keycloak/OIDC mini-lab local.
 
-- Nếu demo backend còn nhỏ và bám sát lý thuyết, có thể đặt tạm trong `lab-code/` hoặc `demo/`.
-- Nếu demo phát triển thành một project thật sự lớn, nên tách sang repository riêng để repo kiến thức này vẫn gọn, rõ và dễ đọc.
+Nếu demo phát triển thành một project thật sự lớn, nên tách sang repository riêng để repo kiến thức này vẫn gọn, rõ và dễ đọc. Trong Phase 1, lab code vẫn được giữ nhỏ và bám sát mục tiêu học.
+
+Điểm điều hướng chính:
+
+- `docs/README.md`: index tài liệu.
+- `ROADMAP.md`: tiến độ và kế hoạch học.
+- `presentation-notes/demo-script-keycloak-tenant-flow.md`: demo script backend hiện tại.
 
 Workflow học code dự kiến:
 
@@ -110,3 +125,5 @@ Workflow học code dự kiến:
 - Trade-off giữa chi phí, isolation, migration complexity, blast radius, operational complexity và customization.
 - Feature flags, zero-downtime deployment, rolling deployment, blue-green deployment và backward-compatible migration.
 - Noisy neighbor, index tenant-aware, locking, rollback, partitioning, vacuum, read replica và vai trò của PostgreSQL.
+- Spring Boot Resource Server, JWT tạm, Keycloak/OIDC mini-lab và tenant-aware API.
+- Target architecture adoption map: React, API Gateway, Keycloak, PostgreSQL, Redis, Kafka, Debezium, MinIO, Elasticsearch, observability, LLM providers và external integrations ở mức phù hợp Phase 1.
