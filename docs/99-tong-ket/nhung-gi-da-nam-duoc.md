@@ -475,3 +475,8 @@ Local JWT mode vẫn được giữ làm fallback cho `DataLeakageTest`, để t
 - Chưa làm full Keycloak production setup, HTTPS, key rotation, realm import/export chuẩn hoặc RBAC role matrix.
 - Password grant/direct access grant chỉ dùng để học local nhanh; frontend production thường nên đi theo Authorization Code + PKCE.
 - Keycloak xác thực token và claim, nhưng không thay thế tenant-aware service/repository query.
+
+### Tài liệu hỗ trợ demo
+
+- `docs/05-security/keycloak-admin-console-guide.md` đã có ảnh chụp Admin Console local trong `docs/assets/keycloak/`, giúp nhớ lại các màn hình realm/client/user/mapper.
+- `presentation-notes/demo-script-keycloak-tenant-flow.md` là đường demo backend chắc chắn: PostgreSQL -> Keycloak -> tenant-demo Keycloak mode -> API verify -> `make app-test`.

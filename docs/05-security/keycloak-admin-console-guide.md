@@ -38,6 +38,8 @@ Keycloak phát token
 
 Các ảnh dưới đây được chụp từ Keycloak local dev tại `http://localhost:18080` với dữ liệu mini-lab `viettel-lab`. Không có access token thật hoặc secret production trong ảnh.
 
+Các file ảnh đang nằm trong `docs/assets/keycloak/`. Nếu sau này UI Keycloak đổi nhẹ theo version, ưu tiên nhớ ý nghĩa màn hình và verify lại bằng token claim thay vì cố bám từng pixel trong ảnh.
+
 ![Màn hình đăng nhập Keycloak Admin Console](../assets/keycloak/01-admin-login.jpg)
 
 *Màn hình đăng nhập Admin Console. Lab dùng tài khoản dev-only `admin/admin` từ `docker-compose.yml`.*
@@ -167,6 +169,17 @@ tenant1-user
 tenant2-user
 ```
 
+Với Keycloak 26.x, các field bắt buộc có thể phụ thuộc cấu hình `User Profile` của realm. Trong lab hiện tại nên điền rõ các field sau để dễ đọc lại và ít bị UI/API từ chối hơn:
+
+| Field | Gợi ý lab |
+|---|---|
+| Username | `tenant1-user` / `tenant2-user` |
+| Email | `tenant1-user@example.local` / `tenant2-user@example.local` |
+| First name | `Tenant 1` / `Tenant 2` |
+| Last name | `User` |
+| Email verified | `On` nếu UI hoặc policy yêu cầu |
+| Enabled | `On` |
+
 Sau đó vào tab/section `Credentials` để đặt password:
 
 ```text
@@ -193,7 +206,14 @@ Users -> chọn user -> Attributes -> Add attribute
 
 Nếu UI Keycloak version mới đổi vị trí tab, hãy tìm trong trang chi tiết user phần `Attributes` hoặc `User profile`. Không cần chỉnh sâu user profile policy trong mini-lab nếu Admin Console vẫn cho thêm attribute thủ công.
 
-Ghi chú thực tế với Keycloak 26.x: custom user attribute có thể bị User Profile policy quản lý chặt hơn. Nếu dùng CLI/API mà `tenant_id` không được lưu, kiểm tra `Realm settings -> User profile` hoặc dùng Admin REST để update user representation đầy đủ. Dấu hiệu verify cuối cùng vẫn là access token có claim `tenant_id`.
+Ghi chú thực tế với Keycloak 26.x: custom user attribute có thể bị User Profile policy quản lý chặt hơn. Nếu `tenant_id` không lưu được, hoặc lưu trong UI nhưng không xuất hiện trong token, kiểm tra:
+
+- `Realm settings -> User profile`: policy có cho unmanaged/custom attribute không.
+- User detail: attribute `tenant_id` đã thật sự được save chưa.
+- Mapper: đã bật `Add to access token` chưa.
+- Access token decode ra có claim `tenant_id` chưa.
+
+Dấu hiệu verify cuối cùng không phải “UI nhìn có vẻ đúng”, mà là access token thật có claim `tenant_id`.
 
 ### Client scopes / Mappers
 
@@ -343,6 +363,13 @@ tenant1-user
 tenant2-user
 ```
 
+Nên điền thêm email/tên rõ ràng cho lab:
+
+```text
+tenant1-user / tenant1-user@example.local / Tenant 1 User
+tenant2-user / tenant2-user@example.local / Tenant 2 User
+```
+
 Sau đó:
 
 ```text
@@ -461,14 +488,14 @@ Done ở giai đoạn này không phải là “tích hợp full Keycloak vào c
 
 ## Checklist tự kiểm tra
 
-- [ ] Tôi biết realm `viettel-lab` là gì.
-- [ ] Tôi biết client `tenant-demo-api-client` dùng để xin token.
-- [ ] Tôi tạo được user tenant 1 và tenant 2.
-- [ ] Tôi biết password user khác với JWT signing key/Keycloak key.
-- [ ] Tôi đưa được `tenant_id` vào access token.
-- [ ] Tôi mở được OIDC metadata và chỉ ra `issuer`, `jwks_uri`.
-- [ ] Tôi hiểu backend chỉ đọc `tenant_id` sau khi token validate.
-- [ ] Tôi hiểu Keycloak không thay thế tenant-aware repository query.
+- [x] Tôi biết realm `viettel-lab` là gì.
+- [x] Tôi biết client `tenant-demo-api-client` dùng để xin token.
+- [x] Tôi tạo được user tenant 1 và tenant 2.
+- [x] Tôi biết password user khác với JWT signing key/Keycloak key.
+- [x] Tôi đưa được `tenant_id` vào access token.
+- [x] Tôi mở được OIDC metadata và chỉ ra `issuer`, `jwks_uri`.
+- [x] Tôi hiểu backend chỉ đọc `tenant_id` sau khi token validate.
+- [x] Tôi hiểu Keycloak không thay thế tenant-aware repository query.
 
 ## Khi bị kẹt thì kiểm tra gì?
 

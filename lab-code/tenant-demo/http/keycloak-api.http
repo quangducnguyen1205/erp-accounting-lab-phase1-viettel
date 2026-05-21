@@ -26,11 +26,12 @@
 # 1. Chạy request lấy token bên dưới.
 # 2. Copy access_token từ response.
 # 3. Paste tạm vào biến dưới trong working tree local hoặc dùng private env của IntelliJ.
-@keycloakTenant1Token = <paste-keycloak-token-tenant-1-here>
-@keycloakTenant2Token = <paste-keycloak-token-tenant-2-here>
+#@keycloakTenant1Token = <paste-keycloak-token-tenant-1-here>
+#@keycloakTenant2Token = <paste-keycloak-token-tenant-2-here>
 @invalidToken = invalid.jwt.token
 @code = LAPTOP-01
-@tenant2RecordId = 10
+# TODO: chạy request tenant 2 list trước, copy một id thuộc tenant 2 vào đây.
+@tenant2RecordId = 6
 
 ### OIDC metadata - nhận ra issuer, token_endpoint, jwks_uri
 GET {{keycloakUrl}}/realms/{{realm}}/.well-known/openid-configuration

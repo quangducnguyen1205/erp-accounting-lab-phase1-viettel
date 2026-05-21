@@ -36,4 +36,5 @@ grant_type=password&client_id={{clientId}}&username={{tenant2User}}&password={{p
 ### TODO: sau khi lấy token
 # - Decode access_token ở local để xem `iss`, `sub`, `exp`, `tenant_id`.
 # - Không paste token thật vào repo/report.
-# - Chưa gọi tenant-demo bằng token Keycloak cho tới khi app có Keycloak mode.
+# - Nếu tenant-demo đang chạy ở APP_AUTH_MODE=keycloak, dùng tiếp:
+#   lab-code/tenant-demo/http/keycloak-api.http

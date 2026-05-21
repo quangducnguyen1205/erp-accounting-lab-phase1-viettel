@@ -83,6 +83,15 @@ tenant1-user / password
 tenant2-user / password
 ```
 
+Gợi ý điền field để tránh quên khi dùng Keycloak 26.x:
+
+| User | Email | First name | Last name | Email verified |
+|---|---|---|---|---|
+| `tenant1-user` | `tenant1-user@example.local` | `Tenant 1` | `User` | `On` nếu UI/policy yêu cầu |
+| `tenant2-user` | `tenant2-user@example.local` | `Tenant 2` | `User` | `On` nếu UI/policy yêu cầu |
+
+Trong một số cấu hình Keycloak 26.x, User Profile có thể yêu cầu thêm field hoặc quản lý custom attributes chặt hơn. Nếu không lưu được user/attribute, kiểm tra `Realm settings -> User profile` trước khi nghi ngờ Spring Boot.
+
 User attributes:
 
 ```text
@@ -132,7 +141,12 @@ Không commit access token thật.
 
 ## Spring Boot sẽ dùng gì sau này?
 
-Hiện tại `tenant-demo` vẫn dùng JWT tạm HS256. Sau mini-lab, hướng code tiếp theo là thêm mode Keycloak an toàn:
+`tenant-demo` hiện đã có hai mode học tập:
+
+- `local-jwt`: dùng JWT tạm HS256 để test tự động không phụ thuộc Keycloak.
+- `keycloak`: dùng `issuer-uri`/JWKS để validate token do Keycloak phát hành.
+
+Keycloak mode dùng cấu hình kiểu:
 
 ```yaml
 spring:
@@ -145,14 +159,30 @@ spring:
 
 Khi dùng issuer-uri, Spring Security Resource Server có thể discovery metadata và JWKS để validate token từ Keycloak.
 
-Không đổi code trong bước lab này để tránh phá test JWT hiện tại.
+Local JWT mode vẫn được giữ làm fallback cho `make app-test`. Không xóa fallback này cho tới khi có test Keycloak tách riêng hoặc môi trường CI có Keycloak ổn định.
+
+Sau khi lấy token từ Keycloak, gọi tenant-demo bằng file:
+
+```text
+lab-code/tenant-demo/http/keycloak-api.http
+```
+
+Không paste token thật vào repo.
 
 ## Done criteria
 
-- [ ] Keycloak chạy ở `localhost:18080`.
-- [ ] Realm `viettel-lab` tồn tại.
-- [ ] Client `tenant-demo-api-client` lấy được token.
-- [ ] Token tenant 1 có `tenant_id = 1`.
-- [ ] Token tenant 2 có `tenant_id = 2`.
-- [ ] Mở được `.well-known/openid-configuration` và chỉ ra `issuer`, `jwks_uri`.
-- [ ] Giải thích được khác biệt giữa JWT tạm và Keycloak/OIDC.
+- [x] Keycloak chạy ở `localhost:18080`.
+- [x] Realm `viettel-lab` tồn tại.
+- [x] Client `tenant-demo-api-client` lấy được token.
+- [x] Token tenant 1 có `tenant_id = 1`.
+- [x] Token tenant 2 có `tenant_id = 2`.
+- [x] Mở được `.well-known/openid-configuration` và chỉ ra `issuer`, `jwks_uri`.
+- [x] `tenant-demo` gọi được bằng Keycloak token khi chạy `APP_AUTH_MODE=keycloak`.
+- [x] Giải thích được khác biệt giữa JWT tạm và Keycloak/OIDC.
+
+## Giới hạn của lab hiện tại
+
+- Realm/client/user được tạo thủ công, chưa có realm import/export chuẩn.
+- Password grant/direct access grants chỉ dùng để học local nhanh.
+- Chưa làm HTTPS, key rotation, RBAC role matrix, production Keycloak database/cluster.
+- Nếu chạy `docker compose down` và môi trường không persist volume, có thể phải tạo lại realm/client/user.
