@@ -6,10 +6,11 @@ Thư mục này kết nối các lab nhỏ trong repo với kiến trúc target 
 
 ## Reading order
 
-1. `keycloak-in-target-architecture.md` - Keycloak/OIDC trong kiến trúc target.
-2. `target-architecture-adoption-map.md` - adoption map cho React, Gateway, Keycloak, PostgreSQL, Redis, Kafka, Debezium, MinIO, Elastic, observability, LLM, integrations.
-3. `elasticsearch-search-service.md` - vì sao/khi nào đưa search engine vào sau PostgreSQL query pattern.
-4. `elasticsearch-mini-lab-plan.md` - kế hoạch mini-lab search nhỏ trên `master_data`.
+1. `target-architecture-adoption-map.md` - adoption map cho React, Gateway, Keycloak, PostgreSQL, Redis, Kafka, Debezium, MinIO, Elastic, observability, LLM, integrations.
+2. `keycloak-in-target-architecture.md` - Keycloak/OIDC trong kiến trúc target.
+3. `elasticsearch-search-service.md` - concept: vì sao/khi nào đưa search engine vào sau PostgreSQL query pattern.
+4. `elasticsearch-code-guide-spring-boot.md` - code shape Spring Boot cho search mini-lab.
+5. `elasticsearch-mini-lab-plan.md` - kế hoạch mini-lab search nhỏ trên `master_data`.
 
 ## Core
 
@@ -26,3 +27,10 @@ Thư mục này kết nối các lab nhỏ trong repo với kiến trúc target 
 - Elasticsearch mini-lab hiện là nhánh kế tiếp vì nối tự nhiên từ PostgreSQL `LIKE`/index/query-pattern.
 - Kafka/Debezium/observability awareness hoặc mini-lab nhỏ nếu mentor yêu cầu.
 - DDD/domain boundaries sau khi demo backend đã đóng gói.
+
+## Source-of-truth pattern cho mỗi công nghệ
+
+- Concept/theory doc: giải thích "là gì, vì sao dùng, khi nào không dùng".
+- Code guide doc: giải thích Spring Boot/package/config/service/test shape.
+- Lab README: chỉ giữ lệnh chạy local và cleanup.
+- Summary/report: ghi lại kết quả sau khi đã tự code/verify.

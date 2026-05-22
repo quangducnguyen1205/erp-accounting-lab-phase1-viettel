@@ -44,11 +44,11 @@ Spring Boot tenant-demo
 | Spring Boot backend services | Business APIs, Resource Server, tenant-aware service/repository. | Core demo hiện tại. | Thêm service khi có domain slice mới. | `tenant-demo` đã có API nhỏ. | Biến demo thành ERP thật quá sớm. |
 | PostgreSQL shared-table | Lưu business data nhiều tenant trong shared table có `tenant_id`. | Core nền tảng. | Query plan, leakage, transaction, migration. | Đã học SQL/Flyway/ACID/index pattern. | Chỉ thêm index mà không hiểu query pattern/locking. |
 | PostgreSQL service databases | Mỗi service có DB/schema riêng trong target. | Khi học service boundary hoặc DDD. | So sánh shared table demo với service DB concept. | Awareness. | Tách DB thật khi chưa có nhiều service sẽ phức tạp. |
-| Redis cache | Cache dữ liệu/config/feature flags, giảm load DB. | Khi có query lặp lại hoặc tenant config/feature flag. | Tenant-safe cache key: `tenant:{id}:...`. | Chưa làm. | Cache leakage nếu key thiếu tenant; cache trước khi có bottleneck. |
-| Kafka async messaging | Event/message giữa services, decouple async workflow. | Khi có nghiệp vụ bất đồng bộ thật. | Publish event đơn giản, consumer log. | Awareness. | Chạy Kafka chỉ để “có Kafka” rất nặng. |
-| Debezium CDC | Đồng bộ thay đổi DB sang Kafka/search/reporting. | Khi học data sync/search/reporting pipeline. | Awareness diagram hoặc read-only CDC note. | Chưa làm. | Setup CDC phức tạp, dễ lệch Phase 1. |
-| MinIO object storage | Lưu file qua S3 API: hóa đơn, chứng từ, attachment. | Khi có file upload/download feature. | Upload file local, store metadata tenant-aware. | Chưa làm. | File security/ACL/presigned URL phức tạp nếu làm sâu. |
-| Elasticsearch/search | Search text, indexing, query search service. | Khi PostgreSQL `LIKE` không đủ hoặc cần search service. | Index vài master data docs, search keyword. | Đang bắt đầu mini-lab kế tiếp, nối từ PostgreSQL pattern. | Làm Elastic thành production search platform quá sớm. |
+| Elasticsearch/search | Search text, indexing, query search service. | Hiện tại, ngay sau PostgreSQL query-pattern. | Index vài master data docs, search keyword. | Mini-lab hiện tại sau Keycloak. | Làm Elastic thành production search platform quá sớm. |
+| MinIO object storage | Lưu file qua S3 API: hóa đơn, chứng từ, attachment. | Ngay sau search nếu muốn học storage slice. | Upload/download file, store metadata tenant-aware. | Planned sau Elasticsearch. | File security/ACL/presigned URL phức tạp nếu làm sâu. |
+| Redis cache | Cache dữ liệu/config/feature flags, giảm load DB. | Sau MinIO hoặc khi có cache need rõ. | Tenant-safe cache key: `tenant:{id}:...`. | Planned sau MinIO. | Cache leakage nếu key thiếu tenant; cache trước khi có bottleneck. |
+| Kafka async messaging | Event/message giữa services, decouple async workflow. | Sau cache/storage, khi cần notification/event awareness. | Publish event đơn giản, consumer log. | Planned sau Redis. | Chạy Kafka chỉ để “có Kafka” rất nặng. |
+| Debezium CDC | Đồng bộ thay đổi DB sang Kafka/search/reporting. | Sau khi hiểu Kafka và search. | Awareness diagram hoặc read-only CDC note. | Later awareness. | Setup CDC phức tạp, dễ lệch Phase 1. |
 | gRPC internal communication | Giao tiếp service-to-service typed/efficient. | Khi so sánh REST vs internal RPC. | Chỉ note/diagram, chưa cần code. | Awareness. | Thêm IDL/protobuf khi chỉ có một service. |
 | Realtime: SignalR/WebSocket/SSE/long polling | Notification/live updates tới frontend. | Khi có notification/progress update feature. | Compare SSE vs WebSocket ở mức note. | Chưa làm. | Realtime infra dễ phình scope. |
 | Observability: Prometheus/Grafana/Loki | Metrics/logging/dashboard để vận hành. | Khi demo cần giải thích production readiness. | Add log/metric awareness note, không cần full stack. | Awareness. | Chạy full monitoring stack quá sớm. |
@@ -124,9 +124,9 @@ Nếu chưa trả lời được 5 câu này, chưa nên implement công nghệ 
 
 Hướng tốt nhất sau tài liệu này:
 
-1. Dry-run backend demo script Keycloak tenant flow.
-2. Cập nhật presentation note/report để nói rõ implemented vs mini-lab vs awareness.
-3. Nhánh mini-lab kế tiếp đã chọn: Elasticsearch/search service cho `master_data`.
-4. Sau Elasticsearch, chỉ chọn thêm Redis/MinIO/Kafka nếu có trigger rõ.
+1. Demo backend Keycloak tenant flow đã đủ chấp nhận để báo cáo khi cần.
+2. Nhánh mini-lab hiện tại: Elasticsearch/search service cho `master_data`.
+3. Sau Elasticsearch, học tiếp MinIO, Redis, Kafka, Observability theo thứ tự roadmap.
+4. React UI để optional/later, không chặn chuỗi học công nghệ backend/architecture.
 
 Không nên mở nhiều mini-lab cùng lúc.

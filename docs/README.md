@@ -12,8 +12,8 @@ Thư mục `docs/` là source of truth cho kiến thức Phase 1 đã được c
 4. `03-backend-database-mo-rong/` - PostgreSQL, index, migration, transaction.
 5. `04-spring-boot/` - Spring Boot, JPA, filter, repository/service/controller, test.
 6. `05-security/` - JWT tạm, Spring Security, Keycloak/OIDC.
-7. `07-architecture/` - map từ lab hiện tại sang kiến trúc target.
-8. `99-tong-ket/` - summary mentor-facing và milestone report.
+7. `07-architecture/` - map từ lab hiện tại sang kiến trúc target và mini-lab công nghệ sau Keycloak.
+8. `99-tong-ket/` - summary mentor-facing, milestone report và template mini-lab.
 
 ## Core vs optional
 
@@ -24,11 +24,22 @@ Thư mục `docs/` là source of truth cho kiến thức Phase 1 đã được c
 | Spring Boot | Demo backend runnable | Core |
 | Security/JWT/Keycloak | Auth flow và tenant context từ token | Core/mini-lab |
 | Architecture map | Kết nối target diagram với repo | Mentor-facing |
-| DDD/React/Redis/Kafka/MinIO/Elastic | Học just-in-time khi cần | Optional/later |
+| Elasticsearch/MinIO/Redis/Kafka/Observability | Mini-lab công nghệ sau Keycloak, học từng cái một | Post-Keycloak |
+| DDD/React | Optional hoặc cuối phase, không chặn learning tech | Optional/later |
+
+## Cấu trúc chuẩn cho công nghệ mới
+
+Khi thêm một công nghệ sau Keycloak, ưu tiên cấu trúc:
+
+1. Concept/theory doc: `docs/07-architecture/<tech>.md`.
+2. Code guide doc: `docs/07-architecture/<tech>-code-guide-spring-boot.md`.
+3. Lab README: `lab-code/<tech>-lab/README.md`.
+4. Summary sau khi xong: `docs/99-tong-ket/nhung-gi-da-nam-duoc.md`.
+
+Template chung: `docs/99-tong-ket/technology-mini-lab-template.md`.
 
 ## Không làm trong docs public
 
 - Không lưu token, secret, password thật.
 - Không lưu prompt thô hoặc draft answer.
 - Không biến mỗi topic thành textbook dài nếu chưa có mini-lab hoặc demo liên quan.
-

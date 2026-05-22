@@ -1,7 +1,11 @@
 package com.viettel.demo.search;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.viettel.demo.entity.MasterData;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
 import java.util.List;
 
@@ -31,9 +35,13 @@ import java.util.List;
 public class MasterDataSearchIndexer {
 
     private final SearchProperties properties;
+    private final RestClient elasticsearchClient;
 
-    public MasterDataSearchIndexer(SearchProperties properties) {
+    public MasterDataSearchIndexer(
+            SearchProperties properties,
+            RestClient elasticsearchClient) {
         this.properties = properties;
+        this.elasticsearchClient = elasticsearchClient;
     }
 
     public void indexOne(MasterData data) {
@@ -43,7 +51,18 @@ public class MasterDataSearchIndexer {
          * - Convert bằng MasterDataSearchDocument.fromEntity(data).
          * - Gửi document sang Elasticsearch.
          */
-        throw new UnsupportedOperationException("TODO: implement Elasticsearch indexOne");
+        if (!properties.isEnabled()) {
+            return;
+        }
+
+        execute(() ->
+            elasticsearchClient.post()
+                    .uri("{indexName}", properties.getElasticsearchUris())
+                    .body(MasterDataSearchDocument.fromEntity(data))
+                    .retrieve(), "index one document"
+        );
+
+        //throw new UnsupportedOperationException("TODO: implement Elasticsearch indexOne");
     }
 
     public void reindexAll(List<MasterData> data) {
@@ -53,11 +72,35 @@ public class MasterDataSearchIndexer {
          * - Bulk index dữ liệu hiện có.
          * - Log số document đã index, không log data nhạy cảm.
          */
-        throw new UnsupportedOperationException("TODO: implement Elasticsearch reindexAll");
+        StringBuilder body = new StringBuilder();
+
+        for (MasterData masterData : data) {
+            body.append(MasterDataSearchDocument.fromEntity(masterData));
+            body.append("\n");
+        }
+        if (!properties.isEnabled()) {
+            return;
+        }
+        execute(() ->
+            elasticsearchClient.post()
+                    .uri("{indexName}/_bulk", properties.getElasticsearchUris())
+                    .body(body.toString())
+                    .retrieve(), "bulk index documents"
+        );
+
+        //throw new UnsupportedOperationException("TODO: implement Elasticsearch reindexAll");
     }
 
     public SearchProperties properties() {
         return properties;
+    }
+
+    private void execute(Runnable operation, String description) {
+        try {
+            operation.run();
+        } catch (Exception exception) {
+            throw new RuntimeException("Elasticsearch operation failed while trying to " + description, exception);
+        }
     }
 }
 

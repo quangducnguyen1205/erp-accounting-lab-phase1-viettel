@@ -4,6 +4,12 @@
 
 Mini-lab này giúp hiểu khi nào cần search engine sau khi đã học PostgreSQL `LIKE`, B-tree, `pg_trgm` và query pattern.
 
+Đọc kèm:
+
+- `docs/07-architecture/elasticsearch-search-service.md` - concept: vì sao/khi nào dùng Elasticsearch.
+- `docs/07-architecture/elasticsearch-code-guide-spring-boot.md` - code shape Spring Boot cho mini-lab.
+- `lab-code/elasticsearch-lab/README.md` - lệnh chạy Elasticsearch local.
+
 Không làm:
 
 - không xây full production search service;
@@ -138,6 +144,10 @@ Chỉ chạy trên local lab.
 
 ## Code skeleton trong repo
 
+Chi tiết từng class nằm trong code guide:
+
+- `docs/07-architecture/elasticsearch-code-guide-spring-boot.md`
+
 Skeleton dự kiến:
 
 ```text
@@ -166,4 +176,3 @@ Trạng thái skeleton:
 - [ ] Tôi không dùng Elasticsearch cho exact lookup `id/code` nếu DB làm tốt hơn.
 - [ ] Tôi có plan reindex/update/delete document.
 - [ ] Existing tests vẫn pass khi search disabled.
-

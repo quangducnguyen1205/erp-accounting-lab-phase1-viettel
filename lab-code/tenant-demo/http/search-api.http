@@ -9,7 +9,7 @@
 # Không paste token thật vào Git.
 
 @tenantDemoUrl = http://localhost:8080
-@tenant1Token = <paste-token-tenant-1-here>
+@tenant1Token = eyJhbGciOiJIUzI1NiJ9.eyJ0ZW5hbnRfaWQiOjEsImlzcyI6InRlbmFudC1kZW1vLWxvY2FsIiwic3ViIjoiZGV2LXVzZXItdGVuYW50LTEiLCJleHAiOjE3Nzk0NDMzMTQsImlhdCI6MTc3OTQzOTcxNCwicm9sZXMiOlsiVVNFUiJdfQ.MGiT_FG78ygiPr0kwB1CMJ8bpLi4CAP92TuNalBv2EM
 @tenant2Token = <paste-token-tenant-2-here>
 @invalidToken = invalid.jwt.token
 @keyword = Laptop

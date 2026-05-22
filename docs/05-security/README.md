@@ -18,6 +18,18 @@ Ghi chú về Spring Security, JWT tạm và Keycloak/OIDC cho tenant-aware back
 10. `spring-boot-keycloak-integration-plan.md` - tích hợp Keycloak mode.
 11. `../07-architecture/keycloak-in-target-architecture.md` - Keycloak trong target architecture.
 
+## Source of truth để tránh trùng lặp
+
+| File | Vai trò chính |
+|---|---|
+| `keycloak-oidc-mental-model.md` | Theory/mental model: realm, client, user, issuer, JWKS, token claim. |
+| `keycloak-admin-console-guide.md` | UI walkthrough có screenshot, không cố giải thích lại toàn bộ OIDC. |
+| `keycloak-mini-lab-plan.md` | Checklist chạy lab và done criteria. |
+| `spring-boot-keycloak-integration-plan.md` | Code/config integration path cho Spring Boot. |
+| `../07-architecture/keycloak-in-target-architecture.md` | Keycloak trong target architecture rộng hơn. |
+
+Nếu cần chỉnh docs, ưu tiên cập nhật đúng file theo vai trò trên rồi link sang file khác, tránh copy lại cùng một flow dài ở nhiều nơi.
+
 ## Core
 
 - JWT tạm và Spring Security Resource Server.
@@ -38,4 +50,3 @@ Ghi chú về Spring Security, JWT tạm và Keycloak/OIDC cho tenant-aware back
 - `lab-code/tenant-demo/http/keycloak-api.http`
 - `lab-code/keycloak-lab/`
 - `presentation-notes/demo-script-keycloak-tenant-flow.md`
-
