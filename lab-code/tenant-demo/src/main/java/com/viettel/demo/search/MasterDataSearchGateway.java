@@ -43,9 +43,13 @@ public class MasterDataSearchGateway {
         this.properties = properties;
     }
 
+    public String indexName() {
+        return properties.getMasterDataIndex();
+    }
+
     public void ensureIndexExists() {
-        run("check/create search index", () -> {
-            String indexName = properties.getMasterDataIndex();
+        callElasticsearch("check/create search index", () -> {
+            String indexName = indexName();
             BooleanResponse exists = client.indices().exists(e -> e.index(indexName));
             if (!exists.value()) {
                 client.indices().create(c -> c.index(indexName));
@@ -56,9 +60,9 @@ public class MasterDataSearchGateway {
 
     public void indexOne(MasterDataSearchDocument document) {
         ensureIndexExists();
-        run("index one master_data document", () -> {
+        callElasticsearch("index one master_data document", () -> {
             client.index(i -> i
-                    .index(properties.getMasterDataIndex())
+                    .index(indexName())
                     .id(String.valueOf(document.id()))
                     .document(document)
             );
@@ -74,10 +78,10 @@ public class MasterDataSearchGateway {
 
         ensureIndexExists();
 
-        BulkResponse response = run("bulk index master_data documents", () -> client.bulk(b -> {
+        BulkResponse response = callElasticsearch("bulk index master_data documents", () -> client.bulk(b -> {
             for (MasterDataSearchDocument document : documents) {
                 b.operations(op -> op.index(idx -> idx
-                        .index(properties.getMasterDataIndex())
+                        .index(indexName())
                         .id(String.valueOf(document.id()))
                         .document(document)
                 ));
@@ -101,8 +105,8 @@ public class MasterDataSearchGateway {
     public List<MasterDataSearchDocument> search(Long tenantId, String keyword) {
         ensureIndexExists();
 
-        SearchResponse<MasterDataSearchDocument> response = run("search master_data documents", () -> client.search(s -> s
-                        .index(properties.getMasterDataIndex())
+        SearchResponse<MasterDataSearchDocument> response = callElasticsearch("search master_data documents", () -> client.search(s -> s
+                        .index(indexName())
                         .size(50)
                         .query(q -> q.bool(b -> b
                                 .must(m -> m.multiMatch(mm -> mm
@@ -128,13 +132,13 @@ public class MasterDataSearchGateway {
     }
 
     private void refreshIndexForLocalLab() {
-        run("refresh search index for local lab", () -> {
-            client.indices().refresh(r -> r.index(properties.getMasterDataIndex()));
+        callElasticsearch("refresh search index for local lab", () -> {
+            client.indices().refresh(r -> r.index(indexName()));
             return null;
         });
     }
 
-    private <T> T run(String description, ElasticsearchCall<T> call) {
+    private <T> T callElasticsearch(String description, ElasticsearchCall<T> call) {
         try {
             return call.execute();
         } catch (ElasticsearchException | IOException exception) {

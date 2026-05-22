@@ -519,6 +519,9 @@ Kết quả quan sát:
 
 - Elasticsearch request có shape riêng: index document, bulk NDJSON, search Query DSL, hits response.
 - `execute(...)` không phải pattern riêng của Elasticsearch; trong mini-lab nên hiểu nó là wrapper gom exception handling. Code hiện gom phần này vào `MasterDataSearchGateway` để Service/Controller không trộn chi tiết client.
+- `MasterDataSearchGateway` là Gateway/Adapter cho external system, không phải repository thay thế PostgreSQL.
+- `MasterDataSearchService` giữ intent tenant-aware search; `MasterDataSearchController` chỉ là HTTP boundary mỏng.
+- `MasterDataSearchDocument` tách khỏi JPA entity vì Elasticsearch document chỉ là projection phục vụ search.
 - Search engine không thay thế authorization/tenant isolation. Mọi document phải có `tenantId`, và mọi search query phải filter tenant.
 - Có eventual consistency giữa PostgreSQL và Elasticsearch: DB có thể đã đổi nhưng search index chưa kịp đồng bộ nếu chưa reindex/update document.
 - Không nên dùng Elasticsearch cho lookup exact đơn giản nếu PostgreSQL + index đã đủ.

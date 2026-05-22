@@ -104,7 +104,7 @@ Tự implement một trong hai hướng:
 Gợi ý học tập:
 
 ```text
-GET /api/search/master-data/reindex
+POST /api/search/master-data/reindex
 ```
 
 Endpoint này nếu có chỉ nên bật khi `APP_SEARCH_ENABLED=true` và chỉ dùng lab. Production nên dùng job/event/CDC.
@@ -153,19 +153,20 @@ Skeleton dự kiến:
 ```text
 com.viettel.demo.search
 ├── MasterDataSearchDocument.java
+├── MasterDataSearchGateway.java
 ├── MasterDataSearchIndexer.java
 ├── MasterDataSearchService.java
 ├── MasterDataSearchController.java
+├── MasterDataSearchReindexResponse.java
 └── SearchProperties.java
 ```
 
-Trạng thái skeleton:
+Trạng thái hiện tại:
 
-- compile-safe;
-- chưa thêm Elasticsearch client dependency;
+- đã dùng official Elasticsearch Java API Client;
 - search disabled mặc định bằng `APP_SEARCH_ENABLED=false`;
-- các method chính để TODO/throw `501 Not Implemented`;
-- không ảnh hưởng `make app-test`.
+- reindex/search đã verify end-to-end;
+- không ảnh hưởng `make app-test` khi search disabled.
 
 ## Checklist trước khi tự code
 

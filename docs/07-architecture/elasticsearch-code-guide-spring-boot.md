@@ -15,16 +15,21 @@ Nếu bị rối input/output của Elasticsearch, đọc:
 
 - `docs/07-architecture/elasticsearch-request-response-shapes.md`
 
+Nếu muốn hiểu vì sao code tách thành Controller/Service/Gateway/Document, đọc:
+
+- `docs/07-architecture/elasticsearch-design-patterns-spring-boot.md`
+
 Mục tiêu ở đây là biết nên code phần search trong Spring Boot theo hình dạng nào.
 
 ## Hướng tích hợp chuẩn ở mức Phase 1
 
-Có hai hướng phổ biến:
+Có ba hướng phổ biến:
 
 | Hướng | Ý nghĩa | Khi nào dùng |
 |---|---|---|
-| Spring Data Elasticsearch | Dùng abstraction kiểu Spring: document mapping, `ElasticsearchOperations`, repository nếu cần. | Hợp với Spring Boot app, dễ giữ code theo style Spring. |
-| Official Elasticsearch Java API Client | Dùng client chính thức của Elastic, request/response sát API Elasticsearch hơn. | Hợp khi muốn kiểm soát query/indexing rõ hoặc học trực tiếp Elasticsearch API. |
+| Raw HTTP / Spring `RestClient` | Tự gọi REST API Elasticsearch bằng URL + JSON body. | Hữu ích để hiểu URI/JSON DSL hoặc debug bằng curl, nhưng dễ sai shape. |
+| Official Elasticsearch Java API Client | Dùng client chính thức của Elastic, request/response sát API Elasticsearch hơn. | Hợp khi muốn kiểm soát query/indexing rõ và tránh tự ghép JSON thủ công. |
+| Spring Data Elasticsearch / `ElasticsearchOperations` | Dùng abstraction kiểu Spring: document mapping, operations, repository nếu cần. | Hợp với app Spring lớn hơn, nhưng có thể che bớt chi tiết Elasticsearch khi mới học. |
 
 Trong repo này, hướng học hợp lý hiện tại là:
 
@@ -32,6 +37,7 @@ Trong repo này, hướng học hợp lý hiện tại là:
 2. Không tự ghép JSON bằng `RestClient` raw trong service.
 3. Không trộn official client với Spring Data Elasticsearch trong cùng mini-lab.
 4. Không dùng Elasticsearch repository generic để thay thế JPA repository của PostgreSQL.
+5. Giữ Spring Data Elasticsearch như theory/reference later, không trộn vào implementation hiện tại.
 
 Lý do chọn official Java API Client: request/response typed hơn raw HTTP, nhưng vẫn cho thấy rõ các API Elasticsearch như `index`, `bulk`, `search`, `indices`.
 

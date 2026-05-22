@@ -35,15 +35,12 @@ import java.util.List;
 @ConditionalOnProperty(prefix = "app.search", name = "enabled", havingValue = "true")
 public class MasterDataSearchIndexer {
 
-    private final SearchProperties properties;
     private final MasterDataRepository repository;
     private final MasterDataSearchGateway gateway;
 
     public MasterDataSearchIndexer(
-            SearchProperties properties,
             MasterDataRepository repository,
             MasterDataSearchGateway gateway) {
-        this.properties = properties;
         this.repository = repository;
         this.gateway = gateway;
     }
@@ -63,10 +60,6 @@ public class MasterDataSearchIndexer {
                 .map(MasterDataSearchDocument::fromEntity)
                 .toList();
         int indexedCount = gateway.bulkIndex(documents);
-        return new MasterDataSearchReindexResponse(properties.getMasterDataIndex(), indexedCount);
-    }
-
-    public SearchProperties properties() {
-        return properties;
+        return new MasterDataSearchReindexResponse(gateway.indexName(), indexedCount);
     }
 }
