@@ -2,6 +2,7 @@ package com.viettel.demo.search;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,16 +11,19 @@ import java.util.List;
 
 /*
  * ==============================================================
- * MasterDataSearchController — endpoint skeleton cho search mini-lab
+ * MasterDataSearchController — endpoint cho search mini-lab
  * ==============================================================
  *
  * [Mục tiêu]
  * Endpoint này chỉ active khi APP_SEARCH_ENABLED=true.
  *
- * [TODO tự code]
- * - Gọi MasterDataSearchService.search(keyword).
- * - Verify bằng token tenant 1/tenant 2.
- * - Đảm bảo cùng keyword không leak data giữa tenant.
+ * [Cách hoạt động hiện tại]
+ * - GET /api/search/master-data?keyword=... gọi service search tenant-aware.
+ * - POST /api/search/master-data/reindex tạo lại search index từ PostgreSQL.
+ *
+ * [Cảnh báo]
+ * Reindex endpoint chỉ dùng local mini-lab/admin flow, không coi là
+ * production public API.
  *
  * ==============================================================
  */
@@ -29,9 +33,11 @@ import java.util.List;
 public class MasterDataSearchController {
 
     private final MasterDataSearchService service;
+    private final MasterDataSearchIndexer indexer;
 
-    public MasterDataSearchController(MasterDataSearchService service) {
+    public MasterDataSearchController(MasterDataSearchService service, MasterDataSearchIndexer indexer) {
         this.service = service;
+        this.indexer = indexer;
     }
 
     @GetMapping
@@ -40,5 +46,9 @@ public class MasterDataSearchController {
     ) {
         return service.search(keyword);
     }
-}
 
+    @PostMapping("/reindex")
+    public MasterDataSearchReindexResponse reindex() {
+        return indexer.reindexAll();
+    }
+}

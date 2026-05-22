@@ -9,18 +9,24 @@
 # Không paste token thật vào Git.
 
 @tenantDemoUrl = http://localhost:8080
-@tenant1Token = eyJhbGciOiJIUzI1NiJ9.eyJ0ZW5hbnRfaWQiOjEsImlzcyI6InRlbmFudC1kZW1vLWxvY2FsIiwic3ViIjoiZGV2LXVzZXItdGVuYW50LTEiLCJleHAiOjE3Nzk0NDMzMTQsImlhdCI6MTc3OTQzOTcxNCwicm9sZXMiOlsiVVNFUiJdfQ.MGiT_FG78ygiPr0kwB1CMJ8bpLi4CAP92TuNalBv2EM
+@tenant1Token = <paste-token-tenant-1-here>
 @tenant2Token = <paste-token-tenant-2-here>
 @invalidToken = invalid.jwt.token
 @keyword = Laptop
 
+### Reindex master_data for local lab
+# Expected: 200 khi APP_SEARCH_ENABLED=true và Elasticsearch đang chạy.
+# Lưu ý: endpoint này chỉ dùng local/admin lab, không phải public production API.
+POST {{tenantDemoUrl}}/api/search/master-data/reindex
+Authorization: Bearer {{tenant1Token}}
+
 ### Search tenant 1
-# Expected: 200 sau khi tự implement, chỉ thấy documents tenantId = 1.
+# Expected: 200, chỉ thấy documents tenantId = 1.
 GET {{tenantDemoUrl}}/api/search/master-data?keyword={{keyword}}
 Authorization: Bearer {{tenant1Token}}
 
 ### Search tenant 2 cùng keyword
-# Expected: 200 sau khi tự implement, chỉ thấy documents tenantId = 2.
+# Expected: 200, chỉ thấy documents tenantId = 2.
 GET {{tenantDemoUrl}}/api/search/master-data?keyword={{keyword}}
 Authorization: Bearer {{tenant2Token}}
 
@@ -33,9 +39,8 @@ GET {{tenantDemoUrl}}/api/search/master-data?keyword={{keyword}}
 GET {{tenantDemoUrl}}/api/search/master-data?keyword={{keyword}}
 Authorization: Bearer {{invalidToken}}
 
-### TODO: verify tenant leakage guard
+### Manual check: tenant leakage guard
 # 1. Index dữ liệu master_data của cả tenant 1 và tenant 2.
 # 2. Dùng cùng keyword có ở cả hai tenant.
 # 3. Tenant 1 token không được thấy document tenant 2.
 # 4. Tenant 2 token không được thấy document tenant 1.
-

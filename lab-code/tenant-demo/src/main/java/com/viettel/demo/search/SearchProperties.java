@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
  *
  * [Lưu ý]
  * - Search tắt mặc định để app/test hiện tại không phụ thuộc Elasticsearch.
- * - Chưa thêm Elasticsearch Java client trong skeleton này.
- * - Khi tự implement, đọc config này để biết index name và URI.
+ * - Elasticsearch Java API Client chỉ được tạo khi APP_SEARCH_ENABLED=true.
+ * - Đọc config này để biết index name và URI.
  *
  * ==============================================================
  */
@@ -52,4 +52,3 @@ public class SearchProperties {
         this.masterDataIndex = masterDataIndex;
     }
 }
-

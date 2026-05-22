@@ -13,11 +13,11 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 69% |
+| **Tiến độ** | 72% |
 | **Tổng task** | 100 |
-| **Đã hoàn thành** | 69 / 100 |
-| **Focus hiện tại** | Post-Keycloak tech learning - Elasticsearch/search mini-lab |
-| **Milestone tiếp theo** | #11 - Elasticsearch/search service mini-lab |
+| **Đã hoàn thành** | 72 / 100 |
+| **Focus hiện tại** | Post-Keycloak tech learning - MinIO/file storage mini-lab |
+| **Milestone tiếp theo** | #12 - MinIO/file storage mini-lab |
 | **Demo hiện tại** | Spring Boot + PostgreSQL/Flyway + tenant-aware API + JWT tạm + Keycloak mode đã verify |
 
 Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Trọng tâm mới là học tiếp các công nghệ quan trọng trong kiến trúc target bằng mini-lab/code guide từng bước, không quay lại polish demo nếu không chặn học.
@@ -61,7 +61,7 @@ Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. 
 - `DataLeakageTest.java` đã có regression tests cho tenant isolation bằng `make app-test`.
 - JWT tạm đã implement bằng Spring Security: Bearer token local, `tenant_id` claim, `JwtTenantContextFilter`, dev token endpoint và test MockMvc.
 - Keycloak/OIDC mini-lab đã verify với `APP_AUTH_MODE=keycloak`.
-- Elasticsearch/search mini-lab đã có concept doc, code guide, Docker lab và skeleton package; phần tự code search/indexing là task hiện tại.
+- Elasticsearch/search mini-lab đã có concept doc, code guide, Docker lab và implementation tenant-aware đã verify end-to-end.
 - Các note Spring Boot đã có trong `docs/04-spring-boot/`; các note JWT/Spring Security/Keycloak đã có trong `docs/05-security/`.
 
 ### Gap sau feedback mentor đã xử lý hoặc được đưa vào roadmap
@@ -155,7 +155,7 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 | RBAC/tenant-scope | Important theory | `docs/05-security/rbac-tenant-scope.md` | JWT/Keycloak claim note, không role matrix lớn | Summary tenant vs role | #16 | Later |
 | React frontend | Optional demo | `docs/06-frontend/react-tenant-demo-ui.md` | `lab-code/tenant-ui/` nếu thật sự cần | browser/UI + curl fallback | #16 | Optional/later |
 | API Gateway/service discovery/load balancer | Awareness | `docs/07-architecture/api-gateway-service-discovery.md` | Không chạy gateway mặc định | Architecture summary | #16 | Planned |
-| Elasticsearch / Elastic Stack | Mini-lab hiện tại | `docs/07-architecture/elasticsearch-search-service.md`, `docs/07-architecture/elasticsearch-code-guide-spring-boot.md` | `lab-code/elasticsearch-lab/` + search skeleton | Search tenant 1/2, no leakage | #11 | Đang làm |
+| Elasticsearch / Elastic Stack | Mini-lab đã verify | `docs/07-architecture/elasticsearch-search-service.md`, `docs/07-architecture/elasticsearch-code-guide-spring-boot.md` | `lab-code/elasticsearch-lab/` + `com.viettel.demo.search` | Search tenant 1/2, no leakage | #11 | Đã đóng |
 | MinIO / S3 object storage | Mini-lab kế tiếp | `docs/07-architecture/minio-object-storage.md`, `docs/07-architecture/minio-code-guide-spring-boot.md` | upload/download mini-lab | HTTP upload/download + tenant metadata | #12 | Planned |
 | Redis cache strategy | Mini-lab | `docs/07-architecture/redis-cache-strategy.md`, `docs/07-architecture/redis-code-guide-spring-boot.md` | tenant-safe cache key mini example | Hit/miss + cache key review | #13 | Planned |
 | Kafka async messaging | Mini-lab hoặc focused awareness | `docs/07-architecture/kafka-async-messaging.md`, `docs/07-architecture/kafka-code-guide-spring-boot.md` | event producer/consumer nhỏ hoặc simulation | Event flow summary | #14 | Planned |
@@ -309,9 +309,9 @@ Mục tiêu: nối từ PostgreSQL `LIKE`/index query-pattern sang search engine
 
 - [x] `[LÝ THUYẾT]` Tạo/read `docs/07-architecture/elasticsearch-search-service.md` và `docs/07-architecture/elasticsearch-mini-lab-plan.md` - concept + plan mini-lab.
 - [x] `[SKELETON]` Tạo/read `docs/07-architecture/elasticsearch-code-guide-spring-boot.md`; chuẩn bị `lab-code/elasticsearch-lab/`, config `APP_SEARCH_ENABLED=false`, package `com.viettel.demo.search`, HTTP Client skeleton.
-- [ ] `[THỰC HÀNH]` Tự code search mini-lab: reindex `master_data`, search keyword tenant 1/tenant 2, verify tenant filter và eventual consistency caveat.
-- [ ] `[REVIEW]` Nhờ Codex review implementation: không biến Elasticsearch thành source of truth, không leak tenant, app-test vẫn pass khi search disabled.
-- [ ] `[MILESTONE]` Chốt Milestone #11 - Elasticsearch/search mini-lab có command, HTTP evidence và summary ngắn.
+- [x] `[THỰC HÀNH]` Tự code search mini-lab: reindex `master_data`, search keyword tenant 1/tenant 2, verify tenant filter và eventual consistency caveat.
+- [x] `[REVIEW]` Nhờ Codex review implementation: không biến Elasticsearch thành source of truth, không leak tenant, app-test vẫn pass khi search disabled.
+- [x] `[MILESTONE]` Chốt Milestone #11 - Elasticsearch/search mini-lab có command, HTTP evidence và summary ngắn.
 
 ### Sprint 12 - 24/05: MinIO/file storage mini-lab
 
@@ -387,7 +387,7 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 | 8 | 21/05 | ACID/isolation levels observation | Đã đóng |
 | 9 | 22/05 | Keycloak/OIDC mini-lab + backend Keycloak mode evidence | Đã đóng |
 | 10 | 22/05 | Post-Keycloak roadmap + mini-lab template | Đã đóng |
-| 11 | 23/05 | Elasticsearch/search mini-lab | Đang làm |
+| 11 | 23/05 | Elasticsearch/search mini-lab | Đã đóng |
 | 12 | 24/05 | MinIO/file storage mini-lab | Planned |
 | 13 | 25/05 | Redis/cache mini-lab | Planned |
 | 14 | 26/05 | Kafka/async messaging mini-lab hoặc focused awareness | Planned |
@@ -433,49 +433,28 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 
 ## Việc làm ngay trong 1-2 ngày tới
 
-### Task hiện tại: tự code Elasticsearch/search mini-lab
+### Task tiếp theo: bắt đầu MinIO/file storage mini-lab
 
-1. Đọc theo thứ tự:
-   - `docs/07-architecture/elasticsearch-search-service.md`
-   - `docs/07-architecture/elasticsearch-code-guide-spring-boot.md`
-   - `docs/07-architecture/elasticsearch-mini-lab-plan.md`
-   - `lab-code/elasticsearch-lab/README.md`
-2. Start dependencies:
+1. Tạo/read theory + code guide vừa đủ:
+   - `docs/07-architecture/minio-object-storage.md`
+   - `docs/07-architecture/minio-code-guide-spring-boot.md`
+2. Chuẩn bị skeleton an toàn:
+   - `lab-code/minio-lab/`
+   - config dạng `APP_FILE_STORAGE_ENABLED=false`
+   - package dự kiến `com.viettel.demo.file`
+3. Giữ nguyên baseline đã verify:
 
 ```bash
 cd lab-code
 make db-up
-make elastic-up
-```
-
-3. Verify Elasticsearch:
-
-```bash
-curl http://localhost:9200
-```
-
-4. Tự code trong `lab-code/tenant-demo/src/main/java/com/viettel/demo/search/`:
-   - thêm client/dependency đã chọn;
-   - implement reindex `master_data`;
-   - implement search keyword;
-   - mọi document/query đều có `tenantId`;
-   - giữ `APP_SEARCH_ENABLED=false` mặc định.
-5. Verify:
-
-```bash
-cd lab-code/tenant-demo
-./mvnw validate
-
-cd ../
 make app-test
 ```
 
-6. Manual HTTP:
-   - dùng `lab-code/tenant-demo/http/search-api.http`;
-   - tenant 1 search cùng keyword không thấy tenant 2;
-   - tenant 2 search cùng keyword không thấy tenant 1;
-   - missing/invalid token vẫn bị chặn.
-7. Sau khi tự code xong, nhờ Codex review implementation và summary Milestone #11.
+4. Scope MinIO:
+   - chỉ upload/download một file nhỏ hoặc attachment demo;
+   - metadata phải tenant-aware;
+   - không biến demo thành file service production.
+5. Sau khi tự code xong, nhờ Codex review implementation và summary Milestone #12.
 
 ### Tạm hoãn
 

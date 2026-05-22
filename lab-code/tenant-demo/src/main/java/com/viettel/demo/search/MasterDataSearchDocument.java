@@ -13,10 +13,14 @@ import com.viettel.demo.entity.MasterData;
  * PostgreSQL entity là source of truth.
  * Elasticsearch document là bản projection phục vụ search.
  *
- * [TODO tự implement sau]
- * - Quyết định field nào là keyword/exact, field nào là text search.
- * - Nếu dùng Elasticsearch Java client, class này có thể là DTO để index.
- * - Đảm bảo mọi document luôn có tenantId.
+ * [Shape hiện tại]
+ * - id: dùng làm document id trong Elasticsearch.
+ * - tenantId: bắt buộc có để mọi search query filter theo tenant.
+ * - code/name/category: các field search cơ bản của mini-lab.
+ * - active: dùng để bỏ qua bản ghi đã soft delete nếu cần.
+ *
+ * [Ghi nhớ]
+ * Đây là DTO/projection cho search index, không phải source of truth.
  *
  * ==============================================================
  */
@@ -40,4 +44,3 @@ public record MasterDataSearchDocument(
         );
     }
 }
-

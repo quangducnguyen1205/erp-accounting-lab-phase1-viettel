@@ -74,7 +74,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "app.jwt.enabled=true",
         "app.jwt.secret=test-learning-secret-change-me-32-characters-minimum",
         "app.jwt.issuer=tenant-demo-test",
-        "app.jwt.dev-token-enabled=true"
+        "app.jwt.dev-token-enabled=true",
+        "app.search.enabled=false"
 })
 @AutoConfigureMockMvc
 public class DataLeakageTest {

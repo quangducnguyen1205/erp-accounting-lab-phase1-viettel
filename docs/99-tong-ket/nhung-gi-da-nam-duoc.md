@@ -480,3 +480,45 @@ Local JWT mode vẫn được giữ làm fallback cho `DataLeakageTest`, để t
 
 - `docs/05-security/keycloak-admin-console-guide.md` đã có ảnh chụp Admin Console local trong `docs/assets/keycloak/`, giúp nhớ lại các màn hình realm/client/user/mapper.
 - `presentation-notes/demo-script-keycloak-tenant-flow.md` là đường demo backend chắc chắn: PostgreSQL -> Keycloak -> tenant-demo Keycloak mode -> API verify -> `make app-test`.
+
+## Milestone #11: Elasticsearch/search mini-lab
+
+Milestone #11 nối bài học PostgreSQL `LIKE`/index query-pattern với lý do cần search engine riêng. Scope chỉ là search trên lát cắt `master_data`, không xây search service production.
+
+### Thiết kế đã chốt
+
+- PostgreSQL vẫn là source of truth.
+- Elasticsearch chỉ là search index/projection từ `master_data`.
+- App dùng official Elasticsearch Java API Client thay vì tự ghép JSON raw bằng `RestClient`.
+- `APP_SEARCH_ENABLED=false` là default an toàn, nên test/app baseline không phụ thuộc Elasticsearch.
+- Search document gồm các field an toàn: `id`, `tenantId`, `code`, `name`, `category`, `active`.
+- Query search dùng bool query: keyword search trên `code/name/category`, filter `tenantId` từ `TenantContext`, filter `active=true`.
+- API không nhận `tenantId` từ request param/body và không trả raw Elasticsearch response.
+
+### Kết quả verify
+
+Đã chạy:
+
+- `cd lab-code/tenant-demo && ./mvnw validate`
+- `cd lab-code && make app-test`
+- `cd lab-code && make db-up && make elastic-up`
+- `curl http://localhost:9200`
+- Chạy app với search enabled, gọi reindex và search bằng Bearer token local.
+
+Kết quả quan sát:
+
+- Elasticsearch local phản hồi ở `localhost:9200`.
+- Reindex endpoint trả `200` và index được dữ liệu `master_data` hiện có trong DB local.
+- Tenant 1 search `Laptop` chỉ thấy document `tenantId = 1`.
+- Tenant 2 search `Laptop` chỉ thấy document `tenantId = 2`.
+- Tenant 1 search keyword chỉ có ở tenant 2 trả danh sách rỗng.
+- Missing/invalid Bearer token trả `401`.
+- `DataLeakageTest` vẫn pass khi search disabled.
+
+### Bài học rút ra
+
+- Elasticsearch request có shape riêng: index document, bulk NDJSON, search Query DSL, hits response.
+- `execute(...)` không phải pattern riêng của Elasticsearch; trong mini-lab nên hiểu nó là wrapper gom exception handling. Code hiện gom phần này vào `MasterDataSearchGateway` để Service/Controller không trộn chi tiết client.
+- Search engine không thay thế authorization/tenant isolation. Mọi document phải có `tenantId`, và mọi search query phải filter tenant.
+- Có eventual consistency giữa PostgreSQL và Elasticsearch: DB có thể đã đổi nhưng search index chưa kịp đồng bộ nếu chưa reindex/update document.
+- Không nên dùng Elasticsearch cho lookup exact đơn giản nếu PostgreSQL + index đã đủ.

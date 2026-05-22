@@ -10,7 +10,8 @@ Thư mục này kết nối các lab nhỏ trong repo với kiến trúc target 
 2. `keycloak-in-target-architecture.md` - Keycloak/OIDC trong kiến trúc target.
 3. `elasticsearch-search-service.md` - concept: vì sao/khi nào đưa search engine vào sau PostgreSQL query pattern.
 4. `elasticsearch-code-guide-spring-boot.md` - code shape Spring Boot cho search mini-lab.
-5. `elasticsearch-mini-lab-plan.md` - kế hoạch mini-lab search nhỏ trên `master_data`.
+5. `elasticsearch-request-response-shapes.md` - document/bulk/search/hits shape khi code Elasticsearch.
+6. `elasticsearch-mini-lab-plan.md` - kế hoạch mini-lab search nhỏ trên `master_data`.
 
 ## Core
 

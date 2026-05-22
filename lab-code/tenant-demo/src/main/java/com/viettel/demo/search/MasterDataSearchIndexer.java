@@ -1,29 +1,29 @@
 package com.viettel.demo.search;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.viettel.demo.entity.MasterData;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpMethod;
+import com.viettel.demo.repository.MasterDataRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 
 import java.util.List;
 
 /*
  * ==============================================================
- * MasterDataSearchIndexer — skeleton index dữ liệu sang Elasticsearch
+ * MasterDataSearchIndexer — index dữ liệu sang Elasticsearch
  * ==============================================================
  *
  * [Mục tiêu]
  * Đây là nơi sẽ chuyển dữ liệu từ PostgreSQL entity sang search document
  * và gửi sang Elasticsearch.
  *
- * [TODO tự code]
- * 1. Thêm Elasticsearch Java client dependency nếu quyết định dùng client.
- * 2. Tạo index `master_data_search` nếu chưa tồn tại.
- * 3. Convert MasterData -> MasterDataSearchDocument.
- * 4. Index từng document hoặc bulk index.
- * 5. Khi update/delete MasterData, nghĩ cách update/delete document tương ứng.
+ * [Cách hoạt động hiện tại]
+ * 1. Convert MasterData -> MasterDataSearchDocument.
+ * 2. Gọi MasterDataSearchGateway để index/bulk index bằng official Java API Client.
+ * 3. Reindex hiện tại là local/admin lab flow, đọc lại từ PostgreSQL.
+ *
+ * [TODO sau mini-lab]
+ * - Khi update/delete MasterData, nghĩ cách update/delete document tương ứng.
+ * - Với production, không public endpoint reindex tùy tiện.
  *
  * [Cảnh báo]
  * - Không coi Elasticsearch là source of truth.
@@ -32,75 +32,41 @@ import java.util.List;
  * ==============================================================
  */
 @Service
+@ConditionalOnProperty(prefix = "app.search", name = "enabled", havingValue = "true")
 public class MasterDataSearchIndexer {
 
     private final SearchProperties properties;
-    private final RestClient elasticsearchClient;
+    private final MasterDataRepository repository;
+    private final MasterDataSearchGateway gateway;
 
     public MasterDataSearchIndexer(
             SearchProperties properties,
-            RestClient elasticsearchClient) {
+            MasterDataRepository repository,
+            MasterDataSearchGateway gateway) {
         this.properties = properties;
-        this.elasticsearchClient = elasticsearchClient;
+        this.repository = repository;
+        this.gateway = gateway;
     }
 
     public void indexOne(MasterData data) {
-        /*
-         * TODO:
-         * - Kiểm tra properties.isEnabled().
-         * - Convert bằng MasterDataSearchDocument.fromEntity(data).
-         * - Gửi document sang Elasticsearch.
-         */
-        if (!properties.isEnabled()) {
-            return;
-        }
-
-        execute(() ->
-            elasticsearchClient.post()
-                    .uri("{indexName}", properties.getElasticsearchUris())
-                    .body(MasterDataSearchDocument.fromEntity(data))
-                    .retrieve(), "index one document"
-        );
-
-        //throw new UnsupportedOperationException("TODO: implement Elasticsearch indexOne");
+        gateway.indexOne(MasterDataSearchDocument.fromEntity(data));
     }
 
-    public void reindexAll(List<MasterData> data) {
+    public MasterDataSearchReindexResponse reindexAll() {
         /*
-         * TODO:
-         * - Chỉ chạy khi APP_SEARCH_ENABLED=true.
-         * - Bulk index dữ liệu hiện có.
-         * - Log số document đã index, không log data nhạy cảm.
+         * Local/admin lab use case:
+         * - PostgreSQL là source of truth.
+         * - Reindex đọc toàn bộ master_data từ DB rồi đưa sang Elasticsearch.
+         * - Search query sau đó vẫn phải filter tenantId, không search toàn index.
          */
-        StringBuilder body = new StringBuilder();
-
-        for (MasterData masterData : data) {
-            body.append(MasterDataSearchDocument.fromEntity(masterData));
-            body.append("\n");
-        }
-        if (!properties.isEnabled()) {
-            return;
-        }
-        execute(() ->
-            elasticsearchClient.post()
-                    .uri("{indexName}/_bulk", properties.getElasticsearchUris())
-                    .body(body.toString())
-                    .retrieve(), "bulk index documents"
-        );
-
-        //throw new UnsupportedOperationException("TODO: implement Elasticsearch reindexAll");
+        List<MasterDataSearchDocument> documents = repository.findAll().stream()
+                .map(MasterDataSearchDocument::fromEntity)
+                .toList();
+        int indexedCount = gateway.bulkIndex(documents);
+        return new MasterDataSearchReindexResponse(properties.getMasterDataIndex(), indexedCount);
     }
 
     public SearchProperties properties() {
         return properties;
     }
-
-    private void execute(Runnable operation, String description) {
-        try {
-            operation.run();
-        } catch (Exception exception) {
-            throw new RuntimeException("Elasticsearch operation failed while trying to " + description, exception);
-        }
-    }
 }
-
