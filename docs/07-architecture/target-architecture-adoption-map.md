@@ -48,7 +48,7 @@ Spring Boot tenant-demo
 | Kafka async messaging | Event/message giữa services, decouple async workflow. | Khi có nghiệp vụ bất đồng bộ thật. | Publish event đơn giản, consumer log. | Awareness. | Chạy Kafka chỉ để “có Kafka” rất nặng. |
 | Debezium CDC | Đồng bộ thay đổi DB sang Kafka/search/reporting. | Khi học data sync/search/reporting pipeline. | Awareness diagram hoặc read-only CDC note. | Chưa làm. | Setup CDC phức tạp, dễ lệch Phase 1. |
 | MinIO object storage | Lưu file qua S3 API: hóa đơn, chứng từ, attachment. | Khi có file upload/download feature. | Upload file local, store metadata tenant-aware. | Chưa làm. | File security/ACL/presigned URL phức tạp nếu làm sâu. |
-| Elasticsearch/search | Search text, indexing, query search service. | Khi PostgreSQL `LIKE` không đủ hoặc cần search service. | Index vài master data docs, search keyword. | Chưa làm; đã học PostgreSQL pattern trước. | Làm Elastic trước khi có requirement search thật. |
+| Elasticsearch/search | Search text, indexing, query search service. | Khi PostgreSQL `LIKE` không đủ hoặc cần search service. | Index vài master data docs, search keyword. | Đang bắt đầu mini-lab kế tiếp, nối từ PostgreSQL pattern. | Làm Elastic thành production search platform quá sớm. |
 | gRPC internal communication | Giao tiếp service-to-service typed/efficient. | Khi so sánh REST vs internal RPC. | Chỉ note/diagram, chưa cần code. | Awareness. | Thêm IDL/protobuf khi chỉ có một service. |
 | Realtime: SignalR/WebSocket/SSE/long polling | Notification/live updates tới frontend. | Khi có notification/progress update feature. | Compare SSE vs WebSocket ở mức note. | Chưa làm. | Realtime infra dễ phình scope. |
 | Observability: Prometheus/Grafana/Loki | Metrics/logging/dashboard để vận hành. | Khi demo cần giải thích production readiness. | Add log/metric awareness note, không cần full stack. | Awareness. | Chạy full monitoring stack quá sớm. |
@@ -87,7 +87,7 @@ Spring Boot tenant-demo
 
 - Redis: khi có cache/feature flag.
 - MinIO: khi có file upload.
-- Elasticsearch: khi có search requirement vượt PostgreSQL.
+- Elasticsearch: đang là mini-lab kế tiếp vì đã học PostgreSQL `LIKE`/index/query pattern.
 - Kafka/Debezium: khi cần async event/data sync.
 - Observability: khi cần giải thích vận hành hoặc có log/metric cụ thể.
 
@@ -126,9 +126,7 @@ Hướng tốt nhất sau tài liệu này:
 
 1. Dry-run backend demo script Keycloak tenant flow.
 2. Cập nhật presentation note/report để nói rõ implemented vs mini-lab vs awareness.
-3. Nếu còn thời gian, chọn **một** nhánh:
-   - React UI nhỏ để minh họa demo;
-   - hoặc Redis/MinIO/Elastic mini-lab nếu mentor yêu cầu công nghệ cụ thể.
+3. Nhánh mini-lab kế tiếp đã chọn: Elasticsearch/search service cho `master_data`.
+4. Sau Elasticsearch, chỉ chọn thêm Redis/MinIO/Kafka nếu có trigger rõ.
 
 Không nên mở nhiều mini-lab cùng lúc.
-

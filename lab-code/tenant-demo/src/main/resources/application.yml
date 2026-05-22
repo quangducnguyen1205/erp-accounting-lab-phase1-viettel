@@ -88,3 +88,18 @@ app:
     issuer: ${JWT_ISSUER:tenant-demo-local}
     expiration-seconds: ${JWT_EXPIRATION_SECONDS:3600}
     dev-token-enabled: ${JWT_DEV_TOKEN_ENABLED:false}
+
+  # ==============================================================
+  # Elasticsearch/search mini-lab
+  # ==============================================================
+  #
+  # Search tắt mặc định để app/test hiện tại không phụ thuộc Elasticsearch.
+  # Khi tự code mini-lab, bật APP_SEARCH_ENABLED=true và chạy
+  # lab-code/elasticsearch-lab/docker-compose.yml.
+  #
+  # PostgreSQL vẫn là source of truth. Elasticsearch chỉ là search index.
+  # Mọi search query phải filter tenantId từ TenantContext.
+  search:
+    enabled: ${APP_SEARCH_ENABLED:false}
+    elasticsearch-uris: ${ELASTICSEARCH_URIS:http://localhost:9200}
+    master-data-index: ${ELASTICSEARCH_MASTER_DATA_INDEX:master_data_search}

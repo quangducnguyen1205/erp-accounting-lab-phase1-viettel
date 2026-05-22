@@ -1,0 +1,41 @@
+# HTTP Client requests cho Elasticsearch/search mini-lab
+#
+# Điều kiện tương lai:
+# - tenant-demo đang chạy.
+# - APP_SEARCH_ENABLED=true.
+# - Elasticsearch local chạy ở http://localhost:9200.
+# - Access token lấy từ local JWT dev endpoint hoặc Keycloak, tùy mode app.
+#
+# Không paste token thật vào Git.
+
+@tenantDemoUrl = http://localhost:8080
+@tenant1Token = <paste-token-tenant-1-here>
+@tenant2Token = <paste-token-tenant-2-here>
+@invalidToken = invalid.jwt.token
+@keyword = Laptop
+
+### Search tenant 1
+# Expected: 200 sau khi tự implement, chỉ thấy documents tenantId = 1.
+GET {{tenantDemoUrl}}/api/search/master-data?keyword={{keyword}}
+Authorization: Bearer {{tenant1Token}}
+
+### Search tenant 2 cùng keyword
+# Expected: 200 sau khi tự implement, chỉ thấy documents tenantId = 2.
+GET {{tenantDemoUrl}}/api/search/master-data?keyword={{keyword}}
+Authorization: Bearer {{tenant2Token}}
+
+### Missing token
+# Expected: 401 do Spring Security chặn trước search service.
+GET {{tenantDemoUrl}}/api/search/master-data?keyword={{keyword}}
+
+### Invalid token
+# Expected: 401.
+GET {{tenantDemoUrl}}/api/search/master-data?keyword={{keyword}}
+Authorization: Bearer {{invalidToken}}
+
+### TODO: verify tenant leakage guard
+# 1. Index dữ liệu master_data của cả tenant 1 và tenant 2.
+# 2. Dùng cùng keyword có ở cả hai tenant.
+# 3. Tenant 1 token không được thấy document tenant 2.
+# 4. Tenant 2 token không được thấy document tenant 1.
+

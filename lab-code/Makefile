@@ -16,6 +16,7 @@ DB_USER        := erpuser
 DB_NAME        := erpdb
 SQL_DIR        := sql-playground
 APP_DIR        := tenant-demo
+ELASTIC_DIR    := elasticsearch-lab
 
 # --- Docker / Database -----------------------------------------
 
@@ -38,6 +39,20 @@ db-status: ## Kiểm tra container đang chạy không
 .PHONY: db-shell
 db-shell: ## Mở psql shell trực tiếp vào database
 	docker exec -it $(CONTAINER_NAME) psql -U $(DB_USER) -d $(DB_NAME)
+
+# --- Elasticsearch mini-lab ------------------------------------
+
+.PHONY: elastic-up
+elastic-up: ## Khởi chạy Elasticsearch local cho search mini-lab
+	cd $(ELASTIC_DIR) && docker compose up -d
+
+.PHONY: elastic-down
+elastic-down: ## Dừng Elasticsearch local cho search mini-lab
+	cd $(ELASTIC_DIR) && docker compose down
+
+.PHONY: elastic-status
+elastic-status: ## Kiểm tra Elasticsearch local
+	@docker ps --filter "name=viettel-elasticsearch" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 
 # --- SQL Playground ---------------------------------------------
 
