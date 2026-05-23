@@ -101,6 +101,7 @@ Rule:
 
 - `APP_SEARCH_ENABLED=false` mặc định để app/test không phụ thuộc Elasticsearch.
 - Chỉ bật `true` khi đang chạy mini-lab.
+- Mini-lab hiện dùng một Elasticsearch URI local; chưa cần xử lý cluster nhiều node/SSL/credential.
 - Không để search endpoint active nếu Elasticsearch chưa sẵn sàng.
 
 ## Indexing flow
