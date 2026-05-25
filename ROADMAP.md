@@ -47,6 +47,7 @@ Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. 
 6. **Giữ learning-first.** Codex không tự implement toàn bộ future feature nếu chưa được yêu cầu rõ.
 7. **Local notes chỉ là context.** `local/` có thể giúp nhớ phạm vi kiến trúc, nhưng source of truth public là `docs/`, `ROADMAP.md`, code và report đã chuẩn hóa.
 8. **Mentor feedback được xử lý bằng gap-driven learning.** Chủ đề nào mentor chỉ ra còn nông thì ưu tiên official docs + mini-lab nhỏ trước khi mở rộng sang feature mới.
+9. **Theory doc phải foundation-first.** Mỗi công nghệ mới cần giải thích kiến thức nền có thể dùng lại, request/response/config shape nếu có, rồi mới áp dụng vào mini-lab hiện tại.
 
 ---
 
@@ -155,7 +156,7 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 | RBAC/tenant-scope | Important theory | `docs/05-security/rbac-tenant-scope.md` | JWT/Keycloak claim note, không role matrix lớn | Summary tenant vs role | #16 | Later |
 | React frontend | Optional demo | `docs/06-frontend/react-tenant-demo-ui.md` | `lab-code/tenant-ui/` nếu thật sự cần | browser/UI + curl fallback | #16 | Optional/later |
 | API Gateway/service discovery/load balancer | Awareness | `docs/07-architecture/api-gateway-service-discovery.md` | Không chạy gateway mặc định | Architecture summary | #16 | Planned |
-| Elasticsearch / Elastic Stack | Mini-lab đã verify | `docs/07-architecture/elasticsearch-search-service.md`, `docs/07-architecture/elasticsearch-code-guide-spring-boot.md` | `lab-code/elasticsearch-lab/` + `com.viettel.demo.search` | Search tenant 1/2, no leakage | #11 | Đã đóng |
+| Elasticsearch / Elastic Stack | Mini-lab đã verify | `docs/07-architecture/elasticsearch-search-service.md`, `docs/07-architecture/elasticsearch-request-response-shapes.md`, `docs/07-architecture/elasticsearch-code-guide-spring-boot.md` | `lab-code/elasticsearch-lab/` + `com.viettel.demo.search` | Search tenant 1/2, no leakage | #11 | Đã đóng |
 | MinIO / S3 object storage | Mini-lab kế tiếp | `docs/07-architecture/minio-object-storage.md`, `docs/07-architecture/minio-code-guide-spring-boot.md` | upload/download mini-lab | HTTP upload/download + tenant metadata | #12 | Planned |
 | Redis cache strategy | Mini-lab | `docs/07-architecture/redis-cache-strategy.md`, `docs/07-architecture/redis-code-guide-spring-boot.md` | tenant-safe cache key mini example | Hit/miss + cache key review | #13 | Planned |
 | Kafka async messaging | Mini-lab hoặc focused awareness | `docs/07-architecture/kafka-async-messaging.md`, `docs/07-architecture/kafka-code-guide-spring-boot.md` | event producer/consumer nhỏ hoặc simulation | Event flow summary | #14 | Planned |
@@ -307,7 +308,7 @@ Mục tiêu: ghi rõ Keycloak demo/report đã đủ, chuyển roadmap sang họ
 
 Mục tiêu: nối từ PostgreSQL `LIKE`/index query-pattern sang search engine, chỉ trên lát cắt `master_data`.
 
-- [x] `[LÝ THUYẾT]` Tạo/read `docs/07-architecture/elasticsearch-search-service.md` và `docs/07-architecture/elasticsearch-mini-lab-plan.md` - concept + plan mini-lab.
+- [x] `[LÝ THUYẾT]` Tạo/read `docs/07-architecture/elasticsearch-search-service.md`, `docs/07-architecture/elasticsearch-request-response-shapes.md` và `docs/07-architecture/elasticsearch-mini-lab-plan.md` - foundation + API shape + plan mini-lab.
 - [x] `[SKELETON]` Tạo/read `docs/07-architecture/elasticsearch-code-guide-spring-boot.md`; chuẩn bị `lab-code/elasticsearch-lab/`, config `APP_SEARCH_ENABLED=false`, package `com.viettel.demo.search`, HTTP Client skeleton.
 - [x] `[THỰC HÀNH]` Tự code search mini-lab: reindex `master_data`, search keyword tenant 1/tenant 2, verify tenant filter và eventual consistency caveat.
 - [x] `[REVIEW]` Nhờ Codex review implementation: không biến Elasticsearch thành source of truth, không leak tenant, app-test vẫn pass khi search disabled.
@@ -413,7 +414,7 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 | React UI notes | `docs/06-frontend/` - tạo khi tới task UI |
 | Architecture awareness notes | `docs/07-architecture/` - tạo khi tới Sprint 7 |
 | Target architecture adoption map | `docs/07-architecture/target-architecture-adoption-map.md` |
-| Elasticsearch/search mini-lab | `docs/07-architecture/elasticsearch-search-service.md`, `docs/07-architecture/elasticsearch-code-guide-spring-boot.md`, `docs/07-architecture/elasticsearch-mini-lab-plan.md`, `lab-code/elasticsearch-lab/`, `lab-code/tenant-demo/src/main/java/com/viettel/demo/search/` |
+| Elasticsearch/search mini-lab | `docs/07-architecture/elasticsearch-search-service.md`, `docs/07-architecture/elasticsearch-request-response-shapes.md`, `docs/07-architecture/elasticsearch-code-guide-spring-boot.md`, `docs/07-architecture/elasticsearch-design-patterns-spring-boot.md`, `docs/07-architecture/elasticsearch-mini-lab-plan.md`, `lab-code/elasticsearch-lab/`, `lab-code/tenant-demo/src/main/java/com/viettel/demo/search/` |
 | MinIO/file storage mini-lab | `docs/07-architecture/minio-object-storage.md`, `docs/07-architecture/minio-code-guide-spring-boot.md` - tạo khi tới Sprint 12 |
 | Redis/cache mini-lab | `docs/07-architecture/redis-cache-strategy.md`, `docs/07-architecture/redis-code-guide-spring-boot.md` - tạo khi tới Sprint 13 |
 | Kafka/async mini-lab | `docs/07-architecture/kafka-async-messaging.md`, `docs/07-architecture/kafka-code-guide-spring-boot.md` - tạo khi tới Sprint 14 |

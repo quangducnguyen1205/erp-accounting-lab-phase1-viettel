@@ -40,6 +40,20 @@ Controller -> Service/use case -> Gateway/Adapter -> Elasticsearch Java API Clie
 
 Shape này đủ nhỏ cho mini-lab nhưng vẫn gần style backend thật: controller không chứa logic, service không tự ghép HTTP/JSON Elasticsearch, gateway không biết chi tiết HTTP request của client.
 
+## Pattern này generalize sang domain khác thế nào?
+
+Khi chuyển từ `master_data` sang domain khác, giữ nguyên vai trò lớp, chỉ đổi tên và field:
+
+| `master_data` lab | Domain khác |
+|---|---|
+| `MasterDataSearchDocument` | `ProductSearchDocument`, `InvoiceSearchDocument`, `CustomerSearchDocument` |
+| `MasterDataSearchGateway` | `ProductSearchGateway` hoặc gateway search riêng cho domain đó |
+| `MasterDataSearchIndexer` | job/use case reindex sản phẩm, hóa đơn, khách hàng |
+| `MasterDataSearchService` | use case search theo tenant và keyword của domain |
+| `MasterDataSearchController` | API search mỏng cho domain |
+
+Không cần tạo generic search framework ngay. Chỉ nên trừu tượng hóa thêm khi nhiều domain có duplication thật sự và team đã hiểu rõ convention.
+
 ## Data flow
 
 ### Reindex flow
@@ -144,15 +158,11 @@ Nếu sau này đổi từ official Java API Client sang Spring Data Elasticsear
 
 Tách hai class giúp không nhầm “row nghiệp vụ chính” với “document index phục vụ tìm kiếm”.
 
-## So sánh 3 hướng tích hợp
+## Client integration approach
 
-| Hướng | Ưu điểm | Rủi ro/nhược điểm | Kết luận cho repo |
-|---|---|---|---|
-| Raw HTTP / Spring `RestClient` | Gần REST API nhất, giúp hiểu URI/JSON DSL. | Dễ sai `_bulk` NDJSON, query shape, response parsing; service dễ bị lẫn hạ tầng. | Chỉ nên dùng để học API shape hoặc debug bằng curl. |
-| Official Elasticsearch Java API Client | Typed request/response, vẫn sát khái niệm Elasticsearch như `index`, `bulk`, `search`. | Cú pháp lambda hơi mới lúc đầu. | **Khuyến nghị cho mini-lab này.** |
-| Spring Data Elasticsearch / `ElasticsearchOperations` | Spring-style, tiện nếu muốn mapping/repository-like document. | Có thể che bớt chi tiết Elasticsearch; dễ nhầm với JPA repository nếu mới học. | Có thể học sau, không cần trộn vào mini-lab hiện tại. |
+Repo hiện tại dùng **official Elasticsearch Java API Client**.
 
-Rule hiện tại: **không mix nhiều cách trong cùng implementation**.
+So sánh đầy đủ giữa raw HTTP/Spring `RestClient`, Java API Client và Spring Data Elasticsearch nằm ở [elasticsearch-code-guide-spring-boot.md](./elasticsearch-code-guide-spring-boot.md). Ở tài liệu pattern này chỉ cần nhớ một rule: **không mix nhiều cách gọi Elasticsearch trong cùng implementation**, vì service/gateway sẽ khó đọc và khó debug.
 
 ## Request/response shape cần nhớ
 

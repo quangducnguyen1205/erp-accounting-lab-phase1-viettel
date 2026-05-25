@@ -2,18 +2,15 @@
 
 ## Vai trò của file này
 
-File này là **code guide** cho mini-lab Elasticsearch. Nó không giải thích lại toàn bộ lý thuyết search engine. Nếu cần phần "vì sao dùng Elasticsearch", đọc:
+File này là **code guide** cho mini-lab Elasticsearch. Nó không giải thích lại toàn bộ lý thuyết search engine hay toàn bộ REST API shape. Nếu cần phần foundation và input/output, đọc trước:
 
 - `docs/07-architecture/elasticsearch-search-service.md`
+- `docs/07-architecture/elasticsearch-request-response-shapes.md`
 
 Nếu cần lệnh chạy Docker/checklist lab, đọc:
 
 - `docs/07-architecture/elasticsearch-mini-lab-plan.md`
 - `lab-code/elasticsearch-lab/README.md`
-
-Nếu bị rối input/output của Elasticsearch, đọc:
-
-- `docs/07-architecture/elasticsearch-request-response-shapes.md`
 
 Nếu muốn hiểu vì sao code tách thành Controller/Service/Gateway/Document, đọc:
 
@@ -25,11 +22,11 @@ Mục tiêu ở đây là biết nên code phần search trong Spring Boot theo 
 
 Có ba hướng phổ biến:
 
-| Hướng | Ý nghĩa | Khi nào dùng |
-|---|---|---|
-| Raw HTTP / Spring `RestClient` | Tự gọi REST API Elasticsearch bằng URL + JSON body. | Hữu ích để hiểu URI/JSON DSL hoặc debug bằng curl, nhưng dễ sai shape. |
-| Official Elasticsearch Java API Client | Dùng client chính thức của Elastic, request/response sát API Elasticsearch hơn. | Hợp khi muốn kiểm soát query/indexing rõ và tránh tự ghép JSON thủ công. |
-| Spring Data Elasticsearch / `ElasticsearchOperations` | Dùng abstraction kiểu Spring: document mapping, operations, repository nếu cần. | Hợp với app Spring lớn hơn, nhưng có thể che bớt chi tiết Elasticsearch khi mới học. |
+| Hướng | Nó là gì | Ưu điểm | Nhược điểm | Khi nào dùng |
+|---|---|---|---|---|
+| Raw HTTP / Spring `RestClient` | Tự gọi REST API Elasticsearch bằng URL + JSON body. | Gần REST API nhất, tốt để học URI/Query DSL/debug bằng curl. | Dễ sai bulk NDJSON, query shape, response parsing; service dễ bị lẫn hạ tầng. | Dùng để học request shape hoặc debug, không chọn làm implementation chính trong lab này. |
+| Official Elasticsearch Java API Client | Client chính thức của Elastic, request/response typed và sát API Elasticsearch. | Tránh tự ghép JSON thủ công, vẫn thấy rõ `index`, `bulk`, `search`. | Cú pháp builder/lambda hơi mới lúc đầu. | **Khuyến nghị cho repo này.** |
+| Spring Data Elasticsearch / `ElasticsearchOperations` | Abstraction kiểu Spring cho document mapping/operations/repository-like flow. | Hợp app Spring lớn hơn, style quen thuộc với Spring. | Có thể che bớt chi tiết Elasticsearch; dễ nhầm với JPA repository khi mới học. | Để tham khảo hoặc học sau, chưa cần trộn vào mini-lab. |
 
 Trong repo này, hướng học hợp lý hiện tại là:
 
@@ -130,46 +127,20 @@ Không overdo:
 - chưa cần analyzer tiếng Việt;
 - chưa cần production index lifecycle.
 
-## Standard Elasticsearch URI/API map
+## Elasticsearch API shape nằm ở đâu trong code?
 
-| HTTP API | Dùng để | Java API Client tương ứng |
+Chi tiết URI/request/response/error nằm ở [elasticsearch-request-response-shapes.md](./elasticsearch-request-response-shapes.md).
+
+Trong code Spring Boot, các API đó được gom vào `MasterDataSearchGateway`:
+
+| Elasticsearch concept | Java API Client call | Class đang sở hữu |
 |---|---|---|
-| `PUT /{index}` | tạo index nếu chưa có | `client.indices().create(...)` |
-| `GET /{index}/_mapping` | xem mapping hiện tại | `client.indices().getMapping(...)` |
-| `PUT /{index}/_doc/{id}` | index/upsert một document | `client.index(...)` |
-| `POST /{index}/_bulk` | reindex/bulk index nhiều document | `client.bulk(...)` |
-| `POST /{index}/_search` | search document | `client.search(...)` |
-| `POST /{index}/_refresh` | refresh local lab để thấy document ngay | `client.indices().refresh(...)` |
-| `DELETE /{index}` | xóa index local lab | `client.indices().delete(...)` |
+| tạo/xóa index | `client.indices().create(...)`, `delete(...)` | `MasterDataSearchGateway` |
+| bulk index | `client.bulk(...)` | `MasterDataSearchGateway` |
+| search | `client.search(...)` | `MasterDataSearchGateway` |
+| parse hits | `SearchResponse<T>.hits().hits()` | `MasterDataSearchGateway` |
 
-Trong code hiện tại, các API này được gom vào `MasterDataSearchGateway`.
-
-## Request/response shape chuẩn
-
-Document:
-
-```json
-{
-  "id": 101,
-  "tenantId": 1,
-  "code": "LAPTOP_DELL",
-  "name": "Laptop Dell",
-  "category": "DEVICE",
-  "active": true
-}
-```
-
-Search query shape:
-
-```text
-bool query
-├── must: multi_match(keyword) trên code/name/category
-└── filter: tenantId = current tenant, active = true
-```
-
-API response của `tenant-demo` chỉ trả safe fields từ `MasterDataSearchDocument`, không trả raw Elasticsearch response có `_index`, `_score`, shard metadata.
-
-Chi tiết hơn: `docs/07-architecture/elasticsearch-request-response-shapes.md`.
+Service/controller không nên biết raw URI như `POST /{index}/_search` hoặc response field như `_source`, `_score`, `_shards`.
 
 ## Search flow tenant-aware
 

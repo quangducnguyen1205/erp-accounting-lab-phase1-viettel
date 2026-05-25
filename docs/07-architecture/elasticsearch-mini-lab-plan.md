@@ -6,7 +6,9 @@ Mini-lab này giúp hiểu khi nào cần search engine sau khi đã học Postg
 
 Đọc kèm:
 
-- `docs/07-architecture/elasticsearch-search-service.md` - concept: vì sao/khi nào dùng Elasticsearch.
+- `docs/07-architecture/elasticsearch-search-service.md` - foundation: Elasticsearch là gì và khi nào dùng.
+- `docs/07-architecture/elasticsearch-request-response-shapes.md` - request/response/error shape khi debug API.
+- `docs/07-architecture/elasticsearch-design-patterns-spring-boot.md` - vì sao tách document/gateway/indexer/service/controller.
 - `docs/07-architecture/elasticsearch-code-guide-spring-boot.md` - code shape Spring Boot cho mini-lab.
 - `lab-code/elasticsearch-lab/README.md` - lệnh chạy Elasticsearch local.
 
@@ -37,7 +39,7 @@ Flow học tập:
 4. Search API đọc `tenantId` từ `TenantContext`.
 5. Search query luôn filter `tenantId`.
 
-## Minimal document
+## Document tối thiểu trong lab
 
 Index name gợi ý:
 
@@ -142,13 +144,13 @@ curl -X DELETE http://localhost:9200/master_data_search
 
 Chỉ chạy trên local lab.
 
-## Code skeleton trong repo
+## Code artifact trong repo
 
 Chi tiết từng class nằm trong code guide:
 
 - `docs/07-architecture/elasticsearch-code-guide-spring-boot.md`
 
-Skeleton dự kiến:
+Package hiện tại:
 
 ```text
 com.viettel.demo.search
@@ -161,7 +163,7 @@ com.viettel.demo.search
 └── SearchProperties.java
 ```
 
-Trạng thái hiện tại:
+Trạng thái đã verify:
 
 - đã dùng official Elasticsearch Java API Client;
 - search disabled mặc định bằng `APP_SEARCH_ENABLED=false`;

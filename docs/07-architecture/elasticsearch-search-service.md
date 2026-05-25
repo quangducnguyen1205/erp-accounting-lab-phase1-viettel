@@ -1,243 +1,357 @@
-# Elasticsearch / search service trong kiến trúc SaaS multi-tenant
+# Elasticsearch search service - nền tảng cho backend
 
-## Mục tiêu
+Tài liệu này là phần nền tảng chung, không chỉ dành cho bài lab `master_data`.
+Mục tiêu là giúp mình hiểu Elasticsearch đủ để thiết kế search cho nhiều domain backend khác nhau như sản phẩm, hóa đơn, khách hàng, danh mục dùng chung.
 
-Tài liệu này nối từ bài PostgreSQL query pattern sang câu hỏi: khi nào cần search engine như Elasticsearch?
+Đọc tiếp theo:
 
-Phạm vi hiện tại:
+- API/request/response cụ thể: [elasticsearch-request-response-shapes.md](./elasticsearch-request-response-shapes.md)
+- Pattern code Spring Boot: [elasticsearch-code-guide-spring-boot.md](./elasticsearch-code-guide-spring-boot.md)
+- Thiết kế class trong repo này: [elasticsearch-design-patterns-spring-boot.md](./elasticsearch-design-patterns-spring-boot.md)
+- Checklist lab hiện tại: [elasticsearch-mini-lab-plan.md](./elasticsearch-mini-lab-plan.md)
 
-- chỉ tìm kiếm trên lát cắt `master_data`;
-- giữ tenant isolation;
-- chưa làm production search service;
-- chưa học sâu analyzer/shard/cluster tuning.
+## 1. Elasticsearch là gì?
 
-## Elasticsearch là gì?
+Elasticsearch là một search engine phân tán, thường dùng để tìm kiếm nhanh trên dữ liệu dạng document.
 
-Elasticsearch là search engine/document store phục vụ tìm kiếm và phân tích dữ liệu theo document. Nó thường được dùng khi cần:
+Trong backend, Elasticsearch thường xuất hiện khi:
 
-- full-text search;
-- search nhiều field;
-- ranking/relevance;
-- fuzzy/contains search;
-- filter + search phức tạp;
-- search service tách khỏi database nghiệp vụ.
+- cần tìm kiếm text linh hoạt hơn `LIKE`;
+- cần search nhiều field cùng lúc;
+- cần ranking kết quả theo độ liên quan;
+- cần filter + full-text search trên lượng dữ liệu lớn;
+- cần tách workload search ra khỏi database chính.
 
-Trong kiến trúc target, Elasticsearch/Search service thường không phải source of truth. Source of truth vẫn là database nghiệp vụ như PostgreSQL. Elasticsearch là index phục vụ tìm kiếm nhanh và linh hoạt hơn.
+Elasticsearch có thể lưu document, nhưng trong phần lớn hệ thống nghiệp vụ, database như PostgreSQL vẫn là source of truth. Elasticsearch là search projection: bản sao được tối ưu cho tìm kiếm.
 
-## Khác gì PostgreSQL query/index?
+## 2. Elasticsearch khác gì PostgreSQL?
 
-| Câu hỏi | PostgreSQL | Elasticsearch |
+| Góc nhìn | PostgreSQL | Elasticsearch |
 |---|---|---|
-| Source of truth | Có, lưu transaction/business data chính. | Thường không; là search index/copy phục vụ tìm kiếm. |
-| Dữ liệu chính | Row/table/constraint/transaction. | Document/index/query DSL. |
-| Tối ưu mạnh | Exact lookup, relational query, constraint, transaction. | Full-text search, relevance, fuzzy/multi-field search. |
-| Consistency | Mạnh hơn trong transaction database. | Near real-time, có độ trễ index/search. |
-| Multi-tenant risk | Query thiếu `tenant_id` có thể leak data. | Search query thiếu tenant filter cũng leak data. |
-
-## Khi nào PostgreSQL là đủ?
-
-PostgreSQL thường đủ nếu:
-
-- tìm chính xác theo `tenant_id + code`;
-- lọc theo category/status đơn giản;
-- prefix search nhỏ như `name LIKE 'Lap%'` đã có index phù hợp;
-- dữ liệu ít;
-- cần transaction/constraint mạnh;
-- search không phải feature chính.
-
-Ví dụ trong repo:
-
-```sql
-WHERE tenant_id = ? AND code = ?
-WHERE tenant_id = ? AND category = ?
-WHERE tenant_id = ? AND name LIKE 'Laptop%'
-```
-
-Các pattern này đã được học ở `docs/03-backend-database-mo-rong/index-query-patterns-postgresql.md`.
-
-## Khi nào nên cân nhắc Elasticsearch?
-
-Cân nhắc Elasticsearch khi:
-
-- user cần tìm chứa từ khóa tự do, không chỉ prefix;
-- search trên nhiều field: `code`, `name`, `category`, mô tả, metadata;
-- cần relevance/ranking;
-- cần fuzzy search hoặc analyzer theo ngôn ngữ;
-- PostgreSQL `LIKE '%keyword%'`/trigram bắt đầu không đủ hoặc khó scale;
-- muốn tách read/search workload khỏi database giao dịch.
-
-Không nên dùng Elasticsearch cho exact lookup đơn giản như `tenant_id + id` hoặc `tenant_id + code`. Exact lookup đó nên đi PostgreSQL.
-
-## Inverted index ở mức beginner
-
-Database B-tree index thường giống mục lục theo thứ tự giá trị cột. Search engine thường dùng inverted index: ánh xạ từ term/từ khóa về danh sách document chứa term đó.
+| Mô hình chính | Bảng, row, constraint, transaction | Index, document, mapping, inverted index |
+| Mạnh ở | dữ liệu chuẩn, ràng buộc, transaction, exact lookup | full-text search, relevance, search nhiều field |
+| Query thường gặp | SQL | JSON Query DSL |
+| Consistency | mạnh hơn, transaction rõ ràng | thường eventual consistency với DB nguồn |
+| Source of truth | thường là nguồn dữ liệu chính | thường là bản chiếu phục vụ search |
 
 Ví dụ:
 
-```text
-Document 101: "Laptop Dell"
-Document 201: "Laptop HP"
+- Tìm `code = 'TAX001'` theo `tenant_id`: PostgreSQL là đủ.
+- Tìm tên sản phẩm chứa nhiều từ, có ranking, typo nhẹ, nhiều field: Elasticsearch hợp lý hơn.
 
-Inverted index:
-laptop -> [101, 201]
-dell   -> [101]
-hp     -> [201]
-```
+## 3. Các khái niệm lõi
 
-Khi search `laptop`, Elasticsearch không scan từng document từ đầu. Nó tra inverted index để tìm candidate documents, sau đó tính score/relevance nếu cần.
+### Cluster
 
-## Document vs row
+Cluster là một nhóm Elasticsearch node cùng phục vụ dữ liệu và truy vấn.
 
-Trong PostgreSQL, `master_data` là row trong table:
+Trong lab local có thể chỉ có một node, nhưng mental model production thường là nhiều node.
 
-```text
-id | tenant_id | code | name | category | is_active
-```
+### Node
 
-Trong Elasticsearch, dữ liệu thường được index thành JSON document:
+Node là một Elasticsearch server instance trong cluster.
+
+Một node có thể giữ shard, xử lý query, indexing, cluster metadata.
+
+### Index
+
+Index trong Elasticsearch là nơi chứa các document cùng loại hoặc cùng mục đích search.
+
+Ví dụ:
+
+- `products_search`
+- `invoices_search`
+- `customers_search`
+- `master_data_search`
+
+Không nên hiểu Elasticsearch index giống hoàn toàn PostgreSQL index. Trong Elasticsearch, index gần giống một “collection” document có mapping riêng.
+
+### Shard
+
+Shard là phần chia nhỏ của index. Elasticsearch chia index thành shard để phân tán dữ liệu và query.
+
+Ở mức beginner:
+
+- shard giúp scale dữ liệu/query;
+- quá nhiều shard có thể làm hệ thống nặng;
+- lab local không cần tuning shard sâu.
+
+### Replica
+
+Replica là bản sao của shard.
+
+Replica giúp:
+
+- tăng khả năng chịu lỗi;
+- có thể hỗ trợ đọc nhiều hơn.
+
+Trong lab local một node, replica thường không có ý nghĩa nhiều vì replica cần node khác để thật sự hữu ích.
+
+### Document
+
+Document là một JSON object được lưu trong index.
+
+Ví dụ document sản phẩm:
 
 ```json
 {
   "id": 101,
   "tenantId": 1,
-  "code": "LAPTOP-01",
-  "name": "Laptop Dell",
-  "category": "ASSET",
+  "code": "PRD-001",
+  "name": "Laptop Dell Latitude",
+  "category": "ELECTRONICS",
   "active": true
 }
 ```
 
-Document này là bản sao phục vụ search. Khi PostgreSQL thay đổi, search index cần được update/reindex theo một cơ chế nào đó.
+Một document thường là bản chiếu từ entity/row trong database, nhưng không bắt buộc giống 100%.
 
-## Indexing data từ DB sang Elasticsearch
+### `_id`
 
-Flow đơn giản nhất cho mini-lab:
+`_id` là định danh document trong Elasticsearch index.
+
+Với dữ liệu đồng bộ từ PostgreSQL, thường dùng id nguồn làm `_id`, ví dụ `master_data.id`.
+
+### `_source`
+
+`_source` là JSON gốc của document mà Elasticsearch lưu lại.
+
+Khi search, kết quả thường trả về `_source`. Backend không nên trả raw Elasticsearch response ra API trực tiếp, mà nên map sang DTO an toàn.
+
+### Field
+
+Field là thuộc tính trong document, ví dụ `tenantId`, `code`, `name`, `category`, `active`.
+
+Thiết kế field quyết định query/filter có dễ và đúng hay không.
+
+## 4. Mapping và field type
+
+Mapping định nghĩa cách Elasticsearch hiểu các field trong document.
+
+Có hai kiểu tư duy:
+
+- dynamic mapping: Elasticsearch tự đoán type khi document được index;
+- explicit mapping: mình khai báo type rõ ràng.
+
+Trong backend nghiêm túc, explicit mapping thường dễ kiểm soát hơn.
+
+### Field type thường gặp
+
+| Type | Dùng cho | Ví dụ |
+|---|---|---|
+| `keyword` | exact match, filter, sort, aggregation | `code`, `category`, `tenantId` nếu lưu dạng chuỗi |
+| `text` | full-text search, qua analyzer | `name`, `description`, `invoiceNote` |
+| `long`, `integer`, `double` | số | `id`, `tenantId`, `amount` |
+| `boolean` | true/false | `active` |
+| `date` | thời gian | `createdAt`, `invoiceDate` |
+
+Một field có thể có multi-field. Ví dụ `name` là `text` để search, đồng thời có `name.keyword` để exact/sort.
+
+## 5. Analyzer là gì?
+
+Analyzer là cách Elasticsearch biến text thành token để phục vụ full-text search.
+
+Analyzer thường gồm:
+
+- tokenizer: cắt text thành token;
+- token filter: lowercase, bỏ stop words, stemming, v.v.
+
+Ví dụ text:
 
 ```text
-PostgreSQL master_data
--> Spring Boot đọc rows tenant-aware hoặc admin job đọc toàn bộ
--> chuyển thành MasterDataSearchDocument
--> index vào Elasticsearch
--> search API query Elasticsearch với tenant filter
+Laptop Dell Latitude
 ```
 
-Trong production, data sync có thể dùng:
+Có thể được phân tích thành token:
 
-- application event sau khi create/update/delete;
-- scheduled reindex job;
-- outbox pattern;
-- Debezium CDC + Kafka;
-- search service riêng consume event.
+```text
+laptop, dell, latitude
+```
 
-Phase 1 chỉ cần hiểu: DB là source of truth, Elasticsearch là search projection.
+Điểm cần nhớ:
 
-## Search query vs database query
+- `text` thường được analyze nên phù hợp full-text search;
+- `keyword` không analyze theo kiểu full-text nên phù hợp exact match/filter;
+- dùng sai type dễ dẫn đến query “không ra kết quả như tưởng tượng”.
 
-Database query thường hỏi: “row nào thỏa điều kiện chính xác?”
+## 6. Inverted index
 
-Search query thường hỏi: “document nào liên quan nhất với keyword này, trong phạm vi filter này?”
+Inverted index là cấu trúc giúp search nhanh theo từ khóa.
 
-Ví dụ search tenant-aware:
+Thay vì quét từng document, Elasticsearch lưu kiểu:
+
+```text
+laptop   -> document 101, 205, 300
+dell     -> document 101, 310
+invoice  -> document 900, 901
+```
+
+Khi search `dell laptop`, Elasticsearch có thể tìm document liên quan nhanh hơn so với quét text thô.
+
+Đây là lý do Elasticsearch mạnh hơn PostgreSQL `LIKE '%keyword%'` cho full-text search.
+
+## 7. Query DSL mental model
+
+Elasticsearch dùng JSON Query DSL để mô tả truy vấn.
+
+Một query thường gồm:
+
+- điều kiện full-text: `match`, `multi_match`;
+- điều kiện exact/filter: `term`, `terms`, `range`;
+- kết hợp điều kiện: `bool`;
+- phân trang: `from`, `size`;
+- sort nếu cần.
+
+Ví dụ mental model:
 
 ```json
 {
   "query": {
     "bool": {
-      "must": [
-        { "multi_match": { "query": "laptop", "fields": ["code", "name", "category"] } }
-      ],
       "filter": [
         { "term": { "tenantId": 1 } },
         { "term": { "active": true } }
+      ],
+      "must": [
+        {
+          "multi_match": {
+            "query": "laptop",
+            "fields": ["code", "name", "category"]
+          }
+        }
       ]
     }
   }
 }
 ```
 
-Trong query này:
+### Query context vs filter context
 
-- `must` là phần search keyword/relevance;
-- `filter` là phần bắt buộc, không dùng để score;
-- `tenantId` phải luôn nằm trong filter.
+Query context hỏi: document này liên quan đến keyword tới mức nào?
 
-## Eventual consistency
+- có tính `_score`;
+- dùng cho full-text search.
 
-Elasticsearch là near real-time search. Sau khi index document, document có thể chưa searchable ngay lập tức trong một khoảng ngắn do refresh interval.
+Filter context hỏi: document này có thỏa điều kiện không?
 
-Điều này dẫn tới eventual consistency:
+- không quan tâm `_score`;
+- thường cache tốt hơn;
+- phù hợp `tenantId`, `active`, `category`, date range.
 
-```text
-PostgreSQL đã update
--> Elasticsearch chưa kịp update hoặc refresh
--> search result có thể hơi trễ
-```
+Trong multi-tenant search, `tenantId` phải là filter bắt buộc.
 
-Vì vậy:
+### `_score`
 
-- các action cần dữ liệu chính xác tức thì nên đọc PostgreSQL;
-- search result có thể chấp nhận độ trễ nhỏ;
-- cần có cơ chế reindex/retry/monitor khi sync lỗi.
+`_score` là điểm liên quan của kết quả search.
 
-## Tenant-aware search
+Ở mức lab:
 
-Rule quan trọng nhất:
+- `_score` giúp sắp xếp kết quả full-text;
+- filter như `tenantId` không nên quyết định relevance;
+- không cần tuning scoring sâu trong Phase 1.
 
-1. Mỗi search document phải có `tenantId`.
-2. Mỗi search query phải filter theo `tenantId`.
-3. Không lấy `tenantId` từ request body tùy ý; lấy từ `TenantContext` sau auth.
-4. Search result chỉ là candidate; với dữ liệu nhạy cảm, backend vẫn có thể re-check PostgreSQL khi cần.
+## 8. Thiết kế search cho domain backend bất kỳ
 
-Sai nguy hiểm:
+Khi thêm search cho một domain, nên trả lời các câu hỏi:
 
-```json
-{
-  "query": {
-    "multi_match": {
-      "query": "Laptop",
-      "fields": ["code", "name"]
-    }
-  }
-}
-```
+1. Source of truth là bảng/entity nào?
+2. Document search cần field nào?
+3. Field nào là exact filter?
+4. Field nào là full-text search?
+5. Có `tenantId` hoặc ownership scope không?
+6. API response trả field nào cho client?
+7. Khi dữ liệu DB thay đổi thì index Elasticsearch được cập nhật thế nào?
 
-Query này thiếu tenant filter nên có thể trả dữ liệu nhiều tenant.
+Ví dụ domain:
 
-Đúng hơn:
+| Domain | Exact filter | Full-text field | Ghi chú |
+|---|---|---|---|
+| Product | `tenantId`, `category`, `active` | `name`, `description`, `brand` | search sản phẩm theo keyword |
+| Invoice | `tenantId`, `status`, `invoiceDate` | `invoiceNo`, `customerName`, `note` | vẫn cần DB cho tính tiền/transaction |
+| Customer | `tenantId`, `customerType`, `active` | `name`, `phone`, `email`, `address` | cẩn thận dữ liệu cá nhân |
+| Master data | `tenantId`, `category`, `active` | `code`, `name`, `category` | phù hợp mini-lab hiện tại |
 
-```json
-{
-  "query": {
-    "bool": {
-      "must": [{ "multi_match": { "query": "Laptop", "fields": ["code", "name"] } }],
-      "filter": [{ "term": { "tenantId": 1 } }]
-    }
-  }
-}
-```
+## 9. Indexing, reindex và eventual consistency
 
-## Common risks
+Elasticsearch cần được nạp dữ liệu từ database hoặc event stream.
 
-| Risk | Vì sao nguy hiểm | Rule học được |
-|---|---|---|
-| Search query thiếu tenant filter | Lộ kết quả tenant khác. | Luôn filter `tenantId` từ trusted context. |
-| DB và search index lệch nhau | User thấy data cũ/mất data trên search. | Cần reindex/sync strategy. |
-| Dùng Elasticsearch cho exact lookup | Tăng phức tạp không cần thiết. | `id`, `code` exact vẫn nên ưu tiên DB. |
-| Tin search result như authorization | Search index có thể stale. | Backend authorization/repository vẫn cần tenant-aware. |
-| Bật search endpoint khi Elastic chưa sẵn sàng | App/demo dễ fail. | Feature flag `APP_SEARCH_ENABLED=false` mặc định. |
+Các cách phổ biến:
 
-## Điều cần nhớ
+- reindex thủ công từ DB sang Elasticsearch;
+- cập nhật index khi service ghi dữ liệu;
+- dùng message/event như Kafka;
+- dùng CDC như Debezium để bắt thay đổi DB.
 
-- Elasticsearch là search projection, không phải replacement cho PostgreSQL.
-- Inverted index giúp full-text search tốt hơn B-tree cho nhiều use case.
-- Multi-tenant search vẫn cần tenant filter ở mọi query.
-- Search index có eventual consistency với DB.
-- Mini-lab chỉ nên index/search `master_data`, không mở rộng thành search platform.
+Trong Phase 1, reindex thủ công là đủ để học.
+
+Điểm cần nhớ:
+
+- PostgreSQL là source of truth;
+- Elasticsearch có thể trễ so với DB;
+- search result chỉ là projection;
+- nghiệp vụ quan trọng vẫn nên kiểm tra lại quyền/dữ liệu ở backend nếu cần.
+
+## 10. Tenant-aware search
+
+Trong hệ thống shared-table multi-tenant, search cũng phải tenant-aware.
+
+Quy tắc:
+
+- mỗi document search phải có `tenantId`;
+- mọi search query phải filter theo `tenantId`;
+- `tenantId` lấy từ context đã xác thực, không lấy từ request body/query param tùy ý;
+- kết quả search không được lộ document của tenant khác;
+- index/search không thay thế authorization.
+
+Nếu thiếu filter `tenantId`, Elasticsearch có thể leak dữ liệu còn nhanh hơn SQL vì search nhiều field rộng hơn.
+
+## 11. Khi nào không nên dùng Elasticsearch?
+
+Không nên thêm Elasticsearch chỉ vì “nghe chuyên nghiệp”.
+
+PostgreSQL thường đủ khi:
+
+- chỉ exact lookup theo id/code;
+- dữ liệu nhỏ;
+- filter đơn giản;
+- yêu cầu transaction/consistency là trọng tâm;
+- chưa có nhu cầu full-text/ranking thực sự.
+
+Elasticsearch thêm chi phí:
+
+- vận hành cluster;
+- mapping/index lifecycle;
+- đồng bộ dữ liệu;
+- xử lý stale data;
+- bảo vệ tenant filter ở thêm một lớp.
+
+## 12. Áp dụng vào repo hiện tại
+
+Trong repo này:
+
+- `master_data` trong PostgreSQL vẫn là nguồn dữ liệu chính;
+- Elasticsearch index `master_data_search` là projection phục vụ search;
+- document gồm `id`, `tenantId`, `code`, `name`, `category`, `active`;
+- API search lấy tenant từ `TenantContext`;
+- query Elasticsearch bắt buộc filter `tenantId`;
+- response API chỉ trả DTO an toàn, không trả raw Elasticsearch response.
+
+Lab này không nhằm xây search service production hoàn chỉnh. Mục tiêu là hiểu vì sao một search engine được đưa vào kiến trúc, và cách giữ tenant isolation khi dùng nó.
+
+## 13. Lỗi tư duy thường gặp
+
+- Dùng Elasticsearch cho exact lookup đơn giản mà PostgreSQL làm tốt hơn.
+- Quên `tenantId` trong document hoặc query filter.
+- Trả raw Elasticsearch response cho API client.
+- Nghĩ Elasticsearch là source of truth.
+- Không hiểu `text` khác `keyword`.
+- Dùng `LIKE '%abc%'` trong PostgreSQL rồi kết luận “DB chậm” mà chưa phân biệt query pattern.
+- Đồng bộ DB sang search index nhưng không có kế hoạch reindex/repair khi sai dữ liệu.
 
 ## Nguồn tham khảo chuẩn
 
-- [Elastic Docs - Index and search basics](https://www.elastic.co/docs/solutions/search/get-started/index-basics)
-- [Elastic Docs - Query DSL](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-filters.html)
-- [Elastic Docs - Boolean query](https://www.elastic.co/docs/reference/query-languages/query-dsl/query-dsl-bool-query)
-- [Elastic Docs - Near real-time search](https://www.elastic.co/docs/manage-data/data-store/near-real-time-search)
-- [Elastic Docs - Security](https://www.elastic.co/docs/deploy-manage/security)
+- [Elasticsearch Guide - Basic concepts](https://www.elastic.co/docs/get-started/the-stack)
+- [Elasticsearch Reference - Mapping](https://www.elastic.co/docs/manage-data/data-store/mapping)
+- [Elasticsearch Reference - Text analysis](https://www.elastic.co/docs/manage-data/data-store/text-analysis)
+- [Elasticsearch Reference - Query DSL](https://www.elastic.co/docs/explore-analyze/query-filter/languages/querydsl)
+- [Elasticsearch Reference - Search your data](https://www.elastic.co/docs/solutions/search)

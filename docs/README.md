@@ -31,12 +31,14 @@ Thư mục `docs/` là source of truth cho kiến thức Phase 1 đã được c
 
 Khi thêm một công nghệ sau Keycloak, ưu tiên cấu trúc:
 
-1. Concept/theory doc: `docs/07-architecture/<tech>.md`.
-2. Code guide doc: `docs/07-architecture/<tech>-code-guide-spring-boot.md`.
-3. Lab README: `lab-code/<tech>-lab/README.md`.
-4. Summary sau khi xong: `docs/99-tong-ket/nhung-gi-da-nam-duoc.md`.
+1. Foundation/concept doc: `docs/07-architecture/<tech>.md`.
+2. Request/response/config/API shape doc nếu công nghệ có protocol/API dễ nhầm: `docs/07-architecture/<tech>-request-response-shapes.md`.
+3. Code guide doc: `docs/07-architecture/<tech>-code-guide-spring-boot.md`.
+4. Lab README: `lab-code/<tech>-lab/README.md`.
+5. Summary sau khi xong: `docs/99-tong-ket/nhung-gi-da-nam-duoc.md`.
 
-Template chung: `docs/99-tong-ket/technology-mini-lab-template.md`.
+Template chung: `99-tong-ket/technology-mini-lab-template.md`.
+Chuẩn viết theory doc chi tiết: `99-tong-ket/theory-doc-writing-standard.md`.
 
 ## Không làm trong docs public
 
