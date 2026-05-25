@@ -9,8 +9,8 @@
 # Không paste token thật vào Git.
 
 @tenantDemoUrl = http://localhost:8080
-@tenant1Token = <paste-token-tenant-1-here>
-@tenant2Token = <paste-token-tenant-2-here>
+#@tenant1Token = <paste-token-tenant-1-here>
+#@tenant2Token = <paste-token-tenant-2-here>
 @invalidToken = invalid.jwt.token
 @keyword = Laptop
 

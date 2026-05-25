@@ -40,7 +40,8 @@ Spring Boot tenant-demo
 |---|---|---|---|---|---|
 | React frontend | UI cho user thao tác, gọi API bằng token. | Sau khi backend demo script ổn. | Cần minh họa tenant 1/2 bằng UI. | Chưa làm. | Dễ sa vào UI/state/CSS, lệch mục tiêu backend. |
 | API Gateway / service discovery / load balancing | Entry point, routing, auth pre-check, rate limit, service discovery. | Sau khi có nhiều hơn một service hoặc cần giải thích target architecture. | Tạo note/diagram request flow qua gateway. | Awareness trong roadmap. | Chạy gateway thật quá sớm sẽ tốn setup, ít giá trị Phase 1. |
-| Keycloak/OIDC/RBAC | Identity, login, token issuer, role/scope/claim source. | Đã chạm auth nên đã làm mini-lab. RBAC sâu để sau. | User/tenant/role flow, token claim, Resource Server validation. | Keycloak mini-lab verified. | Overclaim production IAM, role matrix quá sớm. |
+| Keycloak/OIDC | Authentication, login/token issuer, issuer/JWKS, user identity claims. | Đã chạm auth nên đã làm mini-lab. | User/token/tenant claim flow, Resource Server validation. | Keycloak mini-lab verified. | Overclaim production IAM quá sớm. |
+| Keycloak Authorization/RBAC/tenant-scope | Authorization: user được phép làm gì, role/scope/authority, service/business permission. | Là hướng kế tiếp sau feedback mentor Đạt ngày 25/05. | Realm roles vs client roles, role claim, Spring Security authorities, 401 vs 403, tenant-scope. | Planned next. | Làm full permission matrix hoặc Keycloak Authorization Services/UMA quá sớm. |
 | Spring Boot backend services | Business APIs, Resource Server, tenant-aware service/repository. | Core demo hiện tại. | Thêm service khi có domain slice mới. | `tenant-demo` đã có API nhỏ. | Biến demo thành ERP thật quá sớm. |
 | PostgreSQL shared-table | Lưu business data nhiều tenant trong shared table có `tenant_id`. | Core nền tảng. | Query plan, leakage, transaction, migration. | Đã học SQL/Flyway/ACID/index pattern. | Chỉ thêm index mà không hiểu query pattern/locking. |
 | PostgreSQL service databases | Mỗi service có DB/schema riêng trong target. | Khi học service boundary hoặc DDD. | So sánh shared table demo với service DB concept. | Awareness. | Tách DB thật khi chưa có nhiều service sẽ phức tạp. |
@@ -67,6 +68,7 @@ Spring Boot tenant-demo
 | `DataLeakageTest` | Regression guard chống leakage | Implemented | `make app-test` pass với tenant isolation cases. |
 | `lab-code/keycloak-lab` | Authorization Server/OIDC mini-lab | Mini-labbed | Keycloak issue token, `tenant_id` claim, issuer/JWKS. |
 | `APP_AUTH_MODE=keycloak` | Resource Server validate Keycloak token | Verified | Keycloak token gọi API tenant-aware thành công. |
+| Keycloak Authorization/RBAC task | Authorization layer sau AuthN | Planned | Sẽ thêm role/authority check nhỏ, nhưng vẫn giữ tenant-aware query. |
 | `presentation-notes/demo-script-keycloak-tenant-flow.md` | Mentor-facing demo path | Prepared | Script start DB/Keycloak/app, verify tenant 1/2, cross-tenant id. |
 | SQL playground `01-09` | PostgreSQL learning lab | Implemented | Schema, EXPLAIN, index pattern, migration, ACID/isolation. |
 | `docs/07-architecture/keycloak-in-target-architecture.md` | Security architecture mapping | Done | Map Keycloak/OIDC vào target architecture. |
@@ -79,15 +81,17 @@ Spring Boot tenant-demo
 - PostgreSQL + Flyway.
 - Shared-table tenant isolation.
 - Tenant-aware repository/service.
-- JWT tạm + Keycloak mini-lab.
+- JWT tạm + Keycloak/OIDC mini-lab.
+- Keycloak Authorization/RBAC/tenant-scope là bước kế tiếp để phân biệt AuthN, AuthZ và data isolation.
 - Regression test chống leakage.
 - Demo script mentor-facing.
 
 ### Mini-lab nên làm khi có trigger
 
-- Redis: khi có cache/feature flag.
+- Keycloak Authorization/RBAC: kế tiếp ngay sau Elasticsearch theo feedback mentor.
 - MinIO: khi có file upload.
-- Elasticsearch: đang là mini-lab kế tiếp vì đã học PostgreSQL `LIKE`/index/query pattern.
+- Redis: khi có cache/feature flag.
+- Elasticsearch: đã hoàn thành mini-lab vì nối tự nhiên từ PostgreSQL `LIKE`/index/query pattern.
 - Kafka/Debezium: khi cần async event/data sync.
 - Observability: khi cần giải thích vận hành hoặc có log/metric cụ thể.
 
@@ -125,8 +129,8 @@ Nếu chưa trả lời được 5 câu này, chưa nên implement công nghệ 
 Hướng tốt nhất sau tài liệu này:
 
 1. Demo backend Keycloak tenant flow đã đủ chấp nhận để báo cáo khi cần.
-2. Nhánh mini-lab hiện tại: Elasticsearch/search service cho `master_data`.
-3. Sau Elasticsearch, học tiếp MinIO, Redis, Kafka, Observability theo thứ tự roadmap.
+2. Nhánh mini-lab kế tiếp: Keycloak Authorization/RBAC/tenant-scope.
+3. Sau Authorization/RBAC, học tiếp MinIO, Redis, Kafka, Observability theo thứ tự roadmap.
 4. React UI để optional/later, không chặn chuỗi học công nghệ backend/architecture.
 
 Không nên mở nhiều mini-lab cùng lúc.

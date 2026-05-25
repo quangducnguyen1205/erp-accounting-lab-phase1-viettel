@@ -280,6 +280,17 @@ POST /products_search/_search
 }
 ```
 
+Ý nghĩa request:
+
+- `query`: phần điều kiện search chính.
+- `bool`: nhóm điều kiện logic.
+- `filter`: điều kiện filter exact, không ảnh hưởng score; thường dùng cho tenant/active.
+- `must`: điều kiện match có tính điểm; thường dùng cho keyword search.
+- `multi_match`: search 1 keyword trên nhiều field text.
+- `fields`: danh sách field sẽ được search.
+- `query` (trong `multi_match`): keyword người dùng nhập.
+- `size`: số lượng kết quả trả về (giống limit).
+
 Response quan trọng:
 
 ```json
