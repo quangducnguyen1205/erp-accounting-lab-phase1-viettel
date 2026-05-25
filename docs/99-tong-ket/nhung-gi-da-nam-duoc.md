@@ -512,8 +512,13 @@ Kết quả quan sát:
 - Tenant 1 search `Laptop` chỉ thấy document `tenantId = 1`.
 - Tenant 2 search `Laptop` chỉ thấy document `tenantId = 2`.
 - Tenant 1 search keyword chỉ có ở tenant 2 trả danh sách rỗng.
+- Keyword `HP` chỉ tenant 2 thấy kết quả; tenant 1 nhận danh sách rỗng.
+- Blank keyword trả `400`, chứng minh service có validate input tối thiểu.
 - Missing/invalid Bearer token trả `401`.
+- Elasticsearch mapping endpoint trả `200` sau khi index được tạo.
 - `DataLeakageTest` vẫn pass khi search disabled.
+
+File `lab-code/tenant-demo/http/search-api.http` hiện đủ request thủ công cho health/mapping, reindex, tenant 1/2 search, tenant-specific keyword, blank keyword, missing token và invalid token.
 
 ### Bài học rút ra
 

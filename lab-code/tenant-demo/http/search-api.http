@@ -9,10 +9,21 @@
 # Không paste token thật vào Git.
 
 @tenantDemoUrl = http://localhost:8080
+@elasticsearchUrl = http://localhost:9200
+@masterDataSearchIndex = master_data_search
 #@tenant1Token = <paste-token-tenant-1-here>
 #@tenant2Token = <paste-token-tenant-2-here>
 @invalidToken = invalid.jwt.token
 @keyword = Laptop
+@tenant2OnlyKeyword = HP
+
+### Optional: Elasticsearch health check
+# Expected: 200, Elasticsearch trả JSON cluster/node info.
+GET {{elasticsearchUrl}}
+
+### Optional: master_data_search mapping
+# Expected: 200 sau khi index đã được tạo bởi reindex/search flow.
+GET {{elasticsearchUrl}}/{{masterDataSearchIndex}}/_mapping
 
 ### Reindex master_data for local lab
 # Expected: 200 khi APP_SEARCH_ENABLED=true và Elasticsearch đang chạy.
@@ -29,6 +40,21 @@ Authorization: Bearer {{tenant1Token}}
 # Expected: 200, chỉ thấy documents tenantId = 2.
 GET {{tenantDemoUrl}}/api/search/master-data?keyword={{keyword}}
 Authorization: Bearer {{tenant2Token}}
+
+### Tenant-specific keyword: tenant 1 search HP
+# Expected: 200, [] nếu keyword chỉ có trong dữ liệu tenant 2.
+GET {{tenantDemoUrl}}/api/search/master-data?keyword={{tenant2OnlyKeyword}}
+Authorization: Bearer {{tenant1Token}}
+
+### Tenant-specific keyword: tenant 2 search HP
+# Expected: 200, thấy document tenantId = 2 nếu dữ liệu có "HP".
+GET {{tenantDemoUrl}}/api/search/master-data?keyword={{tenant2OnlyKeyword}}
+Authorization: Bearer {{tenant2Token}}
+
+### Blank keyword
+# Expected: 400 do service validate keyword rỗng.
+GET {{tenantDemoUrl}}/api/search/master-data?keyword=
+Authorization: Bearer {{tenant1Token}}
 
 ### Missing token
 # Expected: 401 do Spring Security chặn trước search service.
