@@ -13,10 +13,10 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 68% |
+| **Tiến độ** | 70% |
 | **Tổng task** | 106 |
-| **Đã hoàn thành** | 72 / 106 |
-| **Focus hiện tại** | Keycloak Authorization / RBAC / tenant-scope mini-lab |
+| **Đã hoàn thành** | 74 / 106 |
+| **Focus hiện tại** | Tự cấu hình Keycloak roles và tự code Spring Security authority mapping |
 | **Milestone tiếp theo** | #12 - Keycloak Authorization / RBAC / tenant-scope |
 | **Demo hiện tại** | Spring Boot + PostgreSQL/Flyway + tenant-aware API + JWT tạm + Keycloak mode đã verify |
 
@@ -318,8 +318,8 @@ Mục tiêu: nối từ PostgreSQL `LIKE`/index query-pattern sang search engine
 
 Mục tiêu: sau khi đã hiểu Keycloak/OIDC ở mức AuthN/token validation, học tiếp AuthZ/RBAC/tenant-scope để biết user được phép làm gì và vẫn không lộ dữ liệu tenant khác.
 
-- [ ] `[LÝ THUYẾT]` Tạo/read `docs/05-security/keycloak-authorization-rbac-tenant-scope.md` - authentication vs authorization vs tenant isolation, realm roles vs client roles, scopes/claims, 401 vs 403, Keycloak role không thay thế tenant-aware query.
-- [ ] `[SKELETON]` Tạo/read `docs/05-security/keycloak-authorization-code-guide-spring-boot.md`; chuẩn bị TODO cho Spring Security authorities converter, endpoint/service authorization, test/HTTP verification.
+- [x] `[LÝ THUYẾT]` Tạo/read `docs/05-security/keycloak-authorization-rbac-tenant-scope.md` - authentication vs authorization vs tenant isolation, realm roles vs client roles, scopes/claims, 401 vs 403, Keycloak role không thay thế tenant-aware query.
+- [x] `[SKELETON]` Tạo/read `docs/05-security/keycloak-authorization-code-guide-spring-boot.md`; chuẩn bị TODO cho Spring Security authorities converter, endpoint/service authorization, test/HTTP verification.
 - [ ] `[THỰC HÀNH]` Tự cấu hình role claim trong Keycloak token: role đơn giản như `ACCOUNTANT`, `ADMIN`, `VIEWER`; không làm full permission matrix.
 - [ ] `[THỰC HÀNH]` Tự code authorization nhỏ: mapping Keycloak role/claim sang `GrantedAuthority`, dùng `@PreAuthorize` hoặc service-level check cho endpoint phù hợp.
 - [ ] `[REVIEW]` Nhờ Codex review: phân biệt endpoint-level authorization, service/business authorization, tenant-scope; verify user thiếu role trả `403`, missing/invalid token trả `401`.
@@ -428,7 +428,7 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 | ACID/isolation | `docs/03-backend-database-mo-rong/acid-isolation-levels-postgresql.md`, `lab-code/sql-playground/09-acid-isolation-observation.sql` |
 | Spring Boot learning notes | `docs/04-spring-boot/*.md` |
 | Security/JWT/Keycloak notes | `docs/05-security/` - đã có JWT tạm và Keycloak/OIDC, tiếp theo bổ sung Keycloak Authorization/RBAC |
-| Keycloak Authorization/RBAC mini-lab | `docs/05-security/keycloak-authorization-rbac-tenant-scope.md`, `docs/05-security/keycloak-authorization-code-guide-spring-boot.md` - tạo khi bắt đầu Sprint 12 |
+| Keycloak Authorization/RBAC mini-lab | `docs/05-security/keycloak-authorization-rbac-tenant-scope.md`, `docs/05-security/keycloak-authorization-code-guide-spring-boot.md`, `docs/05-security/keycloak-authorization-admin-console-guide.md`, `docs/05-security/keycloak-authorization-mini-lab-plan.md`, `lab-code/tenant-demo/http/keycloak-authorization-api.http` |
 | Backend Keycloak demo script | `presentation-notes/demo-script-keycloak-tenant-flow.md` |
 | React UI notes | `docs/06-frontend/` - tạo khi tới task UI |
 | Architecture awareness notes | `docs/07-architecture/` - tạo khi tới Sprint 7 |
@@ -455,15 +455,19 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 
 ### Task tiếp theo: bắt đầu Keycloak Authorization/RBAC/tenant-scope mini-lab
 
-1. Tạo/read theory + code guide vừa đủ:
+1. Đọc lại theory + code guide vừa đủ:
    - `docs/05-security/keycloak-authorization-rbac-tenant-scope.md`
    - `docs/05-security/keycloak-authorization-code-guide-spring-boot.md`
-2. Chuẩn bị skeleton/TODO an toàn:
+2. Dùng thêm checklist thao tác:
+   - `docs/05-security/keycloak-authorization-admin-console-guide.md`
+   - `docs/05-security/keycloak-authorization-mini-lab-plan.md`
+   - `lab-code/tenant-demo/http/keycloak-authorization-api.http`
+3. Tự cấu hình/coding theo skeleton:
    - role claim trong Keycloak token;
    - Spring Security converter từ Keycloak roles/claims sang `GrantedAuthority`;
    - endpoint-level authorization bằng `@PreAuthorize` nếu phù hợp;
    - service-level/business check cho rule tenant-scope nếu cần.
-3. Giữ nguyên baseline đã verify:
+4. Giữ nguyên baseline đã verify:
 
 ```bash
 cd lab-code
@@ -471,13 +475,13 @@ make db-up
 make app-test
 ```
 
-4. Scope AuthZ/RBAC:
+5. Scope AuthZ/RBAC:
    - role đơn giản như `ACCOUNTANT`, `ADMIN`, `VIEWER`;
    - user có role phù hợp gọi endpoint được;
    - user thiếu role trả `403`;
    - missing/invalid token vẫn là `401`;
    - tenant 1 vẫn không đọc được tenant 2 dù có role hợp lệ.
-5. Sau khi tự code xong, nhờ Codex review implementation và summary Milestone #12.
+6. Sau khi tự code xong, nhờ Codex review implementation và summary Milestone #12.
 
 ### Tạm hoãn
 

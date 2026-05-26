@@ -530,3 +530,24 @@ File `lab-code/tenant-demo/http/search-api.http` hiện đủ request thủ côn
 - Search engine không thay thế authorization/tenant isolation. Mọi document phải có `tenantId`, và mọi search query phải filter tenant.
 - Có eventual consistency giữa PostgreSQL và Elasticsearch: DB có thể đã đổi nhưng search index chưa kịp đồng bộ nếu chưa reindex/update document.
 - Không nên dùng Elasticsearch cho lookup exact đơn giản nếu PostgreSQL + index đã đủ.
+
+## Milestone #12: Keycloak Authorization/RBAC/tenant-scope — ghi chú sau thực hành
+
+Milestone này bắt đầu sau khi Keycloak/OIDC token flow đã verify. Mục tiêu là học phần authorization: user đã đăng nhập rồi thì được phép làm gì.
+
+### TODO sau khi tự thực hành
+
+- Authentication khác authorization như thế nào?
+- Khi nào backend trả `401`, khi nào trả `403`?
+- Role được đặt ở `realm_access.roles` hay `resource_access.<client>.roles`?
+- Spring Security đã map role claim thành `GrantedAuthority` ra sao?
+- Endpoint/method nào được bảo vệ bằng role?
+- Vì sao role đúng vẫn không thay thế tenant-aware repository query?
+- Case nào chứng minh tenant 1 vẫn không đọc được tenant 2?
+
+### Rule cần giữ nguyên
+
+- Token/role chỉ là đầu vào đã validate cho authorization.
+- `tenant_id` vẫn phải đi qua `TenantContext`.
+- Service/repository vẫn phải query theo `tenantId`.
+- Không tin `tenant_id` hoặc role từ request body.

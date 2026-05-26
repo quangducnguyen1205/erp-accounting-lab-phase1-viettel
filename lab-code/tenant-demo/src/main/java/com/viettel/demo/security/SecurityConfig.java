@@ -38,6 +38,11 @@ import org.springframework.security.web.SecurityFilterChain;
  * - Không thêm OAuth2 login flow.
  * - Không tạo session-based login.
  *
+ * [Sprint 12 - RBAC TODO]
+ * Khi tự code Keycloak Authorization, thêm JwtAuthenticationConverter để
+ * map Keycloak roles thành GrantedAuthority. JwtTenantContextFilter vẫn chỉ
+ * xử lý tenant_id, không trộn role mapping vào filter đó.
+ *
  * ==============================================================
  */
 @Configuration

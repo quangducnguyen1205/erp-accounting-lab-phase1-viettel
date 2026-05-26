@@ -18,7 +18,9 @@ Ghi chú về Spring Security, JWT tạm và Keycloak/OIDC cho tenant-aware back
 10. `spring-boot-keycloak-integration-plan.md` - tích hợp Keycloak mode.
 11. `keycloak-authorization-rbac-tenant-scope.md` - AuthN vs AuthZ, role/scope/tenant-scope.
 12. `keycloak-authorization-code-guide-spring-boot.md` - code guide cho RBAC mini-lab.
-13. `../07-architecture/keycloak-in-target-architecture.md` - Keycloak trong target architecture.
+13. `keycloak-authorization-admin-console-guide.md` - thao tác Admin Console để tạo/gán role.
+14. `keycloak-authorization-mini-lab-plan.md` - checklist thực hành RBAC.
+15. `../07-architecture/keycloak-in-target-architecture.md` - Keycloak trong target architecture.
 
 ## Source of truth để tránh trùng lặp
 
@@ -30,6 +32,8 @@ Ghi chú về Spring Security, JWT tạm và Keycloak/OIDC cho tenant-aware back
 | `spring-boot-keycloak-integration-plan.md` | Code/config integration path cho Spring Boot. |
 | `keycloak-authorization-rbac-tenant-scope.md` | Theory cho authorization/RBAC/tenant-scope sau AuthN. |
 | `keycloak-authorization-code-guide-spring-boot.md` | Code guide/skeleton cho Spring Security authorities và authorization checks. |
+| `keycloak-authorization-admin-console-guide.md` | UI checklist cho roles, role mapping và token claim verification. |
+| `keycloak-authorization-mini-lab-plan.md` | Mini-lab cases/done criteria, tránh biến RBAC thành full IAM project. |
 | `../07-architecture/keycloak-in-target-architecture.md` | Keycloak trong target architecture rộng hơn. |
 
 Nếu cần chỉnh docs, ưu tiên cập nhật đúng file theo vai trò trên rồi link sang file khác, tránh copy lại cùng một flow dài ở nhiều nơi.

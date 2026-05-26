@@ -169,6 +169,29 @@ lab-code/tenant-demo/http/keycloak-api.http
 
 Không paste token thật vào repo.
 
+## RBAC/Authorization mini-lab tiếp theo
+
+Sau khi token flow đã chạy được, phần kế tiếp là tạo role và kiểm tra authorization:
+
+```text
+docs/05-security/keycloak-authorization-rbac-tenant-scope.md
+docs/05-security/keycloak-authorization-admin-console-guide.md
+docs/05-security/keycloak-authorization-mini-lab-plan.md
+lab-code/tenant-demo/http/keycloak-authorization-api.http
+```
+
+Gợi ý roles nhỏ:
+
+```text
+ADMIN
+ACCOUNTANT
+VIEWER
+```
+
+Ưu tiên tạo client roles dưới `tenant-demo-api-client` để role claim nằm trong `resource_access.tenant-demo-api-client.roles`. Nếu dùng realm roles để học nhanh, token thường có `realm_access.roles`.
+
+Ghi chú Keycloak 26.x: nếu custom user attribute như `tenant_id` không lưu hoặc không xuất hiện trong token, kiểm tra `Realm settings -> User profile`, mapper `tenant_id`, và lấy token mới sau khi đổi attribute.
+
 ## Done criteria
 
 - [x] Keycloak chạy ở `localhost:18080`.
