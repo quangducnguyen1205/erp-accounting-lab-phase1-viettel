@@ -13,14 +13,14 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 70% |
+| **Tiến độ** | 74% |
 | **Tổng task** | 106 |
-| **Đã hoàn thành** | 74 / 106 |
-| **Focus hiện tại** | Tự cấu hình Keycloak roles và tự code Spring Security authority mapping |
-| **Milestone tiếp theo** | #12 - Keycloak Authorization / RBAC / tenant-scope |
-| **Demo hiện tại** | Spring Boot + PostgreSQL/Flyway + tenant-aware API + JWT tạm + Keycloak mode đã verify |
+| **Đã hoàn thành** | 78 / 106 |
+| **Focus hiện tại** | Bắt đầu MinIO/file storage mini-lab |
+| **Milestone tiếp theo** | #13 - MinIO/file storage mini-lab |
+| **Demo hiện tại** | Spring Boot + PostgreSQL/Flyway + tenant-aware API + JWT tạm fallback + Keycloak AuthN/AuthZ mode đã verify |
 
-Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, trước khi đi tiếp MinIO/Redis/Kafka, cần bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token.
+Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Tiếp theo chuyển sang MinIO/file storage.
 
 ---
 
@@ -153,7 +153,7 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 | Data leakage tests | Core demo | `docs/04-spring-boot/testing-tenant-isolation.md` | `DataLeakageTest.java` | `make app-test` | #4 | Đã có |
 | Temporary JWT auth | Core bridge | `docs/05-security/jwt-spring-security-temporary.md` | `SecurityConfig`, `JwtTokenService`, `JwtTenantContextFilter` | MockMvc + HTTP valid/invalid JWT | #5 | Đã đóng |
 | Keycloak/OAuth2/OIDC | Mini-lab AuthN/token validation | `docs/05-security/keycloak-oidc-mental-model.md`, `docs/05-security/keycloak-oauth2-oidc-awareness.md`, `docs/05-security/keycloak-admin-console-guide.md` | `lab-code/keycloak-lab/`, `APP_AUTH_MODE=keycloak` | Lấy token Keycloak, gọi API tenant-aware, verify issuer/JWKS/claims | #9 | Đã verify mini-lab |
-| Keycloak Authorization / RBAC / tenant-scope | Mini-lab kế tiếp | `docs/05-security/keycloak-authorization-rbac-tenant-scope.md`, `docs/05-security/keycloak-authorization-code-guide-spring-boot.md` | Role claim, Spring Security authorities converter, endpoint/service authorization nhỏ | Allowed role `200`, missing role `403`, cross-tenant vẫn `404`/không leak | #12 | Planned next |
+| Keycloak Authorization / RBAC / tenant-scope | Mini-lab đã verify | `docs/05-security/keycloak-authorization-rbac-tenant-scope.md`, `docs/05-security/keycloak-authorization-code-guide-spring-boot.md` | Role claim, Spring Security authorities converter, endpoint/service authorization nhỏ | Allowed role `200`, missing role `403`, cross-tenant vẫn `404`/không leak | #12 | Đã đóng |
 | React frontend | Optional demo | `docs/06-frontend/react-tenant-demo-ui.md` | `lab-code/tenant-ui/` nếu thật sự cần | browser/UI + curl fallback | #16 | Optional/later |
 | API Gateway/service discovery/load balancer | Awareness | `docs/07-architecture/api-gateway-service-discovery.md` | Không chạy gateway mặc định | Architecture summary | #16 | Planned |
 | Elasticsearch / Elastic Stack | Mini-lab đã verify | `docs/07-architecture/elasticsearch-search-service.md`, `docs/07-architecture/elasticsearch-request-response-shapes.md`, `docs/07-architecture/elasticsearch-code-guide-spring-boot.md` | `lab-code/elasticsearch-lab/` + `com.viettel.demo.search` | Search tenant 1/2, no leakage | #11 | Đã đóng |
@@ -320,10 +320,10 @@ Mục tiêu: sau khi đã hiểu Keycloak/OIDC ở mức AuthN/token validation,
 
 - [x] `[LÝ THUYẾT]` Tạo/read `docs/05-security/keycloak-authorization-rbac-tenant-scope.md` - authentication vs authorization vs tenant isolation, realm roles vs client roles, scopes/claims, 401 vs 403, Keycloak role không thay thế tenant-aware query.
 - [x] `[SKELETON]` Tạo/read `docs/05-security/keycloak-authorization-code-guide-spring-boot.md`; chuẩn bị TODO cho Spring Security authorities converter, endpoint/service authorization, test/HTTP verification.
-- [ ] `[THỰC HÀNH]` Tự cấu hình role claim trong Keycloak token: role đơn giản như `ACCOUNTANT`, `ADMIN`, `VIEWER`; không làm full permission matrix.
-- [ ] `[THỰC HÀNH]` Tự code authorization nhỏ: mapping Keycloak role/claim sang `GrantedAuthority`, dùng `@PreAuthorize` hoặc service-level check cho endpoint phù hợp.
-- [ ] `[REVIEW]` Nhờ Codex review: phân biệt endpoint-level authorization, service/business authorization, tenant-scope; verify user thiếu role trả `403`, missing/invalid token trả `401`.
-- [ ] `[MILESTONE]` Chốt Milestone #12 - Keycloak Authorization/RBAC mini-lab: allowed role gọi được, user thiếu role bị chặn, tenant 1 vẫn không đọc được tenant 2.
+- [x] `[THỰC HÀNH]` Tự cấu hình role claim trong Keycloak token: role đơn giản như `ACCOUNTANT`, `ADMIN`, `VIEWER`; không làm full permission matrix.
+- [x] `[THỰC HÀNH]` Tự code authorization nhỏ: mapping Keycloak role/claim sang `GrantedAuthority`, dùng URL-level authorization cho endpoint phù hợp.
+- [x] `[REVIEW]` Nhờ Codex review: phân biệt endpoint-level authorization, service/business authorization, tenant-scope; verify user thiếu role trả `403`, missing/invalid token trả `401`.
+- [x] `[MILESTONE]` Chốt Milestone #12 - Keycloak Authorization/RBAC mini-lab: allowed role gọi được, user thiếu role bị chặn, tenant 1 vẫn không đọc được tenant 2.
 
 Không overdo:
 
@@ -406,7 +406,7 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 | 9 | 22/05 | Keycloak/OIDC mini-lab + backend Keycloak mode evidence | Đã đóng |
 | 10 | 22/05 | Post-Keycloak roadmap + mini-lab template | Đã đóng |
 | 11 | 23/05 | Elasticsearch/search mini-lab | Đã đóng |
-| 12 | 26/05 | Keycloak Authorization/RBAC/tenant-scope mini-lab | Planned |
+| 12 | 26/05 | Keycloak Authorization/RBAC/tenant-scope mini-lab | Đã đóng |
 | 13 | 27/05 | MinIO/file storage mini-lab | Planned |
 | 14 | 28/05 | Redis/cache mini-lab | Planned |
 | 15 | 29/05 | Kafka/async messaging mini-lab hoặc focused awareness | Planned |
@@ -427,7 +427,7 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 | Flyway rollback/failure | `docs/03-backend-database-mo-rong/flyway-rollback-failure-handling.md`, `lab-code/flyway-failure-lab/README.md` |
 | ACID/isolation | `docs/03-backend-database-mo-rong/acid-isolation-levels-postgresql.md`, `lab-code/sql-playground/09-acid-isolation-observation.sql` |
 | Spring Boot learning notes | `docs/04-spring-boot/*.md` |
-| Security/JWT/Keycloak notes | `docs/05-security/` - đã có JWT tạm và Keycloak/OIDC, tiếp theo bổ sung Keycloak Authorization/RBAC |
+| Security/JWT/Keycloak notes | `docs/05-security/` - đã có JWT tạm, Keycloak/OIDC và Keycloak Authorization/RBAC |
 | Keycloak Authorization/RBAC mini-lab | `docs/05-security/keycloak-authorization-rbac-tenant-scope.md`, `docs/05-security/keycloak-authorization-code-guide-spring-boot.md`, `docs/05-security/keycloak-authorization-admin-console-guide.md`, `docs/05-security/keycloak-authorization-mini-lab-plan.md`, `lab-code/tenant-demo/http/keycloak-authorization-api.http` |
 | Backend Keycloak demo script | `presentation-notes/demo-script-keycloak-tenant-flow.md` |
 | React UI notes | `docs/06-frontend/` - tạo khi tới task UI |
@@ -453,21 +453,30 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 
 ## Việc làm ngay trong 1-2 ngày tới
 
-### Task tiếp theo: bắt đầu Keycloak Authorization/RBAC/tenant-scope mini-lab
+### Task tiếp theo: bắt đầu MinIO/file storage mini-lab
 
-1. Đọc lại theory + code guide vừa đủ:
-   - `docs/05-security/keycloak-authorization-rbac-tenant-scope.md`
-   - `docs/05-security/keycloak-authorization-code-guide-spring-boot.md`
-2. Dùng thêm checklist thao tác:
-   - `docs/05-security/keycloak-authorization-admin-console-guide.md`
-   - `docs/05-security/keycloak-authorization-mini-lab-plan.md`
-   - `lab-code/tenant-demo/http/keycloak-authorization-api.http`
-3. Tự cấu hình/coding theo skeleton:
-   - role claim trong Keycloak token;
-   - Spring Security converter từ Keycloak roles/claims sang `GrantedAuthority`;
-   - endpoint-level authorization bằng `@PreAuthorize` nếu phù hợp;
-   - service-level/business check cho rule tenant-scope nếu cần.
-4. Giữ nguyên baseline đã verify:
+1. Tạo/read theory + code guide theo chuẩn mini-lab:
+   - `docs/07-architecture/minio-object-storage.md`
+   - `docs/07-architecture/minio-code-guide-spring-boot.md`
+2. Chuẩn bị lab nhỏ, chưa implement quá sâu:
+   - `lab-code/minio-lab/`
+   - config kiểu `APP_FILE_STORAGE_ENABLED=false`;
+   - package skeleton/TODO cho file upload/download nếu cần.
+3. Thiết kế trước các rule quan trọng:
+   - PostgreSQL vẫn giữ metadata/source of truth cho file record;
+   - MinIO giữ object/blob;
+   - object key phải tenant-aware;
+   - không nhận tenantId từ request body;
+   - API upload/download vẫn đi qua auth + tenant context.
+4. Dùng infra chung khi cần demo nhiều thành phần, hoặc target riêng khi chỉ test từng lab:
+
+```bash
+cd lab-code
+make infra-up
+make infra-status
+```
+
+5. Giữ nguyên baseline đã verify:
 
 ```bash
 cd lab-code
@@ -475,19 +484,13 @@ make db-up
 make app-test
 ```
 
-5. Scope AuthZ/RBAC:
-   - role đơn giản như `ACCOUNTANT`, `ADMIN`, `VIEWER`;
-   - user có role phù hợp gọi endpoint được;
-   - user thiếu role trả `403`;
-   - missing/invalid token vẫn là `401`;
-   - tenant 1 vẫn không đọc được tenant 2 dù có role hợp lệ.
-6. Sau khi tự code xong, nhờ Codex review implementation và summary Milestone #12.
+6. Sau khi tự tạo theory/skeleton MinIO, tự code phần meaningful rồi nhờ Codex review implementation và summary Milestone #13.
 
 ### Tạm hoãn
 
 - React UI: optional, chỉ làm nếu cần demo trực quan hơn.
 - Report polish: chỉ cập nhật summary ngắn sau mỗi mini-lab, không làm report lớn giữa chừng.
-- MinIO/Redis/Kafka/Debezium/Observability: chỉ làm sau Keycloak Authorization, mỗi sprint một công nghệ và giữ scope nhỏ.
+- Redis/Kafka/Debezium/Observability: chỉ làm sau MinIO, mỗi sprint một công nghệ và giữ scope nhỏ.
 
 ---
 

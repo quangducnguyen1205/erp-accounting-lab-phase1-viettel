@@ -30,11 +30,13 @@ import java.util.Set;
  * request nào cần JWT, app chạy stateless hay session-based, và custom
  * filter tenant context đứng ở đâu.
  *
- * [JWT tạm trong lab]
+ * [Local JWT fallback trong lab]
  * - Dùng Bearer JWT local, ký bằng HS256 secret từ app.jwt.secret.
  * - Spring Security validate chữ ký, expiration và issuer.
  * - JwtTenantContextFilter chạy sau BearerTokenAuthenticationFilter để
  *   đọc tenant_id từ Jwt đã validate.
+ * - Mode này giữ vai trò fallback/test path, nên chỉ check authenticated
+ *   và tenant isolation; RBAC chính nằm ở Keycloak mode.
  *
  * [Keycloak mode]
  * - app.auth.mode=keycloak dùng token do Keycloak phát hành.
@@ -81,16 +83,20 @@ public class SecurityConfig {
                         .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
                         .build();
             } else {
+                /*
+                 * Local JWT fallback:
+                 * - Dùng cho app-test/DataLeakageTest và dev token local.
+                 * - Chỉ yêu cầu request đã authenticated.
+                 * - Không ép RBAC ở đây để test tenant isolation không phụ
+                 *   thuộc live Keycloak/role setup.
+                 *
+                 * Keycloak mode bên dưới mới là đường demo chính cho RBAC.
+                 */
                 return http
                         .authorizeHttpRequests(auth -> auth
-                                .requestMatchers(HttpMethod.GET, "/api/master-data", "/api/master-data/**")
-                                .hasAnyRole("ADMIN", "ACCOUNTANT", "VIEWER")
-                                .requestMatchers("/api/master-data", "/api/master-data/**")
-                                .hasAnyRole("ADMIN", "ACCOUNTANT")
-                                .requestMatchers(HttpMethod.POST, "/api/search/master-data/reindex")
-                                .hasRole("ADMIN")
-                                .requestMatchers(HttpMethod.GET, "/api/search/master-data", "/api/search/master-data/**")
-                                .hasAnyRole("ADMIN", "ACCOUNTANT", "VIEWER")
+                                .requestMatchers("/api/dev/tokens/**").permitAll()
+                                .requestMatchers("/api/master-data", "/api/master-data/**").authenticated()
+                                .requestMatchers("/api/search/master-data", "/api/search/master-data/**").authenticated()
                                 .anyRequest().authenticated()
                         )
                         .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->

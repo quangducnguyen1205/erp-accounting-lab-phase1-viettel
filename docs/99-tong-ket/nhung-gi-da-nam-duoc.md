@@ -533,17 +533,37 @@ File `lab-code/tenant-demo/http/search-api.http` hiện đủ request thủ côn
 
 ## Milestone #12: Keycloak Authorization/RBAC/tenant-scope — ghi chú sau thực hành
 
-Milestone này bắt đầu sau khi Keycloak/OIDC token flow đã verify. Mục tiêu là học phần authorization: user đã đăng nhập rồi thì được phép làm gì.
+Milestone này bổ sung lớp authorization sau khi Keycloak/OIDC token flow đã chạy được.
 
-### TODO sau khi tự thực hành
+### Flow đã chốt
 
-- Authentication khác authorization như thế nào?
-- Khi nào backend trả `401`, khi nào trả `403`?
-- Role được đặt ở `realm_access.roles` hay `resource_access.<client>.roles`?
-- Spring Security đã map role claim thành `GrantedAuthority` ra sao?
-- Endpoint/method nào được bảo vệ bằng role?
-- Vì sao role đúng vẫn không thay thế tenant-aware repository query?
-- Case nào chứng minh tenant 1 vẫn không đọc được tenant 2?
+```text
+Keycloak access token
+-> Spring Security JwtDecoder validate issuer/JWKS
+-> JwtAuthenticationConverter map role/scope thành GrantedAuthority
+-> JwtTenantContextFilter đọc tenant_id từ Jwt đã validate
+-> TenantContext
+-> URL/service authorization
+-> Service/Repository vẫn query theo tenantId
+```
+
+### Bài học chính
+
+- Authentication trả lời “bạn là ai”; authorization trả lời “bạn được làm gì”; tenant isolation trả lời “bạn được thấy dữ liệu tenant nào”.
+- Missing/invalid token là `401`; token hợp lệ nhưng thiếu role là `403`.
+- OAuth2 scope thường được Spring map thành `SCOPE_*`.
+- Keycloak roles thường nằm trong `realm_access.roles` hoặc `resource_access.<client>.roles`, nên cần custom converter để map thành `ROLE_*`.
+- `hasRole("ADMIN")` kiểm tra authority `ROLE_ADMIN`; `hasAuthority("SCOPE_read")` dùng cho scope authority.
+- Role đúng không thay thế tenant-aware query. User tenant 1 có role hợp lệ vẫn không đọc được record tenant 2 vì repository/service vẫn scoped theo `tenantId`.
+- `JwtTenantContextFilter` chỉ bridge `tenant_id` sang `TenantContext`, không trộn logic role mapping/authorization.
+- Local JWT được giữ làm fallback/test path; Keycloak mode là đường demo chính cho AuthN + AuthZ.
+
+### Case đã verify
+
+- User có role phù hợp gọi endpoint đọc dữ liệu trả `200`.
+- User thiếu role phù hợp trả `403`.
+- Missing token và invalid token trả `401`.
+- Cross-tenant id vẫn không lộ dữ liệu tenant khác.
 
 ### Rule cần giữ nguyên
 
@@ -551,3 +571,4 @@ Milestone này bắt đầu sau khi Keycloak/OIDC token flow đã verify. Mục 
 - `tenant_id` vẫn phải đi qua `TenantContext`.
 - Service/repository vẫn phải query theo `tenantId`.
 - Không tin `tenant_id` hoặc role từ request body.
+- Nếu sau này có super-admin cross-tenant, phải thiết kế endpoint/audit riêng, không “mở khóa” query tenant thường.

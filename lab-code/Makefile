@@ -50,6 +50,10 @@ keycloak-up: ## Khởi chạy KeyCloak local cho auth mini-lab
 keycloak-down: ## Dừng KeyCloak local cho auth mini-lab
 	cd $(KEYCLOAK_DIR) && docker compose down
 
+.PHONY: keycloak-status
+keycloak-status: ## Kiểm tra KeyCloak local
+	@docker ps --filter "name=viettel-keycloak" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
 # --- Elasticsearch mini-lab ------------------------------------
 
 .PHONY: elastic-up
@@ -63,6 +67,25 @@ elastic-down: ## Dừng Elasticsearch local cho search mini-lab
 .PHONY: elastic-status
 elastic-status: ## Kiểm tra Elasticsearch local
 	@docker ps --filter "name=viettel-elasticsearch" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+# --- Common dev infra ------------------------------------------
+#
+# Dùng target riêng khi chỉ học từng lab nhỏ:
+# - db-up cho SQL/Spring Boot baseline
+# - keycloak-up cho auth mini-lab
+# - elastic-up cho search mini-lab
+#
+# Dùng infra-up khi cần demo đầy đủ hơn: PostgreSQL + Keycloak +
+# Elasticsearch. App Spring Boot vẫn chạy riêng bằng `make app-run`.
+
+.PHONY: infra-up
+infra-up: db-up keycloak-up elastic-up ## Khởi chạy PostgreSQL + KeyCloak + Elasticsearch
+
+.PHONY: infra-status
+infra-status: db-status keycloak-status elastic-status ## Kiểm tra PostgreSQL + KeyCloak + Elasticsearch
+
+.PHONY: infra-down
+infra-down: elastic-down keycloak-down db-down ## Dừng PostgreSQL + KeyCloak + Elasticsearch
 
 # --- SQL Playground ---------------------------------------------
 
@@ -109,11 +132,11 @@ sql-reset: ## Xóa toàn bộ bảng rồi tạo lại từ đầu
 # --- Spring Boot App (placeholder) ------------------------------
 
 .PHONY: app-run
-app-run: ## [TODO] Chạy Spring Boot application
+app-run: ## Chạy Spring Boot application
 	cd $(APP_DIR) && if [ -f .env ]; then set -a; . ./.env; set +a; fi; ./mvnw spring-boot:run
 
 .PHONY: app-test
-app-test: ## [TODO] Chạy integration tests
+app-test: ## Chạy integration tests
 	cd $(APP_DIR) && if [ -f .env ]; then set -a; . ./.env; set +a; fi; ./mvnw test
 
 # --- Help -------------------------------------------------------

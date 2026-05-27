@@ -82,6 +82,27 @@ Vì vậy backend cần converter riêng nếu muốn dùng:
 
 Khuyến nghị cho repo này: map role thành `ROLE_<ROLE_NAME>` để dùng `hasRole(...)` dễ đọc.
 
+### Scope mapping và role mapping trong repo này
+
+Có hai nguồn authority khác nhau:
+
+| Nguồn trong JWT | Converter phù hợp | Authority tạo ra | Dùng để check |
+|---|---|---|---|
+| `scope` hoặc `scp` | `JwtGrantedAuthoritiesConverter` mặc định của Spring Security | `SCOPE_read`, `SCOPE_profile` | `hasAuthority('SCOPE_read')` |
+| `realm_access.roles` | Custom converter | `ROLE_ADMIN`, `ROLE_VIEWER` | `hasRole('ADMIN')` hoặc `hasAuthority('ROLE_ADMIN')` |
+| `resource_access.<client-id>.roles` | Custom converter | `ROLE_ACCOUNTANT` | `hasRole('ACCOUNTANT')` |
+
+`JwtGrantedAuthoritiesConverter` chủ yếu dành cho OAuth2 scopes. Keycloak roles không nằm ở claim `scope`, nên repo có `KeycloakRoleConverter` để đọc role claim của Keycloak.
+
+Implementation hiện tại merge cả hai:
+
+```text
+scope/scp -> SCOPE_*
+Keycloak roles -> ROLE_*
+```
+
+Lý do giữ scope converter: đây là hành vi chuẩn của Spring Security Resource Server, không gây hại cho mini-lab, và giúp sau này nếu cần check scope thì không phải viết lại. RBAC hiện tại vẫn dựa trên `ROLE_*`.
+
 ---
 
 ## 4. Đọc realm roles và client roles
@@ -229,7 +250,7 @@ Code hiện tại chọn cách nhỏ nhất cho mini-lab:
 - `KeycloakRoleConverter` đọc `roles`, `realm_access.roles` và `resource_access.<client-id>.roles`.
 - `SecurityConfig` dùng `JwtAuthenticationConverter` để giữ scope mặc định dạng `SCOPE_*` và thêm Keycloak/local roles dạng `ROLE_*`.
 - RBAC rule hiện đặt ở URL-level trong `SecurityFilterChain` khi `APP_AUTH_MODE=keycloak`.
-- Local JWT mode vẫn chỉ yêu cầu authenticated để `DataLeakageTest` không phụ thuộc Keycloak live.
+- Local JWT mode vẫn chỉ yêu cầu authenticated để `DataLeakageTest` không phụ thuộc Keycloak live hoặc role setup trong Admin Console.
 - `JwtTenantContextFilter` không đọc role; filter này chỉ đọc `tenant_id` từ `Jwt` đã validate.
 
 Kết quả cần nhớ:

@@ -74,3 +74,28 @@ lab-code/
 6. Commit
 7. Nhờ Agent review nếu cần
 ```
+
+## Makefile workflow hiện tại
+
+Chạy từng lab riêng khi chỉ cần một phần hạ tầng:
+
+```bash
+make db-up          # PostgreSQL cho SQL/Spring Boot baseline
+make keycloak-up    # Keycloak cho auth/OIDC/RBAC mini-lab
+make elastic-up     # Elasticsearch cho search mini-lab
+```
+
+Khi cần demo nhiều phần cùng lúc, dùng:
+
+```bash
+make infra-up
+make infra-status
+```
+
+`infra-up` chỉ bật PostgreSQL + Keycloak + Elasticsearch. Spring Boot app vẫn chạy riêng bằng:
+
+```bash
+make app-run
+```
+
+Mục tiêu là giữ từng mini-lab cô lập được, nhưng vẫn có một đường nhanh để bật hạ tầng demo chung.

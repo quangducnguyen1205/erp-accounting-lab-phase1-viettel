@@ -124,6 +124,22 @@ Keycloak token claim
 -> hasRole(...) / hasAuthority(...) / @PreAuthorize(...)
 ```
 
+Trong Spring Security, `JwtGrantedAuthoritiesConverter` mặc định phù hợp nhất với OAuth2 scope:
+
+```text
+scope: "openid profile"
+-> SCOPE_openid, SCOPE_profile
+```
+
+Keycloak role thường nằm ở claim khác:
+
+```text
+realm_access.roles
+resource_access.<client-id>.roles
+```
+
+Vì vậy mini-lab này dùng custom converter để map role thành `ROLE_*`. Nếu backend dùng cả scope và role, có thể merge hai converter: scope giữ dạng `SCOPE_*`, role giữ dạng `ROLE_*`.
+
 ---
 
 ## 6. Role claims trong Keycloak access token
