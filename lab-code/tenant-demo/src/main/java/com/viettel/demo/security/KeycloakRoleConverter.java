@@ -2,50 +2,90 @@ package com.viettel.demo.security;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /*
  * ==============================================================
- * KeycloakRoleConverter — skeleton cho mini-lab RBAC
+ * KeycloakRoleConverter — map Keycloak roles sang Spring authorities
  * ==============================================================
  *
- * [Trạng thái]
- * Class này CHƯA được wire vào SecurityConfig, nên không đổi runtime hiện tại.
- * Mục tiêu là để lại hình dạng code cho task tự implement tiếp theo.
+ * [Vai trò]
+ * Converter này chỉ đọc role claims trong Jwt đã được Spring Security
+ * validate, rồi chuyển thành GrantedAuthority dạng ROLE_*.
  *
- * [Việc cần tự code]
- * - Đọc role từ resource_access.<client-id>.roles hoặc realm_access.roles.
- * - Map role Keycloak thành GrantedAuthority, ví dụ ROLE_VIEWER.
- * - Dùng Set để tránh duplicate authority.
- * - Không đọc tenant_id ở đây; tenant_id vẫn thuộc JwtTenantContextFilter.
+ * [Claim được hỗ trợ]
+ * - Keycloak client roles: resource_access.<client-id>.roles
+ * - Keycloak realm roles:  realm_access.roles
+ * - Local JWT lab roles:   roles
  *
  * [Điều không làm trong converter]
  * - Không validate JWT signature/issuer/expiration.
+ * - Không đọc hoặc set tenant_id.
  * - Không query database.
  * - Không quyết định tenant data scope.
  *
  * ==============================================================
  */
+@Component
 public class KeycloakRoleConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
+
+    private static final String ROLE_PREFIX = "ROLE_";
+
+    private final AuthProperties authProperties;
+
+    public KeycloakRoleConverter(AuthProperties authProperties) {
+        this.authProperties = authProperties;
+    }
 
     @Override
     public Collection<GrantedAuthority> convert(Jwt jwt) {
-        /*
-         * TODO tự implement ở Sprint 12:
-         *
-         * 1. Chọn client id, ví dụ "tenant-demo-api-client".
-         * 2. Đọc jwt.getClaim("resource_access").
-         * 3. Lấy roles của client đó.
-         * 4. Optional: đọc thêm jwt.getClaim("realm_access").
-         * 5. Convert từng role sang SimpleGrantedAuthority("ROLE_" + role).
-         * 6. Return collection authorities.
-         *
-         * Sau đó wire converter này vào JwtAuthenticationConverter trong
-         * SecurityConfig.
-         */
-        return List.of();
+        Set<GrantedAuthority> authorities = new LinkedHashSet<>();
+
+        addRoles(authorities, jwt.getClaimAsStringList("roles"));
+        addRoles(authorities, extractRoles(jwt.getClaim("realm_access")));
+
+        Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
+        if (resourceAccess != null) {
+            Object clientAccess = resourceAccess.get(authProperties.getKeycloak().getClientId());
+            addRoles(authorities, extractRoles(clientAccess));
+        }
+
+        return authorities;
+    }
+
+    private List<String> extractRoles(Object accessClaim) {
+        if (!(accessClaim instanceof Map<?, ?> accessMap)) {
+            return List.of();
+        }
+
+        Object roles = accessMap.get("roles");
+        if (!(roles instanceof List<?> values)) {
+            return List.of();
+        }
+
+        return values.stream()
+                .filter(value -> value != null && !value.toString().isBlank())
+                .map(Object::toString)
+                .toList();
+    }
+
+    private void addRoles(Set<GrantedAuthority> authorities, List<String> roles) {
+        if (roles == null) {
+            return;
+        }
+
+        for (String role : roles) {
+            if (role != null && !role.isBlank()) {
+                authorities.add(new SimpleGrantedAuthority(ROLE_PREFIX + role));
+            }
+        }
     }
 }

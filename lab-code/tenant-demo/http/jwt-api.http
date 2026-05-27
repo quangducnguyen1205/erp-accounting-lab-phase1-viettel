@@ -20,12 +20,15 @@
 ### Tạo/lấy dev token tenant 1
 # Cần JWT_DEV_TOKEN_ENABLED=true trong .env.
 # Copy accessToken trong response vào biến @jwtTenant1 ở trên.
-GET {{baseUrl}}/api/dev/tokens/tenant-1
+GET {{baseUrl}}/api/dev/tokens/tenant-1?roles=ACCOUNTANT
 
 ### Tạo/lấy dev token tenant 2
 # Cần JWT_DEV_TOKEN_ENABLED=true trong .env.
 # Copy accessToken trong response vào biến @jwtTenant2 ở trên.
-GET {{baseUrl}}/api/dev/tokens/tenant-2
+GET {{baseUrl}}/api/dev/tokens/tenant-2?roles=VIEWER
+
+### Tạo/lấy dev token tenant 3
+GET {{baseUrl}}/api/dev/tokens/tenant/3
 
 ### JWT tenant 1 - list master data
 # Expected sau khi JWT active: 200, chỉ thấy data tenant 1.

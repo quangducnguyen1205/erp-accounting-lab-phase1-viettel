@@ -17,6 +17,7 @@ DB_NAME        := erpdb
 SQL_DIR        := sql-playground
 APP_DIR        := tenant-demo
 ELASTIC_DIR    := elasticsearch-lab
+KEYCLOAK_DIR   := keycloak-lab
 
 # --- Docker / Database -----------------------------------------
 
@@ -39,6 +40,15 @@ db-status: ## Kiểm tra container đang chạy không
 .PHONY: db-shell
 db-shell: ## Mở psql shell trực tiếp vào database
 	docker exec -it $(CONTAINER_NAME) psql -U $(DB_USER) -d $(DB_NAME)
+
+# --- KeyCloak mini-lab ------------------------------------
+.PHONY: keycloak-up
+keycloak-up: ## Khởi chạy KeyCloak local cho auth mini-lab
+	cd $(KEYCLOAK_DIR) && docker compose up -d
+
+.PHONY: keycloak-down
+keycloak-down: ## Dừng KeyCloak local cho auth mini-lab
+	cd $(KEYCLOAK_DIR) && docker compose down
 
 # --- Elasticsearch mini-lab ------------------------------------
 

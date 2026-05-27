@@ -15,6 +15,7 @@
 #@accountantTenant1Token = <paste-keycloak-token-tenant-1-accountant-here>
 #@viewerTenant2Token = <paste-keycloak-token-tenant-2-viewer-here>
 #@noRoleToken = <paste-keycloak-token-without-required-role-here>
+#@adminToken = <paste-keycloak-token-tenant-admin-here>
 @invalidToken = invalid.jwt.token
 
 # TODO: chạy tenant 2 list trước, copy một id thuộc tenant 2.

@@ -12,6 +12,8 @@
 @clientId = tenant-demo-api-client
 @tenant1User = tenant1-user
 @tenant2User = tenant2-user
+@tenant3User = tenant-no-role-user
+@tenant4User = tenant-admin
 @password = password
 
 ### OpenID Provider metadata
@@ -33,6 +35,17 @@ Content-Type: application/x-www-form-urlencoded
 
 grant_type=password&client_id={{clientId}}&username={{tenant2User}}&password={{password}}
 
+### Token no-role user bằng password grant - local lab only
+POST {{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id={{clientId}}&username={{tenant3User}}&password={{password}}
+
+### Token admin user bằng password grant - local lab only
+POST {{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id={{clientId}}&username={{tenant4User}}&password={{password}}
 ### TODO: sau khi lấy token
 # - Decode access_token ở local để xem `iss`, `sub`, `exp`, `tenant_id`.
 # - Không paste token thật vào repo/report.

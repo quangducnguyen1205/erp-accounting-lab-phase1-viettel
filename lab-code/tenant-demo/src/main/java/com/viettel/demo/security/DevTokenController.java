@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -45,21 +46,21 @@ public class DevTokenController {
     }
 
     @GetMapping("/tenant-1")
-    public Map<String, Object> tenantOneToken() {
-        return createTokenResponse(1L);
+    public Map<String, Object> tenantOneToken(@RequestParam(required = false) List<String> roles) {
+        return createTokenResponse(1L, roles);
     }
 
     @GetMapping("/tenant-2")
-    public Map<String, Object> tenantTwoToken() {
-        return createTokenResponse(2L);
+    public Map<String, Object> tenantTwoToken(@RequestParam(required = false) List<String> roles) {
+        return createTokenResponse(2L, roles);
     }
 
     @GetMapping("/tenant/{tenantId}")
-    public Map<String, Object> tokenForTenant(@PathVariable Long tenantId) {
-        return createTokenResponse(tenantId);
+    public Map<String, Object> tokenForTenant(@PathVariable Long tenantId, @RequestParam(required = false) List<String> roles) {
+        return createTokenResponse(tenantId, roles);
     }
 
-    private Map<String, Object> createTokenResponse(Long tenantId) {
+    private Map<String, Object> createTokenResponse(Long tenantId, List<String> roles) {
         if (!jwtProperties.isDevTokenEnabled()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Dev token endpoint is disabled");
         }
@@ -68,7 +69,7 @@ public class DevTokenController {
         }
 
         String subject = "dev-user-tenant-" + tenantId;
-        String token = jwtTokenService.createDevToken(tenantId, subject, List.of("USER"));
+        String token = jwtTokenService.createDevToken(tenantId, subject, roles);
 
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("tokenType", "Bearer");

@@ -75,6 +75,12 @@ public class AuthProperties {
          */
         private String jwkSetUri;
 
+        /*
+         * Client chứa client roles trong claim:
+         * resource_access.<client-id>.roles
+         */
+        private String clientId = "tenant-demo-api-client";
+
         public String getIssuerUri() {
             return issuerUri;
         }
@@ -89,6 +95,14 @@ public class AuthProperties {
 
         public void setJwkSetUri(String jwkSetUri) {
             this.jwkSetUri = jwkSetUri;
+        }
+
+        public String getClientId() {
+            return clientId;
+        }
+
+        public void setClientId(String clientId) {
+            this.clientId = clientId;
         }
     }
 }

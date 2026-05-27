@@ -78,6 +78,8 @@ app:
     mode: ${APP_AUTH_MODE:local-jwt}
     keycloak:
       issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:18080/realms/viettel-lab}
+      # Client chứa role claim: resource_access.<client-id>.roles
+      client-id: ${KEYCLOAK_CLIENT_ID:tenant-demo-api-client}
       # Optional. Thường Spring Security discovery JWKS từ issuer-uri.
       # Chỉ set nếu muốn trỏ thẳng tới endpoint certs/JWKS.
       jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:}

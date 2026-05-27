@@ -222,6 +222,24 @@ Ví dụ áp dụng repo:
 - `POST /api/search/master-data/reindex`: nếu dùng, nên cần `ADMIN`.
 - Cross-tenant id: không giải bằng role, mà giải bằng repository query theo tenantId.
 
+### Implementation hiện tại trong repo
+
+Code hiện tại chọn cách nhỏ nhất cho mini-lab:
+
+- `KeycloakRoleConverter` đọc `roles`, `realm_access.roles` và `resource_access.<client-id>.roles`.
+- `SecurityConfig` dùng `JwtAuthenticationConverter` để giữ scope mặc định dạng `SCOPE_*` và thêm Keycloak/local roles dạng `ROLE_*`.
+- RBAC rule hiện đặt ở URL-level trong `SecurityFilterChain` khi `APP_AUTH_MODE=keycloak`.
+- Local JWT mode vẫn chỉ yêu cầu authenticated để `DataLeakageTest` không phụ thuộc Keycloak live.
+- `JwtTenantContextFilter` không đọc role; filter này chỉ đọc `tenant_id` từ `Jwt` đã validate.
+
+Kết quả cần nhớ:
+
+```text
+Missing/invalid token -> 401
+Valid token nhưng thiếu role -> 403
+Valid role nhưng sai tenant -> vẫn 404/không lộ data
+```
+
 ---
 
 ## 9. Gợi ý thứ tự tự code

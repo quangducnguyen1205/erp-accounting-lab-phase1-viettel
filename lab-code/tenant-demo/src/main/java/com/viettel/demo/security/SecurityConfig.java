@@ -3,14 +3,23 @@ package com.viettel.demo.security;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 /*
  * ==============================================================
  * SecurityConfig — cấu hình security cho JWT tạm và Keycloak mode
@@ -38,14 +47,15 @@ import org.springframework.security.web.SecurityFilterChain;
  * - Không thêm OAuth2 login flow.
  * - Không tạo session-based login.
  *
- * [Sprint 12 - RBAC TODO]
- * Khi tự code Keycloak Authorization, thêm JwtAuthenticationConverter để
- * map Keycloak roles thành GrantedAuthority. JwtTenantContextFilter vẫn chỉ
- * xử lý tenant_id, không trộn role mapping vào filter đó.
+ * [Sprint 12 - RBAC]
+ * JwtAuthenticationConverter map Keycloak roles thành GrantedAuthority.
+ * JwtTenantContextFilter vẫn chỉ xử lý tenant_id, không trộn role mapping
+ * vào filter đó.
  *
  * ==============================================================
  */
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
@@ -53,7 +63,8 @@ public class SecurityConfig {
             HttpSecurity http,
             AuthProperties authProperties,
             JwtProperties jwtProperties,
-            JwtTokenService jwtTokenService
+            JwtTokenService jwtTokenService,
+            JwtAuthenticationConverter jwtAuthenticationConverter
     ) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -72,11 +83,19 @@ public class SecurityConfig {
             } else {
                 return http
                         .authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/api/dev/tokens/**").permitAll()
-                                .requestMatchers("/api/master-data/**").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/api/master-data", "/api/master-data/**")
+                                .hasAnyRole("ADMIN", "ACCOUNTANT", "VIEWER")
+                                .requestMatchers("/api/master-data", "/api/master-data/**")
+                                .hasAnyRole("ADMIN", "ACCOUNTANT")
+                                .requestMatchers(HttpMethod.POST, "/api/search/master-data/reindex")
+                                .hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/search/master-data", "/api/search/master-data/**")
+                                .hasAnyRole("ADMIN", "ACCOUNTANT", "VIEWER")
                                 .anyRequest().authenticated()
                         )
-                        .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+                        .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
+                                jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)
+                        ))
                         .addFilterAfter(
                                 new JwtTenantContextFilter(jwtTokenService),
                                 BearerTokenAuthenticationFilter.class
@@ -93,20 +112,45 @@ public class SecurityConfig {
          * Dev token endpoint không public trong mode này; token phải lấy từ
          * Keycloak mini-lab.
          */
-        if (authProperties.isKeycloakMode()) {
-            // Resource Server flow giống local JWT, nhưng nguồn token là Keycloak.
-        }
         return http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/master-data/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/master-data", "/api/master-data/**")
+                        .hasAnyRole("ADMIN", "ACCOUNTANT", "VIEWER")
+                        .requestMatchers("/api/master-data", "/api/master-data/**")
+                        .hasAnyRole("ADMIN", "ACCOUNTANT")
+                        .requestMatchers(HttpMethod.POST, "/api/search/master-data/reindex")
+                        .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/search/master-data", "/api/search/master-data/**")
+                        .hasAnyRole("ADMIN", "ACCOUNTANT", "VIEWER")
                         .anyRequest().authenticated()
                 )
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
+                        jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)
+                ))
                 .addFilterAfter(
                         new JwtTenantContextFilter(jwtTokenService),
                         BearerTokenAuthenticationFilter.class
                 )
                 .build();
+    }
+
+    @Bean
+    JwtAuthenticationConverter jwtAuthenticationConverter(KeycloakRoleConverter keycloakRoleConverter) {
+        /*
+         * Converter này chạy theo từng Jwt đã validate, không chạy lúc app startup.
+         * Scope OAuth2 mặc định vẫn thành SCOPE_*, còn Keycloak/local roles
+         * được map thêm thành ROLE_* để dùng hasRole(...) hoặc @PreAuthorize.
+         */
+        JwtGrantedAuthoritiesConverter scopeConverter = new JwtGrantedAuthoritiesConverter();
+
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            Set<GrantedAuthority> authorities = new LinkedHashSet<>();
+            authorities.addAll(scopeConverter.convert(jwt));
+            authorities.addAll(keycloakRoleConverter.convert(jwt));
+            return authorities;
+        });
+        return converter;
     }
 
     @Bean
