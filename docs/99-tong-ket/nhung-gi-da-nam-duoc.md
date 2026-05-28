@@ -572,3 +572,31 @@ Keycloak access token
 - Service/repository vẫn phải query theo `tenantId`.
 - Không tin `tenant_id` hoặc role từ request body.
 - Nếu sau này có super-admin cross-tenant, phải thiết kế endpoint/audit riêng, không “mở khóa” query tenant thường.
+
+## Milestone #13: MinIO/file storage mini-lab — placeholder
+
+Milestone này bắt đầu sau Keycloak Authorization/RBAC. Mục tiêu là học object storage/S3-compatible API trong ngữ cảnh chứng từ/file attachment.
+
+### Đã chuẩn bị
+
+- `docs/07-architecture/minio-object-storage.md`: nền tảng object storage, bucket/object/object key/metadata, source of truth và tenant-aware storage.
+- `docs/07-architecture/minio-s3-api-shapes.md`: request/response/error shape của put/get/stat/delete/list/presigned URL.
+- `docs/07-architecture/minio-code-guide-spring-boot.md`: code shape Spring Boot với Gateway/Adapter, metadata PostgreSQL và service tenant-aware.
+- `lab-code/minio-lab/`: Docker Compose local cho MinIO.
+- `com.viettel.demo.storage`: skeleton/TODO compile-safe, tắt mặc định bằng `APP_FILE_STORAGE_ENABLED=false`.
+
+### TODO sau khi tự thực hành
+
+- Upload/download file đã đi qua backend hay chưa?
+- Metadata file có `tenantId` và không nhận tenant từ request body không?
+- Object key có do backend sinh và có tenant scope không?
+- Tenant 2 có bị chặn khi download file tenant 1 không?
+- PostgreSQL có còn là source of truth cho metadata không?
+- `make app-test` có vẫn pass khi file storage disabled không?
+
+### Rule cần giữ nguyên
+
+- MinIO lưu binary object; PostgreSQL lưu metadata nghiệp vụ.
+- Bucket chứng từ/file tenant nên private.
+- Không expose access key/secret, raw object key hoặc presigned URL dài trong report/log.
+- Không dùng object storage thay database query.

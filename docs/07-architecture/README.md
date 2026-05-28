@@ -13,6 +13,10 @@ Thư mục này kết nối các lab nhỏ trong repo với kiến trúc target 
 5. `elasticsearch-design-patterns-spring-boot.md` - vì sao tách Controller/Service/Gateway/Document.
 6. `elasticsearch-code-guide-spring-boot.md` - code shape Spring Boot cho search mini-lab.
 7. `elasticsearch-mini-lab-plan.md` - checklist mini-lab search nhỏ trên `master_data`.
+8. `minio-object-storage.md` - foundation: object storage, bucket, object key, metadata, tenant-aware file storage.
+9. `minio-s3-api-shapes.md` - S3/MinIO operations, request/response/error shape.
+10. `minio-code-guide-spring-boot.md` - Spring Boot integration pattern cho file upload/download.
+11. `minio-admin-console-guide.md` - thao tác MinIO Console local.
 
 ## Core
 
@@ -25,7 +29,7 @@ Thư mục này kết nối các lab nhỏ trong repo với kiến trúc target 
 ## Optional / later
 
 - API Gateway/service discovery/load balancing chi tiết.
-- Redis/MinIO mini-lab khi có feature trigger.
+- Redis mini-lab khi có feature trigger; MinIO mini-lab bắt đầu sau Keycloak Authorization/RBAC.
 - Elasticsearch mini-lab hiện là nhánh kế tiếp vì nối tự nhiên từ PostgreSQL `LIKE`/index/query-pattern.
 - Kafka/Debezium/observability awareness hoặc mini-lab nhỏ nếu mentor yêu cầu.
 - DDD/domain boundaries sau khi demo backend đã đóng gói.

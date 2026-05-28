@@ -105,3 +105,21 @@ app:
     enabled: ${APP_SEARCH_ENABLED:false}
     elasticsearch-uris: ${ELASTICSEARCH_URIS:http://localhost:9200}
     master-data-index: ${ELASTICSEARCH_MASTER_DATA_INDEX:master_data_search}
+
+  # ==============================================================
+  # MinIO/file storage mini-lab
+  # ==============================================================
+  #
+  # File storage tắt mặc định để app/test hiện tại không phụ thuộc MinIO.
+  # Khi tự code mini-lab, bật APP_FILE_STORAGE_ENABLED=true và chạy
+  # lab-code/minio-lab/docker-compose.yml.
+  #
+  # PostgreSQL nên giữ metadata nghiệp vụ của file. MinIO chỉ giữ binary
+  # object/blob. Object key phải do backend sinh và phải tenant-aware.
+  file-storage:
+    enabled: ${APP_FILE_STORAGE_ENABLED:false}
+    endpoint: ${MINIO_ENDPOINT:http://localhost:19000}
+    access-key: ${MINIO_ACCESS_KEY:minioadmin}
+    secret-key: ${MINIO_SECRET_KEY:minioadmin}
+    bucket: ${MINIO_BUCKET:tenant-demo-files}
+    region: ${MINIO_REGION:us-east-1}

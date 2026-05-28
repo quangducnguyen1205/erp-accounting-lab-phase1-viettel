@@ -18,6 +18,7 @@ SQL_DIR        := sql-playground
 APP_DIR        := tenant-demo
 ELASTIC_DIR    := elasticsearch-lab
 KEYCLOAK_DIR   := keycloak-lab
+MINIO_DIR      := minio-lab
 
 # --- Docker / Database -----------------------------------------
 
@@ -68,24 +69,39 @@ elastic-down: ## Dừng Elasticsearch local cho search mini-lab
 elastic-status: ## Kiểm tra Elasticsearch local
 	@docker ps --filter "name=viettel-elasticsearch" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 
+# --- MinIO mini-lab --------------------------------------------
+
+.PHONY: minio-up
+minio-up: ## Khởi chạy MinIO local cho file storage mini-lab
+	cd $(MINIO_DIR) && docker compose up -d
+
+.PHONY: minio-down
+minio-down: ## Dừng MinIO local cho file storage mini-lab
+	cd $(MINIO_DIR) && docker compose down
+
+.PHONY: minio-status
+minio-status: ## Kiểm tra MinIO local
+	@docker ps --filter "name=viettel-minio" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
 # --- Common dev infra ------------------------------------------
 #
 # Dùng target riêng khi chỉ học từng lab nhỏ:
 # - db-up cho SQL/Spring Boot baseline
 # - keycloak-up cho auth mini-lab
 # - elastic-up cho search mini-lab
+# - minio-up cho file storage mini-lab
 #
 # Dùng infra-up khi cần demo đầy đủ hơn: PostgreSQL + Keycloak +
-# Elasticsearch. App Spring Boot vẫn chạy riêng bằng `make app-run`.
+# Elasticsearch + MinIO. App Spring Boot vẫn chạy riêng bằng `make app-run`.
 
 .PHONY: infra-up
-infra-up: db-up keycloak-up elastic-up ## Khởi chạy PostgreSQL + KeyCloak + Elasticsearch
+infra-up: db-up keycloak-up elastic-up minio-up ## Khởi chạy PostgreSQL + KeyCloak + Elasticsearch + MinIO
 
 .PHONY: infra-status
-infra-status: db-status keycloak-status elastic-status ## Kiểm tra PostgreSQL + KeyCloak + Elasticsearch
+infra-status: db-status keycloak-status elastic-status minio-status ## Kiểm tra PostgreSQL + KeyCloak + Elasticsearch + MinIO
 
 .PHONY: infra-down
-infra-down: elastic-down keycloak-down db-down ## Dừng PostgreSQL + KeyCloak + Elasticsearch
+infra-down: minio-down elastic-down keycloak-down db-down ## Dừng PostgreSQL + KeyCloak + Elasticsearch + MinIO
 
 # --- SQL Playground ---------------------------------------------
 

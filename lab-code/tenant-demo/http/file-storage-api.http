@@ -1,0 +1,58 @@
+# HTTP Client requests cho MinIO/file storage mini-lab
+#
+# File này chỉ chứa placeholder. Không paste access token thật vào Git.
+#
+# Điều kiện sau khi tự implement:
+# - PostgreSQL/Keycloak/MinIO đang chạy.
+# - tenant-demo đang chạy.
+# - APP_FILE_STORAGE_ENABLED=true.
+# - Bucket MinIO `tenant-demo-files` đã tồn tại.
+
+@tenantDemoUrl = http://localhost:8080
+@invalidToken = invalid.jwt.token
+
+# TODO: lấy token từ lab-code/keycloak-lab/http/keycloak-token-flow.http
+# rồi paste tạm vào IntelliJ private env hoặc biến local không commit.
+#@tenant1Token = <paste-keycloak-token-tenant-1-here>
+#@tenant2Token = <paste-keycloak-token-tenant-2-here>
+#@noRoleToken = <paste-keycloak-token-without-required-role-here>
+
+# TODO: sau khi upload tenant 1, copy fileId từ response.
+@tenant1FileId = <copy-file-id-from-upload-response>
+
+### Upload file as tenant 1 -> expected 201/200 sau khi implement
+# IntelliJ HTTP Client sẽ đọc file local theo path bạn chọn.
+# Đổi đường dẫn file test cho phù hợp máy local, không commit file thật nếu nhạy cảm.
+POST {{tenantDemoUrl}}/api/files
+Authorization: Bearer {{tenant1Token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="sample.txt"
+Content-Type: text/plain
+
+Hello MinIO tenant-aware file storage lab.
+--boundary--
+
+### Download own file as tenant 1 -> expected 200
+GET {{tenantDemoUrl}}/api/files/{{tenant1FileId}}
+Authorization: Bearer {{tenant1Token}}
+
+### Tenant 2 cannot download tenant 1 file -> expected 404/no leakage
+GET {{tenantDemoUrl}}/api/files/{{tenant1FileId}}
+Authorization: Bearer {{tenant2Token}}
+
+### Missing token -> expected 401
+GET {{tenantDemoUrl}}/api/files/{{tenant1FileId}}
+
+### Invalid token -> expected 401
+GET {{tenantDemoUrl}}/api/files/{{tenant1FileId}}
+Authorization: Bearer {{invalidToken}}
+
+### Optional wrong role -> expected 403 nếu endpoint yêu cầu role cụ thể
+GET {{tenantDemoUrl}}/api/files/{{tenant1FileId}}
+Authorization: Bearer {{noRoleToken}}
+
+### Delete own file as tenant 1 -> expected 204 nếu implement delete
+DELETE {{tenantDemoUrl}}/api/files/{{tenant1FileId}}
+Authorization: Bearer {{tenant1Token}}
