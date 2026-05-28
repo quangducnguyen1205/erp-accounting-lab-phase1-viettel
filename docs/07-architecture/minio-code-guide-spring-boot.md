@@ -74,7 +74,8 @@ Lý do:
 - vẫn giữ code Spring Boot sạch;
 - không cần full production file service.
 
-Skeleton hiện tại cố ý chưa thêm dependency `io.minio:minio`. Khi tự code implementation thật, thêm dependency này vào `pom.xml`, rồi hoàn thiện `MinioClientConfig` và `FileStorageGateway` implementation.
+Implementation hiện tại đã dùng dependency `io.minio:minio`, `MinioClientConfig`
+tạo `MinioClient`, còn `MinioFileStorageGateway` giữ toàn bộ chi tiết gọi SDK.
 
 ---
 
@@ -209,6 +210,23 @@ download(fileId):
 
 Không nhận `tenantId` từ request body. Không nhận raw object key từ request.
 
+Trong repo này, cross-tenant download dùng cùng lookup `tenantId + fileId`.
+Nếu tenant 2 gọi `fileId` của tenant 1, service trả `404` để không tiết lộ
+file đó có tồn tại ở tenant khác hay không.
+
+### Consistency caveat ở mức mini-lab
+
+Upload hiện đi theo thứ tự:
+
+```text
+put object vào MinIO
+-> save metadata vào PostgreSQL
+```
+
+Nếu save metadata lỗi sau khi object đã upload, service cleanup object theo
+best-effort. Đây không phải distributed transaction giữa DB và MinIO, nhưng đủ
+rõ và dễ hiểu cho Phase 1.
+
 ---
 
 ## 8. Metadata model
@@ -283,7 +301,9 @@ Bearer token
 Rule:
 
 - upload/download phải cần authenticated user;
-- nếu RBAC bật, có thể yêu cầu role như `ACCOUNTANT` hoặc `ADMIN`;
+- trong Keycloak mode, `GET /api/files/**` nên cho `ADMIN/ACCOUNTANT/VIEWER`,
+  còn upload/delete nên giới hạn `ADMIN/ACCOUNTANT`;
+- local-jwt mode chỉ là fallback/test path, không phải demo RBAC chính;
 - tenant isolation vẫn nằm ở service/repository metadata query;
 - object key có tenant prefix để dễ audit, nhưng prefix không thay thế DB tenant check.
 

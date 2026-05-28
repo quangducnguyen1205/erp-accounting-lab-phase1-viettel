@@ -75,7 +75,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "app.jwt.secret=test-learning-secret-change-me-32-characters-minimum",
         "app.jwt.issuer=tenant-demo-test",
         "app.jwt.dev-token-enabled=true",
-        "app.search.enabled=false"
+        "app.search.enabled=false",
+        "app.file-storage.enabled=false"
 })
 @AutoConfigureMockMvc
 public class DataLeakageTest {
@@ -99,6 +100,7 @@ public class DataLeakageTest {
      */
     @BeforeEach
     void setup() {
+        jdbcTemplate.execute("DELETE FROM file_metadata");
         jdbcTemplate.execute("DELETE FROM master_data");
         jdbcTemplate.execute("DELETE FROM tenants");
 

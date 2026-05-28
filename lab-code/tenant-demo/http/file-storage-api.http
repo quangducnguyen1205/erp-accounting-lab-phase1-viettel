@@ -11,8 +11,18 @@
 @tenantDemoUrl = http://localhost:8080
 @invalidToken = invalid.jwt.token
 
+### MinIO health check trực tiếp
+GET http://localhost:19000/minio/health/ready
+
+### Local JWT fallback: lấy token tenant 1 - chỉ dùng local lab
+GET {{tenantDemoUrl}}/api/dev/tokens/tenant-1?roles=ACCOUNTANT
+
+### Local JWT fallback: lấy token tenant 2 - chỉ dùng local lab
+GET {{tenantDemoUrl}}/api/dev/tokens/tenant-2?roles=ACCOUNTANT
+
 # TODO: lấy token từ lab-code/keycloak-lab/http/keycloak-token-flow.http
-# rồi paste tạm vào IntelliJ private env hoặc biến local không commit.
+# hoặc từ dev token endpoint local ở trên, rồi paste tạm vào IntelliJ
+# private env/biến local không commit.
 #@tenant1Token = <paste-keycloak-token-tenant-1-here>
 #@tenant2Token = <paste-keycloak-token-tenant-2-here>
 #@noRoleToken = <paste-keycloak-token-without-required-role-here>
@@ -20,7 +30,7 @@
 # TODO: sau khi upload tenant 1, copy fileId từ response.
 @tenant1FileId = <copy-file-id-from-upload-response>
 
-### Upload file as tenant 1 -> expected 201/200 sau khi implement
+### Upload file as tenant 1 -> expected 201
 # IntelliJ HTTP Client sẽ đọc file local theo path bạn chọn.
 # Đổi đường dẫn file test cho phù hợp máy local, không commit file thật nếu nhạy cảm.
 POST {{tenantDemoUrl}}/api/files
@@ -49,10 +59,15 @@ GET {{tenantDemoUrl}}/api/files/{{tenant1FileId}}
 GET {{tenantDemoUrl}}/api/files/{{tenant1FileId}}
 Authorization: Bearer {{invalidToken}}
 
-### Optional wrong role -> expected 403 nếu endpoint yêu cầu role cụ thể
+### Optional wrong role -> expected 403 trong APP_AUTH_MODE=keycloak
+# Local JWT fallback chỉ test authenticated + tenant isolation, không phải RBAC chính.
 GET {{tenantDemoUrl}}/api/files/{{tenant1FileId}}
 Authorization: Bearer {{noRoleToken}}
 
-### Delete own file as tenant 1 -> expected 204 nếu implement delete
+### Delete own file as tenant 1 -> expected 204
 DELETE {{tenantDemoUrl}}/api/files/{{tenant1FileId}}
+Authorization: Bearer {{tenant1Token}}
+
+### Download after delete -> expected 404
+GET {{tenantDemoUrl}}/api/files/{{tenant1FileId}}
 Authorization: Bearer {{tenant1Token}}

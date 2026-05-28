@@ -8,11 +8,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
+import java.util.UUID;
 
 /*
  * ==============================================================
- * FileStorageService — skeleton use case file storage tenant-aware
+ * FileStorageService — use case file storage tenant-aware
  * ==============================================================
  *
  * [Vai trò]
@@ -22,13 +24,12 @@ import java.util.Map;
  * - object key generation;
  * - FileStorageGateway gọi MinIO.
  *
- * [Khi tự implement]
+ * [Luồng chính]
  * 1. Lấy tenantId từ TenantContext.
- * 2. Validate file size/content type cơ bản.
- * 3. Sinh fileId + objectKey tenant-aware.
- * 4. Gọi gateway.putObject(...).
- * 5. Lưu metadata tenant-aware vào PostgreSQL.
- * 6. Download phải tìm metadata bằng tenantId + fileId.
+ * 2. Sinh fileId + objectKey tenant-aware ở backend.
+ * 3. Upload binary stream lên MinIO qua gateway.
+ * 4. Lưu metadata tenant-aware vào PostgreSQL.
+ * 5. Download/delete luôn tìm metadata bằng tenantId + fileId.
  *
  * [Không làm]
  * - Không nhận tenantId từ request body.
@@ -41,6 +42,9 @@ import java.util.Map;
 @ConditionalOnProperty(prefix = "app.file-storage", name = "enabled", havingValue = "true")
 public class FileStorageService {
 
+    private static final String DEFAULT_FILENAME = "file";
+    private static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
+
     private final FileStorageGateway gateway;
     private final FileMetadataRepository metadataRepository;
 
@@ -52,44 +56,50 @@ public class FileStorageService {
     }
 
     public FileUploadResponse upload(MultipartFile file) {
-        String fileId = "file-" + System.currentTimeMillis();
-        String objectKey = generateObjectKey(getTenantId(), fileId);
-        String originalFilename = file.getOriginalFilename();
-        String contentType = file.getContentType();
-        if (originalFilename == null || contentType == null) {
-            throw new IllegalArgumentException("Original filename and content type are required");
-        }
-        Map<String, String> metadata = Map.of(
-                "originalFilename", originalFilename,
-                "contentType", contentType
-        );
+        Long tenantId = getTenantId();
+        String fileId = UUID.randomUUID().toString();
+        String originalFilename = sanitizeFilename(file.getOriginalFilename());
+        String contentType = resolveContentType(file.getContentType());
+        String objectKey = generateObjectKey(tenantId, fileId, originalFilename);
         long sizeBytes = file.getSize();
-        try {
+
+        Map<String, String> metadata = Map.of(
+                "tenant-id", tenantId.toString(),
+                "original-filename", originalFilename,
+                "content-type", contentType
+        );
+
+        try (InputStream inputStream = file.getInputStream()) {
             gateway.putObject(
                     objectKey,
-                    file.getInputStream(),
+                    inputStream,
                     sizeBytes,
-                    file.getContentType(),
+                    contentType,
                     metadata
             );
-            FileMetadata fileMetadata = new FileMetadata();
-            fileMetadata.setFileId(fileId);
-            fileMetadata.setObjectKey(objectKey);
-            fileMetadata.setOriginalFilename(file.getOriginalFilename());
-            fileMetadata.setContentType(file.getContentType());
-            fileMetadata.setSizeBytes(sizeBytes);
-            metadataRepository.save(fileMetadata);
         } catch (IOException e) {
             throw new RuntimeException("Failed to read file input stream", e);
         }
+
+        FileMetadata fileMetadata = new FileMetadata();
+        fileMetadata.setFileId(fileId);
+        fileMetadata.setObjectKey(objectKey);
+        fileMetadata.setOriginalFilename(originalFilename);
+        fileMetadata.setContentType(contentType);
+        fileMetadata.setSizeBytes(sizeBytes);
+
+        try {
+            metadataRepository.save(fileMetadata);
+        } catch (RuntimeException e) {
+            cleanupUploadedObject(objectKey, e);
+            throw e;
+        }
+
         return new FileUploadResponse(fileId, originalFilename, contentType, sizeBytes);
     }
 
     public FileDownloadInfo download(String fileId) {
-        FileMetadata fileMetadata = metadataRepository.findByTenantIdAndFileId(
-                getTenantId(),
-                fileId
-        ).orElseThrow(() -> new IllegalArgumentException("File not found for tenant"));
+        FileMetadata fileMetadata = findTenantFile(fileId);
         return new FileDownloadInfo(
                 fileMetadata.getOriginalFilename(),
                 fileMetadata.getContentType(),
@@ -99,11 +109,54 @@ public class FileStorageService {
     }
 
     public void delete(String fileId) {
-        gateway.removeObject(generateObjectKey(getTenantId(), fileId));
+        FileMetadata fileMetadata = findTenantFile(fileId);
+        gateway.removeObject(fileMetadata.getObjectKey());
+        metadataRepository.delete(fileMetadata);
     }
 
-    private String generateObjectKey(Long tenantId, String fileId) {
-        return String.format("%s/%s", tenantId, fileId);
+    private FileMetadata findTenantFile(String fileId) {
+        return metadataRepository.findByTenantIdAndFileId(
+                getTenantId(),
+                fileId
+        ).orElseThrow(() -> new FileStorageNotFoundException("File not found"));
+    }
+
+    private String generateObjectKey(Long tenantId, String fileId, String safeFilename) {
+        return String.format("tenant/%d/files/%s/%s", tenantId, fileId, safeFilename);
+    }
+
+    private String sanitizeFilename(String originalFilename) {
+        if (originalFilename == null || originalFilename.isBlank()) {
+            return DEFAULT_FILENAME;
+        }
+
+        String filename = originalFilename.replace("\\", "/");
+        int slashIndex = filename.lastIndexOf('/');
+        if (slashIndex >= 0) {
+            filename = filename.substring(slashIndex + 1);
+        }
+
+        filename = filename.replaceAll("[^A-Za-z0-9._-]", "_");
+        if (filename.isBlank() || ".".equals(filename) || "..".equals(filename)) {
+            return DEFAULT_FILENAME;
+        }
+
+        return filename.length() > 120 ? filename.substring(0, 120) : filename;
+    }
+
+    private String resolveContentType(String contentType) {
+        if (contentType == null || contentType.isBlank()) {
+            return DEFAULT_CONTENT_TYPE;
+        }
+        return contentType;
+    }
+
+    private void cleanupUploadedObject(String objectKey, RuntimeException originalException) {
+        try {
+            gateway.removeObject(objectKey);
+        } catch (RuntimeException cleanupException) {
+            originalException.addSuppressed(cleanupException);
+        }
     }
 
     private Long getTenantId() {

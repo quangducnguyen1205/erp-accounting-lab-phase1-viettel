@@ -3,7 +3,7 @@
 > **Bắt đầu:** Thứ Ba 28/04/2026
 > **Deadline ban đầu:** Thứ Hai 25/05/2026
 > **Cửa sổ học mở rộng đề xuất:** đến Thứ Tư 03/06/2026
-> **Cập nhật roadmap:** 25/05/2026
+> **Cập nhật roadmap:** 29/05/2026
 > **Chu kỳ báo cáo:** mỗi 2-3 ngày phải có output có thể trình bày
 > **Phương châm:** tự học + tự code trước, Codex tạo note/skeleton và review sau
 
@@ -13,14 +13,14 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 75% |
+| **Tiến độ** | 78% |
 | **Tổng task** | 106 |
-| **Đã hoàn thành** | 80 / 106 |
-| **Focus hiện tại** | Tự đọc MinIO docs và self-code upload/download nhỏ |
-| **Milestone tiếp theo** | #13 - MinIO/file storage mini-lab |
+| **Đã hoàn thành** | 83 / 106 |
+| **Focus hiện tại** | Redis/cache mini-lab |
+| **Milestone tiếp theo** | #14 - Redis/cache mini-lab |
 | **Demo hiện tại** | Spring Boot + PostgreSQL/Flyway + tenant-aware API + JWT tạm fallback + Keycloak AuthN/AuthZ mode đã verify |
 
-Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Tiếp theo chuyển sang MinIO/file storage.
+Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; tiếp theo chuyển sang Redis/cache.
 
 ---
 
@@ -157,7 +157,7 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 | React frontend | Optional demo | `docs/06-frontend/react-tenant-demo-ui.md` | `lab-code/tenant-ui/` nếu thật sự cần | browser/UI + curl fallback | #16 | Optional/later |
 | API Gateway/service discovery/load balancer | Awareness | `docs/07-architecture/api-gateway-service-discovery.md` | Không chạy gateway mặc định | Architecture summary | #16 | Planned |
 | Elasticsearch / Elastic Stack | Mini-lab đã verify | `docs/07-architecture/elasticsearch-search-service.md`, `docs/07-architecture/elasticsearch-request-response-shapes.md`, `docs/07-architecture/elasticsearch-code-guide-spring-boot.md` | `lab-code/elasticsearch-lab/` + `com.viettel.demo.search` | Search tenant 1/2, no leakage | #11 | Đã đóng |
-| MinIO / S3 object storage | Mini-lab đang chuẩn bị | `docs/07-architecture/minio-object-storage.md`, `docs/07-architecture/minio-s3-api-shapes.md`, `docs/07-architecture/minio-code-guide-spring-boot.md` | upload/download mini-lab | HTTP upload/download + tenant metadata | #13 | In progress |
+| MinIO / S3 object storage | Mini-lab | `docs/07-architecture/minio-object-storage.md`, `docs/07-architecture/minio-s3-api-shapes.md`, `docs/07-architecture/minio-code-guide-spring-boot.md` | upload/download mini-lab | HTTP upload/download + tenant metadata | #13 | Done |
 | Redis cache strategy | Mini-lab | `docs/07-architecture/redis-cache-strategy.md`, `docs/07-architecture/redis-code-guide-spring-boot.md` | tenant-safe cache key mini example | Hit/miss + cache key review | #14 | Planned |
 | Kafka async messaging | Mini-lab hoặc focused awareness | `docs/07-architecture/kafka-async-messaging.md`, `docs/07-architecture/kafka-code-guide-spring-boot.md` | event producer/consumer nhỏ hoặc simulation | Event flow summary | #15 | Planned |
 | Debezium CDC + Kafka | Awareness | `docs/07-architecture/debezium-cdc.md` | Không chạy CDC | CDC role summary | #15/#18 | Later awareness |
@@ -337,9 +337,9 @@ Mục tiêu: học object storage/S3 API trong ngữ cảnh chứng từ/file at
 
 - [x] `[LÝ THUYẾT]` Tạo `docs/07-architecture/minio-object-storage.md`, `docs/07-architecture/minio-s3-api-shapes.md` và `docs/07-architecture/minio-code-guide-spring-boot.md` - object storage vs DB, S3 API, tenant/file metadata, presigned URL awareness.
 - [x] `[SKELETON]` Chuẩn bị `lab-code/minio-lab/`, config `APP_FILE_STORAGE_ENABLED=false`, package `com.viettel.demo.storage` với TODO comments.
-- [ ] `[THỰC HÀNH]` Tự code upload/download nhỏ: file lưu MinIO, metadata tenant-aware lưu PostgreSQL hoặc in-memory nếu giữ scope nhỏ.
-- [ ] `[REVIEW]` Nhờ Codex review: không commit file/secret, không bỏ auth/tenant check, không nhầm MinIO với database source of truth.
-- [ ] `[MILESTONE]` Chốt Milestone #13 - MinIO mini-lab có upload/download evidence và giới hạn production.
+- [x] `[THỰC HÀNH]` Tự code upload/download nhỏ: file lưu MinIO, metadata tenant-aware lưu PostgreSQL hoặc in-memory nếu giữ scope nhỏ.
+- [x] `[REVIEW]` Nhờ Codex review: không commit file/secret, không bỏ auth/tenant check, không nhầm MinIO với database source of truth.
+- [x] `[MILESTONE]` Chốt Milestone #13 - MinIO mini-lab có upload/download evidence và giới hạn production.
 
 ### Sprint 14 - 28/05: Redis/cache mini-lab
 
@@ -407,7 +407,7 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 | 10 | 22/05 | Post-Keycloak roadmap + mini-lab template | Đã đóng |
 | 11 | 23/05 | Elasticsearch/search mini-lab | Đã đóng |
 | 12 | 26/05 | Keycloak Authorization/RBAC/tenant-scope mini-lab | Đã đóng |
-| 13 | 27/05 | MinIO/file storage mini-lab | Planned |
+| 13 | 27/05 | MinIO/file storage mini-lab | Đã đóng |
 | 14 | 28/05 | Redis/cache mini-lab | Planned |
 | 15 | 29/05 | Kafka/async messaging mini-lab hoặc focused awareness | Planned |
 | 16 | 30/05 | Observability/logging/metrics mini-lab | Planned |
@@ -453,29 +453,16 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 
 ## Việc làm ngay trong 1-2 ngày tới
 
-### Task tiếp theo: tự code MinIO/file storage mini-lab
+### Task tiếp theo: Redis/cache mini-lab
 
-1. Đọc theory + code guide đã chuẩn bị:
-   - `docs/07-architecture/minio-object-storage.md`
-   - `docs/07-architecture/minio-s3-api-shapes.md`
-   - `docs/07-architecture/minio-code-guide-spring-boot.md`
-   - `docs/07-architecture/minio-admin-console-guide.md`
-2. Chạy lab nhỏ:
-   - `lab-code/minio-lab/`
-   - config kiểu `APP_FILE_STORAGE_ENABLED=false`;
-   - package skeleton/TODO `com.viettel.demo.storage`.
-3. Tự code phần meaningful theo thứ tự:
-   - thêm MinIO Java SDK dependency;
-   - hoàn thiện `MinioClientConfig`;
-   - implement `FileStorageGateway`;
-   - thiết kế metadata tenant-aware;
-   - implement upload/download backend-mediated.
-4. Giữ các rule quan trọng:
-   - PostgreSQL vẫn giữ metadata/source of truth cho file record;
-   - MinIO giữ object/blob;
-   - object key phải tenant-aware;
-   - không nhận tenantId từ request body;
-   - API upload/download vẫn đi qua auth + tenant context.
+1. Tạo/đọc theory doc Redis cache từ official/standard docs.
+2. Tạo code guide cho Spring Boot cache/client pattern:
+   - cache key tenant-aware;
+   - TTL/invalidation;
+   - cache-aside pattern;
+   - không cache cross-tenant.
+3. Chuẩn bị `lab-code/redis-lab/` và config disabled-by-default nếu cần.
+4. Tự code mini-lab nhỏ chỉ khi đã rõ use case cache.
 5. Dùng infra chung khi cần demo nhiều thành phần, hoặc target riêng khi chỉ test từng lab:
 
 ```bash
@@ -492,13 +479,13 @@ make db-up
 make app-test
 ```
 
-7. Sau khi tự code xong, nhờ Codex review implementation và summary Milestone #13.
+7. Sau khi tự code xong, nhờ Codex review implementation và summary Milestone #14.
 
 ### Tạm hoãn
 
 - React UI: optional, chỉ làm nếu cần demo trực quan hơn.
 - Report polish: chỉ cập nhật summary ngắn sau mỗi mini-lab, không làm report lớn giữa chừng.
-- Redis/Kafka/Debezium/Observability: chỉ làm sau MinIO, mỗi sprint một công nghệ và giữ scope nhỏ.
+- Kafka/Debezium/Observability: chỉ làm sau Redis, mỗi sprint một công nghệ và giữ scope nhỏ.
 
 ---
 
