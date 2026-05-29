@@ -19,6 +19,7 @@ APP_DIR        := tenant-demo
 ELASTIC_DIR    := elasticsearch-lab
 KEYCLOAK_DIR   := keycloak-lab
 MINIO_DIR      := minio-lab
+REDIS_DIR      := redis-lab
 
 # --- Docker / Database -----------------------------------------
 
@@ -83,6 +84,20 @@ minio-down: ## Dừng MinIO local cho file storage mini-lab
 minio-status: ## Kiểm tra MinIO local
 	@docker ps --filter "name=viettel-minio" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 
+# --- Redis mini-lab --------------------------------------------
+
+.PHONY: redis-up
+redis-up: ## Khởi chạy Redis local cho cache mini-lab
+	cd $(REDIS_DIR) && docker compose up -d
+
+.PHONY: redis-down
+redis-down: ## Dừng Redis local cho cache mini-lab
+	cd $(REDIS_DIR) && docker compose down
+
+.PHONY: redis-status
+redis-status: ## Kiểm tra Redis local
+	@docker ps --filter "name=viettel-redis" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
 # --- Common dev infra ------------------------------------------
 #
 # Dùng target riêng khi chỉ học từng lab nhỏ:
@@ -90,18 +105,19 @@ minio-status: ## Kiểm tra MinIO local
 # - keycloak-up cho auth mini-lab
 # - elastic-up cho search mini-lab
 # - minio-up cho file storage mini-lab
+# - redis-up cho cache mini-lab
 #
 # Dùng infra-up khi cần demo đầy đủ hơn: PostgreSQL + Keycloak +
-# Elasticsearch + MinIO. App Spring Boot vẫn chạy riêng bằng `make app-run`.
+# Elasticsearch + MinIO + Redis. App Spring Boot vẫn chạy riêng bằng `make app-run`.
 
 .PHONY: infra-up
-infra-up: db-up keycloak-up elastic-up minio-up ## Khởi chạy PostgreSQL + KeyCloak + Elasticsearch + MinIO
+infra-up: db-up keycloak-up elastic-up minio-up redis-up ## Khởi chạy PostgreSQL + KeyCloak + Elasticsearch + MinIO + Redis
 
 .PHONY: infra-status
-infra-status: db-status keycloak-status elastic-status minio-status ## Kiểm tra PostgreSQL + KeyCloak + Elasticsearch + MinIO
+infra-status: db-status keycloak-status elastic-status minio-status redis-status ## Kiểm tra PostgreSQL + KeyCloak + Elasticsearch + MinIO + Redis
 
 .PHONY: infra-down
-infra-down: minio-down elastic-down keycloak-down db-down ## Dừng PostgreSQL + KeyCloak + Elasticsearch + MinIO
+infra-down: redis-down minio-down elastic-down keycloak-down db-down ## Dừng PostgreSQL + KeyCloak + Elasticsearch + MinIO + Redis
 
 # --- SQL Playground ---------------------------------------------
 

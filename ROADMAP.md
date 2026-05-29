@@ -13,10 +13,10 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 78% |
+| **Tiến độ** | 80% |
 | **Tổng task** | 106 |
-| **Đã hoàn thành** | 83 / 106 |
-| **Focus hiện tại** | Redis/cache mini-lab |
+| **Đã hoàn thành** | 85 / 106 |
+| **Focus hiện tại** | Tự code Redis/cache mini-lab với tenant-safe key |
 | **Milestone tiếp theo** | #14 - Redis/cache mini-lab |
 | **Demo hiện tại** | Spring Boot + PostgreSQL/Flyway + tenant-aware API + JWT tạm fallback + Keycloak AuthN/AuthZ mode đã verify |
 
@@ -159,7 +159,7 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 | Elasticsearch / Elastic Stack | Mini-lab đã verify | `docs/07-architecture/elasticsearch-search-service.md`, `docs/07-architecture/elasticsearch-request-response-shapes.md`, `docs/07-architecture/elasticsearch-code-guide-spring-boot.md` | `lab-code/elasticsearch-lab/` + `com.viettel.demo.search` | Search tenant 1/2, no leakage | #11 | Đã đóng |
 | MinIO / S3 object storage | Mini-lab | `docs/07-architecture/minio-object-storage.md`, `docs/07-architecture/minio-s3-api-shapes.md`, `docs/07-architecture/minio-code-guide-spring-boot.md` | upload/download mini-lab | HTTP upload/download + tenant metadata | #13 | Done |
 | MinIO advanced object management | Optional/later backlog | `docs/07-architecture/minio-advanced-object-management.md` | Presigned URL expiry, lifecycle, versioning, object lock/retention nếu cần | Mini-lab riêng sau core milestones | After #14/#16 | Backlog |
-| Redis cache strategy | Mini-lab | `docs/07-architecture/redis-cache-strategy.md`, `docs/07-architecture/redis-code-guide-spring-boot.md` | tenant-safe cache key mini example | Hit/miss + cache key review | #14 | Planned |
+| Redis cache strategy | Mini-lab đang chuẩn bị | `docs/07-architecture/redis-cache-strategy.md`, `docs/07-architecture/redis-code-guide-spring-boot.md`, `docs/07-architecture/redis-mini-lab-plan.md` | tenant-safe cache key mini example | Hit/miss + cache key review | #14 | In progress |
 | Kafka async messaging | Mini-lab hoặc focused awareness | `docs/07-architecture/kafka-async-messaging.md`, `docs/07-architecture/kafka-code-guide-spring-boot.md` | event producer/consumer nhỏ hoặc simulation | Event flow summary | #15 | Planned |
 | Debezium CDC + Kafka | Awareness | `docs/07-architecture/debezium-cdc.md` | Không chạy CDC | CDC role summary | #15/#18 | Later awareness |
 | gRPC internal communication | Awareness | `docs/07-architecture/grpc-internal-communication.md` | Không chạy gRPC | REST vs gRPC vs Kafka table | #11 | Chưa có |
@@ -346,8 +346,8 @@ Mục tiêu: học object storage/S3 API trong ngữ cảnh chứng từ/file at
 
 Mục tiêu: học cache đúng lúc sau khi đã có API/search/file slice, tập trung tenant-safe cache key.
 
-- [ ] `[LÝ THUYẾT]` Tạo `docs/07-architecture/redis-cache-strategy.md` và `docs/07-architecture/redis-code-guide-spring-boot.md` - cache-aside, TTL, invalidation, tenant-safe key.
-- [ ] `[SKELETON]` Chuẩn bị `lab-code/redis-lab/`, config `APP_CACHE_ENABLED=false`, package/cache service TODO.
+- [x] `[LÝ THUYẾT]` Tạo `docs/07-architecture/redis-cache-strategy.md` và `docs/07-architecture/redis-code-guide-spring-boot.md` - cache-aside, TTL, invalidation, tenant-safe key.
+- [x] `[SKELETON]` Chuẩn bị `lab-code/redis-lab/`, config `APP_CACHE_ENABLED=false`, package/cache service TODO.
 - [ ] `[THỰC HÀNH]` Tự code cache nhỏ cho read endpoint hoặc lookup config: key phải có tenant prefix, verify hit/miss/log.
 - [ ] `[REVIEW]` Nhờ Codex review: không cache cross-tenant, không cache data stale mà không ghi caveat, không dùng Redis khi PostgreSQL đủ.
 - [ ] `[MILESTONE]` Chốt Milestone #14 - Redis mini-lab có cache key pattern và summary.
@@ -409,7 +409,7 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 | 11 | 23/05 | Elasticsearch/search mini-lab | Đã đóng |
 | 12 | 26/05 | Keycloak Authorization/RBAC/tenant-scope mini-lab | Đã đóng |
 | 13 | 27/05 | MinIO/file storage mini-lab | Đã đóng |
-| 14 | 28/05 | Redis/cache mini-lab | Planned |
+| 14 | 28/05 | Redis/cache mini-lab | Đang làm |
 | 15 | 29/05 | Kafka/async messaging mini-lab hoặc focused awareness | Planned |
 | 16 | 30/05 | Observability/logging/metrics mini-lab | Planned |
 | 17 | 31/05 | API Gateway/service discovery awareness + React decision | Planned |
@@ -436,7 +436,7 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 | Target architecture adoption map | `docs/07-architecture/target-architecture-adoption-map.md` |
 | Elasticsearch/search mini-lab | `docs/07-architecture/elasticsearch-search-service.md`, `docs/07-architecture/elasticsearch-request-response-shapes.md`, `docs/07-architecture/elasticsearch-code-guide-spring-boot.md`, `docs/07-architecture/elasticsearch-design-patterns-spring-boot.md`, `docs/07-architecture/elasticsearch-mini-lab-plan.md`, `lab-code/elasticsearch-lab/`, `lab-code/tenant-demo/src/main/java/com/viettel/demo/search/` |
 | MinIO/file storage mini-lab | `docs/07-architecture/minio-object-storage.md`, `docs/07-architecture/minio-code-guide-spring-boot.md` - tạo khi tới Sprint 13 |
-| Redis/cache mini-lab | `docs/07-architecture/redis-cache-strategy.md`, `docs/07-architecture/redis-code-guide-spring-boot.md` - tạo khi tới Sprint 14 |
+| Redis/cache mini-lab | `docs/07-architecture/redis-cache-strategy.md`, `docs/07-architecture/redis-code-guide-spring-boot.md`, `docs/07-architecture/redis-mini-lab-plan.md`, `lab-code/redis-lab/` |
 | Kafka/async mini-lab | `docs/07-architecture/kafka-async-messaging.md`, `docs/07-architecture/kafka-code-guide-spring-boot.md` - tạo khi tới Sprint 15 |
 | Observability mini-lab | `docs/07-architecture/observability-prometheus-grafana-loki.md` - tạo khi tới Sprint 16 |
 | Mini-lab template | `docs/99-tong-ket/technology-mini-lab-template.md` |
@@ -456,14 +456,18 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 
 ### Task tiếp theo: Redis/cache mini-lab
 
-1. Tạo/đọc theory doc Redis cache từ official/standard docs.
-2. Tạo code guide cho Spring Boot cache/client pattern:
-   - cache key tenant-aware;
-   - TTL/invalidation;
-   - cache-aside pattern;
-   - không cache cross-tenant.
-3. Chuẩn bị `lab-code/redis-lab/` và config disabled-by-default nếu cần.
-4. Tự code mini-lab nhỏ chỉ khi đã rõ use case cache.
+1. Đọc nhanh:
+   - `docs/07-architecture/redis-cache-strategy.md`
+   - `docs/07-architecture/redis-code-guide-spring-boot.md`
+   - `docs/07-architecture/redis-mini-lab-plan.md`
+2. Chạy Redis local:
+   - `cd lab-code && make redis-up && make redis-status`
+3. Tự code mini-lab nhỏ:
+   - thêm Redis dependency/config disabled-by-default;
+   - cache một read path `master_data` bằng cache-aside;
+   - key phải có `tenantId`;
+   - log/verify cache hit/miss.
+4. Nhờ Codex review trước khi đóng milestone.
 5. Dùng infra chung khi cần demo nhiều thành phần, hoặc target riêng khi chỉ test từng lab:
 
 ```bash

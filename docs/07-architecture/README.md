@@ -18,6 +18,9 @@ Thư mục này kết nối các lab nhỏ trong repo với kiến trúc target 
 10. `minio-code-guide-spring-boot.md` - Spring Boot integration pattern cho file upload/download.
 11. `minio-admin-console-guide.md` - thao tác MinIO Console local.
 12. `minio-advanced-object-management.md` - backlog optional: presigned URL expiry, lifecycle, versioning, object lock/retention.
+13. `redis-cache-strategy.md` - foundation: Redis, cache-aside, TTL, invalidation, tenant-safe key.
+14. `redis-code-guide-spring-boot.md` - Spring Boot integration pattern cho Redis cache mini-lab.
+15. `redis-mini-lab-plan.md` - checklist mini-lab cache nhỏ, hit/miss và Redis CLI.
 
 ## Core
 
@@ -30,7 +33,7 @@ Thư mục này kết nối các lab nhỏ trong repo với kiến trúc target 
 ## Optional / later
 
 - API Gateway/service discovery/load balancing chi tiết.
-- Redis mini-lab khi có feature trigger; MinIO mini-lab bắt đầu sau Keycloak Authorization/RBAC.
+- Redis mini-lab là task chính sau MinIO: học tenant-safe cache key, TTL và cache-aside.
 - MinIO advanced object management chỉ làm sau core demo/UI hoặc sau các milestone công nghệ chính, không chặn Redis.
 - Elasticsearch mini-lab hiện là nhánh kế tiếp vì nối tự nhiên từ PostgreSQL `LIKE`/index/query-pattern.
 - Kafka/Debezium/observability awareness hoặc mini-lab nhỏ nếu mentor yêu cầu.
