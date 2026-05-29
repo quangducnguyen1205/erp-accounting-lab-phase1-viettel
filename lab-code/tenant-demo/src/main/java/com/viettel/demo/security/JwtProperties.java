@@ -21,7 +21,6 @@ import java.nio.charset.StandardCharsets;
  *
  * app:
  *   jwt:
- *     enabled: ${JWT_ENABLED:false}
  *     secret: ${JWT_SECRET:}
  *     issuer: ${JWT_ISSUER:tenant-demo-local}
  *     expiration-seconds: ${JWT_EXPIRATION_SECONDS:3600}
@@ -39,19 +38,10 @@ import java.nio.charset.StandardCharsets;
 @ConfigurationProperties(prefix = "app.jwt")
 public class JwtProperties {
 
-    private boolean enabled;
     private String secret;
     private String issuer = "tenant-demo-local";
     private long expirationSeconds = 3600;
     private boolean devTokenEnabled;
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
 
     public String getSecret() {
         return secret;
@@ -91,7 +81,7 @@ public class JwtProperties {
      */
     public SecretKey hmacSecretKey() {
         if (secret == null || secret.isBlank()) {
-            throw new IllegalStateException("JWT_SECRET must be configured when JWT is enabled");
+            throw new IllegalStateException("JWT_SECRET must be configured");
         }
 
         byte[] secretBytes = secret.getBytes(StandardCharsets.UTF_8);

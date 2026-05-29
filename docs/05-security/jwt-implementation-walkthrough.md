@@ -28,7 +28,7 @@ Client
 | `JwtTokenService` | Tạo dev token local và đọc claim từ `Jwt` đã validate |
 | `JwtTenantContextFilter` | Bridge từ `SecurityContext` sang `TenantContext`, luôn `clear()` trong `finally` |
 | `DevTokenController` | Endpoint local-only để tạo token demo khi `app.jwt.dev-token-enabled=true` |
-| `TenantFilter` | Legacy filter dùng `X-Tenant-Id`, chỉ active khi `app.jwt.enabled=false` |
+| `TenantFilter` | (Đã loại bỏ) Legacy filter dùng `X-Tenant-Id` |
 
 ## SecurityContext vs TenantContext
 

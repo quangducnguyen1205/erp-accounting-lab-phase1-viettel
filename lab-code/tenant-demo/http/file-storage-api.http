@@ -8,24 +8,12 @@
 # - APP_FILE_STORAGE_ENABLED=true.
 # - Bucket MinIO `tenant-demo-files` đã tồn tại.
 
-@tenantDemoUrl = http://localhost:8080
+# Dùng shared environment "development" trong http-client.private.env.json.
+# accountantTenant1Token, viewerTenant2Token, noRoleToken đã có sẵn.
 @invalidToken = invalid.jwt.token
 
 ### MinIO health check trực tiếp
 GET http://localhost:19000/minio/health/ready
-
-### Local JWT fallback: lấy token tenant 1 - chỉ dùng local lab
-GET {{tenantDemoUrl}}/api/dev/tokens/tenant-1?roles=ACCOUNTANT
-
-### Local JWT fallback: lấy token tenant 2 - chỉ dùng local lab
-GET {{tenantDemoUrl}}/api/dev/tokens/tenant-2?roles=ACCOUNTANT
-
-# TODO: lấy token từ lab-code/keycloak-lab/http/keycloak-token-flow.http
-# hoặc từ dev token endpoint local ở trên, rồi paste tạm vào IntelliJ
-# private env/biến local không commit.
-#@tenant1Token = <paste-keycloak-token-tenant-1-here>
-#@tenant2Token = <paste-keycloak-token-tenant-2-here>
-#@noRoleToken = <paste-keycloak-token-without-required-role-here>
 
 # TODO: sau khi upload tenant 1, copy fileId từ response.
 @tenant1FileId = <copy-file-id-from-upload-response>
@@ -33,8 +21,8 @@ GET {{tenantDemoUrl}}/api/dev/tokens/tenant-2?roles=ACCOUNTANT
 ### Upload file as tenant 1 -> expected 201
 # IntelliJ HTTP Client sẽ đọc file local theo path bạn chọn.
 # Đổi đường dẫn file test cho phù hợp máy local, không commit file thật nếu nhạy cảm.
-POST {{tenantDemoUrl}}/api/files
-Authorization: Bearer {{tenant1Token}}
+POST {{baseUrl}}/api/files
+Authorization: Bearer {{accountantTenant1Token}}
 Content-Type: multipart/form-data; boundary=boundary
 
 --boundary
@@ -45,29 +33,29 @@ Hello MinIO tenant-aware file storage lab.
 --boundary--
 
 ### Download own file as tenant 1 -> expected 200
-GET {{tenantDemoUrl}}/api/files/{{tenant1FileId}}
-Authorization: Bearer {{tenant1Token}}
+GET {{baseUrl}}/api/files/{{tenant1FileId}}
+Authorization: Bearer {{accountantTenant1Token}}
 
 ### Tenant 2 cannot download tenant 1 file -> expected 404/no leakage
-GET {{tenantDemoUrl}}/api/files/{{tenant1FileId}}
-Authorization: Bearer {{tenant2Token}}
+GET {{baseUrl}}/api/files/{{tenant1FileId}}
+Authorization: Bearer {{viewerTenant2Token}}
 
 ### Missing token -> expected 401
-GET {{tenantDemoUrl}}/api/files/{{tenant1FileId}}
+GET {{baseUrl}}/api/files/{{tenant1FileId}}
 
 ### Invalid token -> expected 401
-GET {{tenantDemoUrl}}/api/files/{{tenant1FileId}}
+GET {{baseUrl}}/api/files/{{tenant1FileId}}
 Authorization: Bearer {{invalidToken}}
 
 ### Optional wrong role -> expected 403 trong APP_AUTH_MODE=keycloak
 # Local JWT fallback chỉ test authenticated + tenant isolation, không phải RBAC chính.
-GET {{tenantDemoUrl}}/api/files/{{tenant1FileId}}
+GET {{baseUrl}}/api/files/{{tenant1FileId}}
 Authorization: Bearer {{noRoleToken}}
 
 ### Delete own file as tenant 1 -> expected 204
-DELETE {{tenantDemoUrl}}/api/files/{{tenant1FileId}}
-Authorization: Bearer {{tenant1Token}}
+DELETE {{baseUrl}}/api/files/{{tenant1FileId}}
+Authorization: Bearer {{accountantTenant1Token}}
 
 ### Download after delete -> expected 404
-GET {{tenantDemoUrl}}/api/files/{{tenant1FileId}}
-Authorization: Bearer {{tenant1Token}}
+GET {{baseUrl}}/api/files/{{tenant1FileId}}
+Authorization: Bearer {{accountantTenant1Token}}

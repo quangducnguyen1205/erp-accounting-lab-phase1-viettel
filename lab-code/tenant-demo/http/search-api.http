@@ -8,11 +8,10 @@
 #
 # Không paste token thật vào Git.
 
-@tenantDemoUrl = http://localhost:8080
 @elasticsearchUrl = http://localhost:9200
 @masterDataSearchIndex = master_data_search
-#@tenant1Token = <paste-token-tenant-1-here>
-#@tenant2Token = <paste-token-tenant-2-here>
+# Dùng shared environment "development" trong http-client.private.env.json.
+# accountantTenant1Token và viewerTenant2Token đã có sẵn.
 @invalidToken = invalid.jwt.token
 @keyword = Laptop
 @tenant2OnlyKeyword = HP
@@ -28,41 +27,42 @@ GET {{elasticsearchUrl}}/{{masterDataSearchIndex}}/_mapping
 ### Reindex master_data for local lab
 # Expected: 200 khi APP_SEARCH_ENABLED=true và Elasticsearch đang chạy.
 # Lưu ý: endpoint này chỉ dùng local/admin lab, không phải public production API.
-POST {{tenantDemoUrl}}/api/search/master-data/reindex
-Authorization: Bearer {{tenant1Token}}
+# Cần chạy login trong 'auth-token-api.http' để có 'adminToken'.
+POST {{baseUrl}}/api/search/master-data/reindex
+Authorization: Bearer {{adminToken}}
 
 ### Search tenant 1
 # Expected: 200, chỉ thấy documents tenantId = 1.
-GET {{tenantDemoUrl}}/api/search/master-data?keyword={{keyword}}
-Authorization: Bearer {{tenant1Token}}
+GET {{baseUrl}}/api/search/master-data?keyword={{keyword}}
+Authorization: Bearer {{accountantTenant1Token}}
 
 ### Search tenant 2 cùng keyword
 # Expected: 200, chỉ thấy documents tenantId = 2.
-GET {{tenantDemoUrl}}/api/search/master-data?keyword={{keyword}}
-Authorization: Bearer {{tenant2Token}}
+GET {{baseUrl}}/api/search/master-data?keyword={{keyword}}
+Authorization: Bearer {{viewerTenant2Token}}
 
 ### Tenant-specific keyword: tenant 1 search HP
 # Expected: 200, [] nếu keyword chỉ có trong dữ liệu tenant 2.
-GET {{tenantDemoUrl}}/api/search/master-data?keyword={{tenant2OnlyKeyword}}
-Authorization: Bearer {{tenant1Token}}
+GET {{baseUrl}}/api/search/master-data?keyword={{tenant2OnlyKeyword}}
+Authorization: Bearer {{accountantTenant1Token}}
 
 ### Tenant-specific keyword: tenant 2 search HP
 # Expected: 200, thấy document tenantId = 2 nếu dữ liệu có "HP".
-GET {{tenantDemoUrl}}/api/search/master-data?keyword={{tenant2OnlyKeyword}}
-Authorization: Bearer {{tenant2Token}}
+GET {{baseUrl}}/api/search/master-data?keyword={{tenant2OnlyKeyword}}
+Authorization: Bearer {{viewerTenant2Token}}
 
 ### Blank keyword
 # Expected: 400 do service validate keyword rỗng.
-GET {{tenantDemoUrl}}/api/search/master-data?keyword=
-Authorization: Bearer {{tenant1Token}}
+GET {{baseUrl}}/api/search/master-data?keyword=
+Authorization: Bearer {{accountantTenant1Token}}
 
 ### Missing token
 # Expected: 401 do Spring Security chặn trước search service.
-GET {{tenantDemoUrl}}/api/search/master-data?keyword={{keyword}}
+GET {{baseUrl}}/api/search/master-data?keyword={{keyword}}
 
 ### Invalid token
 # Expected: 401.
-GET {{tenantDemoUrl}}/api/search/master-data?keyword={{keyword}}
+GET {{baseUrl}}/api/search/master-data?keyword={{keyword}}
 Authorization: Bearer {{invalidToken}}
 
 ### Manual check: tenant leakage guard

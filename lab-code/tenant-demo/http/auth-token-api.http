@@ -1,0 +1,72 @@
+# Auth Token API - Token Generation and Storage Flow
+#
+# This file handles the "Postman-like" flow for fetching and storing tokens.
+# Tokens are stored in global variables and shared across all .http files
+# during the current IDE session.
+#
+# Variables updated:
+# - accountantTenant1Token
+# - viewerTenant2Token
+# - adminToken
+# - noRoleToken
+#
+# LIMITATION: Global variables set via scripts are stored in memory and
+# do NOT permanently update `http-client.private.env.json`. You need to
+# run these requests once per session if the tokens expire or the IDE restarts.
+
+@keycloakUrl = http://localhost:18080
+@realm = viettel-lab
+@clientId = tenant-demo-api-client
+@password = password
+
+### 1. Get Token for Accountant (Tenant 1)
+# User: tenant1-user
+# Role: ACCOUNTANT, Tenant: 1
+POST {{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id={{clientId}}&username=tenant1-user&password={{password}}
+
+> {%
+    client.global.set("accountantTenant1Token", response.body.access_token);
+    client.log("Updated global variable: accountantTenant1Token");
+%}
+
+### 2. Get Token for Viewer (Tenant 2)
+# User: tenant2-user
+# Role: VIEWER, Tenant: 2
+POST {{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id={{clientId}}&username=tenant2-user&password={{password}}
+
+> {%
+    client.global.set("viewerTenant2Token", response.body.access_token);
+    client.log("Updated global variable: viewerTenant2Token");
+%}
+
+### 3. Get Token for Admin
+# User: tenant-admin
+# Role: ADMIN, Tenant: 4 (Sample)
+POST {{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id={{clientId}}&username=tenant-admin&password={{password}}
+
+> {%
+    client.global.set("adminToken", response.body.access_token);
+    client.log("Updated global variable: adminToken");
+%}
+
+### 4. Get Token for No-Role User
+# User: tenant-no-role-user
+# Role: None, Tenant: 3 (Sample)
+POST {{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id={{clientId}}&username=tenant-no-role-user&password={{password}}
+
+> {%
+    client.global.set("noRoleToken", response.body.access_token);
+    client.log("Updated global variable: noRoleToken");
+%}

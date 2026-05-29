@@ -2,43 +2,44 @@
 # Chạy trong IntelliJ IDEA sau khi backend đang chạy.
 #
 # Flow chính hiện tại dùng Authorization: Bearer.
-# Header X-Tenant-Id chỉ còn là legacy mode khi app.jwt.enabled=false.
+# Header X-Tenant-Id không còn được hỗ trợ vì JWT là mặc định.
 
-@baseUrl = http://localhost:8080
-# Không commit token thật vào file .http.
-# Cách an toàn cho lab:
-# 1. Gọi endpoint dev token ở dưới.
-# 2. Copy accessToken từ response.
-# 3. Paste tạm vào biến dưới trong working tree local, hoặc dùng private env
-#    của IntelliJ HTTP Client nếu muốn tái sử dụng nhiều lần.
-@jwtTenant1 = <paste-dev-token-tenant-1-here>
-@jwtTenant2 = <paste-dev-token-tenant-2-here>
+# Dùng shared environment "development" trong http-client.private.env.json.
+# accountantTenant1Token, viewerTenant2Token đã có sẵn.
 @invalidJwt = invalid.jwt.token
 @code = LAPTOP-01
 @tenant2RecordId = 10
 
 ### Tạo/lấy dev token tenant 1
 # Cần JWT_DEV_TOKEN_ENABLED=true trong .env.
-# Copy accessToken trong response vào biến @jwtTenant1 ở trên.
+# Tự động lấy token từ private env "development" nếu đã cấu hình.
+# Sau khi chạy, 'accountantTenant1Token' sẽ được cập nhật trong global variables.
 GET {{baseUrl}}/api/dev/tokens/tenant-1?roles=ACCOUNTANT
+
+> {%
+    client.global.set("accountantTenant1Token", response.body.accessToken);
+    client.log("Updated global variable: accountantTenant1Token from dev endpoint");
+%}
 
 ### Tạo/lấy dev token tenant 2
 # Cần JWT_DEV_TOKEN_ENABLED=true trong .env.
-# Copy accessToken trong response vào biến @jwtTenant2 ở trên.
+# Sau khi chạy, 'viewerTenant2Token' sẽ được cập nhật trong global variables.
 GET {{baseUrl}}/api/dev/tokens/tenant-2?roles=VIEWER
 
-### Tạo/lấy dev token tenant 3
-GET {{baseUrl}}/api/dev/tokens/tenant/3
+> {%
+    client.global.set("viewerTenant2Token", response.body.accessToken);
+    client.log("Updated global variable: viewerTenant2Token from dev endpoint");
+%}
 
 ### JWT tenant 1 - list master data
 # Expected sau khi JWT active: 200, chỉ thấy data tenant 1.
 GET {{baseUrl}}/api/master-data
-Authorization: Bearer {{jwtTenant1}}
+Authorization: Bearer {{accountantTenant1Token}}
 
 ### JWT tenant 2 - list master data
 # Expected sau khi JWT active: 200, chỉ thấy data tenant 2.
 GET {{baseUrl}}/api/master-data
-Authorization: Bearer {{jwtTenant2}}
+Authorization: Bearer {{viewerTenant2Token}}
 
 ### Missing Authorization - expected 401 sau khi JWT active
 GET {{baseUrl}}/api/master-data
@@ -49,13 +50,13 @@ Authorization: Bearer {{invalidJwt}}
 
 ### Query by code scoped theo tenant 1
 GET {{baseUrl}}/api/master-data/code/{{code}}
-Authorization: Bearer {{jwtTenant1}}
+Authorization: Bearer {{accountantTenant1Token}}
 
 ### Query by code scoped theo tenant 2
 GET {{baseUrl}}/api/master-data/code/{{code}}
-Authorization: Bearer {{jwtTenant2}}
+Authorization: Bearer {{viewerTenant2Token}}
 
 ### Cross-tenant id - tenant 1 gọi id của tenant 2
 # Expected sau khi JWT active: 404 hoặc bị chặn, không lộ data tenant 2.
 GET {{baseUrl}}/api/master-data/{{tenant2RecordId}}
-Authorization: Bearer {{jwtTenant1}}
+Authorization: Bearer {{accountantTenant1Token}}

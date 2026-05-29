@@ -166,11 +166,11 @@ Authorization: Bearer <token>
 -> finally TenantContext.clear()
 ```
 
-`TenantFilter` header-based cũ vẫn được giữ để học lại flow ban đầu, nhưng chỉ active khi `app.jwt.enabled=false`. Khi JWT bật, backend không đọc `X-Tenant-Id` làm tenant context chính nữa.
+`TenantFilter` header-based cũ đã bị loại bỏ vì JWT là mặc định. Backend không đọc `X-Tenant-Id` làm tenant context chính nữa.
 
 Checklist khi verify:
 
-- [ ] `JWT_ENABLED=true`.
+- [ ] `JWT_SECRET` (copy từ `.env.example`).
 - [ ] `JWT_SECRET` đủ dài và không phải secret production.
 - [ ] `JWT_DEV_TOKEN_ENABLED=true` nếu muốn dùng endpoint `/api/dev/tokens/...`.
 - [ ] Missing/invalid token trả `401`.

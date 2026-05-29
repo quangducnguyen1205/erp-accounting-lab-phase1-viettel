@@ -73,41 +73,30 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         if (authProperties.isLocalJwtMode()) {
-            if (!jwtProperties.isEnabled()) {
-                /*
-                 * Legacy mode cho học tập: khi app.jwt.enabled=false,
-                 * TenantFilter cũ dùng X-Tenant-Id sẽ active và Spring Security
-                 * không ép Bearer token. Không dùng mode này cho production.
-                 */
-                return http
-                        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-                        .build();
-            } else {
-                /*
-                 * Local JWT fallback:
-                 * - Dùng cho app-test/DataLeakageTest và dev token local.
-                 * - Chỉ yêu cầu request đã authenticated.
-                 * - Không ép RBAC ở đây để test tenant isolation không phụ
-                 *   thuộc live Keycloak/role setup.
-                 *
-                 * Keycloak mode bên dưới mới là đường demo chính cho RBAC.
-                 */
-                return http
-                        .authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/api/dev/tokens/**").permitAll()
-                                .requestMatchers("/api/master-data", "/api/master-data/**").authenticated()
-                                .requestMatchers("/api/search/master-data", "/api/search/master-data/**").authenticated()
-                                .anyRequest().authenticated()
-                        )
-                        .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
-                                jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)
-                        ))
-                        .addFilterAfter(
-                                new JwtTenantContextFilter(jwtTokenService),
-                                BearerTokenAuthenticationFilter.class
-                        )
-                        .build();
-            }
+            /*
+             * Local JWT fallback:
+             * - Dùng cho app-test/DataLeakageTest và dev token local.
+             * - Chỉ yêu cầu request đã authenticated.
+             * - Không ép RBAC ở đây để test tenant isolation không phụ
+             *   thuộc live Keycloak/role setup.
+             *
+             * Keycloak mode bên dưới mới là đường demo chính cho RBAC.
+             */
+            return http
+                    .authorizeHttpRequests(auth -> auth
+                            .requestMatchers("/api/dev/tokens/**").permitAll()
+                            .requestMatchers("/api/master-data", "/api/master-data/**").authenticated()
+                            .requestMatchers("/api/search/master-data", "/api/search/master-data/**").authenticated()
+                            .anyRequest().authenticated()
+                    )
+                    .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
+                            jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)
+                    ))
+                    .addFilterAfter(
+                            new JwtTenantContextFilter(jwtTokenService),
+                            BearerTokenAuthenticationFilter.class
+                    )
+                    .build();
         }
 
         /*

@@ -3,73 +3,52 @@
 # Điều kiện: backend đang chạy ở http://localhost:8080.
 #
 # Lưu ý học tập:
-# - File này là legacy flow dùng X-Tenant-Id khi app.jwt.enabled=false.
+# - File này là legacy flow dùng X-Tenant-Id (không còn được hỗ trợ mặc định).
 # - Flow chính sau task JWT nằm ở jwt-api.http với Authorization: Bearer.
 # - Không paste output dài vào report; chỉ ghi status code và behavior chính.
 # - Nếu local data khác, đổi @code hoặc @category cho khớp dữ liệu của bạn.
 
-@baseUrl = http://localhost:8080
-@tenant1 = 1
-@tenant2 = 2
-@invalidTenant = abc
+# Dùng shared environment "development" trong http-client.private.env.json.
+# accountantTenant1Token, viewerTenant2Token đã có sẵn.
 @code = LAPTOP-01
 @category = Laptop
 @tenant2RecordId = 6
 
 ### List master data - tenant 1
 GET {{baseUrl}}/api/master-data
-X-Tenant-Id: {{tenant1}}
+Authorization: Bearer {{accountantTenant1Token}}
 
 ### List master data - tenant 2
 GET {{baseUrl}}/api/master-data
-X-Tenant-Id: {{tenant2}}
+Authorization: Bearer {{viewerTenant2Token}}
 
-### Missing X-Tenant-Id - expected 400
+### Missing Authorization - expected 401
 GET {{baseUrl}}/api/master-data
-
-### Invalid X-Tenant-Id - expected 400
-GET {{baseUrl}}/api/master-data
-X-Tenant-Id: {{invalidTenant}}
 
 ### Find by code trong tenant 1
 GET {{baseUrl}}/api/master-data/code/{{code}}
-X-Tenant-Id: {{tenant1}}
+Authorization: Bearer {{accountantTenant1Token}}
 
 ### Find by code trong tenant 2
 GET {{baseUrl}}/api/master-data/code/{{code}}
-X-Tenant-Id: {{tenant2}}
+Authorization: Bearer {{viewerTenant2Token}}
 
 ### Find by category trong tenant 1
 GET {{baseUrl}}/api/master-data/category/{{category}}
-X-Tenant-Id: {{tenant1}}
+Authorization: Bearer {{accountantTenant1Token}}
 
 ### Find by category trong tenant 2
 GET {{baseUrl}}/api/master-data/category/{{category}}
-X-Tenant-Id: {{tenant2}}
+Authorization: Bearer {{viewerTenant2Token}}
 
-### Cross-tenant id check - bước 1: lấy danh sách tenant 2
-# Chạy request này trước, nhìn response body và copy một field "id" của tenant 2.
-# Sau đó paste id đó vào biến @tenant2RecordId ở trên.
-#
-# Curl tương đương:
-# curl -i -H "X-Tenant-Id: 2" "http://localhost:8080/api/master-data"
-GET {{baseUrl}}/api/master-data
-X-Tenant-Id: {{tenant2}}
-
-### Cross-tenant id check - bước 2: tenant 1 thử truy cập id của tenant 2
+### Cross-tenant id check - tenant 1 thử truy cập id của tenant 2
 # Expected: 404 Not Found.
 # Ý nghĩa: record có tồn tại trong database, nhưng KHÔNG thuộc tenant 1,
 # nên API không được trả dữ liệu đó cho tenant 1.
-#
-# Curl tương đương:
-# curl -i -H "X-Tenant-Id: 1" "http://localhost:8080/api/master-data/{{tenant2RecordId}}"
 GET {{baseUrl}}/api/master-data/{{tenant2RecordId}}
-X-Tenant-Id: {{tenant1}}
+Authorization: Bearer {{accountantTenant1Token}}
 
-### Cross-tenant id check - bước 3: tenant 2 truy cập lại chính id đó
+### Cross-tenant id check - tenant 2 truy cập lại chính id đó
 # Expected: 200 OK nếu record vẫn active và đúng là thuộc tenant 2.
-# Request này giúp phân biệt:
-# - 404 ở bước 2 không phải vì record không tồn tại;
-# - 404 ở bước 2 là vì service/repository đã scope theo tenant hiện tại.
 GET {{baseUrl}}/api/master-data/{{tenant2RecordId}}
-X-Tenant-Id: {{tenant2}}
+Authorization: Bearer {{viewerTenant2Token}}

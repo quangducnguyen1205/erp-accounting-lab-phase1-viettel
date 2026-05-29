@@ -85,7 +85,6 @@ app:
       jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:}
 
   jwt:
-    enabled: ${JWT_ENABLED:true}
     secret: ${JWT_SECRET:local-learning-secret-change-me-32-characters-minimum}
     issuer: ${JWT_ISSUER:tenant-demo-local}
     expiration-seconds: ${JWT_EXPIRATION_SECONDS:3600}

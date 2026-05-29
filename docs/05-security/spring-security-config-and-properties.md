@@ -43,7 +43,7 @@ So với `TenantFilter` cũ:
 | Missing/invalid tenant trả `400` | Missing/invalid token thường trả `401` |
 | Dễ hiểu để học tenant flow | Gần production hơn nhưng vẫn chưa phải Keycloak |
 
-`TenantFilter` cũ chỉ active khi `app.jwt.enabled=false`, để tránh hai filter cùng set `TenantContext` trong một request.
+`TenantFilter` cũ đã bị loại bỏ vì JWT là mặc định. Chế độ legacy mode không còn được hỗ trợ.
 
 ## Vì sao phải validate JWT trước khi đọc tenant_id?
 
@@ -100,7 +100,6 @@ Lợi ích:
 
 Trong repo này, `JwtProperties` bind các key:
 
-- `app.jwt.enabled`;
 - `app.jwt.secret`;
 - `app.jwt.issuer`;
 - `app.jwt.expiration-seconds`;
