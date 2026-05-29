@@ -89,6 +89,10 @@ Default trong app nên là `APP_CACHE_ENABLED=false` để `make app-test` khôn
 5. Gọi tenant khác cùng code/id -> key khác, không dùng cache tenant 1.
 6. Kiểm tra key bằng Redis CLI.
 
+HTTP Client file:
+
+- `../tenant-demo/http/cache-api.http`
+
 ## Cleanup
 
 ```bash

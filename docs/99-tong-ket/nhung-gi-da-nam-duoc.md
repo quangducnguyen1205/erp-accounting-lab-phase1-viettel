@@ -608,3 +608,36 @@ Mục tiêu: học object storage/S3-compatible API trong ngữ cảnh chứng t
 - Keycloak role/RBAC chỉ quyết định user được gọi endpoint nào; tenant isolation vẫn nằm ở metadata query.
 - Consistency DB/MinIO hiện là best-effort cleanup, chưa phải distributed transaction production.
 - Presigned URL expiry, lifecycle/expiration, versioning, object lock/retention là backlog optional sau; không chặn Redis/cache mini-lab.
+
+## Milestone #14: Redis/cache mini-lab
+
+Trạng thái: đang làm. Hiện đã có theory docs, Redis local setup, config placeholder và code skeleton/TODO; chưa chốt implementation.
+
+### Đã chuẩn bị
+
+- Có Redis local bằng `lab-code/redis-lab/` và Makefile target `redis-up/redis-status`.
+- Chọn pattern `RedisTemplate/StringRedisTemplate + cache-aside thủ công` để tự thấy rõ key, TTL, hit/miss.
+- Cache path đầu tiên dự kiến là `GET /api/master-data/code/{code}`.
+- `APP_CACHE_ENABLED=false` mặc định để `make app-test` không phụ thuộc Redis.
+- Code skeleton đã có package `com.viettel.demo.cache` với TODO cho:
+  - tenant-safe key;
+  - JSON projection `CachedMasterData`;
+  - Redis get/set với TTL;
+  - cache-aside integration trong service.
+
+### Cần tự code/verify
+
+- Implement key format có tenant scope, ví dụ: `tenant:{tenantId}:master-data:code:{code}`.
+- Implement cache miss -> query PostgreSQL bằng repository method có `tenantId`.
+- Implement cache set với TTL và cache hit trả dữ liệu an toàn.
+- Verify tenant 1 và tenant 2 dùng key khác nhau, không leak cache cross-tenant.
+- Verify missing/invalid token vẫn trả `401`.
+- Kiểm tra `TTL` bằng Redis CLI.
+
+### Rule cần giữ nguyên
+
+- PostgreSQL vẫn là source of truth.
+- Cache key của dữ liệu tenant-aware luôn phải có `tenantId`.
+- Không lấy tenantId từ request body/query param để build cache key.
+- Không cache data nhạy cảm/token/security context.
+- Nếu mở rộng write endpoint phức tạp hơn, phải thiết kế invalidation rõ ràng; TTL không thay thế invalidation.

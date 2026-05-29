@@ -1,0 +1,59 @@
+# HTTP Client requests cho Redis/cache mini-lab
+#
+# Điều kiện:
+# - Chỉ dùng file này sau khi bạn tự implement TODO trong package `com.viettel.demo.cache`
+#   và nối cache-aside vào `MasterDataService`.
+# - Redis chạy bằng `cd lab-code && make redis-up`.
+# - tenant-demo chạy với APP_CACHE_ENABLED=true.
+# - Token lấy từ local JWT dev endpoint hoặc Keycloak, tùy APP_AUTH_MODE.
+#
+# Không paste token thật vào Git.
+
+# Dùng shared environment "development" trong http-client.private.env.json.
+# accountantTenant1Token và viewerTenant2Token có thể được set bằng auth-token-api.http
+# hoặc jwt-api.http.
+@invalidToken = invalid.jwt.token
+@code = LAPTOP-01
+
+### Redis direct check - dùng terminal
+# Expected: PONG nếu Redis local đang chạy.
+# IntelliJ HTTP Client không nói chuyện Redis protocol, nên dùng terminal:
+# docker exec -it viettel-redis redis-cli PING
+
+### Tenant 1 - first lookup by code sau khi tự code cache
+# Expected sau khi implementation hoàn chỉnh:
+# - 200 nếu record tồn tại;
+# - log backend: "cache miss";
+# - Redis có key tenant:1:master-data:code:LAPTOP-01.
+GET {{baseUrl}}/api/master-data/code/{{code}}
+Authorization: Bearer {{accountantTenant1Token}}
+
+### Tenant 1 - same lookup again sau khi tự code cache
+# Expected sau khi implementation hoàn chỉnh:
+# - 200;
+# - log backend: "cache hit";
+# - response vẫn thuộc tenantId = 1.
+GET {{baseUrl}}/api/master-data/code/{{code}}
+Authorization: Bearer {{accountantTenant1Token}}
+
+### Tenant 2 - same code, different tenant-safe key sau khi tự code cache
+# Expected sau khi implementation hoàn chỉnh:
+# - 200 nếu tenant 2 cũng có code này;
+# - không dùng cache key tenant 1;
+# - Redis key riêng: tenant:2:master-data:code:LAPTOP-01.
+GET {{baseUrl}}/api/master-data/code/{{code}}
+Authorization: Bearer {{viewerTenant2Token}}
+
+### Missing token -> expected 401
+GET {{baseUrl}}/api/master-data/code/{{code}}
+
+### Invalid token -> expected 401
+GET {{baseUrl}}/api/master-data/code/{{code}}
+Authorization: Bearer {{invalidToken}}
+
+### Redis CLI checks
+# Chạy trong terminal:
+# docker exec -it viettel-redis redis-cli
+# SCAN 0 MATCH tenant:*:master-data:code:* COUNT 20
+# GET tenant:1:master-data:code:LAPTOP-01
+# TTL tenant:1:master-data:code:LAPTOP-01

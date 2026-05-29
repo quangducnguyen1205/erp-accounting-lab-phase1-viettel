@@ -20,7 +20,7 @@
 | **Milestone tiếp theo** | #14 - Redis/cache mini-lab |
 | **Demo hiện tại** | Spring Boot + PostgreSQL/Flyway + tenant-aware API + JWT tạm fallback + Keycloak AuthN/AuthZ mode đã verify |
 
-Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; tiếp theo chuyển sang Redis/cache.
+Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; Milestone #14 hiện mới có docs/setup/skeleton Redis để tự code cache-aside.
 
 ---
 
@@ -159,7 +159,7 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 | Elasticsearch / Elastic Stack | Mini-lab đã verify | `docs/07-architecture/elasticsearch-search-service.md`, `docs/07-architecture/elasticsearch-request-response-shapes.md`, `docs/07-architecture/elasticsearch-code-guide-spring-boot.md` | `lab-code/elasticsearch-lab/` + `com.viettel.demo.search` | Search tenant 1/2, no leakage | #11 | Đã đóng |
 | MinIO / S3 object storage | Mini-lab | `docs/07-architecture/minio-object-storage.md`, `docs/07-architecture/minio-s3-api-shapes.md`, `docs/07-architecture/minio-code-guide-spring-boot.md` | upload/download mini-lab | HTTP upload/download + tenant metadata | #13 | Done |
 | MinIO advanced object management | Optional/later backlog | `docs/07-architecture/minio-advanced-object-management.md` | Presigned URL expiry, lifecycle, versioning, object lock/retention nếu cần | Mini-lab riêng sau core milestones | After #14/#16 | Backlog |
-| Redis cache strategy | Mini-lab đang chuẩn bị | `docs/07-architecture/redis-cache-strategy.md`, `docs/07-architecture/redis-code-guide-spring-boot.md`, `docs/07-architecture/redis-mini-lab-plan.md` | tenant-safe cache key mini example | Hit/miss + cache key review | #14 | In progress |
+| Redis cache strategy | Mini-lab đang làm | `docs/07-architecture/redis-cache-strategy.md`, `docs/07-architecture/redis-code-guide-spring-boot.md`, `docs/07-architecture/redis-mini-lab-plan.md` | tenant-safe cache-aside path cho `master_data` by code | Hit/miss + tenant-safe cache key + TTL | #14 | Skeleton/TODO đã chuẩn bị |
 | Kafka async messaging | Mini-lab hoặc focused awareness | `docs/07-architecture/kafka-async-messaging.md`, `docs/07-architecture/kafka-code-guide-spring-boot.md` | event producer/consumer nhỏ hoặc simulation | Event flow summary | #15 | Planned |
 | Debezium CDC + Kafka | Awareness | `docs/07-architecture/debezium-cdc.md` | Không chạy CDC | CDC role summary | #15/#18 | Later awareness |
 | gRPC internal communication | Awareness | `docs/07-architecture/grpc-internal-communication.md` | Không chạy gRPC | REST vs gRPC vs Kafka table | #11 | Chưa có |
@@ -454,20 +454,20 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 
 ## Việc làm ngay trong 1-2 ngày tới
 
-### Task tiếp theo: Redis/cache mini-lab
+### Task tiếp theo: Tự code Redis/cache mini-lab
 
-1. Đọc nhanh:
-   - `docs/07-architecture/redis-cache-strategy.md`
-   - `docs/07-architecture/redis-code-guide-spring-boot.md`
-   - `docs/07-architecture/redis-mini-lab-plan.md`
-2. Chạy Redis local:
-   - `cd lab-code && make redis-up && make redis-status`
-3. Tự code mini-lab nhỏ:
-   - thêm Redis dependency/config disabled-by-default;
-   - cache một read path `master_data` bằng cache-aside;
-   - key phải có `tenantId`;
-   - log/verify cache hit/miss.
-4. Nhờ Codex review trước khi đóng milestone.
+1. Không start Kafka/Observability trước khi đóng Redis.
+2. Tự code lần lượt:
+   - `MasterDataCacheKeyFactory.byCode(...)`;
+   - `CachedMasterData` mapper từ `MasterData`;
+   - `MasterDataCacheGateway.getByCode(...)` và `putByCode(...)`;
+   - cache-aside TODO trong `MasterDataService.getByCode(...)`.
+3. Giữ `APP_CACHE_ENABLED=false` mặc định để `make app-test` không phụ thuộc Redis.
+4. Verify thủ công sau khi code:
+   - request lần 1 cùng tenant/code -> cache miss;
+   - request lần 2 cùng tenant/code -> cache hit;
+   - tenant khác cùng code -> key khác, không dùng cache tenant 1;
+   - `TTL` còn tồn tại trong Redis.
 5. Dùng infra chung khi cần demo nhiều thành phần, hoặc target riêng khi chỉ test từng lab:
 
 ```bash

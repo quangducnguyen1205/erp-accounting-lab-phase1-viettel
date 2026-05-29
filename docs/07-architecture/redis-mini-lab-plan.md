@@ -4,10 +4,10 @@
 
 Tạo một mini-lab nhỏ để hiểu cache-aside + tenant-safe key trong backend Spring Boot. Không biến Redis thành source of truth và không làm cache framework phức tạp.
 
-Mini-lab đề xuất:
+Mini-lab sẽ tự implement:
 
 ```text
-GET master_data by code/id
+GET /api/master-data/code/{code}
 -> cache key có tenantId
 -> miss thì query PostgreSQL tenant-aware
 -> set Redis với TTL
@@ -51,17 +51,17 @@ Lab setup:
 - `lab-code/redis-lab/README.md`
 - `lab-code/redis-lab/docker-compose.yml`
 
-Code sau này nếu tự implement:
+Code skeleton hiện có:
 
 ```text
 lab-code/tenant-demo/src/main/java/com/viettel/demo/cache/
 ├── CacheProperties.java
-├── RedisConfig.java
 ├── MasterDataCacheGateway.java
+├── MasterDataCacheKeyFactory.java
 └── CachedMasterData.java
 ```
 
-Có thể ít file hơn nếu giữ mini-lab thật nhỏ.
+Mini-lab chưa cần `RedisConfig.java` riêng vì Spring Boot auto-config `StringRedisTemplate`.
 
 ---
 
@@ -80,15 +80,14 @@ Không bật mặc định để `make app-test` không phụ thuộc Redis.
 
 ## 4. Coding order đề xuất
 
-1. Thêm dependency Redis khi bắt đầu code thật.
-2. Thêm config properties/feature flag.
-3. Tạo Redis config hoặc RedisTemplate bean nếu cần custom serializer.
-4. Tạo key factory hoặc gateway để key luôn có tenantId.
+1. Dependency Redis và config placeholder đã có trong skeleton; không cần thêm lại.
+2. Hoàn thiện key factory để key luôn có tenantId.
+3. Hoàn thiện DTO/cache projection `CachedMasterData`.
+4. Hoàn thiện gateway với `StringRedisTemplate` auto-config của Spring Boot; chỉ tạo `RedisConfig` nếu cần custom serializer.
 5. Chọn một service method:
-   - `findByCode`;
-   - hoặc `findById`;
-   - hoặc active list nếu muốn quan sát rõ hơn.
-6. Implement cache-aside:
+   - đề xuất chọn `findByCode` vì cùng code có thể tồn tại ở nhiều tenant;
+   - chưa cache list endpoint để scope nhỏ.
+6. Tự implement cache-aside trong service:
    - get cache;
    - miss -> query DB;
    - set cache with TTL.
@@ -112,11 +111,12 @@ make redis-status
 ```bash
 docker exec -it viettel-redis redis-cli
 PING
-KEYS tenant:*
+SCAN 0 MATCH tenant:*:master-data:code:* COUNT 20
 TTL tenant:1:master-data:code:LAPTOP-01
+GET tenant:1:master-data:code:LAPTOP-01
 ```
 
-Lab nhỏ được phép dùng `KEYS`; production không nên dùng `KEYS` trên dataset lớn.
+Lab nhỏ có thể dùng `KEYS tenant:*`, nhưng `SCAN` an toàn hơn để tập thói quen production-minded.
 
 ### HTTP/API behavior sau khi code
 

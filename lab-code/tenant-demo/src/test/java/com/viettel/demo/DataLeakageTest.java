@@ -75,7 +75,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "app.jwt.issuer=tenant-demo-test",
         "app.jwt.dev-token-enabled=true",
         "app.search.enabled=false",
-        "app.file-storage.enabled=false"
+        "app.file-storage.enabled=false",
+        "app.cache.enabled=false"
 })
 @AutoConfigureMockMvc
 public class DataLeakageTest {

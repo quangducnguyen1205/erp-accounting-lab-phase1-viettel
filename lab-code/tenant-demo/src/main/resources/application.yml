@@ -48,6 +48,13 @@ spring:
     # Flyway mặc định đọc `classpath:db/migration`.
     # locations: classpath:db/migration
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:16379}
+      repositories:
+        enabled: false
+
 logging:
   level:
     org.hibernate.SQL: debug
@@ -122,3 +129,14 @@ app:
     secret-key: ${MINIO_SECRET_KEY:minioadmin}
     bucket: ${MINIO_BUCKET:tenant-demo-files}
     region: ${MINIO_REGION:us-east-1}
+
+  # ==============================================================
+  # Redis/cache mini-lab
+  # ==============================================================
+  #
+  # Cache tắt mặc định để app/test không phụ thuộc Redis.
+  # PostgreSQL vẫn là source of truth; Redis chỉ giữ bản sao tạm.
+  # Cache key của dữ liệu tenant-aware phải có tenantId.
+  cache:
+    enabled: ${APP_CACHE_ENABLED:false}
+    master-data-ttl-seconds: ${APP_CACHE_MASTER_DATA_TTL_SECONDS:300}

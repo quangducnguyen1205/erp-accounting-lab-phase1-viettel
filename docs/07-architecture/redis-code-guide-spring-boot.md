@@ -92,9 +92,9 @@ Sau khi hiểu rồi, có thể học Spring Cache annotation như hướng rút
 
 ---
 
-## 2. Dependency/config dự kiến
+## 2. Dependency/config skeleton hiện có
 
-Khi bắt đầu code thật, dependency tối thiểu thường là:
+Dependency tối thiểu:
 
 ```xml
 spring-boot-starter-data-redis
@@ -120,6 +120,7 @@ Rule:
 - `APP_CACHE_ENABLED=false` mặc định để baseline test không phụ thuộc Redis.
 - Redis local chạy ở `localhost:16379` để tránh đụng Redis system port `6379`.
 - Không cache secret/token.
+- Skeleton hiện để sẵn hướng `StringRedisTemplate + ObjectMapper` để sau này bạn tự code JSON value dễ đọc bằng Redis CLI.
 
 ---
 
@@ -128,21 +129,12 @@ Rule:
 ```text
 com.viettel.demo.cache
 ├── CacheProperties
-├── RedisConfig
 ├── MasterDataCacheKeyFactory
 ├── MasterDataCacheGateway
 └── CachedMasterData
 ```
 
-Hoặc giữ nhỏ hơn nếu chỉ làm một use case:
-
-```text
-com.viettel.demo.cache
-├── CacheProperties
-└── MasterDataCacheGateway
-```
-
-Không cần tạo framework cache chung quá sớm.
+Spring Boot auto-config tạo `StringRedisTemplate` từ `spring-boot-starter-data-redis`, nên skeleton chưa cần `RedisConfig` riêng. Chỉ thêm `RedisConfig` khi bạn muốn custom serializer/connection setup rõ ràng.
 
 ---
 
@@ -151,7 +143,6 @@ Không cần tạo framework cache chung quá sớm.
 | Class | Trách nhiệm | Không nên làm |
 |---|---|---|
 | `CacheProperties` | Bind feature flag, TTL, Redis/cache settings riêng của app. | Không chứa business logic. |
-| `RedisConfig` | Cấu hình `RedisTemplate`/serializer nếu cần. | Không gọi service/repository. |
 | `MasterDataCacheKeyFactory` | Sinh key có tenant scope. | Không query DB. |
 | `MasterDataCacheGateway` | `get/set/evict` Redis cho master data cache. | Không tự lấy tenant từ request body. |
 | `MasterDataService` | Quyết định cache-aside flow và DB fallback. | Không expose Redis details ra controller. |
@@ -181,7 +172,7 @@ Vì cùng `id/code` có thể xuất hiện ở nhiều tenant.
 
 ---
 
-## 6. Cache-aside trong service
+## 6. Cache-aside bạn sẽ tự implement trong service
 
 Flow học tập:
 
@@ -190,14 +181,14 @@ getByCode(code):
   tenantId = TenantContext.getCurrentTenant()
   key = tenant:{tenantId}:master-data:code:{code}
 
-  cached = cacheGateway.get(key)
+  cached = cacheGateway.getByCode(tenantId, code)
   if cached exists:
     log "cache hit"
     return cached
 
   log "cache miss"
   data = repository.findByTenantIdAndCode(tenantId, code)
-  cacheGateway.set(key, data, ttl)
+  cacheGateway.putByCode(tenantId, code, data)
   return data
 ```
 
@@ -207,6 +198,7 @@ Chú ý:
 - cache hit chỉ hợp lệ nếu key đã có tenantId;
 - controller không biết Redis tồn tại;
 - nếu Redis disabled, service có thể đi thẳng DB.
+- update/delete nên evict cache theo code sau khi read path đã chạy rõ.
 
 ---
 

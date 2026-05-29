@@ -60,7 +60,14 @@ public class MasterDataService {
         if (code == null || code.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Code cannot be blank");
         }
-        return repository.findByTenantIdAndCode(currentTenantId(), code)
+        /*
+         * TODO Redis mini-lab:
+         * - Sau khi tự code cache, đây là read path phù hợp để áp dụng cache-aside.
+         * - Key phải có tenantId, ví dụ: tenant:{tenantId}:master-data:code:{code}.
+         * - Cache miss vẫn phải gọi repository method có tenantId.
+         * - Không lấy tenantId từ request body/query param.
+         */
+        return repository.findByTenantIdAndCode(currentTenantId(), code.trim())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "MasterData not found"));
     }
 
