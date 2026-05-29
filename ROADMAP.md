@@ -158,6 +158,7 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 | API Gateway/service discovery/load balancer | Awareness | `docs/07-architecture/api-gateway-service-discovery.md` | Không chạy gateway mặc định | Architecture summary | #16 | Planned |
 | Elasticsearch / Elastic Stack | Mini-lab đã verify | `docs/07-architecture/elasticsearch-search-service.md`, `docs/07-architecture/elasticsearch-request-response-shapes.md`, `docs/07-architecture/elasticsearch-code-guide-spring-boot.md` | `lab-code/elasticsearch-lab/` + `com.viettel.demo.search` | Search tenant 1/2, no leakage | #11 | Đã đóng |
 | MinIO / S3 object storage | Mini-lab | `docs/07-architecture/minio-object-storage.md`, `docs/07-architecture/minio-s3-api-shapes.md`, `docs/07-architecture/minio-code-guide-spring-boot.md` | upload/download mini-lab | HTTP upload/download + tenant metadata | #13 | Done |
+| MinIO advanced object management | Optional/later backlog | `docs/07-architecture/minio-advanced-object-management.md` | Presigned URL expiry, lifecycle, versioning, object lock/retention nếu cần | Mini-lab riêng sau core milestones | After #14/#16 | Backlog |
 | Redis cache strategy | Mini-lab | `docs/07-architecture/redis-cache-strategy.md`, `docs/07-architecture/redis-code-guide-spring-boot.md` | tenant-safe cache key mini example | Hit/miss + cache key review | #14 | Planned |
 | Kafka async messaging | Mini-lab hoặc focused awareness | `docs/07-architecture/kafka-async-messaging.md`, `docs/07-architecture/kafka-code-guide-spring-boot.md` | event producer/consumer nhỏ hoặc simulation | Event flow summary | #15 | Planned |
 | Debezium CDC + Kafka | Awareness | `docs/07-architecture/debezium-cdc.md` | Không chạy CDC | CDC role summary | #15/#18 | Later awareness |
@@ -485,6 +486,7 @@ make app-test
 
 - React UI: optional, chỉ làm nếu cần demo trực quan hơn.
 - Report polish: chỉ cập nhật summary ngắn sau mỗi mini-lab, không làm report lớn giữa chừng.
+- MinIO advanced object management: presigned URL expiry, lifecycle/expiration, versioning, object lock/retention - để backlog sau core demo/UI hoặc sau các milestone công nghệ chính.
 - Kafka/Debezium/Observability: chỉ làm sau Redis, mỗi sprint một công nghệ và giữ scope nhỏ.
 
 ---

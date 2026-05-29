@@ -8,6 +8,7 @@ Tài liệu này giải thích kiến thức nền về object storage để có
 
 - `minio-s3-api-shapes.md` - request/response/error shape của S3/MinIO.
 - `minio-code-guide-spring-boot.md` - cách tích hợp vào Spring Boot.
+- `minio-advanced-object-management.md` - backlog optional: presigned URL expiry, lifecycle, versioning, object lock/retention.
 - `lab-code/minio-lab/README.md` - lệnh chạy local.
 
 ---
@@ -322,7 +323,7 @@ Không làm ngay:
 
 - full file service production;
 - virus scanning;
-- lifecycle/retention policy;
+- lifecycle/retention policy; xem `minio-advanced-object-management.md` nếu học sau;
 - presigned URL production flow;
 - distributed transaction giữa DB và MinIO;
 - multi-bucket/multi-region design.

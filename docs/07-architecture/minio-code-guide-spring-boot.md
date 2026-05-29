@@ -6,6 +6,7 @@ Tài liệu này hướng dẫn hình dạng code Spring Boot cho mini-lab MinIO
 
 - `minio-object-storage.md`
 - `minio-s3-api-shapes.md`
+- `minio-advanced-object-management.md` - optional/later: presigned URL expiry, lifecycle, versioning, retention/object lock.
 - `lab-code/minio-lab/README.md`
 
 Mục tiêu code:
@@ -324,6 +325,11 @@ Manual HTTP cases:
 - invalid token -> `401`;
 - user thiếu role nếu endpoint bị RBAC -> `403`;
 - MinIO down khi enabled -> lỗi rõ, không làm app baseline fail nếu disabled.
+
+Advanced object management như presigned URL, lifecycle expiration,
+versioning và object lock/retention được ghi ở
+`minio-advanced-object-management.md`. Không đưa chúng vào done criteria của
+mini-lab upload/download hiện tại.
 
 ---
 

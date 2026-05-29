@@ -607,3 +607,4 @@ Mục tiêu: học object storage/S3-compatible API trong ngữ cảnh chứng t
 - Không dùng object storage thay database query.
 - Keycloak role/RBAC chỉ quyết định user được gọi endpoint nào; tenant isolation vẫn nằm ở metadata query.
 - Consistency DB/MinIO hiện là best-effort cleanup, chưa phải distributed transaction production.
+- Presigned URL expiry, lifecycle/expiration, versioning, object lock/retention là backlog optional sau; không chặn Redis/cache mini-lab.

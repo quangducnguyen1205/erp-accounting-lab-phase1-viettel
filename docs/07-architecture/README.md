@@ -17,6 +17,7 @@ Thư mục này kết nối các lab nhỏ trong repo với kiến trúc target 
 9. `minio-s3-api-shapes.md` - S3/MinIO operations, request/response/error shape.
 10. `minio-code-guide-spring-boot.md` - Spring Boot integration pattern cho file upload/download.
 11. `minio-admin-console-guide.md` - thao tác MinIO Console local.
+12. `minio-advanced-object-management.md` - backlog optional: presigned URL expiry, lifecycle, versioning, object lock/retention.
 
 ## Core
 
@@ -30,6 +31,7 @@ Thư mục này kết nối các lab nhỏ trong repo với kiến trúc target 
 
 - API Gateway/service discovery/load balancing chi tiết.
 - Redis mini-lab khi có feature trigger; MinIO mini-lab bắt đầu sau Keycloak Authorization/RBAC.
+- MinIO advanced object management chỉ làm sau core demo/UI hoặc sau các milestone công nghệ chính, không chặn Redis.
 - Elasticsearch mini-lab hiện là nhánh kế tiếp vì nối tự nhiên từ PostgreSQL `LIKE`/index/query-pattern.
 - Kafka/Debezium/observability awareness hoặc mini-lab nhỏ nếu mentor yêu cầu.
 - DDD/domain boundaries sau khi demo backend đã đóng gói.
