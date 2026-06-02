@@ -44,32 +44,63 @@ public class MasterDataCacheGateway {
 
     public Optional<CachedMasterData> getByCode(Long tenantId, String code) {
         /*
-         * TODO Redis mini-lab:
+         * Redis mini-lab:
          * 1. Build key bằng keyFactory.byCode(tenantId, code).
          * 2. Dùng redisTemplate.opsForValue().get(key).
          * 3. Nếu null -> log/cache miss và return Optional.empty().
          * 4. Nếu có JSON -> dùng objectMapper.readValue(...) thành CachedMasterData.
          * 5. Không catch/nuốt lỗi âm thầm; lỗi parse cache nên rõ ràng để dễ học.
          */
-        throw new UnsupportedOperationException("TODO: read MasterData from Redis cache");
+        String key = keyFactory.byCode(tenantId, code);
+        String json = redisTemplate.opsForValue().get(key);
+        if (json == null) {
+            // Cache miss
+            System.out.printf("Cache miss for key: %s%n", key);
+            return Optional.empty();
+        }
+        CachedMasterData cachedMasterData;
+        try {
+            cachedMasterData = objectMapper.readValue(json, CachedMasterData.class);
+        } catch (Exception e) {
+            // Log lỗi parse cache rõ ràng để dễ debug.
+            System.err.printf("Failed to parse cache for key: %s, error: %s%n", key, e.getMessage());
+            return Optional.empty();
+        }
+        System.out.printf("Cache hit for key: %s%n", key);
+        return Optional.of(cachedMasterData);
     }
 
     public void putByCode(Long tenantId, String code, MasterData data) {
         /*
-         * TODO Redis mini-lab:
+         * Redis mini-lab:
          * 1. Map MasterData -> CachedMasterData.
          * 2. Serialize JSON bằng objectMapper.writeValueAsString(...).
          * 3. Set Redis value với TTL: cacheProperties.getMasterDataTtl().
          */
-        throw new UnsupportedOperationException("TODO: write MasterData to Redis cache");
+        CachedMasterData cachedMasterData = CachedMasterData.fromEntity(data);
+        String json;
+        try {
+            json = objectMapper.writeValueAsString(cachedMasterData);
+        } catch (Exception e) {
+            // Log lỗi serialize cache rõ ràng để dễ debug.
+            System.err.printf("Failed to serialize cache for tenantId: %d, code: %s, error: %s%n",
+                    tenantId, code, e.getMessage());
+            return;
+        }
+        redisTemplate.opsForValue().set(
+                keyFactory.byCode(tenantId, code),
+                json,
+                cacheProperties.getMasterDataTtl()
+        );
     }
 
     public void evictByCode(Long tenantId, String code) {
         /*
-         * TODO Redis mini-lab:
+         * Redis mini-lab:
          * - Khi update/delete MasterData sau này, xóa key liên quan để tránh stale data.
-         * - Chỉ implement sau khi read cache path đã chạy rõ.
+         * - Method này đã có, nhưng update/delete chưa wire eviction trong mini-lab này.
          */
-        throw new UnsupportedOperationException("TODO: evict MasterData Redis cache by code");
+        String key = keyFactory.byCode(tenantId, code);
+        redisTemplate.delete(key);
     }
 }

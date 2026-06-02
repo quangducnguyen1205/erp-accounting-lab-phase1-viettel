@@ -1,5 +1,7 @@
 package com.viettel.demo.cache;
 
+import com.viettel.demo.entity.MasterData;
+
 import java.time.LocalDateTime;
 
 /*
@@ -23,9 +25,31 @@ public record CachedMasterData(
         LocalDateTime createdAt
 ) {
     /*
-     * TODO Redis mini-lab:
-     * - Tự viết mapper từ MasterData entity sang CachedMasterData.
-     * - Nếu muốn trả API response từ cache, cân nhắc map DTO này về response DTO
-     *   thay vì biến nó thành managed JPA entity.
+     * Redis mini-lab:
+     * - Redis lưu DTO nhỏ này, không lưu raw JPA Entity.
+     * - Khi cache hit, map DTO về detached read copy để giữ API response hiện tại.
      */
+    public static CachedMasterData fromEntity(MasterData data) {
+        return new CachedMasterData(
+                data.getId(),
+                data.getTenantId(),
+                data.getCode(),
+                data.getName(),
+                data.getCategory(),
+                data.getIsActive(),
+                data.getCreatedAt()
+        );
+    }
+
+    public MasterData toDetachedEntity() {
+        return MasterData.detachedReadCopy(
+                id,
+                tenantId,
+                code,
+                name,
+                category,
+                isActive,
+                createdAt
+        );
+    }
 }

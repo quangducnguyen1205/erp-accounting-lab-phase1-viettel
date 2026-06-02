@@ -1,8 +1,6 @@
 # HTTP Client requests cho Redis/cache mini-lab
 #
 # Điều kiện:
-# - Chỉ dùng file này sau khi bạn tự implement TODO trong package `com.viettel.demo.cache`
-#   và nối cache-aside vào `MasterDataService`.
 # - Redis chạy bằng `cd lab-code && make redis-up`.
 # - tenant-demo chạy với APP_CACHE_ENABLED=true.
 # - Token lấy từ local JWT dev endpoint hoặc Keycloak, tùy APP_AUTH_MODE.
@@ -20,24 +18,24 @@
 # IntelliJ HTTP Client không nói chuyện Redis protocol, nên dùng terminal:
 # docker exec -it viettel-redis redis-cli PING
 
-### Tenant 1 - first lookup by code sau khi tự code cache
-# Expected sau khi implementation hoàn chỉnh:
+### Tenant 1 - first lookup by code
+# Expected khi cache enabled:
 # - 200 nếu record tồn tại;
 # - log backend: "cache miss";
 # - Redis có key tenant:1:master-data:code:LAPTOP-01.
 GET {{baseUrl}}/api/master-data/code/{{code}}
 Authorization: Bearer {{accountantTenant1Token}}
 
-### Tenant 1 - same lookup again sau khi tự code cache
-# Expected sau khi implementation hoàn chỉnh:
+### Tenant 1 - same lookup again
+# Expected khi cache enabled:
 # - 200;
 # - log backend: "cache hit";
 # - response vẫn thuộc tenantId = 1.
 GET {{baseUrl}}/api/master-data/code/{{code}}
 Authorization: Bearer {{accountantTenant1Token}}
 
-### Tenant 2 - same code, different tenant-safe key sau khi tự code cache
-# Expected sau khi implementation hoàn chỉnh:
+### Tenant 2 - same code, different tenant-safe key
+# Expected khi cache enabled:
 # - 200 nếu tenant 2 cũng có code này;
 # - không dùng cache key tenant 1;
 # - Redis key riêng: tenant:2:master-data:code:LAPTOP-01.

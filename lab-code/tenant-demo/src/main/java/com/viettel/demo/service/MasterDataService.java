@@ -1,5 +1,8 @@
 package com.viettel.demo.service;
 
+import com.viettel.demo.cache.CacheProperties;
+import com.viettel.demo.cache.CachedMasterData;
+import com.viettel.demo.cache.MasterDataCacheGateway;
 import com.viettel.demo.context.TenantContext;
 import com.viettel.demo.entity.MasterData;
 import com.viettel.demo.repository.MasterDataRepository;
@@ -39,9 +42,17 @@ import java.util.List;
 public class MasterDataService {
 
     private final MasterDataRepository repository;
+    private final CacheProperties cacheProperties;
+    private final MasterDataCacheGateway cacheGateway;
 
-    public MasterDataService(MasterDataRepository repository) {
+    public MasterDataService(
+            MasterDataRepository repository,
+            CacheProperties cacheProperties,
+            MasterDataCacheGateway cacheGateway
+    ) {
         this.repository = repository;
+        this.cacheProperties = cacheProperties;
+        this.cacheGateway = cacheGateway;
     }
 
     public List<MasterData> getAll() {
@@ -60,14 +71,24 @@ public class MasterDataService {
         if (code == null || code.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Code cannot be blank");
         }
-        /*
-         * TODO Redis mini-lab:
-         * - Sau khi tự code cache, đây là read path phù hợp để áp dụng cache-aside.
-         * - Key phải có tenantId, ví dụ: tenant:{tenantId}:master-data:code:{code}.
-         * - Cache miss vẫn phải gọi repository method có tenantId.
-         * - Không lấy tenantId từ request body/query param.
-         */
-        return repository.findByTenantIdAndCode(currentTenantId(), code.trim())
+        Long tenantId = currentTenantId();
+        String normalizedCode = code.trim();
+
+        if (!cacheProperties.isEnabled()) {
+            return findByTenantAndCode(tenantId, normalizedCode);
+        }
+
+        return cacheGateway.getByCode(tenantId, normalizedCode)
+                .map(CachedMasterData::toDetachedEntity)
+                .orElseGet(() -> {
+                    MasterData data = findByTenantAndCode(tenantId, normalizedCode);
+                    cacheGateway.putByCode(tenantId, normalizedCode, data);
+                    return data;
+                });
+    }
+
+    private MasterData findByTenantAndCode(Long tenantId, String code) {
+        return repository.findByTenantIdAndCode(tenantId, code)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "MasterData not found"));
     }
 

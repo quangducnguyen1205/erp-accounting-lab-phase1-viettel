@@ -19,11 +19,16 @@ public class MasterDataCacheKeyFactory {
 
     public String byCode(Long tenantId, String code) {
         /*
-         * TODO Redis mini-lab:
-         * - Tự implement key có tenant scope.
-         * - Gợi ý format: tenant:{tenantId}:master-data:code:{code}
+         * Redis mini-lab:
+         * - Key có tenant scope để tenant 1/2 không dùng chung cache entry.
          * - Không dùng key global kiểu master-data:code:{code}.
          */
-        throw new UnsupportedOperationException("TODO: build tenant-safe Redis key for MasterData by code");
+        if (tenantId == null) {
+            throw new IllegalArgumentException("tenantId cannot be null");
+        }
+        if (code == null || code.isBlank()) {
+            throw new IllegalArgumentException("code cannot be blank");
+        }
+        return String.format("tenant:%d:master-data:code:%s", tenantId, code);
     }
 }

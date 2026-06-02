@@ -63,6 +63,31 @@ public class MasterData extends TenantAwareEntity{
     @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    /*
+     * Redis mini-lab:
+     * Tạo object chỉ để serialize response khi cache hit. Object này không được
+     * quản lý bởi JPA EntityManager và không dùng để save/update DB.
+     */
+    public static MasterData detachedReadCopy(
+            Long id,
+            Long tenantId,
+            String code,
+            String name,
+            String category,
+            Boolean isActive,
+            LocalDateTime createdAt
+    ) {
+        MasterData data = new MasterData();
+        data.id = id;
+        data.setTenantId(tenantId);
+        data.code = code;
+        data.name = name;
+        data.category = category;
+        data.isActive = isActive;
+        data.createdAt = createdAt;
+        return data;
+    }
+
     public Long getId() {
         return id;
     }
