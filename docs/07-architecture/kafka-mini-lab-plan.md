@@ -8,7 +8,7 @@ Tài liệu này là checklist thực hành cho Kafka mini-lab. Phần foundatio
 - `kafka-event-shapes.md`
 - `kafka-code-guide-spring-boot.md`
 
-Mục tiêu hiện tại là chuẩn bị đường học để bạn tự code producer/consumer nhỏ, không xây full event-driven ERP.
+Mục tiêu hiện tại là chạy một reference implementation nhỏ để đọc/debug event-driven code thật, không xây full event-driven ERP.
 
 ---
 
@@ -60,13 +60,15 @@ Giữ nguyên nguyên tắc:
 - `app.messaging.*`: config placeholder trong `application.yml`.
 - `com.viettel.demo.messaging.MessagingProperties`: bind config.
 - `com.viettel.demo.messaging.MasterDataChangedEvent`: DTO event shape.
-- `com.viettel.demo.messaging.MasterDataEventPublisher`: TODO boundary cho producer.
-
-Skeleton chưa thêm `spring-kafka` và chưa có `KafkaTemplate`. Đây là chủ ý để bạn tự code phần producer/consumer chính.
+- `com.viettel.demo.messaging.MasterDataEventPublisher`: boundary/interface cho service.
+- `com.viettel.demo.messaging.NoOpMasterDataEventPublisher`: giữ app behavior cũ khi messaging disabled.
+- `com.viettel.demo.messaging.KafkaMessagingConfig`: config Spring Kafka nhỏ.
+- `com.viettel.demo.messaging.KafkaMasterDataEventPublisher`: producer dùng `KafkaTemplate`.
+- `com.viettel.demo.messaging.MasterDataChangedEventConsumer`: consumer dùng `@KafkaListener` và log event.
 
 ---
 
-## 4. Các bước tự code đề xuất
+## 4. Cách chạy implementation hiện tại
 
 ### Bước 1 - Chạy Kafka local
 
@@ -78,65 +80,62 @@ make kafka-status
 
 Nếu cần kiểm tra topic bằng CLI trong container, xem `lab-code/kafka-lab/README.md`.
 
-### Bước 2 - Thêm Spring Kafka dependency
+### Bước 2 - Verify compile/test baseline
 
-Trong `lab-code/tenant-demo/pom.xml`, thêm:
+Kafka disabled là default, nên test bình thường không cần Kafka:
 
-```xml
-<dependency>
-    <groupId>org.springframework.kafka</groupId>
-    <artifactId>spring-kafka</artifactId>
-</dependency>
+```bash
+cd lab-code
+make app-test
 ```
 
-Sau đó chạy:
+### Bước 3 - Chạy app với messaging enabled
+
+Ví dụ:
 
 ```bash
 cd lab-code/tenant-demo
-./mvnw validate
+set -a; . ./.env; set +a
+APP_MESSAGING_ENABLED=true \
+APP_SEARCH_ENABLED=false \
+APP_FILE_STORAGE_ENABLED=false \
+APP_CACHE_ENABLED=false \
+KAFKA_BOOTSTRAP_SERVERS=localhost:19092 \
+./mvnw spring-boot:run
 ```
 
-### Bước 3 - Tạo Kafka config/publisher thật
+### Bước 4 - Gọi API create/update
 
-Gợi ý:
+Mở `lab-code/tenant-demo/http/kafka-api.http`.
 
-```text
-KafkaConfig
-KafkaMasterDataEventPublisher
-```
+Expected:
 
-Publisher cần:
-
-- chỉ gửi khi `app.messaging.enabled=true`;
-- dùng topic từ `MessagingProperties`;
-- build key từ `tenantId + aggregateId`;
-- serialize event JSON qua Spring Kafka serializer;
-- log ngắn khi publish.
-
-### Bước 4 - Nối vào service sau DB write
-
-Sau `repository.save(...)` thành công trong create/update:
-
-```text
-saved entity
--> MasterDataChangedEvent.from(saved, "CREATED"/"UPDATED")
--> publisher.publish(event)
-```
-
-Caveat: Phase 1 có thể chấp nhận DB save xong nhưng publish fail sẽ mất event. Production thường cân nhắc outbox/retry.
-
-### Bước 5 - Tạo consumer nhỏ
-
-Consumer ban đầu chỉ nên:
-
-- nhận `MasterDataChangedEvent`;
-- log `eventId`, `tenantId`, `aggregateId`, `changeType`;
-- không xử lý nghiệp vụ kế toán thật;
-- ghi chú duplicate/idempotency caveat.
+- API create/update trả `201`/`200`.
+- Producer log có `Published Kafka event...`.
+- Consumer log có `Consumed Kafka event...`.
+- Log có `tenantId`, `aggregateId`, `changeType`, `key`.
 
 ---
 
-## 5. Verification checklist
+## 5. Flow code hiện tại
+
+```text
+POST/PUT /api/master-data
+-> MasterDataController
+-> MasterDataService
+-> repository.save(...)
+-> MasterDataChangedEvent.from(saved, "CREATED"/"UPDATED")
+-> MasterDataEventPublisher.publish(event)
+-> KafkaMasterDataEventPublisher
+-> Kafka topic master-data-events
+-> MasterDataChangedEventConsumer logs event
+```
+
+`MasterDataService` không biết `KafkaTemplate`. Nó chỉ biết publish event qua boundary `MasterDataEventPublisher`.
+
+---
+
+## 6. Verification checklist
 
 - [ ] `make app-test` pass khi `APP_MESSAGING_ENABLED=false`.
 - [ ] `make kafka-up` chạy Kafka local.
@@ -151,7 +150,18 @@ Consumer ban đầu chỉ nên:
 
 ---
 
-## 6. Done criteria
+## 7. Caveat cần nói khi demo
+
+- Chưa có outbox pattern: DB write và Kafka publish không atomic.
+- Nếu DB save thành công nhưng Kafka publish fail, mini-lab sẽ fail request rõ ràng nhưng DB có thể đã ghi.
+- Consumer chỉ log event, chưa có idempotency storage.
+- Kafka có thể deliver duplicate; production consumer cần xử lý theo `eventId`.
+- Chưa có retry topic, dead-letter topic hoặc schema versioning.
+- Kafka không thay PostgreSQL source of truth.
+
+---
+
+## 8. Done criteria
 
 Milestone #15 chỉ nên đóng khi có đủ:
 
@@ -164,7 +174,7 @@ Milestone #15 chỉ nên đóng khi có đủ:
 
 ---
 
-## 7. Câu hỏi tự kiểm trước khi nhờ review
+## 9. Câu hỏi tự kiểm trước khi nhờ review
 
 - Event của mình là event hay command?
 - Event có đủ tenant context không?

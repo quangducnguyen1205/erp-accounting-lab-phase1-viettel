@@ -17,7 +17,9 @@ Service/use-case xử lý DB trước
 -> Consumer xử lý async nhỏ
 ```
 
-Hiện tại repo chỉ chuẩn bị skeleton/TODO. Chưa implement producer/consumer thật.
+Hiện tại repo đã có reference implementation nhỏ để học producer/consumer thật,
+nhưng vẫn giữ scope Phase 1: chưa có outbox, retry topic, DLT hoặc full
+microservice architecture.
 
 ---
 
@@ -56,19 +58,20 @@ Phù hợp khi hệ thống lớn, nhiều domain events, nhiều handler. Khôn
 
 ### Khuyến nghị cho repo này
 
-Dùng **publisher component nhỏ quanh KafkaTemplate** khi bắt đầu implement thật.
+Dùng **publisher component nhỏ quanh KafkaTemplate**.
 
-Ở skeleton hiện tại:
+Repo hiện dùng:
 
-- chưa thêm `spring-kafka`;
-- chưa inject `KafkaTemplate`;
-- có DTO/event shape và publisher TODO để bạn tự nối sau.
+- `MasterDataEventPublisher` interface để service không phụ thuộc chi tiết Kafka.
+- `NoOpMasterDataEventPublisher` khi `APP_MESSAGING_ENABLED=false`.
+- `KafkaMasterDataEventPublisher` khi `APP_MESSAGING_ENABLED=true`.
+- `MasterDataChangedEventConsumer` dùng `@KafkaListener` để log event nhận được.
 
 ---
 
-## 2. Dependency/config khi bắt đầu code thật
+## 2. Dependency/config
 
-Khi tự implement Kafka producer/consumer, thêm dependency:
+Dependency hiện đã được thêm:
 
 ```xml
 <dependency>
@@ -103,15 +106,10 @@ com.viettel.demo.messaging
 ├── MessagingProperties
 ├── MasterDataChangedEvent
 ├── MasterDataEventPublisher
-└── MasterDataEventConsumer      (tạo sau khi tự code consumer)
-```
-
-Nếu thêm Kafka thật:
-
-```text
-KafkaConfig
-KafkaMasterDataEventPublisher
-MasterDataEventConsumer
+├── NoOpMasterDataEventPublisher
+├── KafkaMessagingConfig
+├── KafkaMasterDataEventPublisher
+└── MasterDataChangedEventConsumer
 ```
 
 Không cần tạo generic event framework trong Phase 1.
@@ -124,15 +122,17 @@ Không cần tạo generic event framework trong Phase 1.
 |---|---|---|
 | `MessagingProperties` | Bind feature flag, bootstrap servers, topic/group config. | Không chứa business logic. |
 | `MasterDataChangedEvent` | Event DTO nhỏ, có `tenantId`, `eventId`, `aggregateId`. | Không chứa JPA entity/raw payload lớn. |
-| `MasterDataEventPublisher` | Boundary để service gọi publish event. | Không query DB, không tự lấy tenant từ request body. |
-| `KafkaMasterDataEventPublisher` | Khi thêm Kafka thật: build key, gọi `KafkaTemplate.send(...)`. | Không thay PostgreSQL source of truth. |
-| `MasterDataEventConsumer` | Khi thêm consumer: log hoặc xử lý projection nhỏ. | Không giả định event chỉ xử lý đúng một lần. |
+| `MasterDataEventPublisher` | Boundary/interface để service gọi publish event. | Không query DB, không tự lấy tenant từ request body. |
+| `NoOpMasterDataEventPublisher` | Giữ app behavior cũ khi messaging disabled. | Không giả vờ gửi event. |
+| `KafkaMessagingConfig` | ProducerFactory, KafkaTemplate, ConsumerFactory, listener factory. | Không chứa business logic. |
+| `KafkaMasterDataEventPublisher` | Build topic/key, gọi `KafkaTemplate.send(...)`, log metadata. | Không thay PostgreSQL source of truth. |
+| `MasterDataChangedEventConsumer` | Log event nhận được từ Kafka. | Không giả định event chỉ xử lý đúng một lần. |
 
 ---
 
 ## 5. Producer flow đề xuất
 
-Sau khi DB write thành công:
+Sau khi DB write thành công trong `MasterDataService.create/update`:
 
 ```text
 create/update MasterData
@@ -146,6 +146,7 @@ Lưu ý consistency:
 - Nếu publish trước khi DB commit thành công, consumer có thể thấy event cho dữ liệu chưa thật sự lưu.
 - Nếu DB save xong nhưng publish fail, sẽ mất event nếu chưa có outbox/retry.
 - Phase 1 chấp nhận caveat này và ghi rõ; chưa làm outbox/Debezium.
+- Implementation hiện tại cố tình wait kết quả send ngắn để Kafka unavailable fail rõ ràng khi `APP_MESSAGING_ENABLED=true`.
 
 ---
 
@@ -208,7 +209,7 @@ Sau đó:
 
 - tạo/update `master_data`;
 - kiểm tra producer log;
-- dùng Kafka CLI hoặc consumer log để thấy event;
+- dùng consumer log để thấy event đã nhận;
 - verify event có `tenantId`;
 - verify duplicate/idempotency caveat được ghi lại.
 
@@ -227,16 +228,24 @@ Sau đó:
 
 ---
 
-## 10. Skeleton hiện tại
+## 10. Implementation hiện tại
 
-Skeleton hiện chỉ để sẵn:
+Đã có:
 
-- config placeholder `app.messaging.*`;
-- `MessagingProperties`;
-- `MasterDataChangedEvent`;
-- `MasterDataEventPublisher` TODO.
+- `spring-kafka` dependency.
+- `KafkaTemplate<String, MasterDataChangedEvent>`.
+- JSON serializer/deserializer cho event DTO.
+- Producer publish sau create/update.
+- Consumer log event.
+- Feature flag `APP_MESSAGING_ENABLED=false` mặc định.
 
-Bạn sẽ tự thêm `spring-kafka`, `KafkaTemplate`, producer/consumer thật khi bắt đầu phần thực hành.
+Chưa có:
+
+- outbox pattern;
+- idempotency storage;
+- retry topic/DLT;
+- schema versioning;
+- consumer projection/audit table.
 
 ---
 

@@ -13,14 +13,14 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 85% |
+| **Tiến độ** | 87% |
 | **Tổng task** | 106 |
-| **Đã hoàn thành** | 90 / 106 |
-| **Focus hiện tại** | Tự code Kafka/async messaging producer-consumer mini-lab |
-| **Milestone tiếp theo** | #15 - Kafka/async messaging mini-lab |
+| **Đã hoàn thành** | 92 / 106 |
+| **Focus hiện tại** | Chuẩn bị Observability/logging/metrics mini-lab |
+| **Milestone tiếp theo** | #16 - Observability/logging/metrics mini-lab |
 | **Demo hiện tại** | Spring Boot + PostgreSQL/Flyway + tenant-aware API + JWT tạm fallback + Keycloak AuthN/AuthZ mode đã verify |
 
-Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; Milestone #14 đã chốt Redis cache-aside tenant-safe read path. Milestone #15 hiện đã có Kafka foundation docs/lab setup/skeleton, phần producer/consumer logic để tự code.
+Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; Milestone #14 đã chốt Redis cache-aside tenant-safe read path; Milestone #15 đã chốt Kafka/async messaging reference flow nhỏ.
 
 ---
 
@@ -160,7 +160,7 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 | MinIO / S3 object storage | Mini-lab | `docs/07-architecture/minio-object-storage.md`, `docs/07-architecture/minio-s3-api-shapes.md`, `docs/07-architecture/minio-code-guide-spring-boot.md` | upload/download mini-lab | HTTP upload/download + tenant metadata | #13 | Done |
 | MinIO advanced object management | Optional/later backlog | `docs/07-architecture/minio-advanced-object-management.md` | Presigned URL expiry, lifecycle, versioning, object lock/retention nếu cần | Mini-lab riêng sau core milestones | After #14/#16 | Backlog |
 | Redis cache strategy | Mini-lab đã verify | `docs/07-architecture/redis-cache-strategy.md`, `docs/07-architecture/redis-code-guide-spring-boot.md`, `docs/07-architecture/redis-mini-lab-plan.md` | tenant-safe cache-aside path cho `master_data` by code | Hit/miss + tenant-safe cache key + TTL | #14 | Đã đóng |
-| Kafka async messaging | Mini-lab đang chuẩn bị | `docs/07-architecture/kafka-async-messaging.md`, `docs/07-architecture/kafka-event-shapes.md`, `docs/07-architecture/kafka-code-guide-spring-boot.md`, `docs/07-architecture/kafka-mini-lab-plan.md` | event producer/consumer nhỏ hoặc simulation | Event flow summary | #15 | Docs/skeleton đã chuẩn bị |
+| Kafka async messaging | Mini-lab đã verify | `docs/07-architecture/kafka-async-messaging.md`, `docs/07-architecture/kafka-event-shapes.md`, `docs/07-architecture/kafka-code-guide-spring-boot.md`, `docs/07-architecture/kafka-mini-lab-plan.md` | `MasterDataChangedEvent` producer/consumer log | Create/update publish event, consumer nhận event tenant-aware | #15 | Đã đóng |
 | Debezium CDC + Kafka | Awareness | `docs/07-architecture/debezium-cdc.md` | Không chạy CDC | CDC role summary | #15/#18 | Later awareness |
 | gRPC internal communication | Awareness | `docs/07-architecture/grpc-internal-communication.md` | Không chạy gRPC | REST vs gRPC vs Kafka table | #11 | Chưa có |
 | Realtime: SignalR/Socket/SSE/Long polling | Awareness | `docs/07-architecture/realtime-communication.md` | Không chạy realtime | When to use which note | #11 | Chưa có |
@@ -358,8 +358,8 @@ Mục tiêu: hiểu async/event-driven communication ở mức nhỏ, không ch�
 
 - [x] `[LÝ THUYẾT]` Tạo `docs/07-architecture/kafka-async-messaging.md` và `docs/07-architecture/kafka-code-guide-spring-boot.md` - producer, consumer, topic, event contract, retry/idempotency awareness.
 - [x] `[SKELETON]` Nếu máy chịu được Docker: chuẩn bị `lab-code/kafka-lab/` và package `com.viettel.demo.messaging`; nếu quá nặng, tạo code skeleton + sequence diagram awareness.
-- [ ] `[THỰC HÀNH]` Tự làm một event nhỏ hoặc simulation: `MasterDataChanged`/`FileUploaded` log consumer, không ép production Kafka stack.
-- [ ] `[MILESTONE]` Chốt Milestone #15 - Kafka/async có flow, caveat và quyết định rõ chạy thật hay awareness.
+- [x] `[THỰC HÀNH]` Tự làm một event nhỏ hoặc simulation: `MasterDataChanged`/`FileUploaded` log consumer, không ép production Kafka stack.
+- [x] `[MILESTONE]` Chốt Milestone #15 - Kafka/async có flow, caveat và quyết định rõ chạy thật hay awareness.
 
 ### Sprint 16 - 30/05: Observability/logging/metrics mini-lab
 
@@ -410,8 +410,8 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 | 12 | 26/05 | Keycloak Authorization/RBAC/tenant-scope mini-lab | Đã đóng |
 | 13 | 27/05 | MinIO/file storage mini-lab | Đã đóng |
 | 14 | 28/05 | Redis/cache mini-lab | Đã đóng |
-| 15 | 29/05 | Kafka/async messaging mini-lab hoặc focused awareness | Đang làm |
-| 16 | 30/05 | Observability/logging/metrics mini-lab | Planned |
+| 15 | 29/05 | Kafka/async messaging mini-lab hoặc focused awareness | Đã đóng |
+| 16 | 30/05 | Observability/logging/metrics mini-lab | Đang làm |
 | 17 | 31/05 | API Gateway/service discovery awareness + React decision | Planned |
 | 18 | 03/06 | DDD awareness + final reflection + demo dry-run | Planned |
 
@@ -454,25 +454,16 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 
 ## Việc làm ngay trong 1-2 ngày tới
 
-### Task tiếp theo: Tự code Kafka/async messaging mini-lab
+### Task tiếp theo: Chuẩn bị Observability/logging/metrics mini-lab
 
 1. Đọc nhanh:
-   - `docs/07-architecture/kafka-async-messaging.md`
-   - `docs/07-architecture/kafka-event-shapes.md`
-   - `docs/07-architecture/kafka-code-guide-spring-boot.md`
-   - `docs/07-architecture/kafka-mini-lab-plan.md`
-2. Không nối Kafka vào service ngay nếu chưa nắm event shape và idempotency caveat.
-3. Tự code từng bước nhỏ:
-   - thêm dependency `spring-kafka` khi bắt đầu implementation thật;
-   - hoàn thiện producer gửi `MasterDataChangedEvent`;
-   - sau đó mới thêm consumer log/projection nhỏ;
-   - giữ `APP_MESSAGING_ENABLED=false` mặc định để `make app-test` không phụ thuộc Kafka.
-4. Verify bằng Kafka CLI/log:
-   - event được publish sau create/update;
-   - consumer nhận được event;
-   - event có `tenantId`;
-   - duplicate/idempotency caveat được ghi rõ.
-5. Dùng infra chung khi cần demo nhiều thành phần, hoặc target riêng khi chỉ test từng lab:
+   - Kafka code mới trong `com.viettel.demo.messaging` để nắm producer/consumer flow.
+   - Kafka docs để nhớ caveat: no outbox, duplicate/idempotency, Kafka không thay PostgreSQL.
+2. Sau đó bắt đầu Milestone #16 theo workflow cũ:
+   - tạo foundation doc cho logs/metrics/health/tracing;
+   - tạo code guide Spring Boot Actuator/Micrometer nếu phù hợp;
+   - chỉ skeleton trước, không dựng full Grafana/Loki nếu chưa cần.
+3. Dùng infra chung khi cần demo nhiều thành phần, hoặc target riêng khi chỉ test từng lab:
 
 ```bash
 cd lab-code
@@ -480,7 +471,7 @@ make infra-up
 make infra-status
 ```
 
-6. Giữ nguyên baseline đã verify:
+4. Giữ nguyên baseline đã verify:
 
 ```bash
 cd lab-code
@@ -488,14 +479,14 @@ make db-up
 make app-test
 ```
 
-7. Sau khi tự code xong, nhờ Codex review implementation và summary Milestone #15.
+5. Sau khi đọc/chuẩn bị xong Observability docs, nhờ Codex tạo skeleton/TODO hoặc review theo từng phần.
 
 ### Tạm hoãn
 
 - React UI: optional, chỉ làm nếu cần demo trực quan hơn.
 - Report polish: chỉ cập nhật summary ngắn sau mỗi mini-lab, không làm report lớn giữa chừng.
 - MinIO advanced object management: presigned URL expiry, lifecycle/expiration, versioning, object lock/retention - để backlog sau core demo/UI hoặc sau các milestone công nghệ chính.
-- Debezium/Observability: chỉ làm sau Kafka, mỗi sprint một công nghệ và giữ scope nhỏ.
+- Debezium: chỉ làm sau Kafka/Observability nếu còn cần; mỗi sprint một công nghệ và giữ scope nhỏ.
 
 ---
 

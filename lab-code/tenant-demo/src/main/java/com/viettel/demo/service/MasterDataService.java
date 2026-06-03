@@ -5,6 +5,8 @@ import com.viettel.demo.cache.CachedMasterData;
 import com.viettel.demo.cache.MasterDataCacheGateway;
 import com.viettel.demo.context.TenantContext;
 import com.viettel.demo.entity.MasterData;
+import com.viettel.demo.messaging.MasterDataChangedEvent;
+import com.viettel.demo.messaging.MasterDataEventPublisher;
 import com.viettel.demo.repository.MasterDataRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -44,15 +46,18 @@ public class MasterDataService {
     private final MasterDataRepository repository;
     private final CacheProperties cacheProperties;
     private final MasterDataCacheGateway cacheGateway;
+    private final MasterDataEventPublisher eventPublisher;
 
     public MasterDataService(
             MasterDataRepository repository,
             CacheProperties cacheProperties,
-            MasterDataCacheGateway cacheGateway
+            MasterDataCacheGateway cacheGateway,
+            MasterDataEventPublisher eventPublisher
     ) {
         this.repository = repository;
         this.cacheProperties = cacheProperties;
         this.cacheGateway = cacheGateway;
+        this.eventPublisher = eventPublisher;
     }
 
     public List<MasterData> getAll() {
@@ -104,7 +109,18 @@ public class MasterDataService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "MasterData cannot be null");
         }
         // tenant_id sẽ được set tự động trong @PrePersist của entity.
-        return repository.save(data);
+        MasterData saved = repository.save(data);
+        /*
+         * Kafka mini-lab:
+         * Publish sau khi repository.save(...) đã thành công để event mô tả
+         * dữ liệu đã được ghi vào PostgreSQL.
+         *
+         * Caveat: đây chưa phải outbox pattern, nên DB commit và Kafka publish
+         * không atomic với nhau. Nếu publish fail, mini-lab cho fail rõ để học
+         * thay vì giả vờ event đã gửi.
+         */
+        eventPublisher.publish(MasterDataChangedEvent.from(saved, "CREATED"));
+        return saved;
     }
 
     public MasterData update(Long id, MasterData data) {
@@ -120,7 +136,9 @@ public class MasterDataService {
         existing.setName(data.getName());
         existing.setCategory(data.getCategory());
         existing.setIsActive(data.getIsActive());
-        return repository.save(existing);
+        MasterData saved = repository.save(existing);
+        eventPublisher.publish(MasterDataChangedEvent.from(saved, "UPDATED"));
+        return saved;
     }
 
     public void delete(Long id) {

@@ -645,22 +645,37 @@ Trạng thái: đã đóng mini-lab cơ bản.
 
 ## Milestone #15: Kafka/async messaging mini-lab
 
-Trạng thái: đã chuẩn bị nền học. Mục tiêu tiếp theo là tự code event-driven communication bằng producer/consumer nhỏ; chưa implement business logic Kafka thật.
+Trạng thái: đã đóng mini-lab cơ bản.
 
 ### Đã chuẩn bị
 
 - `docs/07-architecture/kafka-async-messaging.md`: Kafka là gì, khi nào dùng async messaging, topic/partition/offset/consumer group.
 - `docs/07-architecture/kafka-event-shapes.md`: event shape, command vs event, tenant context, idempotency metadata.
-- `docs/07-architecture/kafka-code-guide-spring-boot.md`: Spring Boot integration shape, producer/consumer skeleton, config disabled by default.
+- `docs/07-architecture/kafka-code-guide-spring-boot.md`: Spring Boot integration shape, producer/consumer implementation, config disabled by default.
 - `docs/07-architecture/kafka-mini-lab-plan.md`: checklist mini-lab nhỏ quanh `MasterDataChangedEvent`.
 - `lab-code/kafka-lab/`: Docker Compose + hướng dẫn local Kafka lab.
 - Config placeholder `APP_MESSAGING_ENABLED=false`, `KAFKA_BOOTSTRAP_SERVERS`, topic và consumer group.
-- Package skeleton `com.viettel.demo.messaging`: `MessagingProperties`, `MasterDataChangedEvent`, `MasterDataEventPublisher` TODO.
+- Package `com.viettel.demo.messaging`: `MessagingProperties`, `MasterDataChangedEvent`, `MasterDataEventPublisher`, NoOp publisher, Kafka producer, Kafka consumer.
+- `MasterDataService.create/update` publish `MasterDataChangedEvent` sau khi `repository.save(...)` thành công.
+- Producer dùng Kafka key tenant-aware từ `event.kafkaKey()`.
+- Consumer hiện log event để học producer -> topic -> consumer flow.
 
-### Cần tự code/verify
+### Case đã verify
 
-- Hoàn thiện producer gửi `MasterDataChangedEvent` sau create/update.
-- Hoàn thiện consumer log hoặc lưu projection/audit nhẹ.
+- `make app-test` pass khi `APP_MESSAGING_ENABLED=false`.
+- Kafka local chạy bằng `make kafka-up`, container healthy.
+- App chạy với `APP_MESSAGING_ENABLED=true` và các lab khác tắt để cô lập Kafka.
+- Create `master_data` trả `201` và publish `changeType=CREATED`.
+- Update `master_data` trả `200` và publish `changeType=UPDATED`.
+- Producer log có topic, partition, offset và key `tenant:1:master-data:<id>`.
+- Consumer log nhận đúng event, có `tenantId`, `aggregateId`, `code`, `changeType`.
+- Tenant 2 không đọc được record tenant 1 sau event: `404`.
+- Missing/invalid token vẫn `401`.
+
+### Rule/caveat cần ghi nhớ
+
 - Verify event có `tenantId`, không chứa secret/binary payload lớn.
 - Giữ PostgreSQL là source of truth; Kafka không thay thế database.
-- Ghi rõ caveat at-least-once delivery, duplicate handling và idempotency.
+- `APP_MESSAGING_ENABLED=false` vẫn là default để test không phụ thuộc Kafka.
+- Caveat: chưa có outbox, DB write và Kafka publish không atomic.
+- Caveat: consumer chưa idempotent, chưa có retry/DLT/schema versioning.

@@ -1,0 +1,74 @@
+# HTTP Client requests cho Kafka/async messaging mini-lab
+#
+# Điều kiện:
+# - PostgreSQL đang chạy: cd lab-code && make db-up
+# - Kafka đang chạy: cd lab-code && make kafka-up
+# - tenant-demo chạy với APP_MESSAGING_ENABLED=true
+# - Token lấy từ auth-token-api.http hoặc shared environment.
+# - Nếu dùng local-jwt, chạy hai request đầu trong jwt-api.http để lấy token dev.
+#
+# Không paste token thật vào file này.
+
+@newCode = KAFKA-DEMO-{{$timestamp}}
+@updatedName = Kafka demo item updated
+@createdMasterDataId = TODO_COPY_ID_FROM_CREATE_RESPONSE
+
+### Create master data -> expected 201 + Kafka CREATED event
+# Expected logs:
+# - Published Kafka event ... changeType=CREATED ... key=tenant:1:master-data:<id>
+# - Consumed Kafka event ... tenantId=1 ... changeType=CREATED
+POST {{baseUrl}}/api/master-data
+Authorization: Bearer {{accountantTenant1Token}}
+Content-Type: application/json
+
+{
+  "code": "{{newCode}}",
+  "name": "Kafka demo item",
+  "category": "Kafka",
+  "isActive": true
+}
+
+### Update master data -> expected 200 + Kafka UPDATED event
+# TODO: copy id từ response create vào @createdMasterDataId.
+PUT {{baseUrl}}/api/master-data/{{createdMasterDataId}}
+Authorization: Bearer {{accountantTenant1Token}}
+Content-Type: application/json
+
+{
+  "code": "{{newCode}}",
+  "name": "{{updatedName}}",
+  "category": "Kafka",
+  "isActive": true
+}
+
+### Verify source of truth remains PostgreSQL
+GET {{baseUrl}}/api/master-data/code/{{newCode}}
+Authorization: Bearer {{accountantTenant1Token}}
+
+### Tenant 2 should not see tenant 1 code
+# Expected: 404, even if Kafka event existed for tenant 1.
+GET {{baseUrl}}/api/master-data/code/{{newCode}}
+Authorization: Bearer {{viewerTenant2Token}}
+
+### Missing token -> expected 401
+POST {{baseUrl}}/api/master-data
+Content-Type: application/json
+
+{
+  "code": "KAFKA-MISSING-TOKEN",
+  "name": "Should not create",
+  "category": "Kafka",
+  "isActive": true
+}
+
+### Invalid token -> expected 401
+POST {{baseUrl}}/api/master-data
+Authorization: Bearer invalid.jwt.token
+Content-Type: application/json
+
+{
+  "code": "KAFKA-INVALID-TOKEN",
+  "name": "Should not create",
+  "category": "Kafka",
+  "isActive": true
+}
