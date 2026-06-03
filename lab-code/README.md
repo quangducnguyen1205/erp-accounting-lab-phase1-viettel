@@ -85,6 +85,7 @@ make keycloak-up    # Keycloak cho auth/OIDC/RBAC mini-lab
 make elastic-up     # Elasticsearch cho search mini-lab
 make minio-up       # MinIO cho file storage mini-lab
 make redis-up       # Redis cho cache mini-lab
+make kafka-up       # Kafka cho async messaging mini-lab
 ```
 
 Khi cần demo nhiều phần cùng lúc, dùng:
@@ -94,7 +95,9 @@ make infra-up
 make infra-status
 ```
 
-`infra-up` chỉ bật PostgreSQL + Keycloak + Elasticsearch + MinIO + Redis. Spring Boot app vẫn chạy riêng bằng:
+`infra-up` chỉ bật PostgreSQL + Keycloak + Elasticsearch + MinIO + Redis. Kafka chưa nằm trong `infra-up` mặc định để demo baseline không nặng thêm; khi học async messaging thì dùng `make kafka-up` riêng.
+
+Spring Boot app vẫn chạy riêng bằng:
 
 ```bash
 make app-run

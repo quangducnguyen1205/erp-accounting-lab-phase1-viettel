@@ -611,28 +611,28 @@ Mục tiêu: học object storage/S3-compatible API trong ngữ cảnh chứng t
 
 ## Milestone #14: Redis/cache mini-lab
 
-Trạng thái: đang làm. Hiện đã có theory docs, Redis local setup, config placeholder và code skeleton/TODO; chưa chốt implementation.
+Trạng thái: đã đóng mini-lab cơ bản.
 
-### Đã chuẩn bị
+### Đã làm
 
 - Có Redis local bằng `lab-code/redis-lab/` và Makefile target `redis-up/redis-status`.
-- Chọn pattern `RedisTemplate/StringRedisTemplate + cache-aside thủ công` để tự thấy rõ key, TTL, hit/miss.
-- Cache path đầu tiên dự kiến là `GET /api/master-data/code/{code}`.
+- Chọn pattern `RedisTemplate/StringRedisTemplate + cache-aside thủ công` để thấy rõ key, TTL, hit/miss.
+- Cache path đầu tiên là `GET /api/master-data/code/{code}`.
+- Redis key có tenant scope: `tenant:{tenantId}:master-data:code:{code}`.
+- Redis value là DTO nhỏ `CachedMasterData`, không cache raw JPA entity.
 - `APP_CACHE_ENABLED=false` mặc định để `make app-test` không phụ thuộc Redis.
-- Code skeleton đã có package `com.viettel.demo.cache` với TODO cho:
-  - tenant-safe key;
-  - JSON projection `CachedMasterData`;
-  - Redis get/set với TTL;
-  - cache-aside integration trong service.
+- Khi cache enabled: request đầu tiên miss -> query PostgreSQL bằng `tenantId + code` -> set Redis với TTL -> request sau hit cache.
+- Tenant 1 và tenant 2 cùng code vẫn dùng key khác nhau, không share cache cross-tenant.
 
-### Cần tự code/verify
+### Case đã verify
 
-- Implement key format có tenant scope, ví dụ: `tenant:{tenantId}:master-data:code:{code}`.
-- Implement cache miss -> query PostgreSQL bằng repository method có `tenantId`.
-- Implement cache set với TTL và cache hit trả dữ liệu an toàn.
-- Verify tenant 1 và tenant 2 dùng key khác nhau, không leak cache cross-tenant.
-- Verify missing/invalid token vẫn trả `401`.
-- Kiểm tra `TTL` bằng Redis CLI.
+- `make app-test` pass khi cache disabled.
+- App chạy với `APP_CACHE_ENABLED=true`.
+- Tenant 1 gọi `LAPTOP-01` lần đầu: cache miss, có query PostgreSQL.
+- Tenant 1 gọi lại cùng code: cache hit.
+- Tenant 2 gọi cùng code: key riêng `tenant:2:...`, không dùng cache tenant 1.
+- Redis key có TTL dương.
+- Missing token và invalid token vẫn trả `401`.
 
 ### Rule cần giữ nguyên
 
@@ -640,4 +640,27 @@ Trạng thái: đang làm. Hiện đã có theory docs, Redis local setup, confi
 - Cache key của dữ liệu tenant-aware luôn phải có `tenantId`.
 - Không lấy tenantId từ request body/query param để build cache key.
 - Không cache data nhạy cảm/token/security context.
-- Nếu mở rộng write endpoint phức tạp hơn, phải thiết kế invalidation rõ ràng; TTL không thay thế invalidation.
+- Redis chỉ là cache, không phải database chính.
+- Caveat hiện tại: update/delete chưa wire eviction. Nếu dữ liệu đã cache rồi bị sửa/xóa, cache có thể stale đến khi TTL hết hạn. Khi mở rộng write endpoint phức tạp hơn, phải thiết kế invalidation rõ ràng; TTL không thay thế invalidation.
+
+## Milestone #15: Kafka/async messaging mini-lab
+
+Trạng thái: đã chuẩn bị nền học. Mục tiêu tiếp theo là tự code event-driven communication bằng producer/consumer nhỏ; chưa implement business logic Kafka thật.
+
+### Đã chuẩn bị
+
+- `docs/07-architecture/kafka-async-messaging.md`: Kafka là gì, khi nào dùng async messaging, topic/partition/offset/consumer group.
+- `docs/07-architecture/kafka-event-shapes.md`: event shape, command vs event, tenant context, idempotency metadata.
+- `docs/07-architecture/kafka-code-guide-spring-boot.md`: Spring Boot integration shape, producer/consumer skeleton, config disabled by default.
+- `docs/07-architecture/kafka-mini-lab-plan.md`: checklist mini-lab nhỏ quanh `MasterDataChangedEvent`.
+- `lab-code/kafka-lab/`: Docker Compose + hướng dẫn local Kafka lab.
+- Config placeholder `APP_MESSAGING_ENABLED=false`, `KAFKA_BOOTSTRAP_SERVERS`, topic và consumer group.
+- Package skeleton `com.viettel.demo.messaging`: `MessagingProperties`, `MasterDataChangedEvent`, `MasterDataEventPublisher` TODO.
+
+### Cần tự code/verify
+
+- Hoàn thiện producer gửi `MasterDataChangedEvent` sau create/update.
+- Hoàn thiện consumer log hoặc lưu projection/audit nhẹ.
+- Verify event có `tenantId`, không chứa secret/binary payload lớn.
+- Giữ PostgreSQL là source of truth; Kafka không thay thế database.
+- Ghi rõ caveat at-least-once delivery, duplicate handling và idempotency.

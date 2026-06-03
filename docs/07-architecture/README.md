@@ -21,6 +21,10 @@ Thư mục này kết nối các lab nhỏ trong repo với kiến trúc target 
 13. `redis-cache-strategy.md` - foundation: Redis, cache-aside, TTL, invalidation, tenant-safe key.
 14. `redis-code-guide-spring-boot.md` - Spring Boot integration pattern cho Redis cache mini-lab.
 15. `redis-mini-lab-plan.md` - checklist mini-lab cache nhỏ, hit/miss và Redis CLI.
+16. `kafka-async-messaging.md` - foundation: Kafka, topic/partition/offset, producer/consumer, async messaging.
+17. `kafka-event-shapes.md` - record/event shape, tenant context, key/header và duplicate/idempotency fields.
+18. `kafka-code-guide-spring-boot.md` - Spring Boot integration pattern cho producer/consumer mini-lab.
+19. `kafka-mini-lab-plan.md` - checklist tự code Kafka event flow nhỏ.
 
 ## Core
 
@@ -33,10 +37,11 @@ Thư mục này kết nối các lab nhỏ trong repo với kiến trúc target 
 ## Optional / later
 
 - API Gateway/service discovery/load balancing chi tiết.
-- Redis mini-lab là task chính sau MinIO: học tenant-safe cache key, TTL và cache-aside.
+- Redis mini-lab đã đóng: học tenant-safe cache key, TTL và cache-aside.
 - MinIO advanced object management chỉ làm sau core demo/UI hoặc sau các milestone công nghệ chính, không chặn Redis.
-- Elasticsearch mini-lab hiện là nhánh kế tiếp vì nối tự nhiên từ PostgreSQL `LIKE`/index/query-pattern.
-- Kafka/Debezium/observability awareness hoặc mini-lab nhỏ nếu mentor yêu cầu.
+- Kafka mini-lab là task hiện tại: chuẩn bị event producer/consumer nhỏ, không làm Debezium/full event platform.
+- Elasticsearch mini-lab đã đóng vì nối tự nhiên từ PostgreSQL `LIKE`/index/query-pattern.
+- Debezium/observability awareness hoặc mini-lab nhỏ sau Kafka.
 - DDD/domain boundaries sau khi demo backend đã đóng gói.
 
 ## Source-of-truth pattern cho mỗi công nghệ

@@ -20,6 +20,7 @@ ELASTIC_DIR    := elasticsearch-lab
 KEYCLOAK_DIR   := keycloak-lab
 MINIO_DIR      := minio-lab
 REDIS_DIR      := redis-lab
+KAFKA_DIR      := kafka-lab
 
 # --- Docker / Database -----------------------------------------
 
@@ -98,6 +99,20 @@ redis-down: ## Dừng Redis local cho cache mini-lab
 redis-status: ## Kiểm tra Redis local
 	@docker ps --filter "name=viettel-redis" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 
+# --- Kafka mini-lab --------------------------------------------
+
+.PHONY: kafka-up
+kafka-up: ## Khởi chạy Kafka local cho async messaging mini-lab
+	cd $(KAFKA_DIR) && docker compose up -d
+
+.PHONY: kafka-down
+kafka-down: ## Dừng Kafka local cho async messaging mini-lab
+	cd $(KAFKA_DIR) && docker compose down
+
+.PHONY: kafka-status
+kafka-status: ## Kiểm tra Kafka local
+	@docker ps --filter "name=viettel-kafka" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
 # --- Common dev infra ------------------------------------------
 #
 # Dùng target riêng khi chỉ học từng lab nhỏ:
@@ -106,9 +121,11 @@ redis-status: ## Kiểm tra Redis local
 # - elastic-up cho search mini-lab
 # - minio-up cho file storage mini-lab
 # - redis-up cho cache mini-lab
+# - kafka-up cho async messaging mini-lab
 #
 # Dùng infra-up khi cần demo đầy đủ hơn: PostgreSQL + Keycloak +
 # Elasticsearch + MinIO + Redis. App Spring Boot vẫn chạy riêng bằng `make app-run`.
+# Kafka chưa nằm trong infra-up mặc định để tránh làm demo baseline nặng hơn.
 
 .PHONY: infra-up
 infra-up: db-up keycloak-up elastic-up minio-up redis-up ## Khởi chạy PostgreSQL + KeyCloak + Elasticsearch + MinIO + Redis

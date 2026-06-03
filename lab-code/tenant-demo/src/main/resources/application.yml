@@ -140,3 +140,19 @@ app:
   cache:
     enabled: ${APP_CACHE_ENABLED:false}
     master-data-ttl-seconds: ${APP_CACHE_MASTER_DATA_TTL_SECONDS:300}
+
+  # ==============================================================
+  # Kafka/async messaging mini-lab
+  # ==============================================================
+  #
+  # Messaging tắt mặc định để app/test không phụ thuộc Kafka.
+  # Khi tự code mini-lab, bật APP_MESSAGING_ENABLED=true và chạy
+  # lab-code/kafka-lab/docker-compose.yml.
+  #
+  # PostgreSQL vẫn là source of truth. Kafka chỉ truyền event async
+  # như MasterDataChangedEvent; event phải có tenantId.
+  messaging:
+    enabled: ${APP_MESSAGING_ENABLED:false}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
+    master-data-topic: ${KAFKA_MASTER_DATA_TOPIC:master-data-events}
+    consumer-group-id: ${KAFKA_CONSUMER_GROUP_ID:tenant-demo-master-data}
