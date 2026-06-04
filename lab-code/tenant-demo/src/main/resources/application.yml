@@ -61,6 +61,47 @@ logging:
     org.flywaydb: info
 
 # ==============================================================
+# Observability/Actuator mini-lab
+# ==============================================================
+#
+# Chỉ expose endpoint cần học. Không dùng "*" vì dễ lộ thông tin runtime
+# như env/config/beans nếu sau này bật nhầm endpoint nhạy cảm.
+#
+# Security rule nằm trong SecurityConfig:
+# - /actuator/health public để infra kiểm tra app còn sống.
+# - /actuator/info và /actuator/metrics cần Bearer token.
+#
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      # Public health chỉ thấy status; detail chỉ hiện khi request authorized.
+      show-details: when_authorized
+  info:
+    env:
+      # Chỉ bật vì phần info.* bên dưới là metadata explicit, không chứa secret.
+      enabled: true
+  health:
+    redis:
+      # Redis/cache là mini-lab optional và mặc định tắt. Nếu để Actuator tự
+      # check Redis trong khi Redis không chạy, /actuator/health sẽ DOWN dù
+      # app baseline + PostgreSQL vẫn ổn.
+      enabled: ${ACTUATOR_REDIS_HEALTH_ENABLED:false}
+    elasticsearch:
+      # Elasticsearch/search cũng là mini-lab optional. Bật biến này khi muốn
+      # health endpoint kiểm tra search infra và Elasticsearch đang chạy.
+      enabled: ${ACTUATOR_ELASTICSEARCH_HEALTH_ENABLED:false}
+
+info:
+  app:
+    name: tenant-demo
+    phase: phase-1-learning-lab
+    description: Spring Boot tenant-aware backend learning demo
+
+# ==============================================================
 # JWT tạm cho Sprint security
 # ==============================================================
 #

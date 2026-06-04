@@ -1,0 +1,42 @@
+# HTTP Client requests cho Spring Boot Actuator mini-lab
+#
+# Điều kiện:
+# - tenant-demo đang chạy ở http://localhost:8080.
+# - /actuator/health public.
+# - /actuator/info và /actuator/metrics cần Bearer accountantTenant1Token theo SecurityConfig.
+#
+# Không paste accountantTenant1Token thật vào Git. Dùng dev accountantTenant1Token local hoặc Keycloak accountantTenant1Token
+# trong private env/working tree local.
+
+@tenantDemoUrl = http://localhost:8080
+#@accountantTenant1Token = <paste-local-jwt-or-keycloak-accountantTenant1Token-here>
+@invalidaccountantTenant1Token = invalid.jwt.accountantTenant1Token
+
+### Health không cần accountantTenant1Token
+# Expected: 200, body tối thiểu có {"status":"UP"} nếu app và dependencies ổn.
+GET {{tenantDemoUrl}}/actuator/health
+
+### Info cần accountantTenant1Token
+# Expected: 200 nếu accountantTenant1Token hợp lệ; body chỉ có metadata explicit từ info.app.*
+GET {{tenantDemoUrl}}/actuator/info
+Authorization: Bearer {{accountantTenant1Token}}
+
+### Metrics list cần accountantTenant1Token
+# Expected: 200, danh sách metric names built-in của Micrometer/Spring Boot.
+GET {{tenantDemoUrl}}/actuator/metrics
+Authorization: Bearer {{accountantTenant1Token}}
+
+### Một metric cụ thể - JVM memory used
+# Expected: 200 nếu metric tồn tại.
+GET {{tenantDemoUrl}}/actuator/metrics/jvm.memory.used
+Authorization: Bearer {{accountantTenant1Token}}
+
+### Info thiếu accountantTenant1Token - expected 401
+GET {{tenantDemoUrl}}/actuator/info
+
+### Metrics invalid accountantTenant1Token - expected 401
+GET {{tenantDemoUrl}}/actuator/metrics
+Authorization: Bearer {{invalidaccountantTenant1Token}}
+
+### Business API vẫn cần accountantTenant1Token - expected 401
+GET {{tenantDemoUrl}}/api/master-data

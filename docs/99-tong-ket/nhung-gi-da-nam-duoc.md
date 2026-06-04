@@ -682,7 +682,7 @@ Trạng thái: đã đóng mini-lab cơ bản.
 
 ## Milestone #16: Observability/logging/metrics mini-lab
 
-Trạng thái: đang chuẩn bị, chưa đóng implementation.
+Trạng thái: Actuator baseline đã implement; milestone chưa đóng toàn bộ vì request logging/custom metric còn là optional/tự code tiếp.
 
 ### Đã chuẩn bị
 
@@ -691,10 +691,17 @@ Trạng thái: đang chuẩn bị, chưa đóng implementation.
 - `docs/07-architecture/spring-boot-actuator-code-guide.md`: hướng tự code Actuator/Micrometer nhỏ cho `tenant-demo`.
 - `docs/07-architecture/observability-mini-lab-plan.md`: checklist Milestone #16.
 
+### Actuator baseline đã làm
+
+- Thêm `spring-boot-starter-actuator`.
+- Expose đúng `health`, `info`, `metrics`; không expose toàn bộ endpoint bằng `*`.
+- `/actuator/health` public để kiểm tra app sống.
+- `/actuator/info` và `/actuator/metrics` cần Bearer token.
+- `info.app.*` chỉ chứa metadata explicit, không chứa secret/env nhạy cảm.
+- Redis/Elasticsearch health indicator tắt mặc định vì đây là optional labs; tránh làm health baseline `DOWN` khi infra optional không chạy.
+- Có `lab-code/tenant-demo/http/actuator-api.http` để verify thủ công.
+
 ### Hướng tự code tiếp
 
-- Thêm Spring Boot Actuator.
-- Expose `health`, `info`, `metrics` an toàn.
-- Cân nhắc cho `/actuator/health` public local, giữ `/actuator/metrics` protected nếu cần.
 - Thêm request logging hoặc 1 metric nhỏ nếu có câu hỏi vận hành rõ.
 - Không dựng full Prometheus/Grafana/Loki trong bước đầu.

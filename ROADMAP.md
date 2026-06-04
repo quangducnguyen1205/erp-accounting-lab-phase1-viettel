@@ -13,10 +13,10 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 88% |
+| **Tiến độ** | 89% |
 | **Tổng task** | 106 |
-| **Đã hoàn thành** | 93 / 106 |
-| **Focus hiện tại** | Observability/logging/metrics mini-lab - tự code Actuator/logging skeleton |
+| **Đã hoàn thành** | 94 / 106 |
+| **Focus hiện tại** | Observability/logging/metrics mini-lab - đọc/chạy Actuator baseline, rồi tự code logging/metric nhỏ nếu cần |
 | **Milestone tiếp theo** | #16 - Observability/logging/metrics mini-lab |
 | **Demo hiện tại** | Spring Boot + PostgreSQL/Flyway + tenant-aware API + JWT tạm fallback + Keycloak AuthN/AuthZ mode đã verify |
 
@@ -366,7 +366,7 @@ Mục tiêu: hiểu async/event-driven communication ở mức nhỏ, không ch�
 Mục tiêu: biết app production cần log/metric/health thế nào, nhưng không dựng full Grafana stack nếu không cần.
 
 - [x] `[LÝ THUYẾT]` Tạo foundation docs cho Observability: `observability-foundation.md`, `logging-metrics-tracing.md`, `spring-boot-actuator-code-guide.md`, `observability-mini-lab-plan.md`.
-- [ ] `[SKELETON]` Chuẩn bị Spring Boot Actuator/Micrometer skeleton nếu phù hợp; không expose sensitive endpoints bừa bãi.
+- [x] `[SKELETON]` Implement Actuator baseline: `health/info/metrics`, health public, info/metrics authenticated, không expose sensitive endpoints bừa bãi.
 - [ ] `[THỰC HÀNH]` Verify health/metrics/log pattern local; optional Prometheus/Grafana/Loki only if setup nhẹ.
 - [ ] `[MILESTONE]` Chốt Milestone #16 - observability summary đủ giải thích trong target architecture.
 
