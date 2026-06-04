@@ -5,10 +5,15 @@
 Tài liệu này là checklist thực hành cho Kafka mini-lab. Phần foundation đọc ở:
 
 - `kafka-async-messaging.md`
+- `kafka-configuration-deep-dive.md`
+- `java-async-future-completablefuture.md`
+- `kafka-listener-consumer-flow.md`
 - `kafka-event-shapes.md`
 - `kafka-code-guide-spring-boot.md`
 
-Mục tiêu hiện tại là chạy một reference implementation nhỏ để đọc/debug event-driven code thật, không xây full event-driven ERP.
+Trạng thái hiện tại: mini-lab đã đóng ở mức Phase 1. Student đã chạy demo và quan sát được cả log `Published Kafka event` lẫn `Consumed Kafka event`.
+
+Mục tiêu của tài liệu này là giữ lại checklist/reference implementation nhỏ để đọc/debug event-driven code thật, không xây full event-driven ERP.
 
 ---
 
@@ -137,16 +142,16 @@ POST/PUT /api/master-data
 
 ## 6. Verification checklist
 
-- [ ] `make app-test` pass khi `APP_MESSAGING_ENABLED=false`.
-- [ ] `make kafka-up` chạy Kafka local.
-- [ ] App chạy với `APP_MESSAGING_ENABLED=true`.
-- [ ] Tạo/update master data thành công.
-- [ ] Producer log cho thấy event đã publish.
-- [ ] Consumer log cho thấy event đã nhận.
-- [ ] Event có `tenantId`.
-- [ ] Kafka key có tenant scope.
-- [ ] Không có token/secret/raw file trong event payload.
-- [ ] Summary ghi rõ caveat duplicate/idempotency và DB/Kafka consistency.
+- [x] `make app-test` pass khi `APP_MESSAGING_ENABLED=false`.
+- [x] `make kafka-up` chạy Kafka local.
+- [x] App chạy với `APP_MESSAGING_ENABLED=true`.
+- [x] Tạo/update master data thành công.
+- [x] Producer log cho thấy event đã publish: `Published Kafka event`.
+- [x] Consumer log cho thấy event đã nhận: `Consumed Kafka event`.
+- [x] Event có `tenantId`.
+- [x] Kafka key có tenant scope.
+- [x] Không có token/secret/raw file trong event payload.
+- [x] Summary ghi rõ caveat duplicate/idempotency và DB/Kafka consistency.
 
 ---
 
@@ -163,10 +168,10 @@ POST/PUT /api/master-data
 
 ## 8. Done criteria
 
-Milestone #15 chỉ nên đóng khi có đủ:
+Milestone #15 đã đóng vì có đủ:
 
 - Docs foundation + code guide đã đọc.
-- Kafka local lab chạy được hoặc có lý do rõ nếu chỉ làm awareness.
+- Kafka local lab chạy được.
 - Producer/consumer nhỏ tự code và được review.
 - `make app-test` vẫn pass khi messaging disabled.
 - Có evidence ngắn: command/log/HTTP flow, không paste log dài.

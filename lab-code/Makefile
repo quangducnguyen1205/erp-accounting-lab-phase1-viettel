@@ -124,17 +124,17 @@ kafka-status: ## Kiểm tra Kafka local
 # - kafka-up cho async messaging mini-lab
 #
 # Dùng infra-up khi cần demo đầy đủ hơn: PostgreSQL + Keycloak +
-# Elasticsearch + MinIO + Redis. App Spring Boot vẫn chạy riêng bằng `make app-run`.
-# Kafka chưa nằm trong infra-up mặc định để tránh làm demo baseline nặng hơn.
+# Elasticsearch + MinIO + Redis + Kafka. App Spring Boot vẫn chạy riêng
+# bằng `make app-run`.
 
 .PHONY: infra-up
-infra-up: db-up keycloak-up elastic-up minio-up redis-up ## Khởi chạy PostgreSQL + KeyCloak + Elasticsearch + MinIO + Redis
+infra-up: db-up keycloak-up elastic-up minio-up redis-up kafka-up ## Khởi chạy PostgreSQL + KeyCloak + Elasticsearch + MinIO + Redis + Kafka
 
 .PHONY: infra-status
-infra-status: db-status keycloak-status elastic-status minio-status redis-status ## Kiểm tra PostgreSQL + KeyCloak + Elasticsearch + MinIO + Redis
+infra-status: db-status keycloak-status elastic-status minio-status redis-status kafka-status ## Kiểm tra PostgreSQL + KeyCloak + Elasticsearch + MinIO + Redis + Kafka
 
 .PHONY: infra-down
-infra-down: redis-down minio-down elastic-down keycloak-down db-down ## Dừng PostgreSQL + KeyCloak + Elasticsearch + MinIO + Redis
+infra-down: kafka-down redis-down minio-down elastic-down keycloak-down db-down ## Dừng PostgreSQL + KeyCloak + Elasticsearch + MinIO + Redis + Kafka
 
 # --- SQL Playground ---------------------------------------------
 

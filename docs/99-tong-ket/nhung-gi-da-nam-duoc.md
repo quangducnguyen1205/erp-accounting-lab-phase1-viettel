@@ -667,8 +667,8 @@ Trạng thái: đã đóng mini-lab cơ bản.
 - App chạy với `APP_MESSAGING_ENABLED=true` và các lab khác tắt để cô lập Kafka.
 - Create `master_data` trả `201` và publish `changeType=CREATED`.
 - Update `master_data` trả `200` và publish `changeType=UPDATED`.
-- Producer log có topic, partition, offset và key `tenant:1:master-data:<id>`.
-- Consumer log nhận đúng event, có `tenantId`, `aggregateId`, `code`, `changeType`.
+- Producer log hiện `Published Kafka event`, có topic, partition, offset và key `tenant:1:master-data:<id>`.
+- Consumer log hiện `Consumed Kafka event`, nhận đúng event, có `tenantId`, `aggregateId`, `code`, `changeType`.
 - Tenant 2 không đọc được record tenant 1 sau event: `404`.
 - Missing/invalid token vẫn `401`.
 
@@ -679,3 +679,22 @@ Trạng thái: đã đóng mini-lab cơ bản.
 - `APP_MESSAGING_ENABLED=false` vẫn là default để test không phụ thuộc Kafka.
 - Caveat: chưa có outbox, DB write và Kafka publish không atomic.
 - Caveat: consumer chưa idempotent, chưa có retry/DLT/schema versioning.
+
+## Milestone #16: Observability/logging/metrics mini-lab
+
+Trạng thái: đang chuẩn bị, chưa đóng implementation.
+
+### Đã chuẩn bị
+
+- `docs/07-architecture/observability-foundation.md`: logs, metrics, tracing, health check, alert và vai trò của observability trong backend.
+- `docs/07-architecture/logging-metrics-tracing.md`: shape/cách đọc log, metric, trace, health; nhấn mạnh không log token/secret/dữ liệu nhạy cảm.
+- `docs/07-architecture/spring-boot-actuator-code-guide.md`: hướng tự code Actuator/Micrometer nhỏ cho `tenant-demo`.
+- `docs/07-architecture/observability-mini-lab-plan.md`: checklist Milestone #16.
+
+### Hướng tự code tiếp
+
+- Thêm Spring Boot Actuator.
+- Expose `health`, `info`, `metrics` an toàn.
+- Cân nhắc cho `/actuator/health` public local, giữ `/actuator/metrics` protected nếu cần.
+- Thêm request logging hoặc 1 metric nhỏ nếu có câu hỏi vận hành rõ.
+- Không dựng full Prometheus/Grafana/Loki trong bước đầu.

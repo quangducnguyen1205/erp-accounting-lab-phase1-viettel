@@ -28,6 +28,10 @@ Thư mục này kết nối các lab nhỏ trong repo với kiến trúc target 
 20. `kafka-event-shapes.md` - record/event shape, tenant context, key/header và duplicate/idempotency fields.
 21. `kafka-code-guide-spring-boot.md` - Spring Boot integration pattern cho producer/consumer mini-lab.
 22. `kafka-mini-lab-plan.md` - checklist tự code/verify Kafka event flow nhỏ.
+23. `observability-foundation.md` - foundation: logs, metrics, tracing, health, alert và vì sao logs alone chưa đủ.
+24. `logging-metrics-tracing.md` - shape/cách đọc log, metric, trace, health và rủi ro multi-tenant.
+25. `spring-boot-actuator-code-guide.md` - code guide tự thêm Actuator/Micrometer nhỏ cho `tenant-demo`.
+26. `observability-mini-lab-plan.md` - checklist Milestone #16, chưa dựng full Prometheus/Grafana/Loki.
 
 ## Core
 
@@ -43,8 +47,9 @@ Thư mục này kết nối các lab nhỏ trong repo với kiến trúc target 
 - Redis mini-lab đã đóng: học tenant-safe cache key, TTL và cache-aside.
 - MinIO advanced object management chỉ làm sau core demo/UI hoặc sau các milestone công nghệ chính, không chặn Redis.
 - Kafka mini-lab đã có flow nhỏ producer/consumer; các deep-dive mới giúp đọc lại config, async send và listener flow.
+- Observability hiện là hướng tiếp theo: Actuator/logging/metrics nhỏ trước, Prometheus/Grafana/Loki chỉ là optional later.
 - Elasticsearch mini-lab đã đóng vì nối tự nhiên từ PostgreSQL `LIKE`/index/query-pattern.
-- Debezium/observability awareness hoặc mini-lab nhỏ sau Kafka.
+- Debezium awareness hoặc mini-lab nhỏ sau Observability nếu còn cần.
 - DDD/domain boundaries sau khi demo backend đã đóng gói.
 
 ## Source-of-truth pattern cho mỗi công nghệ

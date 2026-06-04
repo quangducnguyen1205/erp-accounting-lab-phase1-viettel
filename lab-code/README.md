@@ -95,7 +95,7 @@ make infra-up
 make infra-status
 ```
 
-`infra-up` chỉ bật PostgreSQL + Keycloak + Elasticsearch + MinIO + Redis. Kafka chưa nằm trong `infra-up` mặc định để demo baseline không nặng thêm; khi học async messaging thì dùng `make kafka-up` riêng.
+`infra-up` bật PostgreSQL + Keycloak + Elasticsearch + MinIO + Redis + Kafka. Khi chỉ học một lab nhỏ, vẫn nên dùng target riêng như `make kafka-up` hoặc `make redis-up` để máy nhẹ hơn và dễ debug hơn.
 
 Spring Boot app vẫn chạy riêng bằng:
 
