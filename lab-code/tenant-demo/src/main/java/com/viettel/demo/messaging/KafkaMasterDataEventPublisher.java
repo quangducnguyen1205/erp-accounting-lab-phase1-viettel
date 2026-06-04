@@ -48,6 +48,7 @@ public class KafkaMasterDataEventPublisher implements MasterDataEventPublisher {
         String key = event.kafkaKey();
 
         try {
+            // send(...) trả về CompletableFuture; .get(...) làm request chờ broker ack để mini-lab fail rõ khi Kafka lỗi.
             SendResult<String, MasterDataChangedEvent> result = kafkaTemplate
                     .send(topic, key, event)
                     .get(5, TimeUnit.SECONDS);

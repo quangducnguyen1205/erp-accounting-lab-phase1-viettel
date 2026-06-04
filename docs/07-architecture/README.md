@@ -22,9 +22,12 @@ Thư mục này kết nối các lab nhỏ trong repo với kiến trúc target 
 14. `redis-code-guide-spring-boot.md` - Spring Boot integration pattern cho Redis cache mini-lab.
 15. `redis-mini-lab-plan.md` - checklist mini-lab cache nhỏ, hit/miss và Redis CLI.
 16. `kafka-async-messaging.md` - foundation: Kafka, topic/partition/offset, producer/consumer, async messaging.
-17. `kafka-event-shapes.md` - record/event shape, tenant context, key/header và duplicate/idempotency fields.
-18. `kafka-code-guide-spring-boot.md` - Spring Boot integration pattern cho producer/consumer mini-lab.
-19. `kafka-mini-lab-plan.md` - checklist tự code Kafka event flow nhỏ.
+17. `kafka-configuration-deep-dive.md` - đọc đúng Docker Compose, listener/advertised listener, port và Spring Boot config trong repo này.
+18. `java-async-future-completablefuture.md` - hiểu Java async, `Future`/`CompletableFuture` và `KafkaTemplate.send(...)`.
+19. `kafka-listener-consumer-flow.md` - hiểu `@KafkaListener`, consumer group, poll, deserialize, offset và listener container.
+20. `kafka-event-shapes.md` - record/event shape, tenant context, key/header và duplicate/idempotency fields.
+21. `kafka-code-guide-spring-boot.md` - Spring Boot integration pattern cho producer/consumer mini-lab.
+22. `kafka-mini-lab-plan.md` - checklist tự code/verify Kafka event flow nhỏ.
 
 ## Core
 
@@ -39,7 +42,7 @@ Thư mục này kết nối các lab nhỏ trong repo với kiến trúc target 
 - API Gateway/service discovery/load balancing chi tiết.
 - Redis mini-lab đã đóng: học tenant-safe cache key, TTL và cache-aside.
 - MinIO advanced object management chỉ làm sau core demo/UI hoặc sau các milestone công nghệ chính, không chặn Redis.
-- Kafka mini-lab là task hiện tại: chuẩn bị event producer/consumer nhỏ, không làm Debezium/full event platform.
+- Kafka mini-lab đã có flow nhỏ producer/consumer; các deep-dive mới giúp đọc lại config, async send và listener flow.
 - Elasticsearch mini-lab đã đóng vì nối tự nhiên từ PostgreSQL `LIKE`/index/query-pattern.
 - Debezium/observability awareness hoặc mini-lab nhỏ sau Kafka.
 - DDD/domain boundaries sau khi demo backend đã đóng gói.

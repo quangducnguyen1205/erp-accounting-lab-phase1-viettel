@@ -9,9 +9,9 @@
 #
 # Không paste token thật vào file này.
 
-@newCode = KAFKA-DEMO-{{$timestamp}}
+@newCode = KAFKA-DEMO-autoIncrement
 @updatedName = Kafka demo item updated
-@createdMasterDataId = TODO_COPY_ID_FROM_CREATE_RESPONSE
+#@createdMasterDataId = TODO_COPY_ID_FROM_CREATE_RESPONSE
 
 ### Create master data -> expected 201 + Kafka CREATED event
 # Expected logs:

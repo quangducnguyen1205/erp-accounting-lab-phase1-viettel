@@ -33,6 +33,7 @@ public class MasterDataChangedEventConsumer {
             groupId = "${app.messaging.consumer-group-id}",
             containerFactory = "masterDataKafkaListenerContainerFactory"
     )
+    // Method này không phải HTTP endpoint; Spring Kafka listener container poll message rồi gọi method.
     public void handle(
             @Payload MasterDataChangedEvent event,
             @Header(name = KafkaHeaders.RECEIVED_KEY, required = false) String key
