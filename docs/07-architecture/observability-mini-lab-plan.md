@@ -4,7 +4,7 @@
 
 Đây là checklist cho Milestone #16. Mục tiêu là chạy một mini-lab nhỏ quanh Spring Boot Actuator + logging/metrics cơ bản, không dựng full observability platform.
 
-Trạng thái hiện tại: Actuator baseline đã được implement bằng built-in Spring Boot features. Request logging/custom metrics vẫn là bước tự code hoặc optional sau.
+Trạng thái hiện tại: Actuator baseline và request logging baseline đã được implement bằng built-in Spring Boot features + SLF4J/MDC. Custom metrics vẫn là optional sau.
 
 Đọc trước:
 
@@ -40,10 +40,19 @@ Spring Boot app đang chạy
 - Thêm `info.app.*` metadata explicit, không chứa secret.
 - Disable Redis/Elasticsearch health mặc định vì đây là optional labs; nếu muốn quan sát riêng thì bật `ACTUATOR_REDIS_HEALTH_ENABLED=true` hoặc `ACTUATOR_ELASTICSEARCH_HEALTH_ENABLED=true` khi infra tương ứng đang chạy.
 - Thêm `lab-code/tenant-demo/http/actuator-api.http` để verify thủ công.
+- Thêm `RequestLoggingFilter`:
+  - nhận `X-Request-Id` hoặc tự sinh UUID;
+  - đưa `requestId` vào MDC;
+  - log method/path/status/duration/requestId sau request;
+  - log được cả request bị `401`;
+  - có thể log tenantId nếu token đã validate và tenant context flow set được request attribute nội bộ;
+  - không log body/query string/token;
+  - skip `/actuator/health` để giảm noise.
+- Đổi Redis cache hit/miss từ `System.out/System.err` sang SLF4J.
+- Thêm `lab-code/tenant-demo/http/observability-api.http` để verify request id.
 
 ### Có thể làm tiếp
 
-- Thêm request logging nhỏ nếu muốn.
 - Thêm 1 metric nhỏ nếu phù hợp:
   - Kafka publish success/failure; hoặc
   - Redis cache hit/miss; hoặc
@@ -67,10 +76,11 @@ Artifact đã có:
 - `application.yml`: `management.endpoints.web.exposure.include=health,info,metrics`.
 - `SecurityConfig`: rule rõ cho actuator endpoints.
 - `http/actuator-api.http`: request mẫu cho health/info/metrics.
+- `com.viettel.demo.observability.RequestLoggingFilter`.
+- `http/observability-api.http`: request mẫu để quan sát `X-Request-Id` và request log.
 
 Artifact optional sau:
 
-- `com.viettel.demo.observability.RequestLoggingFilter`.
 - metric nhỏ với `MeterRegistry`.
 
 ---
@@ -83,7 +93,9 @@ Artifact optional sau:
 - [ ] `/actuator/info` trả `401` nếu thiếu token, `200` nếu có token hợp lệ.
 - [ ] `/actuator/metrics` trả `401` nếu thiếu token, `200` nếu có token hợp lệ.
 - [ ] Không log token/Authorization header.
-- [ ] Request log nếu có không chứa payload nhạy cảm.
+- [ ] Request có `X-Request-Id` tạo log chứa đúng request id đó.
+- [ ] Request không có `X-Request-Id` tạo log với UUID do app sinh.
+- [ ] Request log không chứa payload nhạy cảm.
 - [ ] Summary ghi rõ giới hạn: chưa có Prometheus/Grafana/Loki/tracing production.
 
 ---

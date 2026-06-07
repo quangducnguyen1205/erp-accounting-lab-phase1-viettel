@@ -1,0 +1,36 @@
+# HTTP Client requests cho Observability logging baseline
+#
+# Điều kiện:
+# - tenant-demo đang chạy ở http://localhost:8080.
+# - Dùng token local/private khi gọi business API.
+# - Không paste token thật vào Git.
+#
+# Mục tiêu:
+# - Request có X-Request-Id -> log phải chứa đúng requestId đó.
+# - Request không có X-Request-Id -> app tự sinh UUID requestId.
+# - Log chỉ ghi method/path/status/duration/requestId, không ghi body/token.
+
+@tenantDemoUrl = http://localhost:8080
+#@accountantTenant1Token = <paste-local-jwt-or-keycloak-accountant-token-here>
+
+### Health public - filter đang skip để tránh log health-check quá ồn
+GET {{tenantDemoUrl}}/actuator/health
+
+### Business API với request id tự truyền
+# Expected: 200 nếu token hợp lệ.
+# Expected log có requestId=demo-request-001.
+GET {{tenantDemoUrl}}/api/master-data
+X-Request-Id: demo-request-001
+Authorization: Bearer {{accountantTenant1Token}}
+
+### Business API không truyền request id
+# Expected: 200 nếu token hợp lệ.
+# Expected log có requestId dạng UUID do app tự sinh.
+GET {{tenantDemoUrl}}/api/master-data
+Authorization: Bearer {{accountantTenant1Token}}
+
+### Business API thiếu token
+# Expected: 401; vẫn có request log với requestId demo-missing-token-001.
+GET {{tenantDemoUrl}}/api/master-data
+X-Request-Id: demo-missing-token-001
+

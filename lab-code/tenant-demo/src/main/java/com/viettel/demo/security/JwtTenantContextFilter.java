@@ -41,6 +41,8 @@ import java.io.IOException;
  */
 public class JwtTenantContextFilter extends OncePerRequestFilter {
 
+    public static final String TENANT_ID_REQUEST_ATTRIBUTE = "tenantId";
+
     private final JwtTokenService jwtTokenService;
 
     public JwtTenantContextFilter(JwtTokenService jwtTokenService) {
@@ -67,6 +69,8 @@ public class JwtTenantContextFilter extends OncePerRequestFilter {
                 }
 
                 TenantContext.setCurrentTenant(tenantId);
+                // Cho request logging đọc tenantId sau khi TenantContext đã được clear trong finally.
+                request.setAttribute(TENANT_ID_REQUEST_ATTRIBUTE, tenantId);
             }
 
             filterChain.doFilter(request, response);

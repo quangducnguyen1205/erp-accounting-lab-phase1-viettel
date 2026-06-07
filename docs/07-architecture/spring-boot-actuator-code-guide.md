@@ -2,9 +2,9 @@
 
 ## Vai trò tài liệu
 
-Tài liệu này là code guide cho mini-lab Observability/logging/metrics. Mục tiêu là giải thích Actuator/Micrometer nhỏ, an toàn, không dựng full monitoring stack.
+Tài liệu này là code guide cho mini-lab Observability/logging/metrics. Mục tiêu là giải thích Actuator/Micrometer + request logging nhỏ, an toàn, không dựng full monitoring stack.
 
-Trạng thái hiện tại: Actuator baseline đã được thêm vào `tenant-demo`. Bước tiếp theo là student chạy/đọc endpoint, rồi nếu cần mới tự thêm request logging hoặc custom metric nhỏ.
+Trạng thái hiện tại: Actuator baseline và request logging baseline đã được thêm vào `tenant-demo`. Bước tiếp theo là student chạy/đọc endpoint/log, rồi nếu cần mới tự thêm custom metric nhỏ.
 
 ---
 
@@ -98,25 +98,54 @@ Lưu ý: `JwtTenantContextFilter` chỉ set `TenantContext` khi có JWT đã val
 
 ---
 
-## 5. Request logging nhỏ nên đặt ở đâu?
+## 5. Request logging nhỏ đặt ở đâu?
 
-Nếu muốn tự code request logging:
+Repo dùng:
 
-- Dùng `OncePerRequestFilter` hoặc `HandlerInterceptor`.
-- Log method, path, status, duration.
-- Nếu có `TenantContext`, có thể log tenantId sau khi token đã validate.
-- Không log Authorization header/token.
-- Không log full body.
+```text
+com.viettel.demo.observability.RequestLoggingFilter
+```
+
+Class này dùng `OncePerRequestFilter` để log một dòng sau mỗi HTTP request:
+
+- method.
+- path, không log query string.
+- status.
+- durationMs.
+- requestId từ header `X-Request-Id`, hoặc UUID tự sinh.
+- tenantId nếu JWT đã validate và tenant context flow set được request attribute nội bộ.
+
+Filter không log Authorization header/token/body/response body.
 
 Package gợi ý:
 
 ```text
 com.viettel.demo.observability
-├── RequestLoggingFilter.java      # optional
+├── RequestLoggingFilter.java      # log request duration/status/requestId
 └── ObservabilityProperties.java   # optional nếu cần bật/tắt
 ```
 
 Không nên đưa logging trực tiếp vào từng controller nếu mục tiêu là quan sát request chung.
+
+### MDC trong log pattern
+
+`RequestLoggingFilter` đưa `requestId` vào MDC:
+
+```java
+MDC.put("requestId", requestId);
+```
+
+`application.yml` đọc giá trị này trong console pattern:
+
+```yaml
+logging:
+  pattern:
+    console: "... [requestId=%X{requestId:-no-request}] ..."
+```
+
+Với log ngoài HTTP request, `requestId` sẽ là `no-request`.
+
+Lưu ý async/Kafka: MDC không tự lan qua thread/process khác. Nếu muốn nối HTTP request với Kafka event, cần truyền correlation id qua event/header riêng.
 
 ---
 
@@ -151,11 +180,11 @@ Giữ nhỏ:
 ```text
 com.viettel.demo.observability
 ├── ObservabilityProperties.java       # optional: bật/tắt request logging nếu cần
-├── RequestLoggingFilter.java          # optional: log request duration/status
+├── RequestLoggingFilter.java          # log request duration/status/requestId
 └── AppMetrics.java                    # optional: helper rất nhỏ cho counter nếu tránh lặp
 ```
 
-Không tạo framework lớn. Nếu chỉ bật Actuator và đọc metrics built-in, có thể chưa cần class nào.
+Không tạo framework lớn. Hiện repo chỉ thêm một filter nhỏ; custom metrics vẫn để sau.
 
 ---
 
@@ -206,7 +235,7 @@ curl http://localhost:8080/actuator/metrics
 
 1. Chạy app và curl endpoints bằng `actuator-api.http`.
 2. Đọc response của `health`, `info`, `metrics`.
-3. Nếu còn thời gian, thêm request logging filter nhỏ.
+3. Gọi `observability-api.http` để xem request log có/không có `X-Request-Id`.
 4. Nếu còn thời gian nữa, thêm một metric dễ hiểu: Kafka publish success/failure hoặc cache hit/miss.
 
 ---

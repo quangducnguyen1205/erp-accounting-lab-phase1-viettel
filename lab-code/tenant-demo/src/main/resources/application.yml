@@ -56,6 +56,10 @@ spring:
         enabled: false
 
 logging:
+  pattern:
+    # requestId đến từ MDC trong RequestLoggingFilter. Với log ngoài HTTP request,
+    # giá trị này sẽ là "no-request".
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [requestId=%X{requestId:-no-request}] %logger{36} - %msg%n"
   level:
 #    org.hibernate.SQL: debug
     org.flywaydb: info
@@ -89,11 +93,11 @@ management:
       # Redis/cache là mini-lab optional và mặc định tắt. Nếu để Actuator tự
       # check Redis trong khi Redis không chạy, /actuator/health sẽ DOWN dù
       # app baseline + PostgreSQL vẫn ổn.
-      enabled: ${ACTUATOR_REDIS_HEALTH_ENABLED:false}
+      enabled: false
     elasticsearch:
       # Elasticsearch/search cũng là mini-lab optional. Bật biến này khi muốn
       # health endpoint kiểm tra search infra và Elasticsearch đang chạy.
-      enabled: ${ACTUATOR_ELASTICSEARCH_HEALTH_ENABLED:false}
+      enabled: false
 
 info:
   app:

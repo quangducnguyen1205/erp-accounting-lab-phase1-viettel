@@ -2,6 +2,8 @@ package com.viettel.demo.cache;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.viettel.demo.entity.MasterData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +26,8 @@ import java.util.Optional;
  */
 @Component
 public class MasterDataCacheGateway {
+
+    private static final Logger log = LoggerFactory.getLogger(MasterDataCacheGateway.class);
 
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
@@ -54,8 +58,7 @@ public class MasterDataCacheGateway {
         String key = keyFactory.byCode(tenantId, code);
         String json = redisTemplate.opsForValue().get(key);
         if (json == null) {
-            // Cache miss
-            System.out.printf("Cache miss for key: %s%n", key);
+            log.info("Cache miss key={}", key);
             return Optional.empty();
         }
         CachedMasterData cachedMasterData;
@@ -63,10 +66,10 @@ public class MasterDataCacheGateway {
             cachedMasterData = objectMapper.readValue(json, CachedMasterData.class);
         } catch (Exception e) {
             // Log lỗi parse cache rõ ràng để dễ debug.
-            System.err.printf("Failed to parse cache for key: %s, error: %s%n", key, e.getMessage());
+            log.warn("Failed to parse cache key={}, error={}", key, e.getMessage());
             return Optional.empty();
         }
-        System.out.printf("Cache hit for key: %s%n", key);
+        log.info("Cache hit key={}", key);
         return Optional.of(cachedMasterData);
     }
 
@@ -83,8 +86,7 @@ public class MasterDataCacheGateway {
             json = objectMapper.writeValueAsString(cachedMasterData);
         } catch (Exception e) {
             // Log lỗi serialize cache rõ ràng để dễ debug.
-            System.err.printf("Failed to serialize cache for tenantId: %d, code: %s, error: %s%n",
-                    tenantId, code, e.getMessage());
+            log.warn("Failed to serialize cache tenantId={}, code={}, error={}", tenantId, code, e.getMessage());
             return;
         }
         redisTemplate.opsForValue().set(
