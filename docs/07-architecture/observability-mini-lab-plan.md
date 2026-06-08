@@ -4,13 +4,15 @@
 
 Đây là checklist cho Milestone #16. Mục tiêu là chạy một mini-lab nhỏ quanh Spring Boot Actuator + logging/metrics cơ bản, không dựng full observability platform.
 
-Trạng thái hiện tại: Actuator baseline, request logging baseline và custom Micrometer metrics baseline đã được implement ở mức nhỏ. Prometheus/Grafana/tracing vẫn là optional sau.
+Trạng thái hiện tại: Actuator baseline, request logging baseline, custom Micrometer metrics baseline và local Prometheus/Grafana lab đã được implement ở mức nhỏ. Tracing, log aggregation và alerting vẫn là optional sau.
 
 Đọc trước:
 
 - `observability-foundation.md`
 - `logging-metrics-tracing.md`
 - `spring-boot-actuator-code-guide.md`
+- `micrometer-custom-metrics.md`
+- `prometheus-grafana-local-lab.md`
 
 ---
 
@@ -22,6 +24,8 @@ Flow học đề xuất:
 Spring Boot app đang chạy
 -> Actuator health/info/metrics
 -> request logging hoặc một vài metrics nhỏ
+-> /actuator/prometheus cho Prometheus scrape
+-> Grafana đọc Prometheus datasource
 -> verify bằng curl/HTTP Client
 -> summary: logs/metrics/health giúp vận hành nhưng không thay test
 ```
@@ -33,9 +37,10 @@ Spring Boot app đang chạy
 ### Đã làm baseline
 
 - Thêm `spring-boot-starter-actuator`.
-- Expose đúng `health`, `info`, `metrics`, không expose `*`.
+- Expose đúng `health`, `info`, `metrics`, `prometheus`, không expose `*`.
 - Cấu hình endpoint an toàn:
   - `/actuator/health` public local.
+  - `/actuator/prometheus` public trong local lab để Prometheus container scrape đơn giản.
   - `/actuator/info` và `/actuator/metrics` authenticated.
 - Thêm `info.app.*` metadata explicit, không chứa secret.
 - Disable Redis/Elasticsearch health mặc định vì đây là optional labs; nếu muốn quan sát riêng thì bật `ACTUATOR_REDIS_HEALTH_ENABLED=true` hoặc `ACTUATOR_ELASTICSEARCH_HEALTH_ENABLED=true` khi infra tương ứng đang chạy.
@@ -57,6 +62,11 @@ Spring Boot app đang chạy
   - Kafka publish counter/timer: `tenant_demo.kafka.publish.requests`, `tenant_demo.kafka.publish.duration`.
   - MasterData getByCode timer: `tenant_demo.master_data.get_by_code.duration`.
   - Không dùng high-cardinality tags như tenantId, requestId, code, eventId.
+- Thêm `micrometer-registry-prometheus` để có `/actuator/prometheus`.
+- Thêm `lab-code/observability-lab/`:
+  - Prometheus scrape `tenant-demo` qua `host.docker.internal:8080/actuator/prometheus`.
+  - Grafana đọc Prometheus datasource đã provision sẵn.
+  - Dashboard nhỏ: JVM memory, Redis cache requests, Kafka publish requests, getByCode duration.
 
 ### Đã verify local
 
@@ -71,17 +81,24 @@ Spring Boot app đang chạy
   - `/actuator/metrics/tenant_demo.kafka.publish.requests` có `event=master_data_changed`, `result=success`.
   - `/actuator/metrics/tenant_demo.kafka.publish.duration` có timer measurement.
 - Không thấy tag high-cardinality như tenantId, requestId, code, eventId, userId trong custom metric tags.
+- Prometheus/Grafana local lab:
+  - `/actuator/prometheus` trả Prometheus text format.
+  - Prometheus target `tenant-demo` phải `UP`.
+  - Grafana datasource `Prometheus` phải hoạt động.
 
 ### Có thể làm tiếp
 
-- Thêm 1 metric nhỏ nếu phù hợp:
+- Thêm 1 metric nhỏ nếu có câu hỏi vận hành rõ:
   - MinIO upload/download count; hoặc
   - HTTP business error count nếu có câu hỏi rõ.
+- Polish dashboard rất nhẹ nếu cần demo mentor.
 
 ### Không làm ngay
 
-- Không dựng Prometheus/Grafana/Loki đầy đủ.
+- Không dựng production observability platform.
 - Không làm tracing distributed.
+- Không thêm Loki/ELK log aggregation.
+- Không thêm Alertmanager/alert rules.
 - Không expose endpoint nhạy cảm.
 - Không log token/secret/password.
 - Không biến observability thành framework riêng trong repo.
@@ -93,17 +110,19 @@ Spring Boot app đang chạy
 Artifact đã có:
 
 - `pom.xml`: thêm Actuator.
-- `application.yml`: `management.endpoints.web.exposure.include=health,info,metrics`.
+- `application.yml`: `management.endpoints.web.exposure.include=health,info,metrics,prometheus`.
 - `SecurityConfig`: rule rõ cho actuator endpoints.
 - `http/actuator-api.http`: request mẫu cho health/info/metrics.
 - `com.viettel.demo.observability.RequestLoggingFilter`.
 - `com.viettel.demo.observability.ApplicationMetrics`.
 - `http/observability-api.http`: request mẫu để quan sát `X-Request-Id` và request log.
   Đồng thời có request mẫu đọc custom metrics.
+- `lab-code/observability-lab/`: Docker Compose cho Prometheus + Grafana local.
+- `docs/07-architecture/prometheus-grafana-local-lab.md`: hướng dẫn scrape/dashboard local.
 
 Artifact optional sau:
 
-- Prometheus/Grafana/Loki/tracing.
+- Loki/tracing/Alertmanager/production dashboard governance.
 
 ---
 
@@ -112,6 +131,7 @@ Artifact optional sau:
 - [ ] `cd lab-code/tenant-demo && ./mvnw validate` pass.
 - [ ] `cd lab-code && make app-test` pass.
 - [ ] `/actuator/health` trả response đúng, không cần token.
+- [ ] `/actuator/prometheus` trả Prometheus text format, không cần token trong local lab.
 - [ ] `/actuator/info` trả `401` nếu thiếu token, `200` nếu có token hợp lệ.
 - [ ] `/actuator/metrics` trả `401` nếu thiếu token, `200` nếu có token hợp lệ.
 - [ ] Không log token/Authorization header.
@@ -120,7 +140,10 @@ Artifact optional sau:
 - [ ] Request log không chứa payload nhạy cảm.
 - [ ] Custom metrics xuất hiện trong `/actuator/metrics/{name}` sau khi gọi code path tương ứng.
 - [ ] Custom metric tags không có tenantId/requestId/code/eventId/userId.
-- [ ] Summary ghi rõ giới hạn: chưa có Prometheus/Grafana/Loki/tracing production.
+- [ ] `make observability-up` chạy Prometheus + Grafana local.
+- [ ] Prometheus target `tenant-demo` là `UP`.
+- [ ] Grafana datasource Prometheus hoạt động.
+- [ ] Summary ghi rõ giới hạn: chưa có Loki/tracing/alerting/production monitoring.
 
 ---
 
@@ -131,8 +154,9 @@ Có thể trình bày theo thứ tự:
 1. Mở `observability-foundation.md` nói logs/metrics/traces/health khác nhau thế nào.
 2. Chạy app và gọi `/actuator/health`.
 3. Gọi `/actuator/metrics` hoặc giải thích vì sao endpoint được protected.
-4. Chỉ một log/request hoặc metric nhỏ nếu đã tự code.
-5. Nói caveat: health check không chứng minh tenant isolation; vẫn cần `DataLeakageTest`.
+4. Gọi `/actuator/prometheus` để thấy Prometheus scrape format.
+5. Mở Prometheus target `tenant-demo` và Grafana dashboard nhỏ nếu đã start lab.
+6. Nói caveat: health check không chứng minh tenant isolation; vẫn cần `DataLeakageTest`.
 
 ---
 
@@ -144,6 +168,7 @@ Milestone #16 đóng khi:
 - Actuator mini-lab hoặc skeleton được tự code/review.
 - App tests vẫn pass.
 - Endpoint health/metrics được verify local.
+- Prometheus/Grafana local lab chạy được ở mức scrape + datasource/dashboard nhỏ.
 - Có summary ngắn trong `docs/99-tong-ket/nhung-gi-da-nam-duoc.md`.
 - Không overclaim full observability platform.
 

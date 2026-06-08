@@ -10,6 +10,8 @@
 # - Request không có X-Request-Id -> app tự sinh UUID requestId.
 # - Log chỉ ghi method/path/status/duration/requestId, không ghi body/token.
 # - Custom metrics xuất hiện trong /actuator/metrics sau khi code path tương ứng đã chạy.
+# - /actuator/metrics dùng để inspect metric qua JSON.
+# - /actuator/prometheus dùng để Prometheus scrape theo text format.
 
 @tenantDemoUrl = http://localhost:8080
 #@accountantTenant1Token = <paste-local-jwt-or-keycloak-accountant-token-here>
@@ -39,6 +41,10 @@ X-Request-Id: demo-missing-token-001
 # Expected: 200, có thể thấy metric built-in và custom metric sau khi đã phát sinh.
 GET {{tenantDemoUrl}}/actuator/metrics
 Authorization: Bearer {{accountantTenant1Token}}
+
+### Prometheus scrape endpoint - public trong local mini-lab
+# Expected: 200, text format. Production phải restrict bằng private network/auth proxy/mTLS/gateway policy.
+GET {{tenantDemoUrl}}/actuator/prometheus
 
 ### Custom metric - Redis cache hit/miss
 # Cần APP_CACHE_ENABLED=true, Redis đang chạy và đã gọi /api/master-data/code/{code}.

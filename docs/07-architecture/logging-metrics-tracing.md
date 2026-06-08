@@ -149,6 +149,23 @@ tenant_demo.master_data.get_by_code.duration{cache="enabled",result="found"}
 
 Đọc thêm: `micrometer-custom-metrics.md`.
 
+### `/actuator/metrics`, Prometheus và Grafana
+
+Trong Spring Boot lab hiện tại có hai cách đọc metric:
+
+- `/actuator/metrics`: JSON endpoint của Actuator, phù hợp để inspect nhanh metric names/measurements trong lúc học; repo yêu cầu Bearer token.
+- `/actuator/prometheus`: text endpoint theo Prometheus exposition format; local Prometheus scrape endpoint này theo chu kỳ.
+
+Grafana không đọc trực tiếp business API và cũng không nhận metric do app push lên. Flow đúng trong local lab là:
+
+```text
+tenant-demo -> /actuator/prometheus -> Prometheus scrape/store -> Grafana query Prometheus
+```
+
+Tên metric có thể đổi shape khi qua Prometheus. Ví dụ `tenant_demo.kafka.publish.requests` thành `tenant_demo_kafka_publish_requests_total`.
+
+Đọc thêm: `prometheus-grafana-local-lab.md`.
+
 ---
 
 ## 3. Tracing
@@ -238,13 +255,15 @@ Observability nên bám vào flow này, nhưng không được thay thế auth, 
 
 Trong mini-lab hiện tại:
 
-1. Actuator baseline đã bật `health`, `info`, `metrics`.
+1. Actuator baseline đã bật `health`, `info`, `metrics`, `prometheus`.
 2. `RequestLoggingFilter` log một dòng ngắn sau mỗi request, skip `/actuator/health` để tránh ồn.
 3. Log pattern console có `requestId` từ MDC.
 4. Request thiếu token vẫn được log với status `401`; request hợp lệ có thể log thêm `tenantId` sau khi token được validate.
 5. `ApplicationMetrics` ghi custom Counter/Timer nhỏ cho Redis/Kafka/master_data getByCode.
-6. Dùng `lab-code/tenant-demo/http/observability-api.http` để verify request log và custom metrics.
-7. Ghi rõ caveat: đây là local learning, chưa có dashboard/alert/tracing production.
+6. `/actuator/prometheus` expose built-in/custom metrics ở format Prometheus.
+7. `lab-code/observability-lab/` chạy Prometheus + Grafana local để thấy scrape target và dashboard nhỏ.
+8. Dùng `lab-code/tenant-demo/http/observability-api.http` để verify request log, Actuator metrics và Prometheus endpoint.
+9. Ghi rõ caveat: đây là local learning, chưa có alert/log aggregation/tracing production.
 
 ---
 

@@ -21,6 +21,7 @@ KEYCLOAK_DIR   := keycloak-lab
 MINIO_DIR      := minio-lab
 REDIS_DIR      := redis-lab
 KAFKA_DIR      := kafka-lab
+OBSERVABILITY_DIR := observability-lab
 
 # --- Docker / Database -----------------------------------------
 
@@ -113,6 +114,20 @@ kafka-down: ## Dừng Kafka local cho async messaging mini-lab
 kafka-status: ## Kiểm tra Kafka local
 	@docker ps --filter "name=viettel-kafka" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 
+# --- Observability mini-lab ------------------------------------
+
+.PHONY: observability-up
+observability-up: ## Khởi chạy Prometheus + Grafana local cho observability mini-lab
+	cd $(OBSERVABILITY_DIR) && docker compose up -d
+
+.PHONY: observability-down
+observability-down: ## Dừng Prometheus + Grafana local cho observability mini-lab
+	cd $(OBSERVABILITY_DIR) && docker compose down
+
+.PHONY: observability-status
+observability-status: ## Kiểm tra Prometheus + Grafana local
+	@docker ps --filter "name=viettel-prometheus" --filter "name=viettel-grafana" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
 # --- Common dev infra ------------------------------------------
 #
 # Dùng target riêng khi chỉ học từng lab nhỏ:
@@ -122,10 +137,12 @@ kafka-status: ## Kiểm tra Kafka local
 # - minio-up cho file storage mini-lab
 # - redis-up cho cache mini-lab
 # - kafka-up cho async messaging mini-lab
+# - observability-up cho Prometheus/Grafana mini-lab
 #
 # Dùng infra-up khi cần demo đầy đủ hơn: PostgreSQL + Keycloak +
 # Elasticsearch + MinIO + Redis + Kafka. App Spring Boot vẫn chạy riêng
-# bằng `make app-run`.
+# bằng `make app-run`. Prometheus/Grafana là observability optional, chạy
+# riêng bằng `make observability-up` để full infra mặc định không quá nặng.
 
 .PHONY: infra-up
 infra-up: db-up keycloak-up elastic-up minio-up redis-up kafka-up ## Khởi chạy PostgreSQL + KeyCloak + Elasticsearch + MinIO + Redis + Kafka

@@ -2,9 +2,9 @@
 
 ## Vai trò tài liệu
 
-Tài liệu này là code guide cho mini-lab Observability/logging/metrics. Mục tiêu là giải thích Actuator/Micrometer + request logging nhỏ, an toàn, không dựng full monitoring stack.
+Tài liệu này là code guide cho mini-lab Observability/logging/metrics. Mục tiêu là giải thích Actuator/Micrometer + request logging nhỏ, an toàn, rồi nối sang Prometheus/Grafana local ở mức vừa đủ học.
 
-Trạng thái hiện tại: Actuator baseline và request logging baseline đã được thêm vào `tenant-demo`. Bước tiếp theo là student chạy/đọc endpoint/log, rồi nếu cần mới tự thêm custom metric nhỏ.
+Trạng thái hiện tại: Actuator baseline, request logging baseline, custom Micrometer metrics và Prometheus registry đã được thêm vào `tenant-demo`.
 
 ---
 
@@ -15,7 +15,7 @@ Spring Boot Actuator thêm các endpoint vận hành cho app, ví dụ:
 - `/actuator/health`
 - `/actuator/info`
 - `/actuator/metrics`
-- `/actuator/prometheus` nếu thêm Prometheus registry sau
+- `/actuator/prometheus` khi có Prometheus registry
 
 Actuator không thay test nghiệp vụ. Nó giúp quan sát app đang chạy.
 
@@ -30,9 +30,13 @@ Actuator không thay test nghiệp vụ. Nó giúp quan sát app đang chạy.
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-actuator</artifactId>
 </dependency>
+<dependency>
+    <groupId>io.micrometer</groupId>
+    <artifactId>micrometer-registry-prometheus</artifactId>
+</dependency>
 ```
 
-Không cần thêm Prometheus ngay. Nếu sau này muốn `/actuator/prometheus`, mới thêm registry phù hợp.
+`spring-boot-starter-actuator` cung cấp endpoint vận hành. `micrometer-registry-prometheus` làm metric được export theo Prometheus text format ở `/actuator/prometheus`.
 
 ---
 
@@ -45,7 +49,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,prometheus
   endpoint:
     health:
       show-details: when_authorized
@@ -70,6 +74,7 @@ Lý do:
 - `health`: verify service sống.
 - `info`: metadata app nếu muốn.
 - `metrics`: xem metric names và giá trị cơ bản.
+- `prometheus`: endpoint để Prometheus scrape trong local lab.
 - `management.health.redis.enabled=false`: vì Redis là mini-lab optional, không để Redis down làm health baseline của app bị `DOWN`.
 - `management.health.elasticsearch.enabled=false`: tương tự cho Elasticsearch/search mini-lab.
 - Không expose `env`, `beans`, `configprops` public trong lab vì dễ lộ config nhạy cảm.
@@ -90,9 +95,12 @@ Gợi ý Phase 1:
 Rule đã chọn trong repo:
 
 - `GET /actuator/health`: public.
+- `GET /actuator/prometheus`: public trong local lab để Prometheus container scrape được.
 - `GET /actuator/info`: authenticated.
 - `GET /actuator/metrics`: authenticated.
 - Business APIs vẫn giữ rule cũ, không bị permit all.
+
+Production không nên expose `/actuator/prometheus` bừa bãi ra Internet. Thường sẽ restrict bằng private network, gateway, mTLS, firewall/network policy hoặc auth proxy.
 
 Lưu ý: `JwtTenantContextFilter` chỉ set `TenantContext` khi có JWT đã validate. Vì vậy health public không cần tenant context; còn info/metrics nếu gọi bằng token thì token lab nên có `tenant_id`.
 
@@ -217,6 +225,7 @@ Manual check:
 
 ```bash
 curl http://localhost:8080/actuator/health
+curl http://localhost:8080/actuator/prometheus
 curl http://localhost:8080/actuator/info
 curl http://localhost:8080/actuator/metrics
 ```
@@ -242,7 +251,8 @@ curl http://localhost:8080/actuator/metrics
 2. Đọc response của `health`, `info`, `metrics`.
 3. Gọi `observability-api.http` để xem request log có/không có `X-Request-Id`.
 4. Gọi các endpoint `/actuator/metrics/tenant_demo...` trong `observability-api.http`.
-5. Nếu còn thời gian nữa, thử bật Redis/Kafka để thấy metric tăng sau hit/miss hoặc publish event.
+5. Bật Redis/Kafka nếu muốn thấy custom metric tăng sau hit/miss hoặc publish event.
+6. Chạy `make observability-up` và đọc `prometheus-grafana-local-lab.md` để thấy Prometheus scrape + Grafana dashboard local.
 
 ---
 
@@ -251,3 +261,4 @@ curl http://localhost:8080/actuator/metrics
 - [Spring Boot Actuator endpoints](https://docs.spring.io/spring-boot/reference/actuator/endpoints.html)
 - [Spring Boot Actuator metrics](https://docs.spring.io/spring-boot/reference/actuator/metrics.html)
 - [Micrometer documentation](https://docs.micrometer.io/micrometer/reference/index.html)
+- [Micrometer Prometheus registry](https://docs.micrometer.io/micrometer/reference/implementations/prometheus.html)

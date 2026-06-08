@@ -682,21 +682,23 @@ Trạng thái: đã đóng mini-lab cơ bản.
 
 ## Milestone #16: Observability/logging/metrics mini-lab
 
-Trạng thái: Actuator baseline, request logging baseline và custom Micrometer metrics baseline đã implement; milestone chưa đóng toàn bộ vì dashboard/tracing/alert vẫn là optional/later.
+Trạng thái: Actuator baseline, request logging baseline, custom Micrometer metrics baseline và Prometheus/Grafana local lab đã implement; milestone chưa đóng toàn bộ vì tracing/log aggregation/alert vẫn là optional/later.
 
 ### Đã chuẩn bị
 
 - `docs/07-architecture/observability-foundation.md`: logs, metrics, tracing, health check, alert và vai trò của observability trong backend.
 - `docs/07-architecture/logging-metrics-tracing.md`: shape/cách đọc log, metric, trace, health; nhấn mạnh không log token/secret/dữ liệu nhạy cảm.
 - `docs/07-architecture/micrometer-custom-metrics.md`: custom Counter/Timer, `MeterRegistry`, tag cardinality và metric names hiện có.
+- `docs/07-architecture/prometheus-grafana-local-lab.md`: Prometheus scrape model, Grafana datasource/dashboard local và cách đọc metric name sau khi qua Prometheus.
 - `docs/07-architecture/spring-boot-actuator-code-guide.md`: hướng tự code Actuator/Micrometer nhỏ cho `tenant-demo`.
 - `docs/07-architecture/observability-mini-lab-plan.md`: checklist Milestone #16.
 
 ### Actuator baseline đã làm
 
 - Thêm `spring-boot-starter-actuator`.
-- Expose đúng `health`, `info`, `metrics`; không expose toàn bộ endpoint bằng `*`.
+- Expose đúng `health`, `info`, `metrics`, `prometheus`; không expose toàn bộ endpoint bằng `*`.
 - `/actuator/health` public để kiểm tra app sống.
+- `/actuator/prometheus` public trong local lab để Prometheus container scrape đơn giản.
 - `/actuator/info` và `/actuator/metrics` cần Bearer token.
 - `info.app.*` chỉ chứa metadata explicit, không chứa secret/env nhạy cảm.
 - Redis/Elasticsearch health indicator tắt mặc định vì đây là optional labs; tránh làm health baseline `DOWN` khi infra optional không chạy.
@@ -724,7 +726,20 @@ Trạng thái: Actuator baseline, request logging baseline và custom Micrometer
 - Đã verify Redis path: miss -> put -> hit, metric count tăng và tags chỉ có `result`, `cache`.
 - Đã verify Kafka path: create `master_data` publish event thành công, metric count/timer tăng và tags chỉ có `event`, `result`.
 
+### Prometheus/Grafana local lab đã thêm
+
+- Thêm `micrometer-registry-prometheus` để Spring Boot expose `/actuator/prometheus`.
+- Thêm `lab-code/observability-lab/` gồm Prometheus, Grafana, datasource provisioning và dashboard nhỏ.
+- Prometheus scrape `tenant-demo` qua `host.docker.internal:8080/actuator/prometheus`.
+- Grafana chạy ở `http://localhost:13000`, local credential `admin/admin` chỉ dùng để học.
+- Metric name khi qua Prometheus đổi sang convention underscore/suffix, ví dụ:
+  - `tenant_demo.master_data.cache.requests` -> `tenant_demo_master_data_cache_requests_total`.
+  - `tenant_demo.kafka.publish.requests` -> `tenant_demo_kafka_publish_requests_total`.
+  - timer `tenant_demo.master_data.get_by_code.duration` có `_seconds_count`, `_seconds_sum`.
+- Caveat: đây là local monitoring lab, chưa có alerting, tracing, log aggregation, long-term retention hoặc production access control.
+
 ### Hướng tự code tiếp
 
+- Verify dashboard/Prometheus queries sau khi generate Redis/Kafka activity.
 - Có thể thêm 1 metric nhỏ nữa nếu có câu hỏi vận hành rõ, ví dụ file upload/download count.
-- Không dựng full Prometheus/Grafana/Loki trong bước đầu.
+- Không dựng Loki/tracing/alerting production trong bước đầu.

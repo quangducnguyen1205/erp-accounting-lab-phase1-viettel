@@ -84,8 +84,10 @@ public class SecurityConfig {
              */
             return http
                     .authorizeHttpRequests(auth -> auth
-                            // Actuator baseline: health public, info/metrics vẫn cần token qua anyRequest().
+                            // Actuator baseline: health public; prometheus public cho local scrape.
+                            // Info/metrics vẫn cần token qua anyRequest().
                             .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/actuator/prometheus", "/actuator/prometheus/**").permitAll()
                             .requestMatchers("/api/dev/tokens/**").permitAll()
                             .requestMatchers("/api/master-data", "/api/master-data/**").authenticated()
                             .requestMatchers("/api/search/master-data", "/api/search/master-data/**").authenticated()
@@ -111,8 +113,10 @@ public class SecurityConfig {
          */
         return http
                 .authorizeHttpRequests(auth -> auth
-                        // Health check public cho infra/local Docker; các actuator endpoint khác vẫn authenticated.
+                        // Health/prometheus public cho infra/local Docker; info/metrics vẫn authenticated.
                         .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/actuator/prometheus", "/actuator/prometheus/**")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/master-data", "/api/master-data/**")
                         .hasAnyRole("ADMIN", "ACCOUNTANT", "VIEWER")

@@ -1,0 +1,13 @@
+apiVersion: 1
+
+providers:
+  - name: Tenant Demo
+    orgId: 1
+    folder: Phase 1 Lab
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
+

@@ -2,9 +2,9 @@
 
 ## Vai trò tài liệu
 
-Tài liệu này giải thích phần custom metrics nhỏ của Observability mini-lab. Mục tiêu là hiểu cách code app tự ghi metric có ý nghĩa nghiệp vụ/kỹ thuật, rồi Actuator hiển thị metric đó qua `/actuator/metrics`.
+Tài liệu này giải thích phần custom metrics nhỏ của Observability mini-lab. Mục tiêu là hiểu cách code app tự ghi metric có ý nghĩa nghiệp vụ/kỹ thuật, rồi Actuator hiển thị qua `/actuator/metrics` và Prometheus scrape qua `/actuator/prometheus`.
 
-Chưa làm Prometheus/Grafana trong bước này.
+Prometheus/Grafana local lab đã có ở `prometheus-grafana-local-lab.md`; tài liệu này chỉ tập trung vào cách app ghi metric.
 
 ---
 
@@ -68,7 +68,7 @@ tenant_demo.master_data.get_by_code.duration{cache="enabled|disabled",result="fo
 tenant_demo.kafka.publish.duration{event="master_data_changed",result="success|failure"}
 ```
 
-Actuator thường trả về các measurement như `COUNT`, `TOTAL_TIME`, `MAX`. Nếu app restart, các giá trị local này reset vì hiện chưa có monitoring backend bên ngoài.
+Actuator thường trả về các measurement như `COUNT`, `TOTAL_TIME`, `MAX`. Nếu app restart, các giá trị local trong app reset. Prometheus có thể giữ các sample đã scrape trong local volume khi container còn dữ liệu.
 
 ---
 
@@ -155,12 +155,29 @@ Nếu metric chưa từng được ghi trong process hiện tại, endpoint metr
 
 ---
 
-## 8. Caveat Phase 1
+## 8. Prometheus name mapping
 
-- Metric hiện mới dùng registry local trong app.
-- Chưa có Prometheus/Grafana.
-- App restart thì giá trị local reset.
+Khi metric đi qua `/actuator/prometheus`, Micrometer đổi tên theo Prometheus convention:
+
+```text
+tenant_demo.master_data.cache.requests
+-> tenant_demo_master_data_cache_requests_total
+
+tenant_demo.master_data.get_by_code.duration
+-> tenant_demo_master_data_get_by_code_duration_seconds_count
+-> tenant_demo_master_data_get_by_code_duration_seconds_sum
+```
+
+Counter thường có suffix `_total`. Timer thường có nhiều series như `_seconds_count`, `_seconds_sum`, `_seconds_max`.
+
+Đọc thêm: `prometheus-grafana-local-lab.md`.
+
+---
+
+## 9. Caveat Phase 1
+
+- Metric trong app vẫn reset khi app restart.
+- Prometheus/Grafana hiện chỉ là local lab, chưa phải production monitoring stack.
 - Chưa có alert.
 - Chưa thêm nhiều custom metrics để tránh làm nhiễu code học tập.
 - Không dùng metric để chứng minh tenant isolation; việc đó vẫn cần test như `DataLeakageTest`.
-

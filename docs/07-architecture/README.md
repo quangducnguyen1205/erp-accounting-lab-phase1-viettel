@@ -31,8 +31,9 @@ Thư mục này kết nối các lab nhỏ trong repo với kiến trúc target 
 23. `observability-foundation.md` - foundation: logs, metrics, tracing, health, alert và vì sao logs alone chưa đủ.
 24. `logging-metrics-tracing.md` - shape/cách đọc log, metric, trace, health và rủi ro multi-tenant.
 25. `micrometer-custom-metrics.md` - custom Counter/Timer, MeterRegistry, tag cardinality và metric names hiện có.
-26. `spring-boot-actuator-code-guide.md` - code guide Actuator/Micrometer + request logging nhỏ cho `tenant-demo`.
-27. `observability-mini-lab-plan.md` - checklist Milestone #16, chưa dựng full Prometheus/Grafana/Loki.
+26. `prometheus-grafana-local-lab.md` - Prometheus scrape model, `/actuator/prometheus`, Grafana datasource/dashboard local.
+27. `spring-boot-actuator-code-guide.md` - code guide Actuator/Micrometer + request logging nhỏ cho `tenant-demo`.
+28. `observability-mini-lab-plan.md` - checklist Milestone #16, không dựng Loki/tracing/alerting production.
 
 ## Core
 
@@ -48,7 +49,7 @@ Thư mục này kết nối các lab nhỏ trong repo với kiến trúc target 
 - Redis mini-lab đã đóng: học tenant-safe cache key, TTL và cache-aside.
 - MinIO advanced object management chỉ làm sau core demo/UI hoặc sau các milestone công nghệ chính, không chặn Redis.
 - Kafka mini-lab đã có flow nhỏ producer/consumer; các deep-dive mới giúp đọc lại config, async send và listener flow.
-- Observability hiện có Actuator baseline + request logging baseline + custom Micrometer metrics baseline; Prometheus/Grafana/Loki chỉ là optional later.
+- Observability hiện có Actuator baseline + request logging baseline + custom Micrometer metrics baseline + Prometheus/Grafana local lab; Loki/tracing/alerting vẫn để later.
 - Elasticsearch mini-lab đã đóng vì nối tự nhiên từ PostgreSQL `LIKE`/index/query-pattern.
 - Debezium awareness hoặc mini-lab nhỏ sau Observability nếu còn cần.
 - DDD/domain boundaries sau khi demo backend đã đóng gói.

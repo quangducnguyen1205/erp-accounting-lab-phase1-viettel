@@ -73,13 +73,14 @@ logging:
 #
 # Security rule nằm trong SecurityConfig:
 # - /actuator/health public để infra kiểm tra app còn sống.
+# - /actuator/prometheus public cho Prometheus local scrape trong mini-lab.
 # - /actuator/info và /actuator/metrics cần Bearer token.
 #
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,prometheus
   endpoint:
     health:
       # Public health chỉ thấy status; detail chỉ hiện khi request authorized.
