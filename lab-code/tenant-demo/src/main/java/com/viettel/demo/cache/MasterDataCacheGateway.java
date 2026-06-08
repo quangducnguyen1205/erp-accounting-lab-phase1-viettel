@@ -2,6 +2,7 @@ package com.viettel.demo.cache;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.viettel.demo.entity.MasterData;
+import com.viettel.demo.observability.ApplicationMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -33,17 +34,20 @@ public class MasterDataCacheGateway {
     private final ObjectMapper objectMapper;
     private final CacheProperties cacheProperties;
     private final MasterDataCacheKeyFactory keyFactory;
+    private final ApplicationMetrics metrics;
 
     public MasterDataCacheGateway(
             StringRedisTemplate redisTemplate,
             ObjectMapper objectMapper,
             CacheProperties cacheProperties,
-            MasterDataCacheKeyFactory keyFactory
+            MasterDataCacheKeyFactory keyFactory,
+            ApplicationMetrics metrics
     ) {
         this.redisTemplate = redisTemplate;
         this.objectMapper = objectMapper;
         this.cacheProperties = cacheProperties;
         this.keyFactory = keyFactory;
+        this.metrics = metrics;
     }
 
     public Optional<CachedMasterData> getByCode(Long tenantId, String code) {
@@ -56,20 +60,31 @@ public class MasterDataCacheGateway {
          * 5. Không catch/nuốt lỗi âm thầm; lỗi parse cache nên rõ ràng để dễ học.
          */
         String key = keyFactory.byCode(tenantId, code);
-        String json = redisTemplate.opsForValue().get(key);
+        String json;
+        try {
+            json = redisTemplate.opsForValue().get(key);
+        } catch (RuntimeException e) {
+            metrics.recordMasterDataCacheError("read");
+            throw e;
+        }
+
         if (json == null) {
             log.info("Cache miss key={}", key);
+            metrics.recordMasterDataCacheMiss();
             return Optional.empty();
         }
+
         CachedMasterData cachedMasterData;
         try {
             cachedMasterData = objectMapper.readValue(json, CachedMasterData.class);
         } catch (Exception e) {
             // Log lỗi parse cache rõ ràng để dễ debug.
             log.warn("Failed to parse cache key={}, error={}", key, e.getMessage());
+            metrics.recordMasterDataCacheError("read");
             return Optional.empty();
         }
         log.info("Cache hit key={}", key);
+        metrics.recordMasterDataCacheHit();
         return Optional.of(cachedMasterData);
     }
 
@@ -87,13 +102,21 @@ public class MasterDataCacheGateway {
         } catch (Exception e) {
             // Log lỗi serialize cache rõ ràng để dễ debug.
             log.warn("Failed to serialize cache tenantId={}, code={}, error={}", tenantId, code, e.getMessage());
+            metrics.recordMasterDataCacheError("write");
             return;
         }
-        redisTemplate.opsForValue().set(
-                keyFactory.byCode(tenantId, code),
-                json,
-                cacheProperties.getMasterDataTtl()
-        );
+
+        try {
+            redisTemplate.opsForValue().set(
+                    keyFactory.byCode(tenantId, code),
+                    json,
+                    cacheProperties.getMasterDataTtl()
+            );
+            metrics.recordMasterDataCachePut();
+        } catch (RuntimeException e) {
+            metrics.recordMasterDataCacheError("write");
+            throw e;
+        }
     }
 
     public void evictByCode(Long tenantId, String code) {

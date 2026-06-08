@@ -1,5 +1,6 @@
 package com.viettel.demo.messaging;
 
+import com.viettel.demo.observability.ApplicationMetrics;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +9,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 /*
@@ -33,25 +35,30 @@ public class KafkaMasterDataEventPublisher implements MasterDataEventPublisher {
 
     private final KafkaTemplate<String, MasterDataChangedEvent> kafkaTemplate;
     private final MessagingProperties properties;
+    private final ApplicationMetrics metrics;
 
     public KafkaMasterDataEventPublisher(
             KafkaTemplate<String, MasterDataChangedEvent> kafkaTemplate,
-            MessagingProperties properties
+            MessagingProperties properties,
+            ApplicationMetrics metrics
     ) {
         this.kafkaTemplate = kafkaTemplate;
         this.properties = properties;
+        this.metrics = metrics;
     }
 
     @Override
     public void publish(MasterDataChangedEvent event) {
         String topic = properties.getMasterDataTopic();
         String key = event.kafkaKey();
+        long startedAt = System.nanoTime();
 
         try {
             // send(...) trả về CompletableFuture; .get(...) làm request chờ broker ack để mini-lab fail rõ khi Kafka lỗi.
             SendResult<String, MasterDataChangedEvent> result = kafkaTemplate
                     .send(topic, key, event)
                     .get(5, TimeUnit.SECONDS);
+            metrics.recordKafkaPublishSuccess(elapsedSince(startedAt));
 
             RecordMetadata metadata = result.getRecordMetadata();
             log.info(
@@ -67,10 +74,15 @@ public class KafkaMasterDataEventPublisher implements MasterDataEventPublisher {
                     metadata.offset()
             );
         } catch (Exception e) {
+            metrics.recordKafkaPublishFailure(elapsedSince(startedAt));
             throw new IllegalStateException(
                     "Failed to publish MasterDataChangedEvent to Kafka. DB write may already be committed in this mini-lab.",
                     e
             );
         }
+    }
+
+    private Duration elapsedSince(long startedAt) {
+        return Duration.ofNanos(System.nanoTime() - startedAt);
     }
 }

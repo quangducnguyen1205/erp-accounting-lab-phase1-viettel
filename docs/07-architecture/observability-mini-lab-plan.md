@@ -4,7 +4,7 @@
 
 Đây là checklist cho Milestone #16. Mục tiêu là chạy một mini-lab nhỏ quanh Spring Boot Actuator + logging/metrics cơ bản, không dựng full observability platform.
 
-Trạng thái hiện tại: Actuator baseline và request logging baseline đã được implement bằng built-in Spring Boot features + SLF4J/MDC. Custom metrics vẫn là optional sau.
+Trạng thái hiện tại: Actuator baseline, request logging baseline và custom Micrometer metrics baseline đã được implement ở mức nhỏ. Prometheus/Grafana/tracing vẫn là optional sau.
 
 Đọc trước:
 
@@ -50,13 +50,33 @@ Spring Boot app đang chạy
   - skip `/actuator/health` để giảm noise.
 - Đổi Redis cache hit/miss từ `System.out/System.err` sang SLF4J.
 - Thêm `lab-code/tenant-demo/http/observability-api.http` để verify request id.
+- Thêm `ApplicationMetrics`:
+  - Redis cache request counter: `tenant_demo.master_data.cache.requests{result=hit|miss}`.
+  - Redis cache put counter: `tenant_demo.master_data.cache.puts`.
+  - Redis cache error counter: `tenant_demo.master_data.cache.errors{operation=read|write}`.
+  - Kafka publish counter/timer: `tenant_demo.kafka.publish.requests`, `tenant_demo.kafka.publish.duration`.
+  - MasterData getByCode timer: `tenant_demo.master_data.get_by_code.duration`.
+  - Không dùng high-cardinality tags như tenantId, requestId, code, eventId.
+
+### Đã verify local
+
+- Redis cache enabled:
+  - Gọi `GET /api/master-data/code/LAPTOP-01` hai lần tạo miss -> put -> hit.
+  - `/actuator/metrics/tenant_demo.master_data.cache.requests` có `result=hit|miss`, count tăng.
+  - `/actuator/metrics/tenant_demo.master_data.cache.puts` có count tăng.
+  - `/actuator/metrics/tenant_demo.master_data.get_by_code.duration` có tag `cache=enabled`, `result=found`.
+- Kafka messaging enabled:
+  - Create `master_data` trả `201`.
+  - Log có `Published Kafka event` và `Consumed Kafka event`.
+  - `/actuator/metrics/tenant_demo.kafka.publish.requests` có `event=master_data_changed`, `result=success`.
+  - `/actuator/metrics/tenant_demo.kafka.publish.duration` có timer measurement.
+- Không thấy tag high-cardinality như tenantId, requestId, code, eventId, userId trong custom metric tags.
 
 ### Có thể làm tiếp
 
 - Thêm 1 metric nhỏ nếu phù hợp:
-  - Kafka publish success/failure; hoặc
-  - Redis cache hit/miss; hoặc
-  - MinIO upload/download count.
+  - MinIO upload/download count; hoặc
+  - HTTP business error count nếu có câu hỏi rõ.
 
 ### Không làm ngay
 
@@ -77,11 +97,13 @@ Artifact đã có:
 - `SecurityConfig`: rule rõ cho actuator endpoints.
 - `http/actuator-api.http`: request mẫu cho health/info/metrics.
 - `com.viettel.demo.observability.RequestLoggingFilter`.
+- `com.viettel.demo.observability.ApplicationMetrics`.
 - `http/observability-api.http`: request mẫu để quan sát `X-Request-Id` và request log.
+  Đồng thời có request mẫu đọc custom metrics.
 
 Artifact optional sau:
 
-- metric nhỏ với `MeterRegistry`.
+- Prometheus/Grafana/Loki/tracing.
 
 ---
 
@@ -96,6 +118,8 @@ Artifact optional sau:
 - [ ] Request có `X-Request-Id` tạo log chứa đúng request id đó.
 - [ ] Request không có `X-Request-Id` tạo log với UUID do app sinh.
 - [ ] Request log không chứa payload nhạy cảm.
+- [ ] Custom metrics xuất hiện trong `/actuator/metrics/{name}` sau khi gọi code path tương ứng.
+- [ ] Custom metric tags không có tenantId/requestId/code/eventId/userId.
 - [ ] Summary ghi rõ giới hạn: chưa có Prometheus/Grafana/Loki/tracing production.
 
 ---

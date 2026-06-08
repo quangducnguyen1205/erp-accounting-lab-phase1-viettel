@@ -682,12 +682,13 @@ Trạng thái: đã đóng mini-lab cơ bản.
 
 ## Milestone #16: Observability/logging/metrics mini-lab
 
-Trạng thái: Actuator baseline và request logging baseline đã implement; milestone chưa đóng toàn bộ vì custom metric/dashboard/tracing vẫn là optional/later.
+Trạng thái: Actuator baseline, request logging baseline và custom Micrometer metrics baseline đã implement; milestone chưa đóng toàn bộ vì dashboard/tracing/alert vẫn là optional/later.
 
 ### Đã chuẩn bị
 
 - `docs/07-architecture/observability-foundation.md`: logs, metrics, tracing, health check, alert và vai trò của observability trong backend.
 - `docs/07-architecture/logging-metrics-tracing.md`: shape/cách đọc log, metric, trace, health; nhấn mạnh không log token/secret/dữ liệu nhạy cảm.
+- `docs/07-architecture/micrometer-custom-metrics.md`: custom Counter/Timer, `MeterRegistry`, tag cardinality và metric names hiện có.
 - `docs/07-architecture/spring-boot-actuator-code-guide.md`: hướng tự code Actuator/Micrometer nhỏ cho `tenant-demo`.
 - `docs/07-architecture/observability-mini-lab-plan.md`: checklist Milestone #16.
 
@@ -712,7 +713,18 @@ Trạng thái: Actuator baseline và request logging baseline đã implement; mi
 - Redis cache hit/miss đã chuyển từ `System.out/System.err` sang SLF4J.
 - Có `lab-code/tenant-demo/http/observability-api.http` để verify request id thủ công.
 
+### Custom metrics baseline đã làm
+
+- Thêm `ApplicationMetrics` dùng `MeterRegistry`.
+- Redis cache-aside có counter cho hit/miss, put và error.
+- Kafka publish có counter success/failure và timer duration.
+- `MasterDataService.getByCode` có timer theo `cache=enabled|disabled` và `result=found|not_found|error`.
+- Metric tags giữ low-cardinality; không tag tenantId, requestId, code, eventId, userId hoặc token.
+- Có request mẫu trong `observability-api.http` để đọc `/actuator/metrics/{custom_metric_name}`.
+- Đã verify Redis path: miss -> put -> hit, metric count tăng và tags chỉ có `result`, `cache`.
+- Đã verify Kafka path: create `master_data` publish event thành công, metric count/timer tăng và tags chỉ có `event`, `result`.
+
 ### Hướng tự code tiếp
 
-- Thêm 1 metric nhỏ nếu có câu hỏi vận hành rõ, ví dụ cache hit/miss, Kafka publish success/failure hoặc file upload/download count.
+- Có thể thêm 1 metric nhỏ nữa nếu có câu hỏi vận hành rõ, ví dụ file upload/download count.
 - Không dựng full Prometheus/Grafana/Loki trong bước đầu.

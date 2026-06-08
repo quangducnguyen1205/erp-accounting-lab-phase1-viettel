@@ -151,23 +151,28 @@ Lưu ý async/Kafka: MDC không tự lan qua thread/process khác. Nếu muốn 
 
 ## 6. Metrics bằng Micrometer
 
-Actuator dùng Micrometer để thu metrics. Nếu muốn tự thêm counter/timer nhỏ, inject `MeterRegistry`.
+Actuator dùng Micrometer để thu metrics. Khi tự thêm counter/timer nhỏ, inject `MeterRegistry`.
 
-Ví dụ conceptual:
+Repo đã thêm class nhỏ:
 
-```java
-Counter.builder("tenant_demo.kafka.publish.total")
-        .tag("topic", topic)
-        .tag("result", "success")
-        .register(meterRegistry)
-        .increment();
+```text
+com.viettel.demo.observability.ApplicationMetrics
 ```
 
-Chỉ thêm khi có câu hỏi rõ ràng:
+Class này giữ tên metric/tag ổn định để service/gateway chỉ gọi method rõ nghĩa.
 
-- Kafka publish success/failure bao nhiêu lần?
-- Redis cache hit/miss bao nhiêu lần?
-- MinIO upload/download bao nhiêu lần?
+Metrics hiện có:
+
+| Metric | Loại | Tags | Ý nghĩa |
+|---|---|---|---|
+| `tenant_demo.master_data.cache.requests` | Counter | `result=hit|miss` | Cache read hit/miss |
+| `tenant_demo.master_data.cache.puts` | Counter | none | Số lần set Redis cache |
+| `tenant_demo.master_data.cache.errors` | Counter | `operation=read|write` | Lỗi cache read/write/serialize |
+| `tenant_demo.master_data.get_by_code.duration` | Timer | `cache=enabled|disabled`, `result=found|not_found|error` | Duration lookup by code |
+| `tenant_demo.kafka.publish.requests` | Counter | `event=master_data_changed`, `result=success|failure` | Kafka publish result |
+| `tenant_demo.kafka.publish.duration` | Timer | `event=master_data_changed`, `result=success|failure` | Duration publish Kafka |
+
+Không tag bằng `tenantId`, `requestId`, `code`, `eventId`, `userId` vì đó là high-cardinality data.
 
 Không nên thêm metric cho mọi dòng code.
 
@@ -181,10 +186,10 @@ Giữ nhỏ:
 com.viettel.demo.observability
 ├── ObservabilityProperties.java       # optional: bật/tắt request logging nếu cần
 ├── RequestLoggingFilter.java          # log request duration/status/requestId
-└── AppMetrics.java                    # optional: helper rất nhỏ cho counter nếu tránh lặp
+└── ApplicationMetrics.java            # custom Counter/Timer nhỏ, low-cardinality tags
 ```
 
-Không tạo framework lớn. Hiện repo chỉ thêm một filter nhỏ; custom metrics vẫn để sau.
+Không tạo framework lớn. Hiện repo chỉ thêm một filter nhỏ và một metrics component nhỏ.
 
 ---
 
@@ -236,7 +241,8 @@ curl http://localhost:8080/actuator/metrics
 1. Chạy app và curl endpoints bằng `actuator-api.http`.
 2. Đọc response của `health`, `info`, `metrics`.
 3. Gọi `observability-api.http` để xem request log có/không có `X-Request-Id`.
-4. Nếu còn thời gian nữa, thêm một metric dễ hiểu: Kafka publish success/failure hoặc cache hit/miss.
+4. Gọi các endpoint `/actuator/metrics/tenant_demo...` trong `observability-api.http`.
+5. Nếu còn thời gian nữa, thử bật Redis/Kafka để thấy metric tăng sau hit/miss hoặc publish event.
 
 ---
 

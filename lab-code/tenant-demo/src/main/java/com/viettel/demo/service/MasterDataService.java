@@ -7,11 +7,13 @@ import com.viettel.demo.context.TenantContext;
 import com.viettel.demo.entity.MasterData;
 import com.viettel.demo.messaging.MasterDataChangedEvent;
 import com.viettel.demo.messaging.MasterDataEventPublisher;
+import com.viettel.demo.observability.ApplicationMetrics;
 import com.viettel.demo.repository.MasterDataRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
 import java.util.List;
 
 /*
@@ -47,17 +49,20 @@ public class MasterDataService {
     private final CacheProperties cacheProperties;
     private final MasterDataCacheGateway cacheGateway;
     private final MasterDataEventPublisher eventPublisher;
+    private final ApplicationMetrics metrics;
 
     public MasterDataService(
             MasterDataRepository repository,
             CacheProperties cacheProperties,
             MasterDataCacheGateway cacheGateway,
-            MasterDataEventPublisher eventPublisher
+            MasterDataEventPublisher eventPublisher,
+            ApplicationMetrics metrics
     ) {
         this.repository = repository;
         this.cacheProperties = cacheProperties;
         this.cacheGateway = cacheGateway;
         this.eventPublisher = eventPublisher;
+        this.metrics = metrics;
     }
 
     public List<MasterData> getAll() {
@@ -78,18 +83,33 @@ public class MasterDataService {
         }
         Long tenantId = currentTenantId();
         String normalizedCode = code.trim();
+        boolean cacheEnabled = cacheProperties.isEnabled();
+        long startedAt = System.nanoTime();
 
-        if (!cacheProperties.isEnabled()) {
-            return findByTenantAndCode(tenantId, normalizedCode);
+        try {
+            MasterData data;
+            if (!cacheEnabled) {
+                data = findByTenantAndCode(tenantId, normalizedCode);
+            } else {
+                data = cacheGateway.getByCode(tenantId, normalizedCode)
+                        .map(CachedMasterData::toDetachedEntity)
+                        .orElseGet(() -> {
+                            MasterData loaded = findByTenantAndCode(tenantId, normalizedCode);
+                            cacheGateway.putByCode(tenantId, normalizedCode, loaded);
+                            return loaded;
+                        });
+            }
+
+            metrics.recordMasterDataGetByCodeDuration(cacheEnabled, "found", elapsedSince(startedAt));
+            return data;
+        } catch (ResponseStatusException e) {
+            String result = e.getStatusCode().equals(HttpStatus.NOT_FOUND) ? "not_found" : "error";
+            metrics.recordMasterDataGetByCodeDuration(cacheEnabled, result, elapsedSince(startedAt));
+            throw e;
+        } catch (RuntimeException e) {
+            metrics.recordMasterDataGetByCodeDuration(cacheEnabled, "error", elapsedSince(startedAt));
+            throw e;
         }
-
-        return cacheGateway.getByCode(tenantId, normalizedCode)
-                .map(CachedMasterData::toDetachedEntity)
-                .orElseGet(() -> {
-                    MasterData data = findByTenantAndCode(tenantId, normalizedCode);
-                    cacheGateway.putByCode(tenantId, normalizedCode, data);
-                    return data;
-                });
     }
 
     private MasterData findByTenantAndCode(Long tenantId, String code) {
@@ -156,5 +176,9 @@ public class MasterDataService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tenant context is missing");
         }
         return tenantId;
+    }
+
+    private Duration elapsedSince(long startedAt) {
+        return Duration.ofNanos(System.nanoTime() - startedAt);
     }
 }

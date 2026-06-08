@@ -129,6 +129,26 @@ Cẩn thận với tag có cardinality cao:
 
 Trong Phase 1 có thể dùng tenantId để học/debug local, nhưng production cần cân nhắc cardinality và privacy.
 
+### Built-in metrics vs custom metrics
+
+Actuator/Micrometer có metric built-in như JVM memory, HTTP server requests, datasource pool. Custom metrics là metric do code app tự ghi thêm khi có câu hỏi vận hành rõ.
+
+Trong `tenant-demo`, custom metrics baseline hiện nằm ở:
+
+- Redis cache-aside: hit/miss/put/error.
+- Kafka publish: success/failure/duration.
+- `MasterDataService.getByCode`: duration theo cache enabled/disabled và result.
+
+Metric ví dụ:
+
+```text
+tenant_demo.master_data.cache.requests{result="hit"}
+tenant_demo.kafka.publish.requests{event="master_data_changed",result="success"}
+tenant_demo.master_data.get_by_code.duration{cache="enabled",result="found"}
+```
+
+Đọc thêm: `micrometer-custom-metrics.md`.
+
 ---
 
 ## 3. Tracing
@@ -222,11 +242,8 @@ Trong mini-lab hiện tại:
 2. `RequestLoggingFilter` log một dòng ngắn sau mỗi request, skip `/actuator/health` để tránh ồn.
 3. Log pattern console có `requestId` từ MDC.
 4. Request thiếu token vẫn được log với status `401`; request hợp lệ có thể log thêm `tenantId` sau khi token được validate.
-5. Dùng `lab-code/tenant-demo/http/observability-api.http` để verify request có/không có `X-Request-Id`.
-6. Custom metric nhỏ vẫn là optional sau, chỉ thêm khi có câu hỏi rõ:
-   - cache hit/miss; hoặc
-   - Kafka publish success/failure; hoặc
-   - file upload/download count.
+5. `ApplicationMetrics` ghi custom Counter/Timer nhỏ cho Redis/Kafka/master_data getByCode.
+6. Dùng `lab-code/tenant-demo/http/observability-api.http` để verify request log và custom metrics.
 7. Ghi rõ caveat: đây là local learning, chưa có dashboard/alert/tracing production.
 
 ---

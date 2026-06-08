@@ -16,7 +16,7 @@
 | **Tiến độ** | 89% |
 | **Tổng task** | 106 |
 | **Đã hoàn thành** | 94 / 106 |
-| **Focus hiện tại** | Observability/logging/metrics mini-lab - đọc/chạy Actuator baseline, rồi tự code logging/metric nhỏ nếu cần |
+| **Focus hiện tại** | Observability/logging/metrics mini-lab - Actuator + request logging + custom Micrometer metrics baseline đã verify |
 | **Milestone tiếp theo** | #16 - Observability/logging/metrics mini-lab |
 | **Demo hiện tại** | Spring Boot + PostgreSQL/Flyway + tenant-aware API + JWT tạm fallback + Keycloak AuthN/AuthZ mode đã verify |
 
@@ -164,7 +164,7 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 | Debezium CDC + Kafka | Awareness | `docs/07-architecture/debezium-cdc.md` | Không chạy CDC | CDC role summary | #15/#18 | Later awareness |
 | gRPC internal communication | Awareness | `docs/07-architecture/grpc-internal-communication.md` | Không chạy gRPC | REST vs gRPC vs Kafka table | #11 | Chưa có |
 | Realtime: SignalR/Socket/SSE/Long polling | Awareness | `docs/07-architecture/realtime-communication.md` | Không chạy realtime | When to use which note | #11 | Chưa có |
-| Observability/logging/metrics | Important mini-lab/note | `docs/07-architecture/observability-foundation.md`, `docs/07-architecture/logging-metrics-tracing.md`, `docs/07-architecture/spring-boot-actuator-code-guide.md`, `docs/07-architecture/observability-mini-lab-plan.md` | Actuator/log/metric pattern, optional Prometheus/Grafana later | Explain log/metric/tracing/health role | #16 | Đang chuẩn bị |
+| Observability/logging/metrics | Important mini-lab/note | `docs/07-architecture/observability-foundation.md`, `docs/07-architecture/logging-metrics-tracing.md`, `docs/07-architecture/micrometer-custom-metrics.md`, `docs/07-architecture/spring-boot-actuator-code-guide.md`, `docs/07-architecture/observability-mini-lab-plan.md` | Actuator/log/custom metric pattern, optional Prometheus/Grafana later | Explain log/metric/tracing/health role | #16 | Đang làm |
 | LLM providers: OpenAI/OpenRouter/others | Awareness | `docs/07-architecture/llm-provider-integration.md` | Không gọi API thật | Integration role note | #11 | Chưa có |
 | External services: e-contract, eCommerce, CRM, HR, documents, digital signing | Awareness | `docs/07-architecture/external-integrations-erp.md` | Không tích hợp thật | Boundary/use-case summary | #11 | Chưa có |
 | DDD/domain boundaries | Later awareness | `docs/08-design/ddd-awareness.md` | Không refactor code theo DDD ở Phase 1 | Post-demo design note | #18 | Later |
@@ -367,7 +367,8 @@ Mục tiêu: biết app production cần log/metric/health thế nào, nhưng kh
 
 - [x] `[LÝ THUYẾT]` Tạo foundation docs cho Observability: `observability-foundation.md`, `logging-metrics-tracing.md`, `spring-boot-actuator-code-guide.md`, `observability-mini-lab-plan.md`.
 - [x] `[SKELETON]` Implement Actuator baseline: `health/info/metrics`, health public, info/metrics authenticated, không expose sensitive endpoints bừa bãi.
-- [ ] `[THỰC HÀNH]` Verify health/metrics/log pattern local; optional Prometheus/Grafana/Loki only if setup nhẹ.
+- [x] `[THỰC HÀNH]` Implement request logging baseline: `X-Request-Id`, MDC, method/path/status/duration, không log token/body/query string.
+- [x] `[THỰC HÀNH]` Implement + verify custom Micrometer metrics baseline: Redis hit/miss, Kafka publish, getByCode timer; không dùng high-cardinality tags.
 - [ ] `[MILESTONE]` Chốt Milestone #16 - observability summary đủ giải thích trong target architecture.
 
 ### Sprint 17 - 31/05: API Gateway/service discovery awareness + React optional decision
