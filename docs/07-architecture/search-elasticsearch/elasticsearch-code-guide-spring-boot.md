@@ -4,17 +4,17 @@
 
 File này là **code guide** cho mini-lab Elasticsearch. Nó không giải thích lại toàn bộ lý thuyết search engine hay toàn bộ REST API shape. Nếu cần phần foundation và input/output, đọc trước:
 
-- `docs/07-architecture/elasticsearch-search-service.md`
-- `docs/07-architecture/elasticsearch-request-response-shapes.md`
+- `docs/07-architecture/search-elasticsearch/elasticsearch-search-service.md`
+- `docs/07-architecture/search-elasticsearch/elasticsearch-request-response-shapes.md`
 
 Nếu cần lệnh chạy Docker/checklist lab, đọc:
 
-- `docs/07-architecture/elasticsearch-mini-lab-plan.md`
+- `docs/07-architecture/search-elasticsearch/elasticsearch-mini-lab-plan.md`
 - `lab-code/elasticsearch-lab/README.md`
 
 Nếu muốn hiểu vì sao code tách thành Controller/Service/Gateway/Document, đọc:
 
-- `docs/07-architecture/elasticsearch-design-patterns-spring-boot.md`
+- `docs/07-architecture/search-elasticsearch/elasticsearch-design-patterns-spring-boot.md`
 
 Mục tiêu ở đây là biết nên code phần search trong Spring Boot theo hình dạng nào.
 

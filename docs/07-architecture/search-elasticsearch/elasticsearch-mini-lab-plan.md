@@ -6,10 +6,10 @@ Mini-lab này giúp hiểu khi nào cần search engine sau khi đã học Postg
 
 Đọc kèm:
 
-- `docs/07-architecture/elasticsearch-search-service.md` - foundation: Elasticsearch là gì và khi nào dùng.
-- `docs/07-architecture/elasticsearch-request-response-shapes.md` - request/response/error shape khi debug API.
-- `docs/07-architecture/elasticsearch-design-patterns-spring-boot.md` - vì sao tách document/gateway/indexer/service/controller.
-- `docs/07-architecture/elasticsearch-code-guide-spring-boot.md` - code shape Spring Boot cho mini-lab.
+- `docs/07-architecture/search-elasticsearch/elasticsearch-search-service.md` - foundation: Elasticsearch là gì và khi nào dùng.
+- `docs/07-architecture/search-elasticsearch/elasticsearch-request-response-shapes.md` - request/response/error shape khi debug API.
+- `docs/07-architecture/search-elasticsearch/elasticsearch-design-patterns-spring-boot.md` - vì sao tách document/gateway/indexer/service/controller.
+- `docs/07-architecture/search-elasticsearch/elasticsearch-code-guide-spring-boot.md` - code shape Spring Boot cho mini-lab.
 - `lab-code/elasticsearch-lab/README.md` - lệnh chạy Elasticsearch local.
 
 Không làm:
@@ -148,7 +148,7 @@ Chỉ chạy trên local lab.
 
 Chi tiết từng class nằm trong code guide:
 
-- `docs/07-architecture/elasticsearch-code-guide-spring-boot.md`
+- `docs/07-architecture/search-elasticsearch/elasticsearch-code-guide-spring-boot.md`
 
 Package hiện tại:
 

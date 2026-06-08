@@ -649,10 +649,10 @@ Trạng thái: đã đóng mini-lab cơ bản.
 
 ### Đã chuẩn bị
 
-- `docs/07-architecture/kafka-async-messaging.md`: Kafka là gì, khi nào dùng async messaging, topic/partition/offset/consumer group.
-- `docs/07-architecture/kafka-event-shapes.md`: event shape, command vs event, tenant context, idempotency metadata.
-- `docs/07-architecture/kafka-code-guide-spring-boot.md`: Spring Boot integration shape, producer/consumer implementation, config disabled by default.
-- `docs/07-architecture/kafka-mini-lab-plan.md`: checklist mini-lab nhỏ quanh `MasterDataChangedEvent`.
+- `docs/07-architecture/messaging-kafka/kafka-async-messaging.md`: Kafka là gì, khi nào dùng async messaging, topic/partition/offset/consumer group.
+- `docs/07-architecture/messaging-kafka/kafka-event-shapes.md`: event shape, command vs event, tenant context, idempotency metadata.
+- `docs/07-architecture/messaging-kafka/kafka-code-guide-spring-boot.md`: Spring Boot integration shape, producer/consumer implementation, config disabled by default.
+- `docs/07-architecture/messaging-kafka/kafka-mini-lab-plan.md`: checklist mini-lab nhỏ quanh `MasterDataChangedEvent`.
 - `lab-code/kafka-lab/`: Docker Compose + hướng dẫn local Kafka lab.
 - Config placeholder `APP_MESSAGING_ENABLED=false`, `KAFKA_BOOTSTRAP_SERVERS`, topic và consumer group.
 - Package `com.viettel.demo.messaging`: `MessagingProperties`, `MasterDataChangedEvent`, `MasterDataEventPublisher`, NoOp publisher, Kafka producer, Kafka consumer.
@@ -682,16 +682,16 @@ Trạng thái: đã đóng mini-lab cơ bản.
 
 ## Milestone #16: Observability/logging/metrics mini-lab
 
-Trạng thái: Actuator baseline, request logging baseline, custom Micrometer metrics baseline và Prometheus/Grafana local lab đã implement; milestone chưa đóng toàn bộ vì tracing/log aggregation/alert vẫn là optional/later.
+Trạng thái: đã đóng ở Phase 1 learning level. Actuator baseline, request logging baseline, custom Micrometer metrics baseline và Prometheus/Grafana local lab đã được implement, đọc hiểu và verify thủ công. Tracing, log aggregation, alerting và production hardening vẫn là optional/later, không phải blocker của milestone này.
 
 ### Đã chuẩn bị
 
-- `docs/07-architecture/observability-foundation.md`: logs, metrics, tracing, health check, alert và vai trò của observability trong backend.
-- `docs/07-architecture/logging-metrics-tracing.md`: shape/cách đọc log, metric, trace, health; nhấn mạnh không log token/secret/dữ liệu nhạy cảm.
-- `docs/07-architecture/micrometer-custom-metrics.md`: custom Counter/Timer, `MeterRegistry`, tag cardinality và metric names hiện có.
-- `docs/07-architecture/prometheus-grafana-local-lab.md`: Prometheus scrape model, Grafana datasource/dashboard local và cách đọc metric name sau khi qua Prometheus.
-- `docs/07-architecture/spring-boot-actuator-code-guide.md`: hướng tự code Actuator/Micrometer nhỏ cho `tenant-demo`.
-- `docs/07-architecture/observability-mini-lab-plan.md`: checklist Milestone #16.
+- `docs/07-architecture/observability/observability-foundation.md`: logs, metrics, tracing, health check, alert và vai trò của observability trong backend.
+- `docs/07-architecture/observability/logging-metrics-tracing.md`: shape/cách đọc log, metric, trace, health; nhấn mạnh không log token/secret/dữ liệu nhạy cảm.
+- `docs/07-architecture/observability/micrometer-custom-metrics.md`: custom Counter/Timer, `MeterRegistry`, tag cardinality và metric names hiện có.
+- `docs/07-architecture/observability/prometheus-grafana-local-lab.md`: Prometheus scrape model, Grafana datasource/dashboard local và cách đọc metric name sau khi qua Prometheus.
+- `docs/07-architecture/observability/spring-boot-actuator-code-guide.md`: hướng tự code Actuator/Micrometer nhỏ cho `tenant-demo`.
+- `docs/07-architecture/observability/observability-mini-lab-plan.md`: checklist Milestone #16.
 
 ### Actuator baseline đã làm
 
@@ -738,8 +738,18 @@ Trạng thái: Actuator baseline, request logging baseline, custom Micrometer me
   - timer `tenant_demo.master_data.get_by_code.duration` có `_seconds_count`, `_seconds_sum`.
 - Caveat: đây là local monitoring lab, chưa có alerting, tracing, log aggregation, long-term retention hoặc production access control.
 
-### Hướng tự code tiếp
+### Kết quả verify cuối
 
-- Verify dashboard/Prometheus queries sau khi generate Redis/Kafka activity.
-- Có thể thêm 1 metric nhỏ nữa nếu có câu hỏi vận hành rõ, ví dụ file upload/download count.
-- Không dựng Loki/tracing/alerting production trong bước đầu.
+- `/actuator/health` public và trả health response.
+- `/actuator/prometheus` public cho local lab; Prometheus container scrape được target `tenant-demo`.
+- `/actuator/info` và `/actuator/metrics` vẫn cần Bearer token.
+- Business APIs vẫn yêu cầu token như trước.
+- Request log có requestId/MDC, method/path/status/duration; không log body, query string, Authorization header hoặc token.
+- Custom metrics không dùng high-cardinality tags như tenantId, requestId, code, eventId, userId hoặc token.
+- Grafana datasource/dashboard local đọc Prometheus được.
+
+### Hướng tiếp theo
+
+- Chuyển focus sang API Gateway/service discovery awareness và quyết định React UI optional.
+- Có thể thêm metric nhỏ hơn sau này nếu có câu hỏi vận hành rõ, ví dụ file upload/download count.
+- Không dựng Loki/tracing/alerting production trong Phase 1 nếu chưa có trigger học rõ.

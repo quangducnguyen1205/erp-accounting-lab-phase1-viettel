@@ -13,14 +13,14 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 89% |
+| **Tiến độ** | 90% |
 | **Tổng task** | 106 |
-| **Đã hoàn thành** | 94 / 106 |
-| **Focus hiện tại** | Observability/logging/metrics mini-lab - local Prometheus/Grafana đang được nối với Actuator/Micrometer metrics |
-| **Milestone tiếp theo** | #16 - Observability/logging/metrics mini-lab |
+| **Đã hoàn thành** | 95 / 106 |
+| **Focus hiện tại** | API Gateway/service discovery awareness + quyết định React UI optional |
+| **Milestone tiếp theo** | #17 - Architecture awareness / gateway awareness |
 | **Demo hiện tại** | Spring Boot + PostgreSQL/Flyway + tenant-aware API + JWT tạm fallback + Keycloak AuthN/AuthZ mode đã verify |
 
-Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; Milestone #14 đã chốt Redis cache-aside tenant-safe read path; Milestone #15 đã chốt Kafka/async messaging reference flow nhỏ.
+Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; Milestone #14 đã chốt Redis cache-aside tenant-safe read path; Milestone #15 đã chốt Kafka/async messaging reference flow nhỏ; Milestone #16 đã chốt Observability baseline với Actuator, request logging, Micrometer metrics và Prometheus/Grafana local lab.
 
 ---
 
@@ -154,19 +154,19 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 | Temporary JWT auth | Core bridge | `docs/05-security/jwt-spring-security-temporary.md` | `SecurityConfig`, `JwtTokenService`, `JwtTenantContextFilter` | MockMvc + HTTP valid/invalid JWT | #5 | Đã đóng |
 | Keycloak/OAuth2/OIDC | Mini-lab AuthN/token validation | `docs/05-security/keycloak-oidc-mental-model.md`, `docs/05-security/keycloak-oauth2-oidc-awareness.md`, `docs/05-security/keycloak-admin-console-guide.md` | `lab-code/keycloak-lab/`, `APP_AUTH_MODE=keycloak` | Lấy token Keycloak, gọi API tenant-aware, verify issuer/JWKS/claims | #9 | Đã verify mini-lab |
 | Keycloak Authorization / RBAC / tenant-scope | Mini-lab đã verify | `docs/05-security/keycloak-authorization-rbac-tenant-scope.md`, `docs/05-security/keycloak-authorization-code-guide-spring-boot.md` | Role claim, Spring Security authorities converter, endpoint/service authorization nhỏ | Allowed role `200`, missing role `403`, cross-tenant vẫn `404`/không leak | #12 | Đã đóng |
-| React frontend | Optional demo | `docs/06-frontend/react-tenant-demo-ui.md` | `lab-code/tenant-ui/` nếu thật sự cần | browser/UI + curl fallback | #16 | Optional/later |
-| API Gateway/service discovery/load balancer | Awareness | `docs/07-architecture/api-gateway-service-discovery.md` | Không chạy gateway mặc định | Architecture summary | #16 | Planned |
-| Elasticsearch / Elastic Stack | Mini-lab đã verify | `docs/07-architecture/elasticsearch-search-service.md`, `docs/07-architecture/elasticsearch-request-response-shapes.md`, `docs/07-architecture/elasticsearch-code-guide-spring-boot.md` | `lab-code/elasticsearch-lab/` + `com.viettel.demo.search` | Search tenant 1/2, no leakage | #11 | Đã đóng |
-| MinIO / S3 object storage | Mini-lab | `docs/07-architecture/minio-object-storage.md`, `docs/07-architecture/minio-s3-api-shapes.md`, `docs/07-architecture/minio-code-guide-spring-boot.md` | upload/download mini-lab | HTTP upload/download + tenant metadata | #13 | Done |
-| MinIO advanced object management | Optional/later backlog | `docs/07-architecture/minio-advanced-object-management.md` | Presigned URL expiry, lifecycle, versioning, object lock/retention nếu cần | Mini-lab riêng sau core milestones | After #14/#16 | Backlog |
-| Redis cache strategy | Mini-lab đã verify | `docs/07-architecture/redis-cache-strategy.md`, `docs/07-architecture/redis-code-guide-spring-boot.md`, `docs/07-architecture/redis-mini-lab-plan.md` | tenant-safe cache-aside path cho `master_data` by code | Hit/miss + tenant-safe cache key + TTL | #14 | Đã đóng |
-| Kafka async messaging | Mini-lab đã verify | `docs/07-architecture/kafka-async-messaging.md`, `docs/07-architecture/kafka-event-shapes.md`, `docs/07-architecture/kafka-code-guide-spring-boot.md`, `docs/07-architecture/kafka-mini-lab-plan.md` | `MasterDataChangedEvent` producer/consumer log | Create/update publish event, consumer nhận event tenant-aware | #15 | Đã đóng |
-| Debezium CDC + Kafka | Awareness | `docs/07-architecture/debezium-cdc.md` | Không chạy CDC | CDC role summary | #15/#18 | Later awareness |
-| gRPC internal communication | Awareness | `docs/07-architecture/grpc-internal-communication.md` | Không chạy gRPC | REST vs gRPC vs Kafka table | #11 | Chưa có |
-| Realtime: SignalR/Socket/SSE/Long polling | Awareness | `docs/07-architecture/realtime-communication.md` | Không chạy realtime | When to use which note | #11 | Chưa có |
-| Observability/logging/metrics | Important mini-lab/note | `docs/07-architecture/observability-foundation.md`, `docs/07-architecture/logging-metrics-tracing.md`, `docs/07-architecture/micrometer-custom-metrics.md`, `docs/07-architecture/prometheus-grafana-local-lab.md`, `docs/07-architecture/spring-boot-actuator-code-guide.md`, `docs/07-architecture/observability-mini-lab-plan.md` | Actuator/log/custom metric pattern + Prometheus/Grafana local scrape/dashboard | Explain log/metric/tracing/health role | #16 | Đang làm |
-| LLM providers: OpenAI/OpenRouter/others | Awareness | `docs/07-architecture/llm-provider-integration.md` | Không gọi API thật | Integration role note | #11 | Chưa có |
-| External services: e-contract, eCommerce, CRM, HR, documents, digital signing | Awareness | `docs/07-architecture/external-integrations-erp.md` | Không tích hợp thật | Boundary/use-case summary | #11 | Chưa có |
+| React frontend | Optional demo | `docs/06-frontend/react-tenant-demo-ui.md` | `lab-code/tenant-ui/` nếu thật sự cần | browser/UI + curl fallback | #17 | Optional/later |
+| API Gateway/service discovery/load balancer | Awareness | `docs/07-architecture/awareness/api-gateway-service-discovery.md` | Không chạy gateway mặc định | Architecture summary | #17 | Planned |
+| Elasticsearch / Elastic Stack | Mini-lab đã verify | `docs/07-architecture/search-elasticsearch/elasticsearch-search-service.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-request-response-shapes.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-code-guide-spring-boot.md` | `lab-code/elasticsearch-lab/` + `com.viettel.demo.search` | Search tenant 1/2, no leakage | #11 | Đã đóng |
+| MinIO / S3 object storage | Mini-lab đã verify | `docs/07-architecture/object-storage-minio/minio-object-storage.md`, `docs/07-architecture/object-storage-minio/minio-s3-api-shapes.md`, `docs/07-architecture/object-storage-minio/minio-code-guide-spring-boot.md` | upload/download mini-lab | HTTP upload/download + tenant metadata | #13 | Đã đóng |
+| MinIO advanced object management | Optional/later backlog | `docs/07-architecture/object-storage-minio/minio-advanced-object-management.md` | Presigned URL expiry, lifecycle, versioning, object lock/retention nếu cần | Mini-lab riêng sau core milestones | Optional later | Backlog |
+| Redis cache strategy | Mini-lab đã verify | `docs/07-architecture/cache-redis/redis-cache-strategy.md`, `docs/07-architecture/cache-redis/redis-code-guide-spring-boot.md`, `docs/07-architecture/cache-redis/redis-mini-lab-plan.md` | tenant-safe cache-aside path cho `master_data` by code | Hit/miss + tenant-safe cache key + TTL | #14 | Đã đóng |
+| Kafka async messaging | Mini-lab đã verify | `docs/07-architecture/messaging-kafka/kafka-async-messaging.md`, `docs/07-architecture/messaging-kafka/kafka-event-shapes.md`, `docs/07-architecture/messaging-kafka/kafka-code-guide-spring-boot.md`, `docs/07-architecture/messaging-kafka/kafka-mini-lab-plan.md` | `MasterDataChangedEvent` producer/consumer log | Create/update publish event, consumer nhận event tenant-aware | #15 | Đã đóng |
+| Debezium CDC + Kafka | Awareness | `docs/07-architecture/awareness/debezium-cdc.md` | Không chạy CDC | CDC role summary | #15/#18 | Later awareness |
+| gRPC internal communication | Awareness | `docs/07-architecture/awareness/grpc-internal-communication.md` | Không chạy gRPC | REST vs gRPC vs Kafka table | #11 | Chưa có |
+| Realtime: SignalR/Socket/SSE/Long polling | Awareness | `docs/07-architecture/awareness/realtime-communication.md` | Không chạy realtime | When to use which note | #11 | Chưa có |
+| Observability/logging/metrics | Mini-lab đã verify | `docs/07-architecture/observability/observability-foundation.md`, `docs/07-architecture/observability/logging-metrics-tracing.md`, `docs/07-architecture/observability/micrometer-custom-metrics.md`, `docs/07-architecture/observability/prometheus-grafana-local-lab.md`, `docs/07-architecture/observability/spring-boot-actuator-code-guide.md`, `docs/07-architecture/observability/observability-mini-lab-plan.md` | Actuator/log/custom metric pattern + Prometheus/Grafana local scrape/dashboard | Health/prometheus public local, info/metrics auth, Prometheus target UP, Grafana datasource/dashboard | #16 | Đã đóng |
+| LLM providers: OpenAI/OpenRouter/others | Awareness | `docs/07-architecture/awareness/llm-provider-integration.md` | Không gọi API thật | Integration role note | #11 | Chưa có |
+| External services: e-contract, eCommerce, CRM, HR, documents, digital signing | Awareness | `docs/07-architecture/awareness/external-integrations-erp.md` | Không tích hợp thật | Boundary/use-case summary | #11 | Chưa có |
 | DDD/domain boundaries | Later awareness | `docs/08-design/ddd-awareness.md` | Không refactor code theo DDD ở Phase 1 | Post-demo design note | #18 | Later |
 | Full production microservices stack | Out of scope | Chỉ ghi giới hạn trong report | Không implement | Nêu rõ không thuộc Phase 1 | #13 | Out of scope |
 | Full ERP/accounting domain | Out of scope | Chỉ dùng ví dụ nghiệp vụ | Không implement | Nêu rõ `master_data` chỉ là slice demo | #13 | Out of scope |
@@ -302,15 +302,15 @@ Mục tiêu: nâng auth từ JWT tạm sang Keycloak/OIDC mini-lab thật ở ph
 Mục tiêu: ghi rõ Keycloak demo/report đã đủ, chuyển roadmap sang học công nghệ theo execution plan nhanh.
 
 - [x] `[BÁO CÁO]` Xác nhận trạng thái 22/05: demo tới Keycloak đã xong, backend demo script đủ dùng nếu cần báo cáo nhanh.
-- [x] `[LÝ THUYẾT]` Tạo/cập nhật `docs/07-architecture/target-architecture-adoption-map.md` - map target architecture vào implemented / mini-lab / awareness / out of scope.
+- [x] `[LÝ THUYẾT]` Tạo/cập nhật `docs/07-architecture/overview/target-architecture-adoption-map.md` - map target architecture vào implemented / mini-lab / awareness / out of scope.
 - [x] `[BÁO CÁO]` Tạo `docs/99-tong-ket/technology-mini-lab-template.md` - template chuẩn cho các mini-lab công nghệ tiếp theo.
 
 ### Sprint 11 - 22/05 đến 23/05: Elasticsearch/search mini-lab
 
 Mục tiêu: nối từ PostgreSQL `LIKE`/index query-pattern sang search engine, chỉ trên lát cắt `master_data`.
 
-- [x] `[LÝ THUYẾT]` Tạo/read `docs/07-architecture/elasticsearch-search-service.md`, `docs/07-architecture/elasticsearch-request-response-shapes.md` và `docs/07-architecture/elasticsearch-mini-lab-plan.md` - foundation + API shape + plan mini-lab.
-- [x] `[SKELETON]` Tạo/read `docs/07-architecture/elasticsearch-code-guide-spring-boot.md`; chuẩn bị `lab-code/elasticsearch-lab/`, config `APP_SEARCH_ENABLED=false`, package `com.viettel.demo.search`, HTTP Client skeleton.
+- [x] `[LÝ THUYẾT]` Tạo/read `docs/07-architecture/search-elasticsearch/elasticsearch-search-service.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-request-response-shapes.md` và `docs/07-architecture/search-elasticsearch/elasticsearch-mini-lab-plan.md` - foundation + API shape + plan mini-lab.
+- [x] `[SKELETON]` Tạo/read `docs/07-architecture/search-elasticsearch/elasticsearch-code-guide-spring-boot.md`; chuẩn bị `lab-code/elasticsearch-lab/`, config `APP_SEARCH_ENABLED=false`, package `com.viettel.demo.search`, HTTP Client skeleton.
 - [x] `[THỰC HÀNH]` Tự code search mini-lab: reindex `master_data`, search keyword tenant 1/tenant 2, verify tenant filter và eventual consistency caveat.
 - [x] `[REVIEW]` Nhờ Codex review implementation: không biến Elasticsearch thành source of truth, không leak tenant, app-test vẫn pass khi search disabled.
 - [x] `[MILESTONE]` Chốt Milestone #11 - Elasticsearch/search mini-lab có command, HTTP evidence và summary ngắn.
@@ -336,7 +336,7 @@ Không overdo:
 
 Mục tiêu: học object storage/S3 API trong ngữ cảnh chứng từ/file attachment, không xây file service production.
 
-- [x] `[LÝ THUYẾT]` Tạo `docs/07-architecture/minio-object-storage.md`, `docs/07-architecture/minio-s3-api-shapes.md` và `docs/07-architecture/minio-code-guide-spring-boot.md` - object storage vs DB, S3 API, tenant/file metadata, presigned URL awareness.
+- [x] `[LÝ THUYẾT]` Tạo `docs/07-architecture/object-storage-minio/minio-object-storage.md`, `docs/07-architecture/object-storage-minio/minio-s3-api-shapes.md` và `docs/07-architecture/object-storage-minio/minio-code-guide-spring-boot.md` - object storage vs DB, S3 API, tenant/file metadata, presigned URL awareness.
 - [x] `[SKELETON]` Chuẩn bị `lab-code/minio-lab/`, config `APP_FILE_STORAGE_ENABLED=false`, package `com.viettel.demo.storage` với TODO comments.
 - [x] `[THỰC HÀNH]` Tự code upload/download nhỏ: file lưu MinIO, metadata tenant-aware lưu PostgreSQL hoặc in-memory nếu giữ scope nhỏ.
 - [x] `[REVIEW]` Nhờ Codex review: không commit file/secret, không bỏ auth/tenant check, không nhầm MinIO với database source of truth.
@@ -346,7 +346,7 @@ Mục tiêu: học object storage/S3 API trong ngữ cảnh chứng từ/file at
 
 Mục tiêu: học cache đúng lúc sau khi đã có API/search/file slice, tập trung tenant-safe cache key.
 
-- [x] `[LÝ THUYẾT]` Tạo `docs/07-architecture/redis-cache-strategy.md` và `docs/07-architecture/redis-code-guide-spring-boot.md` - cache-aside, TTL, invalidation, tenant-safe key.
+- [x] `[LÝ THUYẾT]` Tạo `docs/07-architecture/cache-redis/redis-cache-strategy.md` và `docs/07-architecture/cache-redis/redis-code-guide-spring-boot.md` - cache-aside, TTL, invalidation, tenant-safe key.
 - [x] `[SKELETON]` Chuẩn bị `lab-code/redis-lab/`, config `APP_CACHE_ENABLED=false`, package/cache service TODO.
 - [x] `[THỰC HÀNH]` Tự code cache nhỏ cho read endpoint hoặc lookup config: key phải có tenant prefix, verify hit/miss/log.
 - [x] `[REVIEW]` Nhờ Codex review: không cache cross-tenant, không cache data stale mà không ghi caveat, không dùng Redis khi PostgreSQL đủ.
@@ -356,7 +356,7 @@ Mục tiêu: học cache đúng lúc sau khi đã có API/search/file slice, t�
 
 Mục tiêu: hiểu async/event-driven communication ở mức nhỏ, không chạy full event platform nếu chưa cần.
 
-- [x] `[LÝ THUYẾT]` Tạo `docs/07-architecture/kafka-async-messaging.md` và `docs/07-architecture/kafka-code-guide-spring-boot.md` - producer, consumer, topic, event contract, retry/idempotency awareness.
+- [x] `[LÝ THUYẾT]` Tạo `docs/07-architecture/messaging-kafka/kafka-async-messaging.md` và `docs/07-architecture/messaging-kafka/kafka-code-guide-spring-boot.md` - producer, consumer, topic, event contract, retry/idempotency awareness.
 - [x] `[SKELETON]` Nếu máy chịu được Docker: chuẩn bị `lab-code/kafka-lab/` và package `com.viettel.demo.messaging`; nếu quá nặng, tạo code skeleton + sequence diagram awareness.
 - [x] `[THỰC HÀNH]` Tự làm một event nhỏ hoặc simulation: `MasterDataChanged`/`FileUploaded` log consumer, không ép production Kafka stack.
 - [x] `[MILESTONE]` Chốt Milestone #15 - Kafka/async có flow, caveat và quyết định rõ chạy thật hay awareness.
@@ -370,13 +370,13 @@ Mục tiêu: biết app production cần log/metric/health thế nào, rồi ch�
 - [x] `[THỰC HÀNH]` Implement request logging baseline: `X-Request-Id`, MDC, method/path/status/duration, không log token/body/query string.
 - [x] `[THỰC HÀNH]` Implement + verify custom Micrometer metrics baseline: Redis hit/miss, Kafka publish, getByCode timer; không dùng high-cardinality tags.
 - [x] `[THỰC HÀNH]` Thêm Prometheus/Grafana local lab: `/actuator/prometheus`, Prometheus scrape target, Grafana datasource/dashboard nhỏ.
-- [ ] `[MILESTONE]` Chốt Milestone #16 - observability summary đủ giải thích trong target architecture.
+- [x] `[MILESTONE]` Chốt Milestone #16 - observability summary đủ giải thích trong target architecture.
 
 ### Sprint 17 - 31/05: API Gateway/service discovery awareness + React optional decision
 
 Mục tiêu: hiểu vị trí gateway/load balancer/service discovery trong target architecture; React UI chỉ làm nếu còn giá trị demo rõ.
 
-- [ ] `[LÝ THUYẾT]` Tạo `docs/07-architecture/api-gateway-service-discovery.md` - gateway validation, routing, service discovery, load balancing, backend vẫn validate token trong boundary rõ.
+- [ ] `[LÝ THUYẾT]` Tạo `docs/07-architecture/awareness/api-gateway-service-discovery.md` - gateway validation, routing, service discovery, load balancing, backend vẫn validate token trong boundary rõ.
 - [ ] `[BÁO CÁO]` Cập nhật architecture map: gateway, service discovery, gRPC, realtime, external integrations ở mức awareness.
 - [ ] `[THỰC HÀNH]` Quyết định React UI: nếu làm thì tạo/read `docs/06-frontend/react-tenant-demo-ui.md`; nếu không, ghi rõ backend demo script là artifact chính.
 - [ ] `[MILESTONE]` Chốt Milestone #17 - architecture awareness đủ trả lời mentor, không cần chạy full gateway.
@@ -413,7 +413,7 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 | 13 | 27/05 | MinIO/file storage mini-lab | Đã đóng |
 | 14 | 28/05 | Redis/cache mini-lab | Đã đóng |
 | 15 | 29/05 | Kafka/async messaging mini-lab hoặc focused awareness | Đã đóng |
-| 16 | 30/05 | Observability/logging/metrics mini-lab | Đang làm |
+| 16 | 30/05 | Observability/logging/metrics mini-lab | Đã đóng |
 | 17 | 31/05 | API Gateway/service discovery awareness + React decision | Planned |
 | 18 | 03/06 | DDD awareness + final reflection + demo dry-run | Planned |
 
@@ -435,12 +435,12 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 | Backend Keycloak demo script | `presentation-notes/demo-script-keycloak-tenant-flow.md` |
 | React UI notes | `docs/06-frontend/` - tạo khi tới task UI |
 | Architecture awareness notes | `docs/07-architecture/` - tạo khi tới Sprint 7 |
-| Target architecture adoption map | `docs/07-architecture/target-architecture-adoption-map.md` |
-| Elasticsearch/search mini-lab | `docs/07-architecture/elasticsearch-search-service.md`, `docs/07-architecture/elasticsearch-request-response-shapes.md`, `docs/07-architecture/elasticsearch-code-guide-spring-boot.md`, `docs/07-architecture/elasticsearch-design-patterns-spring-boot.md`, `docs/07-architecture/elasticsearch-mini-lab-plan.md`, `lab-code/elasticsearch-lab/`, `lab-code/tenant-demo/src/main/java/com/viettel/demo/search/` |
-| MinIO/file storage mini-lab | `docs/07-architecture/minio-object-storage.md`, `docs/07-architecture/minio-code-guide-spring-boot.md` - tạo khi tới Sprint 13 |
-| Redis/cache mini-lab | `docs/07-architecture/redis-cache-strategy.md`, `docs/07-architecture/redis-code-guide-spring-boot.md`, `docs/07-architecture/redis-mini-lab-plan.md`, `lab-code/redis-lab/` |
-| Kafka/async mini-lab | `docs/07-architecture/kafka-async-messaging.md`, `docs/07-architecture/kafka-event-shapes.md`, `docs/07-architecture/kafka-code-guide-spring-boot.md`, `docs/07-architecture/kafka-mini-lab-plan.md`, `lab-code/kafka-lab/` |
-| Observability mini-lab | `docs/07-architecture/observability-foundation.md`, `docs/07-architecture/logging-metrics-tracing.md`, `docs/07-architecture/micrometer-custom-metrics.md`, `docs/07-architecture/prometheus-grafana-local-lab.md`, `docs/07-architecture/spring-boot-actuator-code-guide.md`, `docs/07-architecture/observability-mini-lab-plan.md`, `lab-code/observability-lab/` |
+| Target architecture adoption map | `docs/07-architecture/overview/target-architecture-adoption-map.md` |
+| Elasticsearch/search mini-lab | `docs/07-architecture/search-elasticsearch/elasticsearch-search-service.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-request-response-shapes.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-code-guide-spring-boot.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-design-patterns-spring-boot.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-mini-lab-plan.md`, `lab-code/elasticsearch-lab/`, `lab-code/tenant-demo/src/main/java/com/viettel/demo/search/` |
+| MinIO/file storage mini-lab | `docs/07-architecture/object-storage-minio/minio-object-storage.md`, `docs/07-architecture/object-storage-minio/minio-code-guide-spring-boot.md`, `lab-code/minio-lab/` |
+| Redis/cache mini-lab | `docs/07-architecture/cache-redis/redis-cache-strategy.md`, `docs/07-architecture/cache-redis/redis-code-guide-spring-boot.md`, `docs/07-architecture/cache-redis/redis-mini-lab-plan.md`, `lab-code/redis-lab/` |
+| Kafka/async mini-lab | `docs/07-architecture/messaging-kafka/kafka-async-messaging.md`, `docs/07-architecture/messaging-kafka/kafka-event-shapes.md`, `docs/07-architecture/messaging-kafka/kafka-code-guide-spring-boot.md`, `docs/07-architecture/messaging-kafka/kafka-mini-lab-plan.md`, `lab-code/kafka-lab/` |
+| Observability mini-lab | `docs/07-architecture/observability/observability-foundation.md`, `docs/07-architecture/observability/logging-metrics-tracing.md`, `docs/07-architecture/observability/micrometer-custom-metrics.md`, `docs/07-architecture/observability/prometheus-grafana-local-lab.md`, `docs/07-architecture/observability/spring-boot-actuator-code-guide.md`, `docs/07-architecture/observability/observability-mini-lab-plan.md`, `lab-code/observability-lab/` |
 | Mini-lab template | `docs/99-tong-ket/technology-mini-lab-template.md` |
 | DDD awareness | `docs/08-design/ddd-awareness.md` - để cuối Phase 1 mở rộng |
 | Tổng kết tiến độ | `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` |
@@ -456,16 +456,18 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 
 ## Việc làm ngay trong 1-2 ngày tới
 
-### Task tiếp theo: Verify Prometheus/Grafana local lab
+### Task tiếp theo: API Gateway/service discovery awareness + React optional decision
 
-1. Đọc nhanh:
-   - `docs/07-architecture/prometheus-grafana-local-lab.md`.
-   - `lab-code/observability-lab/README.md`.
-2. Chạy app, generate Redis/Kafka/custom metric activity, rồi verify:
-   - `/actuator/prometheus` có Prometheus text format;
-   - Prometheus target `tenant-demo` là `UP`;
-   - Grafana datasource/dashboard đọc được Prometheus.
-3. Dùng infra chung khi cần demo nhiều thành phần, hoặc target riêng khi chỉ test từng lab:
+1. Đọc lại architecture map:
+   - `docs/07-architecture/overview/target-architecture-adoption-map.md`.
+   - `docs/07-architecture/overview/keycloak-in-target-architecture.md`.
+2. Viết awareness note cho gateway/service discovery/load balancing ở mức Phase 1:
+   - gateway nằm ở đâu;
+   - gateway có thể validate token hoặc pass-through thế nào;
+   - backend Resource Server vẫn phải có boundary rõ;
+   - vì sao chưa cần dựng full gateway stack.
+3. Quyết định React UI có còn giá trị demo rõ không. Nếu chưa cần, backend demo script + HTTP files vẫn là artifact chính.
+4. Dùng infra chung khi cần demo nhiều thành phần, hoặc target riêng khi chỉ test từng lab:
 
 ```bash
 cd lab-code

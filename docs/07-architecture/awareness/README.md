@@ -1,0 +1,22 @@
+# Awareness / Later Topics
+
+## Folder này chứa gì?
+
+Nhóm này dành cho các thành phần target architecture chưa implement trong Phase 1 hoặc chỉ học ở mức awareness.
+
+## Planned Topics
+
+- `api-gateway-service-discovery.md` - API Gateway, routing, service discovery, load balancing.
+- `debezium-cdc.md` - CDC từ database sang event stream.
+- `grpc-internal-communication.md` - gRPC cho internal service communication.
+- `realtime-communication.md` - WebSocket/SSE/long polling/realtime trade-offs.
+- `llm-provider-integration.md` - tích hợp LLM provider ở backend.
+- `external-integrations-erp.md` - e-contract, eCommerce, CRM, HR, documents, digital signing.
+
+## Trạng Thái
+
+Các file chi tiết trên chưa được tạo trong task này. Chỉ tạo README để giữ roadmap/navigation rõ ràng, không tạo placeholder docs rỗng.
+
+## Caveat
+
+Không đưa các chủ đề awareness vào done criteria của Phase 1 nếu chưa có mini-lab hoặc tài liệu riêng.

@@ -4,7 +4,7 @@
 
 Đây là checklist cho Milestone #16. Mục tiêu là chạy một mini-lab nhỏ quanh Spring Boot Actuator + logging/metrics cơ bản, không dựng full observability platform.
 
-Trạng thái hiện tại: Actuator baseline, request logging baseline, custom Micrometer metrics baseline và local Prometheus/Grafana lab đã được implement ở mức nhỏ. Tracing, log aggregation và alerting vẫn là optional sau.
+Trạng thái hiện tại: đã đóng ở Phase 1 learning level. Actuator baseline, request logging baseline, custom Micrometer metrics baseline và local Prometheus/Grafana lab đã được implement, đọc hiểu và verify. Tracing, log aggregation và alerting vẫn là optional sau.
 
 Đọc trước:
 
@@ -118,7 +118,7 @@ Artifact đã có:
 - `http/observability-api.http`: request mẫu để quan sát `X-Request-Id` và request log.
   Đồng thời có request mẫu đọc custom metrics.
 - `lab-code/observability-lab/`: Docker Compose cho Prometheus + Grafana local.
-- `docs/07-architecture/prometheus-grafana-local-lab.md`: hướng dẫn scrape/dashboard local.
+- `docs/07-architecture/observability/prometheus-grafana-local-lab.md`: hướng dẫn scrape/dashboard local.
 
 Artifact optional sau:
 
@@ -128,22 +128,22 @@ Artifact optional sau:
 
 ## 4. Verification checklist
 
-- [ ] `cd lab-code/tenant-demo && ./mvnw validate` pass.
-- [ ] `cd lab-code && make app-test` pass.
-- [ ] `/actuator/health` trả response đúng, không cần token.
-- [ ] `/actuator/prometheus` trả Prometheus text format, không cần token trong local lab.
-- [ ] `/actuator/info` trả `401` nếu thiếu token, `200` nếu có token hợp lệ.
-- [ ] `/actuator/metrics` trả `401` nếu thiếu token, `200` nếu có token hợp lệ.
-- [ ] Không log token/Authorization header.
-- [ ] Request có `X-Request-Id` tạo log chứa đúng request id đó.
-- [ ] Request không có `X-Request-Id` tạo log với UUID do app sinh.
-- [ ] Request log không chứa payload nhạy cảm.
-- [ ] Custom metrics xuất hiện trong `/actuator/metrics/{name}` sau khi gọi code path tương ứng.
-- [ ] Custom metric tags không có tenantId/requestId/code/eventId/userId.
-- [ ] `make observability-up` chạy Prometheus + Grafana local.
-- [ ] Prometheus target `tenant-demo` là `UP`.
-- [ ] Grafana datasource Prometheus hoạt động.
-- [ ] Summary ghi rõ giới hạn: chưa có Loki/tracing/alerting/production monitoring.
+- [x] `cd lab-code/tenant-demo && ./mvnw validate` pass.
+- [x] `cd lab-code && make app-test` pass.
+- [x] `/actuator/health` trả response đúng, không cần token.
+- [x] `/actuator/prometheus` trả Prometheus text format, không cần token trong local lab.
+- [x] `/actuator/info` trả `401` nếu thiếu token, `200` nếu có token hợp lệ.
+- [x] `/actuator/metrics` trả `401` nếu thiếu token, `200` nếu có token hợp lệ.
+- [x] Không log token/Authorization header.
+- [x] Request có `X-Request-Id` tạo log chứa đúng request id đó.
+- [x] Request không có `X-Request-Id` tạo log với UUID do app sinh.
+- [x] Request log không chứa payload nhạy cảm.
+- [x] Custom metrics xuất hiện trong `/actuator/metrics/{name}` sau khi gọi code path tương ứng.
+- [x] Custom metric tags không có tenantId/requestId/code/eventId/userId.
+- [x] `make observability-up` chạy Prometheus + Grafana local.
+- [x] Prometheus target `tenant-demo` là `UP`.
+- [x] Grafana datasource Prometheus hoạt động.
+- [x] Summary ghi rõ giới hạn: chưa có Loki/tracing/alerting/production monitoring.
 
 ---
 

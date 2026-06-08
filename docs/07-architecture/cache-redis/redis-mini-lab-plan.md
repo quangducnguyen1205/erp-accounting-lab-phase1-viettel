@@ -42,9 +42,9 @@ Không làm ngay:
 
 Docs đã có:
 
-- `docs/07-architecture/redis-cache-strategy.md`
-- `docs/07-architecture/redis-code-guide-spring-boot.md`
-- `docs/07-architecture/redis-mini-lab-plan.md`
+- `docs/07-architecture/cache-redis/redis-cache-strategy.md`
+- `docs/07-architecture/cache-redis/redis-code-guide-spring-boot.md`
+- `docs/07-architecture/cache-redis/redis-mini-lab-plan.md`
 
 Lab setup:
 

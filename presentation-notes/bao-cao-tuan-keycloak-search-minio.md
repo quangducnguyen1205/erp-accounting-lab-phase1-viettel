@@ -82,8 +82,8 @@ Sau lần báo cáo trước, em tập trung đưa thêm các công nghệ trong
 - `lab-code/tenant-demo/src/main/java/com/viettel/demo/search/MasterDataSearchGateway.java`
 - `lab-code/tenant-demo/src/main/java/com/viettel/demo/search/MasterDataSearchDocument.java`
 - `lab-code/tenant-demo/http/search-api.http`
-- `docs/07-architecture/elasticsearch-design-patterns-spring-boot.md`
-- `docs/07-architecture/elasticsearch-request-response-shapes.md`
+- `docs/07-architecture/search-elasticsearch/elasticsearch-design-patterns-spring-boot.md`
+- `docs/07-architecture/search-elasticsearch/elasticsearch-request-response-shapes.md`
 
 **Demo nhanh nếu cần**
 
@@ -137,7 +137,7 @@ Sau lần báo cáo trước, em tập trung đưa thêm các công nghệ trong
 - `lab-code/tenant-demo/src/main/java/com/viettel/demo/entity/FileMetadata.java`
 - `lab-code/tenant-demo/src/main/resources/db/migration/V5__create_file_metadata.sql`
 - `lab-code/tenant-demo/http/file-storage-api.http`
-- `docs/07-architecture/minio-code-guide-spring-boot.md`
+- `docs/07-architecture/object-storage-minio/minio-code-guide-spring-boot.md`
 
 **Demo nhanh nếu cần**
 
@@ -236,7 +236,7 @@ Fallback nếu chỉ cần verify nhanh không phụ thuộc Keycloak role setup
 - `MasterDataSearchGateway.java`
 - `MasterDataSearchDocument.java`
 - `search-api.http`
-- `docs/07-architecture/elasticsearch-design-patterns-spring-boot.md`
+- `docs/07-architecture/search-elasticsearch/elasticsearch-design-patterns-spring-boot.md`
 
 ### File storage
 
@@ -244,7 +244,7 @@ Fallback nếu chỉ cần verify nhanh không phụ thuộc Keycloak role setup
 - `MinioFileStorageGateway.java`
 - `FileMetadata.java`
 - `file-storage-api.http`
-- `docs/07-architecture/minio-object-storage.md`
+- `docs/07-architecture/object-storage-minio/minio-object-storage.md`
 
 ### Summary
 
