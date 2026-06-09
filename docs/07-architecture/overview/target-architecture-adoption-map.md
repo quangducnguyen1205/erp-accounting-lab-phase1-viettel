@@ -40,8 +40,8 @@ Spring Boot tenant-demo
 
 | Topic | Vai trò trong kiến trúc | Khi repo nên học/dùng | Mini-lab trigger | Trạng thái hiện tại | Rủi ro overdo |
 |---|---|---|---|---|---|
-| React frontend | UI cho user thao tác, gọi API bằng token. | Sau khi backend demo script ổn. | Cần minh họa tenant 1/2 bằng UI. | Chưa làm. | Dễ sa vào UI/state/CSS, lệch mục tiêu backend. |
-| API Gateway / service discovery / load balancing | Entry point, routing, auth pre-check, rate limit, service discovery. | Sau khi có nhiều hơn một service hoặc cần giải thích target architecture. | Tạo note/diagram request flow qua gateway. | Awareness trong roadmap. | Chạy gateway thật quá sớm sẽ tốn setup, ít giá trị Phase 1. |
+| React Web frontend | UI web mỏng cho user thao tác, login Keycloak và gọi API qua Gateway. | Sau khi backend/gateway đã đủ ổn để demo end-to-end. | Login Keycloak, load/create `master_data`, hiển thị requestId để đối chiếu log. | Scaffolded Docker-first ở `lab-code/web-ui-demo`. | Dễ sa vào UI/state/CSS; không dùng React Native/Expo trong repo này. |
+| API Gateway / service discovery / load balancing | Entry point, routing, auth pre-check, rate limit, service discovery. | Đã thêm mini-lab static route để hiểu gateway flow; discovery/load balancing vẫn awareness. | Route `/api/**` qua gateway đến `tenant-demo`, forward `Authorization` và `X-Request-Id`. | Static route mini-lab prepared. | Chạy gateway production/service discovery thật quá sớm sẽ tốn setup, ít giá trị Phase 1. |
 | Keycloak/OIDC | Authentication, login/token issuer, issuer/JWKS, user identity claims. | Đã chạm auth nên đã làm mini-lab. | User/token/tenant claim flow, Resource Server validation. | Keycloak mini-lab verified. | Overclaim production IAM quá sớm. |
 | Keycloak Authorization/RBAC/tenant-scope | Authorization: user được phép làm gì, role/scope/authority, service/business permission. | Đã làm sau feedback mentor Đạt ngày 25/05. | Realm roles vs client roles, role claim, Spring Security authorities, 401 vs 403, tenant-scope. | Mini-lab verified. | Làm full permission matrix hoặc Keycloak Authorization Services/UMA quá sớm. |
 | Spring Boot backend services | Business APIs, Resource Server, tenant-aware service/repository. | Core demo hiện tại. | Thêm service khi có domain slice mới. | `tenant-demo` đã có API nhỏ. | Biến demo thành ERP thật quá sớm. |
@@ -75,6 +75,8 @@ Spring Boot tenant-demo
 | `com.viettel.demo.cache` | Redis cache-aside | Verified | Read-by-code miss -> DB -> TTL -> hit, key có tenantId. |
 | `com.viettel.demo.messaging` | Kafka async event propagation | Verified | Publish/consume `MasterDataChangedEvent`, event có tenantId và tenant-aware key. |
 | `com.viettel.demo.observability` + `lab-code/observability-lab` | Logging/metrics/local monitoring | Verified | RequestId/MDC, custom Micrometer metrics, Prometheus target UP, Grafana datasource/dashboard. |
+| `lab-code/gateway-demo` | API Gateway/static routing | Prepared | Spring Cloud Gateway route `/api/**` đến `tenant-demo`, service discovery để awareness. |
+| `lab-code/web-ui-demo` | React Web thin client | Scaffolded | Docker-first Vite app; Keycloak login bằng public client, gọi Gateway `/api/master-data`, hiển thị requestId. |
 | Keycloak Authorization/RBAC task | Authorization layer sau AuthN | Verified | Role/authority check nhỏ, phân biệt `401`/`403`, vẫn giữ tenant-aware query. |
 | `presentation-notes/demo-script-keycloak-tenant-flow.md` | Mentor-facing demo path | Prepared | Script start DB/Keycloak/app, verify tenant 1/2, cross-tenant id. |
 | SQL playground `01-09` | PostgreSQL learning lab | Implemented | Schema, EXPLAIN, index pattern, migration, ACID/isolation. |
@@ -137,7 +139,7 @@ Hướng tốt nhất sau tài liệu này:
 
 1. Demo backend đến Keycloak AuthN/AuthZ, search, file storage, cache, async messaging và observability đã đủ chấp nhận để báo cáo khi cần.
 2. Nhánh kế tiếp nên là API Gateway/service discovery awareness để nối các thành phần đã học vào entry-point architecture.
-3. React UI chỉ nên làm nếu còn giá trị demo rõ; không để UI chặn các note architecture còn thiếu.
-4. React UI để optional/later, không chặn chuỗi học công nghệ backend/architecture.
+3. React Web UI chỉ nên giữ ở mức thin demo; không để UI chặn các note architecture còn thiếu.
+4. Không dùng React Native/Expo trong Phase 1 repo này; mobile scope thuộc project khác.
 
 Không nên mở nhiều mini-lab cùng lúc.

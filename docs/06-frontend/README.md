@@ -1,0 +1,20 @@
+# Frontend Notes
+
+## Folder này chứa gì?
+
+Folder này chỉ chứa phần frontend cần thiết để demo flow kiến trúc Phase 1. Repo vẫn ưu tiên backend learning lab.
+
+## Reading Order
+
+1. [react-web-keycloak-gateway-demo.md](react-web-keycloak-gateway-demo.md) - React Web + Keycloak + Gateway demo.
+
+## Trạng Thái
+
+- React Web UI demo đã được scaffold ở `lab-code/web-ui-demo/`.
+- UI chạy theo Docker-first workflow qua `make web-ui-up`, không yêu cầu local npm.
+- UI là thin client: login Keycloak, gọi API qua Gateway, hiển thị requestId để đối chiếu log.
+- Không dùng React Native hoặc Expo trong repo Viettel Phase 1 này.
+
+## Caveat
+
+Frontend này không phải production SPA. Backend vẫn validate JWT, map role, set tenant context và enforce tenant-aware repository query.

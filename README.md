@@ -7,8 +7,8 @@ Mục tiêu của repo không phải là lưu mọi nháp học tập, mà là l
 ## Trạng thái học hiện tại
 
 - Đã hoàn thành nền tảng SaaS, multi-tenant, SQL playground, migration/locking, ACID/isolation và tenant-aware backend API.
-- Đã có demo Spring Boot nhỏ trong `lab-code/tenant-demo` với PostgreSQL/Flyway, tenant-aware API, JWT tạm và Keycloak mode.
-- Trọng tâm hiện tại: đóng gói demo mentor-facing và map các công nghệ trong kiến trúc target theo hướng just-in-time.
+- Đã có demo Spring Boot nhỏ trong `lab-code/tenant-demo` với PostgreSQL/Flyway, tenant-aware API, JWT tạm, Keycloak mode và các mini-lab architecture.
+- Trọng tâm hiện tại: nối flow end-to-end bằng Gateway + React Web UI mỏng, không biến repo thành frontend/mobile product.
 
 ## Cấu trúc thư mục
 
@@ -21,12 +21,15 @@ Mục tiêu của repo không phải là lưu mọi nháp học tập, mà là l
 │   ├── 03-backend-database-mo-rong/
 │   ├── 04-spring-boot/
 │   ├── 05-security/
+│   ├── 06-frontend/
 │   ├── 07-architecture/
 │   └── 99-tong-ket/
 ├── lab-code/
 │   ├── sql-playground/
 │   ├── tenant-demo/
-│   └── keycloak-lab/
+│   ├── keycloak-lab/
+│   ├── gateway-demo/
+│   └── web-ui-demo/
 ├── reports/
 │   └── latex/
 ├── presentation-notes/
@@ -92,6 +95,8 @@ Repository này vẫn được ưu tiên làm kho kiến thức Phase 1, nhưng 
 - `lab-code/sql-playground/`: thực hành PostgreSQL multi-tenant.
 - `lab-code/tenant-demo/`: Spring Boot + PostgreSQL/Flyway + tenant-aware API.
 - `lab-code/keycloak-lab/`: Keycloak/OIDC mini-lab local.
+- `lab-code/gateway-demo/`: Spring Cloud Gateway static route tới `tenant-demo`.
+- `lab-code/web-ui-demo/`: React Web/Vite thin client chạy Docker-first, gọi Gateway sau khi login Keycloak.
 
 Nếu demo phát triển thành một project thật sự lớn, nên tách sang repository riêng để repo kiến thức này vẫn gọn, rõ và dễ đọc. Trong Phase 1, lab code vẫn được giữ nhỏ và bám sát mục tiêu học.
 

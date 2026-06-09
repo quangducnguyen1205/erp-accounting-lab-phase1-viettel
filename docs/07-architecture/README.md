@@ -12,7 +12,9 @@ Thư mục này nối các mini-lab trong repo với target architecture rộng 
 4. [cache-redis/](cache-redis/) - Redis tenant-safe cache-aside mini-lab.
 5. [messaging-kafka/](messaging-kafka/) - Kafka/async messaging mini-lab.
 6. [observability/](observability/) - Actuator, request logging, Micrometer metrics, Prometheus/Grafana local lab.
-7. [awareness/](awareness/) - các chủ đề target architecture chưa implement trong Phase 1.
+7. [api-gateway-service-discovery/](api-gateway-service-discovery/) - API Gateway static route mini-lab + service discovery/load balancing awareness.
+8. [../06-frontend/](../06-frontend/) - React Web UI demo mỏng nếu cần trình bày end-to-end.
+9. [awareness/](awareness/) - các chủ đề target architecture chưa implement trong Phase 1.
 
 ## Trạng Thái Phase 1
 
@@ -24,6 +26,8 @@ Thư mục này nối các mini-lab trong repo với target architecture rộng 
 | Redis/cache | Done | [cache-redis/redis-cache-strategy.md](cache-redis/redis-cache-strategy.md) |
 | Kafka/messaging | Done | [messaging-kafka/kafka-async-messaging.md](messaging-kafka/kafka-async-messaging.md) |
 | Observability | Done at Phase 1 level | [observability/observability-foundation.md](observability/observability-foundation.md) |
+| API Gateway/service discovery | Active mini-lab | [api-gateway-service-discovery/api-gateway-foundation.md](api-gateway-service-discovery/api-gateway-foundation.md) |
+| React Web UI | Optional demo scaffolded | [../06-frontend/react-web-keycloak-gateway-demo.md](../06-frontend/react-web-keycloak-gateway-demo.md) |
 | Awareness/later | Planned | [awareness/README.md](awareness/README.md) |
 
 ## Source-of-truth Pattern Cho Mỗi Công Nghệ

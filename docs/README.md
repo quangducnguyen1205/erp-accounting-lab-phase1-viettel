@@ -12,8 +12,9 @@ Thư mục `docs/` là source of truth cho kiến thức Phase 1 đã được c
 4. `03-backend-database-mo-rong/` - PostgreSQL, index, migration, transaction.
 5. `04-spring-boot/` - Spring Boot, JPA, filter, repository/service/controller, test.
 6. `05-security/` - JWT tạm, Spring Security, Keycloak/OIDC.
-7. `07-architecture/` - map từ lab hiện tại sang kiến trúc target và mini-lab công nghệ sau Keycloak.
-8. `99-tong-ket/` - summary mentor-facing, milestone report và template mini-lab.
+7. `06-frontend/` - React Web UI demo mỏng cho flow Keycloak -> Gateway -> backend.
+8. `07-architecture/` - map từ lab hiện tại sang kiến trúc target và mini-lab công nghệ sau Keycloak.
+9. `99-tong-ket/` - summary mentor-facing, milestone report và template mini-lab.
 
 ## Core vs optional
 
@@ -23,9 +24,10 @@ Thư mục `docs/` là source of truth cho kiến thức Phase 1 đã được c
 | PostgreSQL/backend DB | Nền tảng thực hành SQL + migration + transaction | Core |
 | Spring Boot | Demo backend runnable | Core |
 | Security/JWT/Keycloak | Auth flow và tenant context từ token | Core/mini-lab |
+| Frontend React Web | Thin UI demo Docker-first cho Keycloak/Gateway/backend flow | Optional demo |
 | Architecture map | Kết nối target diagram với repo | Mentor-facing |
-| Elasticsearch/MinIO/Redis/Kafka/Observability | Mini-lab công nghệ sau Keycloak, học từng cái một | Post-Keycloak |
-| DDD/React | Optional hoặc cuối phase, không chặn learning tech | Optional/later |
+| Elasticsearch/MinIO/Redis/Kafka/Observability/API Gateway | Mini-lab công nghệ sau Keycloak, học từng cái một | Post-Keycloak |
+| DDD/final reflection | Optional hoặc cuối phase, không chặn learning tech | Optional/later |
 
 ## Cấu trúc chuẩn cho công nghệ mới
 

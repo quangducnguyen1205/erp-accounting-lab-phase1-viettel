@@ -251,25 +251,26 @@ Những điểm Phase 1 chỉ cần biết, chưa implement:
 | `MasterDataRepository` | Tenant-aware data access. | Có explicit tenant methods. | Có thể cần base convention/test rộng hơn. |
 | `tenant_id` user attribute mapper | Cách đơn giản đưa tenant vào token. | Có trong mini-lab. | Production có thể dùng groups/mapping/authorization service. |
 | `DataLeakageTest` | Regression test chống cross-tenant leakage. | Có local JWT mode. | Chưa chạy test tự động với live Keycloak. |
-| API Gateway trong sơ đồ | Protected entry layer. | Chưa implement. | Awareness: gateway có thể validate/pass token. |
+| API Gateway trong sơ đồ | Protected entry layer. | Có static route mini-lab. | Awareness: gateway có thể validate/pass token; backend vẫn enforce security. |
 | Authorization/RBAC service | Business authorization tập trung. | Chưa implement. | Nên học sau khi có RBAC use case. |
-| React app | OAuth2/OIDC client. | Chưa implement. | Có thể làm Milestone #10 nếu còn thời gian. |
+| React Web app | OAuth2/OIDC client. | Có thin demo Docker-first ở `lab-code/web-ui-demo`. | Dùng để demo flow, chưa phải production frontend. |
 
 ## 10. Best next task
 
-Khuyến nghị tiếp theo: **backend demo script trước, React UI sau nếu còn thời gian**.
+Trạng thái hiện tại: backend/gateway flow đã đủ chắc, nên repo có thêm **React Web UI demo mỏng** để nhìn end-to-end.
 
-Lý do:
+Lý do giữ UI nhỏ:
 
-- Keycloak tenant flow đã verify ở backend; nên đóng gói thành demo mentor-facing chắc chắn.
-- React UI sẽ mở thêm scope: CORS, frontend token handling, Authorization Code + PKCE, UI state.
-- Nếu làm UI ngay, dễ mất thời gian vào frontend thay vì chứng minh flow kiến trúc đã học.
+- Mục tiêu chính vẫn là backend architecture learning.
+- UI chỉ login Keycloak, gọi Gateway và hiển thị requestId.
+- Không dùng React Native/Expo trong repo Phase 1 này.
+- Frontend production còn nhiều scope riêng: token handling, CORS, Authorization Code + PKCE hardening, logout/session, UI state.
 
 Task cụ thể:
 
-1. Dry-run `presentation-notes/demo-script-keycloak-tenant-flow.md`.
-2. Ghi lại pattern verify ngắn: token tenant 1/2, missing/invalid token, cross-tenant id.
-3. Nếu còn thời gian, tạo note `docs/06-frontend/react-tenant-demo-ui.md` rồi mới scaffold UI nhỏ.
+1. Đọc `docs/06-frontend/react-web-keycloak-gateway-demo.md`.
+2. Tạo Keycloak public client `tenant-demo-web`.
+3. Chạy `lab-code/web-ui-demo/` để verify: Keycloak login -> Gateway -> `tenant-demo` -> requestId trong log.
 
 ## Nguồn tham khảo chuẩn
 
@@ -279,4 +280,3 @@ Task cụ thể:
 - [OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html)
 - [OpenID Connect Discovery 1.0](https://openid.net/specs/openid-connect-discovery-1_0.html)
 - [RFC 6750 - Bearer Token Usage](https://www.rfc-editor.org/rfc/rfc6750)
-

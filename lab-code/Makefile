@@ -23,6 +23,7 @@ REDIS_DIR      := redis-lab
 KAFKA_DIR      := kafka-lab
 OBSERVABILITY_DIR := observability-lab
 GATEWAY_DIR    := gateway-demo
+WEB_UI_DIR     := web-ui-demo
 
 # --- Docker / Database -----------------------------------------
 
@@ -143,6 +144,49 @@ gateway-validate: ## Validate gateway-demo Maven project
 gateway-status: ## Kiểm tra gateway-demo health endpoint
 	curl -s http://localhost:8081/actuator/health
 
+# --- React Web UI demo -----------------------------------------
+
+.PHONY: web-ui-info
+web-ui-info: ## In hướng dẫn chạy React Web UI demo bằng Docker
+	@echo ""
+	@echo "React Web UI demo nằm ở $(WEB_UI_DIR)/"
+	@echo "Workflow chính là Docker-first, không yêu cầu local npm."
+	@echo ""
+	@echo "Chạy background:"
+	@echo "  make web-ui-up"
+	@echo ""
+	@echo "Chạy foreground:"
+	@echo "  make web-ui-run"
+	@echo ""
+	@echo "Build kiểm tra:"
+	@echo "  make web-ui-build"
+	@echo ""
+	@echo "Mặc định UI mở ở http://localhost:5173 và gọi Gateway http://localhost:8081"
+
+.PHONY: web-ui-build
+web-ui-build: ## Build React Web UI demo bằng Docker
+	cd $(WEB_UI_DIR) && docker build --target build -t viettel-web-ui-demo:build .
+
+.PHONY: web-ui-up
+web-ui-up: ## Khởi chạy React Web UI demo container ở port 5173
+	cd $(WEB_UI_DIR) && docker compose up -d --build
+
+.PHONY: web-ui-run
+web-ui-run: ## Chạy React Web UI demo foreground bằng Docker Compose
+	cd $(WEB_UI_DIR) && docker compose up --build
+
+.PHONY: web-ui-down
+web-ui-down: ## Dừng React Web UI demo container
+	cd $(WEB_UI_DIR) && docker compose down
+
+.PHONY: web-ui-status
+web-ui-status: ## Kiểm tra React Web UI demo container
+	@docker ps --filter "name=viettel-web-ui-demo" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+.PHONY: web-ui-logs
+web-ui-logs: ## Xem log React Web UI demo container
+	docker logs -f viettel-web-ui-demo
+
 # --- Common dev infra ------------------------------------------
 #
 # Dùng target riêng khi chỉ học từng lab nhỏ:
@@ -154,10 +198,12 @@ gateway-status: ## Kiểm tra gateway-demo health endpoint
 # - kafka-up cho async messaging mini-lab
 # - observability-up cho Prometheus/Grafana mini-lab
 # - gateway-run cho API Gateway static route mini-lab
+# - web-ui-up cho React Web UI demo Docker-first
 #
 # Dùng infra-up khi cần demo đầy đủ hơn: PostgreSQL + Keycloak +
 # Elasticsearch + MinIO + Redis + Kafka. App Spring Boot vẫn chạy riêng
-# bằng `make app-run`, Gateway chạy riêng bằng `make gateway-run`.
+# bằng `make app-run`, Gateway chạy riêng bằng `make gateway-run`, UI chạy
+# riêng bằng `make web-ui-up`.
 # Prometheus/Grafana là observability optional, chạy riêng bằng
 # `make observability-up` để full infra mặc định không quá nặng.
 

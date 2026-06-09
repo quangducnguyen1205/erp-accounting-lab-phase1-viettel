@@ -6,6 +6,25 @@ spring:
     name: gateway-demo
   cloud:
     gateway:
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - ${WEB_UI_ORIGIN:http://localhost:5173}
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - Authorization
+              - Content-Type
+              - X-Request-Id
+            exposedHeaders:
+              - X-Request-Id
+            allowCredentials: true
       routes:
         - id: tenant-demo-api
           uri: ${TENANT_DEMO_URI:http://localhost:8080}

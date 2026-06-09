@@ -88,6 +88,7 @@ make redis-up       # Redis cho cache mini-lab
 make kafka-up       # Kafka cho async messaging mini-lab
 make observability-up # Prometheus + Grafana cho observability mini-lab
 make gateway-run    # Spring Cloud Gateway static route mini-lab
+make web-ui-up      # React Web UI demo Docker-first
 ```
 
 Khi cần demo nhiều phần cùng lúc, dùng:
@@ -97,7 +98,7 @@ make infra-up
 make infra-status
 ```
 
-`infra-up` bật PostgreSQL + Keycloak + Elasticsearch + MinIO + Redis + Kafka. Prometheus/Grafana chạy riêng bằng `make observability-up`, gateway chạy riêng bằng `make gateway-run` để full infra mặc định không quá nặng. Khi chỉ học một lab nhỏ, vẫn nên dùng target riêng như `make kafka-up`, `make redis-up`, `make observability-up` hoặc `make gateway-run` để máy nhẹ hơn và dễ debug hơn.
+`infra-up` bật PostgreSQL + Keycloak + Elasticsearch + MinIO + Redis + Kafka. Prometheus/Grafana chạy riêng bằng `make observability-up`, gateway chạy riêng bằng `make gateway-run`, React Web UI chạy riêng bằng `make web-ui-up` để full infra mặc định không quá nặng. Khi chỉ học một lab nhỏ, vẫn nên dùng target riêng như `make kafka-up`, `make redis-up`, `make observability-up`, `make gateway-run` hoặc `make web-ui-up` để máy nhẹ hơn và dễ debug hơn.
 
 Spring Boot app vẫn chạy riêng bằng:
 
@@ -106,3 +107,5 @@ make app-run
 ```
 
 Mục tiêu là giữ từng mini-lab cô lập được, nhưng vẫn có một đường nhanh để bật hạ tầng demo chung.
+
+React Web UI demo nằm ở `web-ui-demo/`. UI chạy bằng Docker, gọi Gateway, và không gọi trực tiếp PostgreSQL/Redis/Kafka/MinIO/Prometheus/Grafana trong business flow.

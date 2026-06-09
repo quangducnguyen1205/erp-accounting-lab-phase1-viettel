@@ -17,6 +17,7 @@ Folder này chạy một Spring Cloud Gateway nhỏ để học API Gateway ở 
 |---|---|
 | gateway-demo | `http://localhost:8081` |
 | tenant-demo target | `http://localhost:8080` |
+| React Web UI origin | `http://localhost:5173` |
 
 ## Run
 
@@ -50,6 +51,16 @@ curl -i http://localhost:8081/api/master-data
 ```
 
 Expected: `401` từ backend.
+
+## React Web UI / CORS
+
+Gateway có CORS local cho origin mặc định:
+
+```text
+WEB_UI_ORIGIN=http://localhost:5173
+```
+
+Điều này chỉ để browser demo gọi `http://localhost:8081/api/**` từ Vite container/dev server. Backend `tenant-demo` vẫn validate JWT và enforce tenant-aware query.
 
 ## Caveat
 

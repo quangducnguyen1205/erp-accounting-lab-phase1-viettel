@@ -69,6 +69,22 @@ spring:
 - Header `Authorization` được forward mặc định.
 - Backend `tenant-demo` vẫn validate token.
 
+Local React Web UI chạy ở `http://localhost:5173`, còn Gateway chạy ở `http://localhost:8081`. Vì browser enforce CORS, Gateway có cấu hình `WEB_UI_ORIGIN` để cho phép origin local này gọi `/api/**`:
+
+```yaml
+globalcors:
+  cors-configurations:
+    '[/**]':
+      allowedOrigins:
+        - ${WEB_UI_ORIGIN:http://localhost:5173}
+      allowedHeaders:
+        - Authorization
+        - Content-Type
+        - X-Request-Id
+```
+
+CORS chỉ cho phép browser gửi request cross-origin; nó không thay thế authentication/authorization. Backend vẫn phải validate JWT và tenant-aware query.
+
 Route health:
 
 ```yaml

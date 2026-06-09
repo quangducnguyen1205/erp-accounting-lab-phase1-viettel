@@ -29,6 +29,12 @@ http-client.private.env.json
 target/
 **/target/
 
+# Node/Vite frontend local artifacts
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+
 # File build từ LaTeX
 *.aux
 *.log
