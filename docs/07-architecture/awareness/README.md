@@ -6,7 +6,6 @@ Nhóm này dành cho các thành phần target architecture chưa implement tron
 
 ## Planned Topics
 
-- `api-gateway-service-discovery.md` - API Gateway, routing, service discovery, load balancing.
 - `debezium-cdc.md` - CDC từ database sang event stream.
 - `grpc-internal-communication.md` - gRPC cho internal service communication.
 - `realtime-communication.md` - WebSocket/SSE/long polling/realtime trade-offs.
@@ -16,6 +15,8 @@ Nhóm này dành cho các thành phần target architecture chưa implement tron
 ## Trạng Thái
 
 Các file chi tiết trên chưa được tạo trong task này. Chỉ tạo README để giữ roadmap/navigation rõ ràng, không tạo placeholder docs rỗng.
+
+API Gateway/service discovery đã được tách sang folder riêng: [../api-gateway-service-discovery/](../api-gateway-service-discovery/).
 
 ## Caveat
 

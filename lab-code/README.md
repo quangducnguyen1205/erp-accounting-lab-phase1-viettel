@@ -87,6 +87,7 @@ make minio-up       # MinIO cho file storage mini-lab
 make redis-up       # Redis cho cache mini-lab
 make kafka-up       # Kafka cho async messaging mini-lab
 make observability-up # Prometheus + Grafana cho observability mini-lab
+make gateway-run    # Spring Cloud Gateway static route mini-lab
 ```
 
 Khi cần demo nhiều phần cùng lúc, dùng:
@@ -96,7 +97,7 @@ make infra-up
 make infra-status
 ```
 
-`infra-up` bật PostgreSQL + Keycloak + Elasticsearch + MinIO + Redis + Kafka. Prometheus/Grafana chạy riêng bằng `make observability-up` để full infra mặc định không quá nặng. Khi chỉ học một lab nhỏ, vẫn nên dùng target riêng như `make kafka-up`, `make redis-up` hoặc `make observability-up` để máy nhẹ hơn và dễ debug hơn.
+`infra-up` bật PostgreSQL + Keycloak + Elasticsearch + MinIO + Redis + Kafka. Prometheus/Grafana chạy riêng bằng `make observability-up`, gateway chạy riêng bằng `make gateway-run` để full infra mặc định không quá nặng. Khi chỉ học một lab nhỏ, vẫn nên dùng target riêng như `make kafka-up`, `make redis-up`, `make observability-up` hoặc `make gateway-run` để máy nhẹ hơn và dễ debug hơn.
 
 Spring Boot app vẫn chạy riêng bằng:
 

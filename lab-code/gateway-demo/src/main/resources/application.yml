@@ -1,0 +1,42 @@
+server:
+  port: ${GATEWAY_PORT:8081}
+
+spring:
+  application:
+    name: gateway-demo
+  cloud:
+    gateway:
+      routes:
+        - id: tenant-demo-api
+          uri: ${TENANT_DEMO_URI:http://localhost:8080}
+          predicates:
+            - Path=/api/**
+
+        - id: tenant-demo-health
+          uri: ${TENANT_DEMO_URI:http://localhost:8080}
+          predicates:
+            - Path=/tenant-demo/actuator/health
+          filters:
+            - RewritePath=/tenant-demo/actuator/health,/actuator/health
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: gateway-demo
+    phase: phase-1-learning-lab
+    description: Minimal Spring Cloud Gateway static route to tenant-demo
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO

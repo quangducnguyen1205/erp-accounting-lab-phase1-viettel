@@ -1,0 +1,43 @@
+# HTTP Client requests cho API Gateway mini-lab
+#
+# Điều kiện:
+# - tenant-demo chạy ở http://localhost:8080.
+# - gateway-demo chạy ở http://localhost:8081.
+# - Token lấy từ auth-token-api.http hoặc private env.
+#
+# Không paste token thật vào Git.
+
+@gatewayUrl = http://localhost:8081
+@invalidToken = invalid.jwt.token
+
+### Gateway -> tenant-demo health route
+# Expected: 200 nếu tenant-demo đang chạy.
+GET {{gatewayUrl}}/tenant-demo/actuator/health
+
+### Gateway route: list master data with token
+# Expected: 200 nếu token hợp lệ.
+# Expected tenant-demo log có requestId=gateway-demo-001.
+GET {{gatewayUrl}}/api/master-data
+X-Request-Id: gateway-demo-001
+Authorization: Bearer {{accountantTenant1Token}}
+
+### Gateway route: missing token
+# Expected: 401 từ tenant-demo, không phải business logic trong gateway.
+GET {{gatewayUrl}}/api/master-data
+X-Request-Id: gateway-missing-token-001
+
+### Gateway route: invalid token
+# Expected: 401 từ tenant-demo.
+GET {{gatewayUrl}}/api/master-data
+X-Request-Id: gateway-invalid-token-001
+Authorization: Bearer {{invalidToken}}
+
+### Query by code through gateway
+# Expected: vẫn scoped theo tenant từ token.
+GET {{gatewayUrl}}/api/master-data/code/LAPTOP-01
+X-Request-Id: gateway-code-001
+Authorization: Bearer {{accountantTenant1Token}}
+
+### Gateway app own health
+# Expected: 200 nếu gateway-demo đang chạy.
+GET {{gatewayUrl}}/actuator/health

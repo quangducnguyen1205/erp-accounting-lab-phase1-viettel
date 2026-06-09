@@ -22,6 +22,7 @@ MINIO_DIR      := minio-lab
 REDIS_DIR      := redis-lab
 KAFKA_DIR      := kafka-lab
 OBSERVABILITY_DIR := observability-lab
+GATEWAY_DIR    := gateway-demo
 
 # --- Docker / Database -----------------------------------------
 
@@ -128,6 +129,20 @@ observability-down: ## Dừng Prometheus + Grafana local cho observability mini-
 observability-status: ## Kiểm tra Prometheus + Grafana local
 	@docker ps --filter "name=viettel-prometheus" --filter "name=viettel-grafana" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 
+# --- API Gateway mini-lab --------------------------------------
+
+.PHONY: gateway-run
+gateway-run: ## Chạy Spring Cloud Gateway demo ở port 8081
+	mvn -f $(GATEWAY_DIR)/pom.xml spring-boot:run
+
+.PHONY: gateway-validate
+gateway-validate: ## Validate gateway-demo Maven project
+	mvn -f $(GATEWAY_DIR)/pom.xml validate
+
+.PHONY: gateway-status
+gateway-status: ## Kiểm tra gateway-demo health endpoint
+	curl -s http://localhost:8081/actuator/health
+
 # --- Common dev infra ------------------------------------------
 #
 # Dùng target riêng khi chỉ học từng lab nhỏ:
@@ -138,11 +153,13 @@ observability-status: ## Kiểm tra Prometheus + Grafana local
 # - redis-up cho cache mini-lab
 # - kafka-up cho async messaging mini-lab
 # - observability-up cho Prometheus/Grafana mini-lab
+# - gateway-run cho API Gateway static route mini-lab
 #
 # Dùng infra-up khi cần demo đầy đủ hơn: PostgreSQL + Keycloak +
 # Elasticsearch + MinIO + Redis + Kafka. App Spring Boot vẫn chạy riêng
-# bằng `make app-run`. Prometheus/Grafana là observability optional, chạy
-# riêng bằng `make observability-up` để full infra mặc định không quá nặng.
+# bằng `make app-run`, Gateway chạy riêng bằng `make gateway-run`.
+# Prometheus/Grafana là observability optional, chạy riêng bằng
+# `make observability-up` để full infra mặc định không quá nặng.
 
 .PHONY: infra-up
 infra-up: db-up keycloak-up elastic-up minio-up redis-up kafka-up ## Khởi chạy PostgreSQL + KeyCloak + Elasticsearch + MinIO + Redis + Kafka
