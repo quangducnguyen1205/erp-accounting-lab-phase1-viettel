@@ -60,6 +60,10 @@ export function loadMasterData() {
   return apiRequest('/api/master-data');
 }
 
+export function loadMasterDataByCode(code) {
+  return apiRequest(`/api/master-data/code/${encodeURIComponent(code)}`);
+}
+
 export function createMasterData(payload) {
   return apiRequest('/api/master-data', {
     method: 'POST',

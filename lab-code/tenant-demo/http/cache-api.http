@@ -11,7 +11,7 @@
 # accountantTenant1Token và viewerTenant2Token có thể được set bằng auth-token-api.http
 # hoặc jwt-api.http.
 @invalidToken = invalid.jwt.token
-@code = UI-DEMO-1781056576437
+@code = LAPTOP-01
 
 ### Redis direct check - dùng terminal
 # Expected: PONG nếu Redis local đang chạy.

@@ -2,6 +2,20 @@
 
 Thư mục này là không gian thực hành code, song song với lý thuyết Phase 1.
 
+## Trạng thái final demo
+
+Phase 1 hiện có đường demo end-to-end:
+
+```text
+React Web UI
+-> Keycloak login
+-> Spring Cloud Gateway
+-> tenant-demo backend
+-> PostgreSQL / Redis / Kafka / Observability
+```
+
+Elasticsearch và MinIO đã có HTTP mini-lab riêng. UI không gọi trực tiếp PostgreSQL, Redis, Kafka, MinIO, Prometheus hoặc Grafana trong business flow.
+
 ## Nguyên tắc tối thượng
 
 1. **TỰ VIẾT CODE TRƯỚC.** Không copy solution.

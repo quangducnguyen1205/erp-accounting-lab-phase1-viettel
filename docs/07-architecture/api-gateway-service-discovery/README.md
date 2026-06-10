@@ -13,8 +13,9 @@ Nhóm này giải thích API Gateway, static routing, service discovery và load
 
 ## Trạng thái
 
-- Mini-lab static route đã được chuẩn bị bằng `lab-code/gateway-demo/`.
+- Mini-lab static route đã được chuẩn bị và verify bằng `lab-code/gateway-demo/`.
 - Gateway route `/api/**` đến `tenant-demo` ở `http://localhost:8080`.
+- React Web UI gọi Gateway ở `http://localhost:8081`; Gateway forward `Authorization` và `X-Request-Id` sang backend.
 - Service discovery/load balancing chưa implement vì repo hiện chỉ có một backend service.
 
 ## Caveat

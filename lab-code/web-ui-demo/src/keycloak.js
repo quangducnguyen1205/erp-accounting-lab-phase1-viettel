@@ -46,7 +46,6 @@ export function getSafeUserInfo() {
 export function getAuthSnapshot() {
   const authenticated = Boolean(keycloak.authenticated);
   const hasToken = Boolean(keycloak.token);
-  const token = keycloak.token;
   const tokenParsed = keycloak.tokenParsed ?? {};
   const userInfo = authenticated ? getSafeUserInfo() : null;
   const tokenExpiresAt = tokenParsed.exp ? new Date(tokenParsed.exp * 1000).toLocaleString() : '(missing)';
@@ -61,7 +60,6 @@ export function getAuthSnapshot() {
   return {
     authenticated,
     hasToken,
-    token,
     userInfo,
     tokenExpiresAt,
     warning

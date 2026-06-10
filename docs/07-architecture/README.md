@@ -16,6 +16,8 @@ Thư mục này nối các mini-lab trong repo với target architecture rộng 
 8. [../06-frontend/](../06-frontend/) - React Web UI demo mỏng nếu cần trình bày end-to-end.
 9. [awareness/](awareness/) - các chủ đề target architecture chưa implement trong Phase 1.
 
+Demo script cuối Phase 1: [../99-tong-ket/phase1-final-demo-script.md](../99-tong-ket/phase1-final-demo-script.md).
+
 ## Trạng Thái Phase 1
 
 | Nhóm | Trạng thái | Doc bắt đầu |
@@ -26,8 +28,8 @@ Thư mục này nối các mini-lab trong repo với target architecture rộng 
 | Redis/cache | Done | [cache-redis/redis-cache-strategy.md](cache-redis/redis-cache-strategy.md) |
 | Kafka/messaging | Done | [messaging-kafka/kafka-async-messaging.md](messaging-kafka/kafka-async-messaging.md) |
 | Observability | Done at Phase 1 level | [observability/observability-foundation.md](observability/observability-foundation.md) |
-| API Gateway/service discovery | Active mini-lab | [api-gateway-service-discovery/api-gateway-foundation.md](api-gateway-service-discovery/api-gateway-foundation.md) |
-| React Web UI | Optional demo scaffolded | [../06-frontend/react-web-keycloak-gateway-demo.md](../06-frontend/react-web-keycloak-gateway-demo.md) |
+| API Gateway/service discovery | Done at Phase 1 level: static route verified, service discovery awareness only | [api-gateway-service-discovery/api-gateway-foundation.md](api-gateway-service-discovery/api-gateway-foundation.md) |
+| React Web UI | Done as thin final demo: Docker-first Keycloak/Gateway UI | [../06-frontend/react-web-keycloak-gateway-demo.md](../06-frontend/react-web-keycloak-gateway-demo.md) |
 | Awareness/later | Planned | [awareness/README.md](awareness/README.md) |
 
 ## Source-of-truth Pattern Cho Mỗi Công Nghệ

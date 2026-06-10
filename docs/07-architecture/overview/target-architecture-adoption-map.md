@@ -34,14 +34,16 @@ Spring Boot tenant-demo
 -> Keycloak mini-lab / APP_AUTH_MODE=keycloak
 -> Keycloak Authorization/RBAC mini-lab
 -> Elasticsearch, MinIO, Redis, Kafka, Observability local mini-labs
+-> Spring Cloud Gateway static route
+-> React Web UI demo Docker-first
 ```
 
 ## Adoption map theo công nghệ
 
 | Topic | Vai trò trong kiến trúc | Khi repo nên học/dùng | Mini-lab trigger | Trạng thái hiện tại | Rủi ro overdo |
 |---|---|---|---|---|---|
-| React Web frontend | UI web mỏng cho user thao tác, login Keycloak và gọi API qua Gateway. | Sau khi backend/gateway đã đủ ổn để demo end-to-end. | Login Keycloak, load/create `master_data`, hiển thị requestId để đối chiếu log. | Scaffolded Docker-first ở `lab-code/web-ui-demo`. | Dễ sa vào UI/state/CSS; không dùng React Native/Expo trong repo này. |
-| API Gateway / service discovery / load balancing | Entry point, routing, auth pre-check, rate limit, service discovery. | Đã thêm mini-lab static route để hiểu gateway flow; discovery/load balancing vẫn awareness. | Route `/api/**` qua gateway đến `tenant-demo`, forward `Authorization` và `X-Request-Id`. | Static route mini-lab prepared. | Chạy gateway production/service discovery thật quá sớm sẽ tốn setup, ít giá trị Phase 1. |
+| React Web frontend | UI web mỏng cho user thao tác, login Keycloak và gọi API qua Gateway. | Đã dùng làm final demo trực quan sau khi backend/gateway ổn. | Login Keycloak, ACCOUNTANT load/create `master_data`, VIEWER load nhưng create `403`, hiển thị requestId để đối chiếu log. | Verified Docker-first ở `lab-code/web-ui-demo`. | Dễ sa vào UI/state/CSS; không dùng React Native/Expo trong repo này. |
+| API Gateway / service discovery / load balancing | Entry point, routing, auth pre-check, rate limit, service discovery. | Đã thêm mini-lab static route để hiểu gateway flow; discovery/load balancing vẫn awareness. | Route `/api/**` qua gateway đến `tenant-demo`, forward `Authorization` và `X-Request-Id`. | Static route mini-lab verified. | Chạy gateway production/service discovery thật quá sớm sẽ tốn setup, ít giá trị Phase 1. |
 | Keycloak/OIDC | Authentication, login/token issuer, issuer/JWKS, user identity claims. | Đã chạm auth nên đã làm mini-lab. | User/token/tenant claim flow, Resource Server validation. | Keycloak mini-lab verified. | Overclaim production IAM quá sớm. |
 | Keycloak Authorization/RBAC/tenant-scope | Authorization: user được phép làm gì, role/scope/authority, service/business permission. | Đã làm sau feedback mentor Đạt ngày 25/05. | Realm roles vs client roles, role claim, Spring Security authorities, 401 vs 403, tenant-scope. | Mini-lab verified. | Làm full permission matrix hoặc Keycloak Authorization Services/UMA quá sớm. |
 | Spring Boot backend services | Business APIs, Resource Server, tenant-aware service/repository. | Core demo hiện tại. | Thêm service khi có domain slice mới. | `tenant-demo` đã có API nhỏ. | Biến demo thành ERP thật quá sớm. |
@@ -75,8 +77,8 @@ Spring Boot tenant-demo
 | `com.viettel.demo.cache` | Redis cache-aside | Verified | Read-by-code miss -> DB -> TTL -> hit, key có tenantId. |
 | `com.viettel.demo.messaging` | Kafka async event propagation | Verified | Publish/consume `MasterDataChangedEvent`, event có tenantId và tenant-aware key. |
 | `com.viettel.demo.observability` + `lab-code/observability-lab` | Logging/metrics/local monitoring | Verified | RequestId/MDC, custom Micrometer metrics, Prometheus target UP, Grafana datasource/dashboard. |
-| `lab-code/gateway-demo` | API Gateway/static routing | Prepared | Spring Cloud Gateway route `/api/**` đến `tenant-demo`, service discovery để awareness. |
-| `lab-code/web-ui-demo` | React Web thin client | Scaffolded | Docker-first Vite app; Keycloak login bằng public client, gọi Gateway `/api/master-data`, hiển thị requestId. |
+| `lab-code/gateway-demo` | API Gateway/static routing | Verified | Spring Cloud Gateway route `/api/**` đến `tenant-demo`, service discovery để awareness. |
+| `lab-code/web-ui-demo` | React Web thin client | Verified | Docker-first Vite app; Keycloak login bằng public client, gọi Gateway `/api/master-data`, lookup by code, create data và hiển thị requestId. |
 | Keycloak Authorization/RBAC task | Authorization layer sau AuthN | Verified | Role/authority check nhỏ, phân biệt `401`/`403`, vẫn giữ tenant-aware query. |
 | `presentation-notes/demo-script-keycloak-tenant-flow.md` | Mentor-facing demo path | Prepared | Script start DB/Keycloak/app, verify tenant 1/2, cross-tenant id. |
 | SQL playground `01-09` | PostgreSQL learning lab | Implemented | Schema, EXPLAIN, index pattern, migration, ACID/isolation. |
@@ -106,7 +108,7 @@ Spring Boot tenant-demo
 
 ### Awareness là đủ cho Phase 1
 
-- API Gateway/service discovery/load balancing.
+- Service discovery/load balancing production-grade.
 - gRPC internal communication.
 - Realtime protocols.
 - External integrations.
@@ -137,9 +139,9 @@ Nếu chưa trả lời được 5 câu này, chưa nên implement công nghệ 
 
 Hướng tốt nhất sau tài liệu này:
 
-1. Demo backend đến Keycloak AuthN/AuthZ, search, file storage, cache, async messaging và observability đã đủ chấp nhận để báo cáo khi cần.
-2. Nhánh kế tiếp nên là API Gateway/service discovery awareness để nối các thành phần đã học vào entry-point architecture.
-3. React Web UI chỉ nên giữ ở mức thin demo; không để UI chặn các note architecture còn thiếu.
-4. Không dùng React Native/Expo trong Phase 1 repo này; mobile scope thuộc project khác.
+1. Dry-run `docs/99-tong-ket/phase1-final-demo-script.md` để trình bày flow cuối Phase 1.
+2. Nếu còn thời gian, chỉ bổ sung DDD/domain-boundary awareness và final reflection.
+3. Các phần như service discovery/load balancing production-grade, tracing/log aggregation, Debezium CDC hoặc MinIO advanced object management nên để backlog sau Phase 1.
+4. React Web UI chỉ giữ ở mức thin demo; không dùng React Native/Expo trong repo này.
 
-Không nên mở nhiều mini-lab cùng lúc.
+Không nên mở thêm nhiều mini-lab mới trước khi chốt Phase 1.

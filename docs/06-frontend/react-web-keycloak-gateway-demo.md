@@ -93,6 +93,17 @@ Token cần có:
 
 Nếu thiếu `tenant_id`, backend nên fail rõ ở tenant context flow.
 
+Nếu reset volume Keycloak, cấu hình lại web client theo checklist ngắn:
+
+1. Realm: `viettel-lab`.
+2. Client: `tenant-demo-web`.
+3. Client authentication: off/public client.
+4. Standard flow: on.
+5. Valid redirect URIs: `http://localhost:5173/*`.
+6. Web origins: `http://localhost:5173`.
+7. User `tenant1-user`: password local `password`, `tenant_id=1`, role `ACCOUNTANT`.
+8. User `tenant2-user`: password local `password`, `tenant_id=2`, role `VIEWER`.
+
 Lưu ý quan trọng về role:
 
 - UI client là `tenant-demo-web`.
@@ -152,13 +163,14 @@ Production không nên mở CORS bừa bãi. Cần giới hạn origin thật, a
    ```
 
 5. Mở `http://localhost:5173`, login Keycloak, load/create `master_data`.
+6. Dùng `Load by code` để gọi `GET /api/master-data/code/{code}` qua Gateway. Nếu Redis enabled, gọi cùng code hai lần rồi kiểm log/metric backend để thấy miss/hit; UI không tự kết luận cache status.
 
 6. Đối chiếu:
 
    - UI status và requestId.
    - `tenant-demo` log có requestId.
    - Kafka publish/consume log nếu messaging enabled.
-   - Redis cache hit/miss qua HTTP cache lab nếu cache enabled.
+   - Redis cache hit/miss qua `Load by code` hoặc HTTP cache lab nếu cache enabled.
    - Prometheus/Grafana nếu observability lab đang chạy.
 
 ## Khi redirect về UI nhưng vẫn thấy Guest
