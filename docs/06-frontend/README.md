@@ -10,9 +10,9 @@ Folder này chỉ chứa phần frontend cần thiết để demo flow kiến tr
 
 ## Trạng Thái
 
-- React Web UI demo đã được scaffold ở `lab-code/web-ui-demo/`.
+- React Web UI demo đã được implement và verify ở `lab-code/web-ui-demo/`.
 - UI chạy theo Docker-first workflow qua `make web-ui-up`, không yêu cầu local npm.
-- UI là thin client: login Keycloak, gọi API qua Gateway, hiển thị requestId để đối chiếu log.
+- UI là thin client: login Keycloak, gọi API qua Gateway, load/create `master_data`, lookup by code cho Redis demo path và hiển thị requestId để đối chiếu log.
 - Không dùng React Native hoặc Expo trong repo Viettel Phase 1 này.
 
 ## Caveat

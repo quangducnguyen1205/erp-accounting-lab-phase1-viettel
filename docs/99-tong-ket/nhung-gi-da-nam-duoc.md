@@ -750,15 +750,15 @@ Trạng thái: đã đóng ở Phase 1 learning level. Actuator baseline, reques
 
 ### Hướng tiếp theo
 
-- Chuyển focus sang API Gateway/service discovery awareness; React Web UI nếu làm thì chỉ là thin demo client.
+- API Gateway/service discovery awareness và React Web UI demo đã được hoàn tất ở Milestone #17.
 - Có thể thêm metric nhỏ hơn sau này nếu có câu hỏi vận hành rõ, ví dụ file upload/download count.
 - Không dựng Loki/tracing/alerting production trong Phase 1 nếu chưa có trigger học rõ.
 
-## Milestone #17: API Gateway/service discovery awareness
+## Milestone #17: API Gateway/service discovery awareness + React Web UI final demo
 
-Trạng thái: đang làm. Đã chuẩn bị mini-lab nhỏ bằng static route để hiểu API Gateway flow; service discovery/load balancing vẫn ở mức awareness vì repo hiện chỉ có một backend service chính.
+Trạng thái: đã đóng ở mức Phase 1. Mini-lab dùng Spring Cloud Gateway static route để hiểu Gateway flow, còn service discovery/load balancing vẫn ở mức awareness vì repo hiện chỉ có một backend service chính. React Web UI Docker-first được dùng làm thin client cuối để nhìn flow end-to-end.
 
-### Đã chuẩn bị
+### Đã chuẩn bị và verify
 
 - `docs/07-architecture/api-gateway-service-discovery/api-gateway-foundation.md`: API Gateway, reverse proxy, route/predicate/filter, auth gateway vs backend.
 - `docs/07-architecture/api-gateway-service-discovery/spring-cloud-gateway-code-guide.md`: cách đọc `gateway-demo`, route config, request id propagation.
@@ -767,6 +767,7 @@ Trạng thái: đang làm. Đã chuẩn bị mini-lab nhỏ bằng static route 
 - `lab-code/gateway-demo/`: Spring Cloud Gateway app nhỏ chạy ở `8081`, route `/api/**` sang `tenant-demo` ở `8080`.
 - `docs/06-frontend/react-web-keycloak-gateway-demo.md`: hướng React Web UI mỏng, không dùng React Native/Expo.
 - `lab-code/web-ui-demo/`: Vite React app nhỏ chạy Docker-first, dùng `keycloak-js`, gọi Gateway bằng Bearer token và `X-Request-Id`.
+- `docs/99-tong-ket/phase1-final-demo-script.md`: script demo cuối Phase 1.
 
 ### Ý chính cần nhớ
 
@@ -778,13 +779,19 @@ Trạng thái: đang làm. Đã chuẩn bị mini-lab nhỏ bằng static route 
 - React Web UI là thin client để demo end-to-end; không gọi trực tiếp PostgreSQL/Redis/Kafka/MinIO/Prometheus/Grafana.
 - Backend vẫn là security boundary: validate JWT, đọc tenant claim, check RBAC và query tenant-aware.
 
-### Cần verify thủ công
+### Kết quả verify
 
 - Start `tenant-demo` ở `8080`.
 - Start `gateway-demo` ở `8081`.
 - Tạo Keycloak public client `tenant-demo-web` với redirect URI `http://localhost:5173/*`.
 - Start React Web UI Docker container ở `5173`.
-- Login Keycloak, gọi `/api/master-data` qua Gateway với token hợp lệ -> backend response.
-- Tạo record `UI-DEMO-*` nếu user có role phù hợp.
+- `tenant1-user/password` có role `ACCOUNTANT`: login được, load `master_data`, lookup by code và create record `UI-DEMO-*` qua Gateway.
+- `tenant2-user/password` có role `VIEWER`: login được, load dữ liệu được, create trả `403` rõ ràng.
 - Gọi thiếu token qua Gateway -> `401` từ backend.
-- Kiểm tra log `tenant-demo` có cùng `X-Request-Id` do UI sinh.
+- Log `tenant-demo` có cùng `X-Request-Id` do UI sinh.
+
+### Caveat
+
+- Gateway hiện dùng static route, chưa có service discovery/load balancing thật.
+- UI là React Web demo mỏng, không phải production frontend và không dùng React Native/Expo.
+- Backend vẫn là security boundary: UI/Gateway không thay thế JWT validation, RBAC và tenant-aware query.

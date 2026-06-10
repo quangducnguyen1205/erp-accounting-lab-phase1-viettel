@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { createMasterData, loadMasterData } from './api';
+import { createMasterData, loadMasterData, loadMasterDataByCode } from './api';
 import { config } from './config';
 import { getAuthSnapshot, initKeycloak, keycloak, refreshToken } from './keycloak';
 
@@ -7,7 +7,6 @@ const initialAuthState = {
   initializing: true,
   authenticated: false,
   hasToken: false,
-  token: '',
   userInfo: null,
   tokenExpiresAt: '(missing)',
   warning: '',
@@ -90,7 +89,7 @@ function formatResourceRoles(userInfo) {
 }
 
 function AuthPanel({ authState, actionDisabledReason, onLogin, onLogout, onRefresh }) {
-  const { initializing, authenticated, hasToken, token, userInfo, tokenExpiresAt, warning, error } = authState;
+  const { initializing, authenticated, hasToken, userInfo, tokenExpiresAt, warning, error } = authState;
   const authReady = authenticated && hasToken;
 
   return (
@@ -129,7 +128,7 @@ function AuthPanel({ authState, actionDisabledReason, onLogin, onLogout, onRefre
         <dt>authenticated</dt>
         <dd>{String(authenticated)}</dd>
         <dt>access token</dt>
-        <dd className="token-wrap">{hasToken ? <code>{token}</code> : 'missing'}</dd>
+        <dd>{hasToken ? 'available (hidden)' : 'missing'}</dd>
         <dt>actions</dt>
         <dd>{actionDisabledReason || 'enabled'}</dd>
       </dl>
@@ -201,6 +200,46 @@ function MasterDataList({ rows, onLoad, loading, disabled }) {
   );
 }
 
+function MasterDataByCodeLookup({ code, setCode, result, onSubmit, disabled, loading }) {
+  return (
+    <section className="panel wide">
+      <div className="panel-heading">
+        <h2>Load by Code</h2>
+        <span className="badge">Redis demo path</span>
+      </div>
+
+      <form className="inline-form" onSubmit={onSubmit}>
+        <label>
+          Code
+          <input value={code} onChange={(event) => setCode(event.target.value)} required />
+        </label>
+        <button type="submit" disabled={disabled || loading}>{loading ? 'Loading...' : 'Load by code'}</button>
+      </form>
+
+      {result ? (
+        <dl className="facts result-facts">
+          <dt>ID</dt>
+          <dd>{result.id}</dd>
+          <dt>Code</dt>
+          <dd>{result.code}</dd>
+          <dt>Name</dt>
+          <dd>{result.name}</dd>
+          <dt>Category</dt>
+          <dd>{result.category}</dd>
+          <dt>Active</dt>
+          <dd>{String(result.isActive)}</dd>
+        </dl>
+      ) : (
+        <p className="hint">Chưa lookup code nào trong phiên UI này.</p>
+      )}
+
+      <p className="hint">
+        Nếu bật `APP_CACHE_ENABLED=true`, gọi cùng code hai lần rồi kiểm log/metric backend để thấy miss rồi hit. UI không tự đoán cache status.
+      </p>
+    </section>
+  );
+}
+
 function CreateMasterDataForm({ form, setForm, onSubmit, disabled, loading }) {
   const updateField = (field) => (event) => {
     const value = field === 'isActive' ? event.target.checked : event.target.value;
@@ -245,6 +284,8 @@ function CreateMasterDataForm({ form, setForm, onSubmit, disabled, loading }) {
 export default function App() {
   const [authState, setAuthState] = useState(initialAuthState);
   const [rows, setRows] = useState([]);
+  const [lookupCode, setLookupCode] = useState('LAPTOP-01');
+  const [lookupResult, setLookupResult] = useState(null);
   const [form, setForm] = useState(defaultForm);
   const [lastResult, setLastResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -345,6 +386,19 @@ export default function App() {
     }
   }
 
+  async function handleLookupByCode(event) {
+    event.preventDefault();
+    const code = lookupCode.trim();
+    if (!code) {
+      return;
+    }
+
+    const result = await runRequest(() => loadMasterDataByCode(code));
+    if (result?.ok) {
+      setLookupResult(result.data);
+    }
+  }
+
   async function handleCreate(event) {
     event.preventDefault();
     const result = await runRequest(() => createMasterData(form));
@@ -396,6 +450,14 @@ export default function App() {
 
       <div className="grid">
         <MasterDataList rows={rows} onLoad={handleLoad} loading={loading} disabled={!authReady} />
+        <MasterDataByCodeLookup
+          code={lookupCode}
+          setCode={setLookupCode}
+          result={lookupResult}
+          onSubmit={handleLookupByCode}
+          loading={loading}
+          disabled={!authReady}
+        />
         <CreateMasterDataForm form={form} setForm={setForm} onSubmit={handleCreate} loading={loading} disabled={!authReady} />
       </div>
     </main>

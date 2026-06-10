@@ -7,8 +7,8 @@ Mục tiêu của repo không phải là lưu mọi nháp học tập, mà là l
 ## Trạng thái học hiện tại
 
 - Đã hoàn thành nền tảng SaaS, multi-tenant, SQL playground, migration/locking, ACID/isolation và tenant-aware backend API.
-- Đã có demo Spring Boot nhỏ trong `lab-code/tenant-demo` với PostgreSQL/Flyway, tenant-aware API, JWT tạm, Keycloak mode và các mini-lab architecture.
-- Trọng tâm hiện tại: nối flow end-to-end bằng Gateway + React Web UI mỏng, không biến repo thành frontend/mobile product.
+- Đã có demo Spring Boot nhỏ trong `lab-code/tenant-demo` với PostgreSQL/Flyway, tenant-aware API, JWT tạm fallback, Keycloak AuthN/AuthZ mode và các mini-lab architecture.
+- Phase 1 hiện đã demo được flow end-to-end bằng React Web UI mỏng -> Keycloak -> Gateway -> `tenant-demo` -> PostgreSQL/Redis/Kafka/Observability. UI này là demo web, không phải React Native/Expo và không phải frontend production.
 
 ## Cấu trúc thư mục
 
@@ -28,6 +28,11 @@ Mục tiêu của repo không phải là lưu mọi nháp học tập, mà là l
 │   ├── sql-playground/
 │   ├── tenant-demo/
 │   ├── keycloak-lab/
+│   ├── elasticsearch-lab/
+│   ├── minio-lab/
+│   ├── redis-lab/
+│   ├── kafka-lab/
+│   ├── observability-lab/
 │   ├── gateway-demo/
 │   └── web-ui-demo/
 ├── reports/
@@ -96,7 +101,7 @@ Repository này vẫn được ưu tiên làm kho kiến thức Phase 1, nhưng 
 - `lab-code/tenant-demo/`: Spring Boot + PostgreSQL/Flyway + tenant-aware API.
 - `lab-code/keycloak-lab/`: Keycloak/OIDC mini-lab local.
 - `lab-code/gateway-demo/`: Spring Cloud Gateway static route tới `tenant-demo`.
-- `lab-code/web-ui-demo/`: React Web/Vite thin client chạy Docker-first, gọi Gateway sau khi login Keycloak.
+- `lab-code/web-ui-demo/`: React Web/Vite thin client chạy Docker-first, gọi Gateway sau khi login Keycloak. Đây là demo trực quan cuối Phase 1, không phải React Native/Expo.
 
 Nếu demo phát triển thành một project thật sự lớn, nên tách sang repository riêng để repo kiến thức này vẫn gọn, rõ và dễ đọc. Trong Phase 1, lab code vẫn được giữ nhỏ và bám sát mục tiêu học.
 
@@ -104,7 +109,8 @@ Nếu demo phát triển thành một project thật sự lớn, nên tách sang
 
 - `docs/README.md`: index tài liệu.
 - `ROADMAP.md`: tiến độ và kế hoạch học.
-- `presentation-notes/demo-script-keycloak-tenant-flow.md`: demo script backend hiện tại.
+- `docs/99-tong-ket/phase1-final-demo-script.md`: demo script cuối Phase 1 cho UI/Gateway/backend/integrations.
+- `presentation-notes/demo-script-keycloak-tenant-flow.md`: demo script backend Keycloak cũ, vẫn hữu ích nếu chỉ muốn trình bày auth flow.
 
 Workflow học code dự kiến:
 
@@ -119,7 +125,7 @@ Workflow học code dự kiến:
 3. Câu hỏi, câu trả lời nháp, review, prompt và scratch notes là local-only.
 4. Báo cáo được viết bằng LaTeX để có thể compile sang PDF.
 5. Tài liệu thuyết trình là markdown dạng sơ đồ/tóm tắt, không phải slide thiết kế.
-6. Code demo sẽ được bắt đầu khi phần lý thuyết đủ nền tảng.
+6. Code demo chỉ giữ ở mức Phase 1 learning lab; không overclaim production readiness.
 
 ## Chủ đề chính đã tổng hợp
 

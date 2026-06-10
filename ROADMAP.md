@@ -3,7 +3,7 @@
 > **Bắt đầu:** Thứ Ba 28/04/2026
 > **Deadline ban đầu:** Thứ Hai 25/05/2026
 > **Cửa sổ học mở rộng đề xuất:** đến Thứ Tư 03/06/2026
-> **Cập nhật roadmap:** 04/06/2026
+> **Cập nhật roadmap:** 10/06/2026
 > **Chu kỳ báo cáo:** mỗi 2-3 ngày phải có output có thể trình bày
 > **Phương châm:** tự học + tự code trước, Codex tạo note/skeleton và review sau
 
@@ -13,14 +13,14 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 90% |
-| **Tổng task** | 106 |
-| **Đã hoàn thành** | 95 / 106 |
-| **Focus hiện tại** | API Gateway static route mini-lab + service discovery/load balancing awareness |
-| **Milestone tiếp theo** | #17 - Architecture awareness / gateway awareness |
-| **Demo hiện tại** | Spring Boot + PostgreSQL/Flyway + tenant-aware API + JWT tạm fallback + Keycloak AuthN/AuthZ mode đã verify |
+| **Tiến độ** | 95% - demo-ready Phase 1 |
+| **Tổng task** | 110 |
+| **Đã hoàn thành** | 104 / 110 |
+| **Focus hiện tại** | Final demo script + Phase 1 closure polish |
+| **Milestone tiếp theo** | #18 - DDD awareness/final reflection nếu còn cần |
+| **Demo hiện tại** | React Web UI -> Keycloak -> Gateway -> tenant-demo -> PostgreSQL/Redis/Kafka/Observability; Elasticsearch/MinIO qua HTTP mini-lab |
 
-Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; Milestone #14 đã chốt Redis cache-aside tenant-safe read path; Milestone #15 đã chốt Kafka/async messaging reference flow nhỏ; Milestone #16 đã chốt Observability baseline với Actuator, request logging, Micrometer metrics và Prometheus/Grafana local lab.
+Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; Milestone #14 đã chốt Redis cache-aside tenant-safe read path; Milestone #15 đã chốt Kafka/async messaging reference flow nhỏ; Milestone #16 đã chốt Observability baseline với Actuator, request logging, Micrometer metrics và Prometheus/Grafana local lab. Milestone #17 đã chốt API Gateway static route và React Web UI Docker-first để nhìn flow end-to-end. React Native/Expo không thuộc repo này.
 
 ---
 
@@ -101,7 +101,7 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 - Redis mini-lab: tenant-safe cache key.
 - Kafka mini-lab: event producer/consumer nhỏ hoặc focused awareness.
 - Observability mini-lab: health/log/metrics ở mức tối thiểu.
-- React Web UI: optional, chỉ làm demo mỏng nếu cần nhìn flow trực quan hơn backend script.
+- React Web UI: final thin demo để nhìn flow end-to-end; không mở rộng thành frontend product.
 
 ### Không đưa vào Phase 1 implementation
 
@@ -131,7 +131,7 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 - Không tiếp tục polish report/demo nếu không chặn học.
 - Học công nghệ theo thứ tự, mỗi lần một mini-lab.
 - Với mỗi công nghệ: concept doc → code guide → skeleton/TODO → tự code → verify → review → summary.
-- React Web UI là optional demo mỏng; nếu dùng thì chỉ gọi Gateway và không biến repo thành frontend product.
+- React Web UI là demo mỏng cuối Phase 1; chỉ gọi Gateway và không biến repo thành frontend product.
 
 ---
 
@@ -154,8 +154,8 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 | Temporary JWT auth | Core bridge | `docs/05-security/jwt-spring-security-temporary.md` | `SecurityConfig`, `JwtTokenService`, `JwtTenantContextFilter` | MockMvc + HTTP valid/invalid JWT | #5 | Đã đóng |
 | Keycloak/OAuth2/OIDC | Mini-lab AuthN/token validation | `docs/05-security/keycloak-oidc-mental-model.md`, `docs/05-security/keycloak-oauth2-oidc-awareness.md`, `docs/05-security/keycloak-admin-console-guide.md` | `lab-code/keycloak-lab/`, `APP_AUTH_MODE=keycloak` | Lấy token Keycloak, gọi API tenant-aware, verify issuer/JWKS/claims | #9 | Đã verify mini-lab |
 | Keycloak Authorization / RBAC / tenant-scope | Mini-lab đã verify | `docs/05-security/keycloak-authorization-rbac-tenant-scope.md`, `docs/05-security/keycloak-authorization-code-guide-spring-boot.md` | Role claim, Spring Security authorities converter, endpoint/service authorization nhỏ | Allowed role `200`, missing role `403`, cross-tenant vẫn `404`/không leak | #12 | Đã đóng |
-| React Web frontend | Optional thin demo Docker-first | `docs/06-frontend/react-web-keycloak-gateway-demo.md` | `lab-code/web-ui-demo/` gọi Gateway bằng Keycloak token | Login Keycloak, load/create `master_data` qua Gateway, requestId nối log | #17 | Scaffolded |
-| API Gateway/service discovery/load balancer | Mini-lab static route + awareness | `docs/07-architecture/api-gateway-service-discovery/api-gateway-foundation.md`, `docs/07-architecture/api-gateway-service-discovery/service-discovery-load-balancing-awareness.md` | `lab-code/gateway-demo/` route `/api/**` tới `tenant-demo` | Gateway forward Authorization + X-Request-Id, backend vẫn validate token/tenant | #17 | Prepared/verified |
+| React Web frontend | Thin demo Docker-first | `docs/06-frontend/react-web-keycloak-gateway-demo.md` | `lab-code/web-ui-demo/` gọi Gateway bằng Keycloak token | Login Keycloak, ACCOUNTANT load/create, VIEWER load nhưng create `403`, requestId nối log | #17 | Đã verify demo |
+| API Gateway/service discovery/load balancer | Mini-lab static route + awareness | `docs/07-architecture/api-gateway-service-discovery/api-gateway-foundation.md`, `docs/07-architecture/api-gateway-service-discovery/service-discovery-load-balancing-awareness.md` | `lab-code/gateway-demo/` route `/api/**` tới `tenant-demo` | Gateway forward Authorization + X-Request-Id, backend vẫn validate token/tenant | #17 | Đã đóng |
 | Elasticsearch / Elastic Stack | Mini-lab đã verify | `docs/07-architecture/search-elasticsearch/elasticsearch-search-service.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-request-response-shapes.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-code-guide-spring-boot.md` | `lab-code/elasticsearch-lab/` + `com.viettel.demo.search` | Search tenant 1/2, no leakage | #11 | Đã đóng |
 | MinIO / S3 object storage | Mini-lab đã verify | `docs/07-architecture/object-storage-minio/minio-object-storage.md`, `docs/07-architecture/object-storage-minio/minio-s3-api-shapes.md`, `docs/07-architecture/object-storage-minio/minio-code-guide-spring-boot.md` | upload/download mini-lab | HTTP upload/download + tenant metadata | #13 | Đã đóng |
 | MinIO advanced object management | Optional/later backlog | `docs/07-architecture/object-storage-minio/minio-advanced-object-management.md` | Presigned URL expiry, lifecycle, versioning, object lock/retention nếu cần | Mini-lab riêng sau core milestones | Optional later | Backlog |
@@ -380,8 +380,8 @@ Mục tiêu: hiểu vị trí gateway/load balancer/service discovery trong targ
 - [x] `[SKELETON/THỰC HÀNH]` Tạo `lab-code/gateway-demo/` - Spring Cloud Gateway static route `/api/**` tới `tenant-demo`, giữ/ sinh `X-Request-Id`.
 - [x] `[BÁO CÁO]` Cập nhật architecture map: gateway static route đã có mini-lab; service discovery/load balancing vẫn awareness vì repo chỉ có một backend service.
 - [x] `[SKELETON/THỰC HÀNH]` Tạo React Web UI demo Docker-first: `docs/06-frontend/react-web-keycloak-gateway-demo.md`, `lab-code/web-ui-demo/`; không dùng React Native/Expo và không yêu cầu local npm.
-- [ ] `[THỰC HÀNH]` Verify end-to-end bằng browser: Keycloak login -> Gateway -> `tenant-demo` -> requestId trong log.
-- [ ] `[MILESTONE]` Chốt Milestone #17 - architecture awareness đủ trả lời mentor, không cần chạy full gateway.
+- [x] `[THỰC HÀNH]` Verify end-to-end bằng browser: Keycloak login -> Gateway -> `tenant-demo` -> requestId trong log.
+- [x] `[MILESTONE]` Chốt Milestone #17 - API Gateway/static route + React Web UI demo đủ trả lời mentor ở mức Phase 1.
 
 ### Sprint 18 - 01/06 đến 03/06: DDD awareness + final reflection
 
@@ -416,7 +416,7 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 | 14 | 28/05 | Redis/cache mini-lab | Đã đóng |
 | 15 | 29/05 | Kafka/async messaging mini-lab hoặc focused awareness | Đã đóng |
 | 16 | 30/05 | Observability/logging/metrics mini-lab | Đã đóng |
-| 17 | 31/05 | API Gateway/service discovery awareness + React decision | Planned |
+| 17 | 31/05 | API Gateway/service discovery awareness + React Web UI final demo | Đã đóng |
 | 18 | 03/06 | DDD awareness + final reflection + demo dry-run | Planned |
 
 ---
@@ -459,19 +459,22 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 
 ## Việc làm ngay trong 1-2 ngày tới
 
-### Task tiếp theo: Verify React Web UI end-to-end
+### Task tiếp theo: Phase 1 final demo dry-run
 
 1. Đọc:
-   - `docs/07-architecture/api-gateway-service-discovery/api-gateway-foundation.md`.
-   - `docs/07-architecture/api-gateway-service-discovery/spring-cloud-gateway-code-guide.md`.
+   - `docs/99-tong-ket/phase1-final-demo-script.md`.
    - `docs/06-frontend/react-web-keycloak-gateway-demo.md`.
-2. Chuẩn bị Keycloak public client `tenant-demo-web` với redirect URI `http://localhost:5173/*`.
-3. Chạy `tenant-demo` ở `8080`, gateway ở `8081`, React Web UI ở `5173`, rồi verify:
-   - login Keycloak thành công;
-   - `Load master data` gọi qua Gateway và backend trả response;
-   - create record `UI-DEMO-*` thành công nếu user có role phù hợp;
-   - `X-Request-Id` từ UI xuất hiện trong log `tenant-demo`;
-   - thiếu token/business API vẫn bị backend chặn.
+   - `docs/07-architecture/overview/target-architecture-adoption-map.md`.
+2. Chuẩn bị Keycloak public client `tenant-demo-web` nếu reset volume:
+   - public client / client authentication off;
+   - `Valid redirect URIs = http://localhost:5173/*`;
+   - `Web origins = http://localhost:5173`;
+   - `tenant1-user` có role `ACCOUNTANT`, `tenant2-user` có role `VIEWER`.
+3. Chạy `tenant-demo` ở `8080`, gateway ở `8081`, React Web UI ở `5173`, rồi dry-run script:
+   - ACCOUNTANT load/create qua Gateway;
+   - VIEWER load được nhưng create trả `403`;
+   - `X-Request-Id` trên UI xuất hiện trong log `tenant-demo`;
+   - Redis/Kafka/Observability quan sát qua backend nếu feature flag tương ứng bật.
 4. Dùng infra chung khi cần demo nhiều thành phần, hoặc target riêng khi chỉ test từng lab:
 
 ```bash
@@ -488,11 +491,11 @@ make db-up
 make app-test
 ```
 
-5. Sau khi tự code Actuator/logging/metrics bước đầu, nhờ Codex review theo từng phần.
+5. Sau dry-run, chỉ polish báo cáo/demo script nếu có lỗi mạch trình bày.
 
 ### Tạm hoãn
 
-- React Web UI: optional demo trực quan, đã scaffold; không mở rộng thành frontend product.
+- React Web UI: đã verify final demo trực quan; không mở rộng thành frontend product.
 - Report polish: chỉ cập nhật summary ngắn sau mỗi mini-lab, không làm report lớn giữa chừng.
 - MinIO advanced object management: presigned URL expiry, lifecycle/expiration, versioning, object lock/retention - để backlog sau core demo/UI hoặc sau các milestone công nghệ chính.
 - Debezium: chỉ làm sau Kafka/Observability nếu còn cần; mỗi sprint một công nghệ và giữ scope nhỏ.

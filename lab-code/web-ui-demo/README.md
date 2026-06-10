@@ -63,6 +63,18 @@ Claim cần có trong access token:
 
 Backend vẫn validate token qua issuer/JWKS và tự enforce tenant isolation. UI không được tin là nguồn tenant đáng tin cậy.
 
+Nếu reset volume Keycloak, cấu hình lại tối thiểu:
+
+1. Vào realm `viettel-lab`.
+2. Tạo hoặc kiểm tra client `tenant-demo-web`.
+3. Đặt `Client authentication = Off` để client là public SPA.
+4. Bật `Standard flow`.
+5. Đặt `Valid redirect URIs = http://localhost:5173/*`.
+6. Đặt `Web origins = http://localhost:5173`.
+7. Gán `tenant1-user` attribute `tenant_id=1` và role `ACCOUNTANT`.
+8. Gán `tenant2-user` attribute `tenant_id=2` và role `VIEWER`.
+9. Login lại hoặc bấm `Refresh token` để token mới chứa claim/role mới.
+
 Hai lỗi setup dễ gặp:
 
 - Login được nhưng redirect về UI báo `Server responded with an invalid status`: kiểm tra `tenant-demo-web` có đang là public client không. Nếu client còn confidential/client authentication on, browser token exchange sẽ bị Keycloak log `invalid_client_credentials`.
@@ -144,6 +156,7 @@ Build output `dist/` chỉ nằm trong Docker image/layer; không commit `dist/`
 
    - Login bằng Keycloak.
    - Bấm `Load master data`.
+   - Bấm `Load by code` với một code có thật như `LAPTOP-01`.
    - Tạo record với code `UI-DEMO-*`.
    - Xem `requestId` sau request.
    - Đối chiếu log `tenant-demo` bằng requestId đó.
@@ -151,7 +164,7 @@ Build output `dist/` chỉ nằm trong Docker image/layer; không commit `dist/`
 ## Quan sát backend integrations
 
 - PostgreSQL: record được lưu qua `tenant-demo`.
-- Redis: nếu cache enabled, dùng HTTP file cache để quan sát hit/miss by code.
+- Redis: nếu cache enabled, dùng `Load by code` trên UI hoặc HTTP file cache để gọi cùng code hai lần và quan sát hit/miss bằng log/metric backend. UI không tự đoán cache status.
 - Kafka: create/update `master_data` phát `MasterDataChangedEvent` nếu messaging enabled.
 - Observability: Prometheus/Grafana quan sát metric từ `tenant-demo`, không phải UI gọi trực tiếp Prometheus/Grafana.
 
