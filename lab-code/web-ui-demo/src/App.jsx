@@ -1,7 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createMasterData, loadMasterData } from './api';
 import { config } from './config';
-import { getSafeUserInfo, initKeycloak, keycloak, refreshToken } from './keycloak';
+import { getAuthSnapshot, initKeycloak, keycloak, refreshToken } from './keycloak';
+
+const initialAuthState = {
+  initializing: true,
+  authenticated: false,
+  hasToken: false,
+  token: '',
+  userInfo: null,
+  tokenExpiresAt: '(missing)',
+  warning: '',
+  error: ''
+};
 
 function defaultForm() {
   return {
@@ -30,32 +41,101 @@ function StatusLine({ lastResult }) {
   );
 }
 
-function AuthPanel({ authenticated, userInfo, onLogin, onLogout, onRefresh }) {
+function describeApiFailure(result) {
+  if (!result) {
+    return '';
+  }
+
+  if (typeof result.data === 'string' && result.data.trim()) {
+    return result.data;
+  }
+
+  if (result.data && typeof result.data === 'object' && Object.keys(result.data).length > 0) {
+    return JSON.stringify(result.data);
+  }
+
+  if (result.status === 401) {
+    return '401 Unauthorized: thiếu token, token hết hạn hoặc token không hợp lệ.';
+  }
+
+  if (result.status === 403) {
+    return '403 Forbidden: token hợp lệ nhưng user không đủ role/authority cho action này.';
+  }
+
+  if (result.status >= 500) {
+    return 'Server error: kiểm log tenant-demo bằng requestId ở trên.';
+  }
+
+  return `Request failed with HTTP ${result.status}.`;
+}
+
+function formatRoles(userInfo) {
+  if (!userInfo) {
+    return '(none)';
+  }
+
+  return [...userInfo.realmRoles, ...userInfo.clientRoles].join(', ') || '(none)';
+}
+
+function formatResourceRoles(userInfo) {
+  if (!userInfo?.resourceRoles) {
+    return '(none)';
+  }
+
+  const entries = Object.entries(userInfo.resourceRoles)
+    .filter(([, roles]) => roles.length > 0)
+    .map(([clientId, roles]) => `${clientId}: ${roles.join(', ')}`);
+
+  return entries.join(' | ') || '(none)';
+}
+
+function AuthPanel({ authState, actionDisabledReason, onLogin, onLogout, onRefresh }) {
+  const { initializing, authenticated, hasToken, token, userInfo, tokenExpiresAt, warning, error } = authState;
+  const authReady = authenticated && hasToken;
+
   return (
     <section className="panel">
       <div className="panel-heading">
         <h2>Keycloak login</h2>
-        <span className={authenticated ? 'badge badge-ok' : 'badge'}>{authenticated ? 'Logged in' : 'Guest'}</span>
+        <span className={authReady ? 'badge badge-ok' : 'badge'}>{authReady ? 'Logged in' : 'Guest'}</span>
       </div>
 
       <div className="actions">
-        <button onClick={onLogin} disabled={authenticated}>Login</button>
-        <button onClick={onRefresh} disabled={!authenticated}>Refresh token</button>
-        <button onClick={onLogout} disabled={!authenticated}>Logout</button>
+        <button onClick={onLogin} disabled={initializing || authReady}>Login</button>
+        <button onClick={onRefresh} disabled={!authReady}>Refresh token</button>
+        <button onClick={onLogout} disabled={!authReady}>Logout</button>
       </div>
 
-      {authenticated ? (
+      {authReady ? (
         <dl className="facts">
           <dt>User</dt>
           <dd>{userInfo.username}</dd>
           <dt>tenant_id</dt>
           <dd>{userInfo.tenantId}</dd>
-          <dt>Roles</dt>
-          <dd>{[...userInfo.realmRoles, ...userInfo.clientRoles].join(', ') || '(none)'}</dd>
+          <dt>Realm roles</dt>
+          <dd>{userInfo.realmRoles.join(', ') || '(none)'}</dd>
+          <dt>Client roles</dt>
+          <dd>{formatResourceRoles(userInfo)}</dd>
+          <dt>All roles</dt>
+          <dd>{formatRoles(userInfo)}</dd>
+          <dt>Token expires</dt>
+          <dd>{tokenExpiresAt}</dd>
         </dl>
       ) : (
         <p className="hint">Login bằng user local trong realm `viettel-lab`, ví dụ `tenant1-user` hoặc `tenant2-user`.</p>
       )}
+
+      <dl className="facts debug-facts">
+        <dt>authenticated</dt>
+        <dd>{String(authenticated)}</dd>
+        <dt>access token</dt>
+        <dd className="token-wrap">{hasToken ? <code>{token}</code> : 'missing'}</dd>
+        <dt>actions</dt>
+        <dd>{actionDisabledReason || 'enabled'}</dd>
+      </dl>
+
+      {warning && <p className="warning-box">{warning}</p>}
+      {error && <p className="warning-box">{error}</p>}
     </section>
   );
 }
@@ -163,22 +243,82 @@ function CreateMasterDataForm({ form, setForm, onSubmit, disabled, loading }) {
 }
 
 export default function App() {
-  const [ready, setReady] = useState(false);
-  const [authenticated, setAuthenticated] = useState(false);
+  const [authState, setAuthState] = useState(initialAuthState);
   const [rows, setRows] = useState([]);
   const [form, setForm] = useState(defaultForm);
   const [lastResult, setLastResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  function syncAuthState(extra = {}) {
+    const snapshot = getAuthSnapshot();
+    setAuthState({
+      initializing: false,
+      ...snapshot,
+      error: '',
+      ...extra
+    });
+    return snapshot;
+  }
+
   useEffect(() => {
+    let active = true;
+    console.info('[web-ui-demo] Keycloak init start', {
+      realm: config.keycloakRealm,
+      clientId: config.keycloakClientId
+    });
+
     initKeycloak()
-      .then((isAuthenticated) => setAuthenticated(isAuthenticated))
-      .catch((err) => setError(err.message ?? String(err)))
-      .finally(() => setReady(true));
+      .then(() => {
+        if (!active) {
+          return;
+        }
+
+        const snapshot = getAuthSnapshot();
+        console.info('[web-ui-demo] Keycloak init complete', {
+          authenticated: snapshot.authenticated,
+          hasToken: snapshot.hasToken,
+          username: snapshot.userInfo?.username,
+          tenantId: snapshot.userInfo?.tenantId,
+          roles: snapshot.userInfo ? formatRoles(snapshot.userInfo) : '(none)'
+        });
+        syncAuthState();
+      })
+      .catch((err) => {
+        if (!active) {
+          return;
+        }
+
+        const message = err.message ?? String(err);
+        console.error('[web-ui-demo] Keycloak init failed', message);
+        setAuthState({
+          ...initialAuthState,
+          initializing: false,
+          error: message
+        });
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const userInfo = useMemo(() => (authenticated ? getSafeUserInfo() : null), [authenticated]);
+  const authReady = authState.authenticated && authState.hasToken;
+  const actionDisabledReason = useMemo(() => {
+    if (authState.initializing) {
+      return 'Đang khởi tạo Keycloak.';
+    }
+
+    if (!authState.authenticated) {
+      return 'Cần login Keycloak trước.';
+    }
+
+    if (!authState.hasToken) {
+      return 'Login đã xong nhưng access token chưa sẵn sàng.';
+    }
+
+    return '';
+  }, [authState]);
 
   async function runRequest(action) {
     setLoading(true);
@@ -187,7 +327,7 @@ export default function App() {
       const result = await action();
       setLastResult(result);
       if (!result.ok) {
-        setError(typeof result.data === 'string' ? result.data : JSON.stringify(result.data));
+        setError(describeApiFailure(result));
       }
       return result;
     } catch (err) {
@@ -214,7 +354,7 @@ export default function App() {
     }
   }
 
-  if (!ready) {
+  if (authState.initializing) {
     return <main className="app-shell"><p>Loading Keycloak...</p></main>;
   }
 
@@ -229,13 +369,23 @@ export default function App() {
 
       <div className="grid two">
         <AuthPanel
-          authenticated={authenticated}
-          userInfo={userInfo}
-          onLogin={() => keycloak.login()}
+          authState={authState}
+          actionDisabledReason={actionDisabledReason}
+          onLogin={() => {
+            setError('');
+            console.info('[web-ui-demo] Redirecting to Keycloak login');
+            keycloak.login({ redirectUri: window.location.origin });
+          }}
           onLogout={() => keycloak.logout({ redirectUri: window.location.origin })}
           onRefresh={async () => {
-            await refreshToken(0);
-            setAuthenticated(Boolean(keycloak.authenticated));
+            try {
+              await refreshToken(-1);
+              syncAuthState();
+            } catch (err) {
+              const message = err.message ?? String(err);
+              console.error('[web-ui-demo] Token refresh failed', message);
+              syncAuthState({ error: message });
+            }
           }}
         />
         <ApiPanel />
@@ -245,8 +395,8 @@ export default function App() {
       {error && <pre className="error-box">{error}</pre>}
 
       <div className="grid">
-        <MasterDataList rows={rows} onLoad={handleLoad} loading={loading} disabled={!authenticated} />
-        <CreateMasterDataForm form={form} setForm={setForm} onSubmit={handleCreate} loading={loading} disabled={!authenticated} />
+        <MasterDataList rows={rows} onLoad={handleLoad} loading={loading} disabled={!authReady} />
+        <CreateMasterDataForm form={form} setForm={setForm} onSubmit={handleCreate} loading={loading} disabled={!authReady} />
       </div>
     </main>
   );

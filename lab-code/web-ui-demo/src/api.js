@@ -15,8 +15,12 @@ async function parseResponse(response) {
 }
 
 export async function apiRequest(path, options = {}) {
-  if (!keycloak.authenticated || !keycloak.token) {
+  if (!keycloak.authenticated) {
     throw new Error('Bạn cần login Keycloak trước khi gọi API.');
+  }
+
+  if (!keycloak.token) {
+    throw new Error('Keycloak đã authenticated nhưng access token chưa sẵn sàng. Hãy refresh hoặc login lại.');
   }
 
   await refreshToken();
@@ -34,13 +38,21 @@ export async function apiRequest(path, options = {}) {
     headers,
     body: options.body ? JSON.stringify(options.body) : undefined
   });
+  const data = await parseResponse(response);
+
+  console.info('[web-ui-demo] API request complete', {
+    method: options.method ?? 'GET',
+    path,
+    status: response.status,
+    requestId
+  });
 
   return {
     ok: response.ok,
     status: response.status,
     requestId,
     endpoint,
-    data: await parseResponse(response)
+    data
   };
 }
 

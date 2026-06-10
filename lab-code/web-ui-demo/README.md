@@ -63,6 +63,20 @@ Claim cần có trong access token:
 
 Backend vẫn validate token qua issuer/JWKS và tự enforce tenant isolation. UI không được tin là nguồn tenant đáng tin cậy.
 
+Hai lỗi setup dễ gặp:
+
+- Login được nhưng redirect về UI báo `Server responded with an invalid status`: kiểm tra `tenant-demo-web` có đang là public client không. Nếu client còn confidential/client authentication on, browser token exchange sẽ bị Keycloak log `invalid_client_credentials`.
+- Login được nhưng gọi API trả `403`: token hợp lệ nhưng backend không thấy role đúng. Với repo này, role phải nằm ở `realm_access.roles` hoặc `resource_access.<KEYCLOAK_CLIENT_ID>.roles`. Nếu chỉ gán role dưới client `tenant-demo-web` trong khi backend đang đọc `tenant-demo-api-client`, API sẽ bị `403`.
+
+User demo kỳ vọng trong lab hiện tại:
+
+| User | Password local | tenant_id | Role demo |
+|---|---|---:|---|
+| `tenant1-user` | `password` | `1` | `ACCOUNTANT` |
+| `tenant2-user` | `password` | `2` | `VIEWER` |
+
+Nếu thấy ghi nhầm `tenant1-user` cho cả hai tenant thì đó là typo; user tenant 2 đúng là `tenant2-user`.
+
 ## Chạy UI bằng Docker
 
 Repo này dùng workflow Docker-first, không yêu cầu local `npm`.
@@ -140,6 +154,25 @@ Build output `dist/` chỉ nằm trong Docker image/layer; không commit `dist/`
 - Redis: nếu cache enabled, dùng HTTP file cache để quan sát hit/miss by code.
 - Kafka: create/update `master_data` phát `MasterDataChangedEvent` nếu messaging enabled.
 - Observability: Prometheus/Grafana quan sát metric từ `tenant-demo`, không phải UI gọi trực tiếp Prometheus/Grafana.
+
+## Debug login state
+
+Sau khi redirect từ Keycloak về UI, panel `Keycloak login` hiển thị vài field an toàn:
+
+- `authenticated`: adapter Keycloak đã xác thực chưa.
+- `access token`: token có sẵn trong memory chưa, nhưng không hiển thị token.
+- `tenant_id`, roles và thời điểm token hết hạn nếu login thành công.
+
+Nếu login xong nhưng nút vẫn disabled:
+
+1. Mở browser console.
+2. Tìm lỗi Keycloak/CORS/redirect, ví dụ `invalid_client`, `redirect_uri`, hoặc `A 'Keycloak' instance can only be initialized once`.
+3. Kiểm tra client `tenant-demo-web` có `Valid redirect URIs = http://localhost:5173/*` và `Web origins = http://localhost:5173`.
+4. Kiểm tra `tenant-demo-web` là public client: client authentication off.
+5. Lấy token mới rồi kiểm tra claim `tenant_id`/role bằng công cụ decode local, không commit token vào repo.
+6. Nếu vừa đổi role/mapper trong Keycloak, bấm `Refresh token`; UI demo force refresh access token để lấy claim mới.
+
+Code UI đã làm `keycloak.init(...)` idempotent để React Strict Mode trong Vite dev không init cùng một Keycloak adapter hai lần.
 
 ## Caveats
 

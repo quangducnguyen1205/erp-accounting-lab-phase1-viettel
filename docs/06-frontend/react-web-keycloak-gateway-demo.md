@@ -93,6 +93,22 @@ Token cần có:
 
 Nếu thiếu `tenant_id`, backend nên fail rõ ở tenant context flow.
 
+Lưu ý quan trọng về role:
+
+- UI client là `tenant-demo-web`.
+- Backend đang đọc role từ `realm_access.roles` hoặc `resource_access.<KEYCLOAK_CLIENT_ID>.roles`.
+- Nếu `KEYCLOAK_CLIENT_ID=tenant-demo-api-client`, role chỉ nằm dưới `resource_access.tenant-demo-web.roles` thì backend vẫn trả `403`.
+- Cách demo đơn giản: gán realm role `ACCOUNTANT`/`VIEWER`, hoặc cấu hình role dưới đúng API client mà backend đọc.
+
+User demo kỳ vọng:
+
+| User | tenant_id | Role demo |
+|---|---:|---|
+| `tenant1-user` | `1` | `ACCOUNTANT` |
+| `tenant2-user` | `2` | `VIEWER` |
+
+Nếu ghi nhầm user thứ hai là `tenant1-user` thì coi đó là typo. Case tenant 2 nên dùng `tenant2-user`.
+
 ## Gateway CORS local
 
 Browser ở `http://localhost:5173` gọi Gateway ở `http://localhost:8081`, nên Gateway cần CORS local cho origin này.
@@ -144,6 +160,26 @@ Production không nên mở CORS bừa bãi. Cần giới hạn origin thật, a
    - Kafka publish/consume log nếu messaging enabled.
    - Redis cache hit/miss qua HTTP cache lab nếu cache enabled.
    - Prometheus/Grafana nếu observability lab đang chạy.
+
+## Khi redirect về UI nhưng vẫn thấy Guest
+
+Checklist debug:
+
+1. Nhìn panel `Keycloak login`:
+   - `authenticated=true/false`
+   - `access token=available/missing`
+   - `tenant_id`
+   - roles
+2. Mở browser console/network:
+   - lỗi `invalid_client` thường là sai client id;
+   - lỗi `invalid_client_credentials` sau login thường là client SPA còn bật client authentication/confidential;
+   - lỗi `redirect_uri` thường là thiếu `http://localhost:5173/*`;
+   - lỗi CORS/web origin thường là thiếu `http://localhost:5173`;
+   - lỗi `A 'Keycloak' instance can only be initialized once` nghĩa là frontend init Keycloak adapter lặp trong React dev mode.
+3. Nếu UI authenticated nhưng API trả `403`, kiểm role nằm ở `realm_access.roles` hay đúng `resource_access.<KEYCLOAK_CLIENT_ID>.roles`.
+4. Không debug bằng cách paste full access token vào docs/log. Chỉ decode local rồi kiểm claim cần thiết.
+
+Trong UI demo, `keycloak.init(...)` được gọi qua helper idempotent để React Strict Mode không làm adapter bị init hai lần.
 
 ## Caveats
 

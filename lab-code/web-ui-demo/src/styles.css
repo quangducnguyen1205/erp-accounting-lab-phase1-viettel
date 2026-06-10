@@ -137,9 +137,42 @@ input {
   overflow-wrap: anywhere;
 }
 
+.debug-facts {
+  margin-top: 14px;
+  border-top: 1px solid #e5ebf1;
+  padding-top: 14px;
+}
+
+.token-wrap {
+  max-width: 100%;
+}
+
+.token-wrap code {
+  display: block;
+  word-break: break-all;
+  white-space: pre-wrap;
+  background: #f1f3f5;
+  padding: 8px;
+  border-radius: 4px;
+  max-height: 120px;
+  overflow-y: auto;
+  font-size: 0.75rem;
+  color: #495057;
+  border: 1px solid #e9ecef;
+}
+
 .hint {
   color: #5e6b78;
   margin: 12px 0 0;
+}
+
+.warning-box {
+  background: #fff8c5;
+  border: 1px solid #d4a72c;
+  border-radius: 8px;
+  color: #6f4e00;
+  margin: 12px 0 0;
+  padding: 10px 12px;
 }
 
 .status {

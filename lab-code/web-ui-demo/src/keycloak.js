@@ -7,12 +7,18 @@ export const keycloak = new Keycloak({
   clientId: config.keycloakClientId
 });
 
+let initPromise;
+
 export function initKeycloak() {
-  return keycloak.init({
-    onLoad: 'check-sso',
-    pkceMethod: 'S256',
-    checkLoginIframe: false
-  });
+  if (!initPromise) {
+    initPromise = keycloak.init({
+      onLoad: 'check-sso',
+      pkceMethod: 'S256',
+      checkLoginIframe: false
+    });
+  }
+
+  return initPromise;
 }
 
 export function refreshToken(minValiditySeconds = 30) {
@@ -22,13 +28,42 @@ export function refreshToken(minValiditySeconds = 30) {
 export function getSafeUserInfo() {
   const token = keycloak.tokenParsed ?? {};
   const realmRoles = token.realm_access?.roles ?? [];
-  const clientRoles = Object.values(token.resource_access ?? {})
-    .flatMap((client) => client.roles ?? []);
+  const resourceRoles = Object.fromEntries(
+    Object.entries(token.resource_access ?? {})
+      .map(([clientId, client]) => [clientId, client.roles ?? []])
+  );
+  const clientRoles = Object.values(resourceRoles).flatMap((roles) => roles);
 
   return {
     username: token.preferred_username ?? token.name ?? token.sub ?? '(unknown)',
     tenantId: token.tenant_id ?? '(missing)',
     realmRoles,
-    clientRoles
+    clientRoles,
+    resourceRoles
+  };
+}
+
+export function getAuthSnapshot() {
+  const authenticated = Boolean(keycloak.authenticated);
+  const hasToken = Boolean(keycloak.token);
+  const token = keycloak.token;
+  const tokenParsed = keycloak.tokenParsed ?? {};
+  const userInfo = authenticated ? getSafeUserInfo() : null;
+  const tokenExpiresAt = tokenParsed.exp ? new Date(tokenParsed.exp * 1000).toLocaleString() : '(missing)';
+  let warning = '';
+
+  if (authenticated && !hasToken) {
+    warning = 'Login succeeded, but access token is missing.';
+  } else if (authenticated && userInfo?.tenantId === '(missing)') {
+    warning = 'Token is valid, but tenant_id claim is missing.';
+  }
+
+  return {
+    authenticated,
+    hasToken,
+    token,
+    userInfo,
+    tokenExpiresAt,
+    warning
   };
 }
