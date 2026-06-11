@@ -795,3 +795,38 @@ Trạng thái: đã đóng ở mức Phase 1. Mini-lab dùng Spring Cloud Gatewa
 - Gateway hiện dùng static route, chưa có service discovery/load balancing thật.
 - UI là React Web demo mỏng, không phải production frontend và không dùng React Native/Expo.
 - Backend vẫn là security boundary: UI/Gateway không thay thế JWT validation, RBAC và tenant-aware query.
+
+## Phase 1.5: Production-like architecture demo direction
+
+Trạng thái: bắt đầu planning sau buổi báo cáo mentor Đạt ngày 11/06/2026.
+
+### Vì sao mở Phase 1.5?
+
+Phase 1 đã đủ nền để hiểu từng công nghệ backend chính và đọc runtime flow. Điểm còn thiếu trước một demo nghiêm túc hơn là cảm giác hệ thống nhiều service thật:
+
+- log chưa centralized, đọc nhiều terminal không scale;
+- Kafka vẫn là same-app producer/consumer;
+- Gateway hiện là Spring Cloud Gateway static route, chưa luyện Kong như target architecture;
+- chưa có service split rõ trách nhiệm;
+- React Web UI baseline đã chạy nhưng chưa nên polish sâu trước khi backend boundaries rõ.
+
+### Hướng chốt
+
+- Thêm Loki/Grafana log aggregation để tìm log theo service/requestId.
+- Thêm Kafka UI để inspect topic/message/consumer group/lag.
+- Thêm Kong Gateway lab, giữ Spring Cloud Gateway lab cũ để so sánh.
+- Split service theo hướng `master-data-service` + `audit-log-service`.
+- Dùng Kafka cho cross-service `MasterDataChangedEvent`.
+- Polish React Web demo sau khi Kong/service boundary ổn.
+
+### Service split được chọn
+
+Chọn `audit-log-service` làm service thứ hai vì:
+
+- tận dụng event `MasterDataChangedEvent` hiện có;
+- Kafka trở thành flow giữa hai service thật;
+- domain audit nhỏ, không cần dựng nghiệp vụ kế toán phức tạp;
+- Kong có thêm route thật sau này;
+- Loki có nhiều service logs để search.
+
+Kế hoạch chi tiết nằm ở `docs/99-tong-ket/phase1-5-production-like-demo-plan.md`.

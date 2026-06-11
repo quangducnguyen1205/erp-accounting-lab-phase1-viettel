@@ -16,6 +16,14 @@ React Web UI
 
 Elasticsearch và MinIO đã có HTTP mini-lab riêng. UI không gọi trực tiếp PostgreSQL, Redis, Kafka, MinIO, Prometheus hoặc Grafana trong business flow.
 
+Phase 1.5 planning đã tạo các lab stub:
+
+- `loki-lab/`: centralized logs bằng Loki/Grafana.
+- `kafka-ui-lab/`: inspect topic/message/consumer group.
+- `kong-gateway-lab/`: Kong DB-less/declarative gateway lab.
+
+Các stub này hiện chỉ có README, chưa bật runtime hoặc Makefile targets.
+
 ## Nguyên tắc tối thượng
 
 1. **TỰ VIẾT CODE TRƯỚC.** Không copy solution.

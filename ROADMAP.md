@@ -3,7 +3,7 @@
 > **Bắt đầu:** Thứ Ba 28/04/2026
 > **Deadline ban đầu:** Thứ Hai 25/05/2026
 > **Cửa sổ học mở rộng đề xuất:** đến Thứ Tư 03/06/2026
-> **Cập nhật roadmap:** 10/06/2026
+> **Cập nhật roadmap:** 11/06/2026
 > **Chu kỳ báo cáo:** mỗi 2-3 ngày phải có output có thể trình bày
 > **Phương châm:** tự học + tự code trước, Codex tạo note/skeleton và review sau
 
@@ -13,14 +13,16 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | 95% - demo-ready Phase 1 |
+| **Tiến độ** | Phase 1 core done, Phase 1.5 planning started |
 | **Tổng task** | 110 |
 | **Đã hoàn thành** | 104 / 110 |
-| **Focus hiện tại** | Final demo script + Phase 1 closure polish |
-| **Milestone tiếp theo** | #18 - DDD awareness/final reflection nếu còn cần |
+| **Focus hiện tại** | Phase 1.5 - production-like architecture demo planning |
+| **Milestone tiếp theo** | #19 - Loki log aggregation + Kafka UI inspection |
 | **Demo hiện tại** | React Web UI -> Keycloak -> Gateway -> tenant-demo -> PostgreSQL/Redis/Kafka/Observability; Elasticsearch/MinIO qua HTTP mini-lab |
 
 Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; Milestone #14 đã chốt Redis cache-aside tenant-safe read path; Milestone #15 đã chốt Kafka/async messaging reference flow nhỏ; Milestone #16 đã chốt Observability baseline với Actuator, request logging, Micrometer metrics và Prometheus/Grafana local lab. Milestone #17 đã chốt API Gateway static route và React Web UI Docker-first để nhìn flow end-to-end. React Native/Expo không thuộc repo này.
+
+Ghi chú 11/06 sau khi báo cáo mentor Đạt: Phase 1 core learning coi như đủ nền. Phase 1.5 sẽ đi theo hướng demo production-like hơn: centralized logs bằng Loki/Grafana, Kafka UI, Kong Gateway, tách thêm `audit-log-service`, Kafka cross-service flow, rồi mới polish React Web UI cuối.
 
 ---
 
@@ -103,11 +105,11 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 - Observability mini-lab: health/log/metrics ở mức tối thiểu.
 - React Web UI: final thin demo để nhìn flow end-to-end; không mở rộng thành frontend product.
 
-### Không đưa vào Phase 1 implementation
+### Không đưa vào Phase 1 core implementation
 
 - Full production Keycloak/RBAC platform.
-- API Gateway/Kong thật.
-- Kafka/Debezium/Grafana stack chạy đầy đủ.
+- Production API Gateway/Kong/service discovery/load balancing thật. Kong local lab được đưa sang Phase 1.5.
+- Production Kafka/Debezium/Grafana stack chạy đầy đủ. Kafka UI/Loki local lab được đưa sang Phase 1.5.
 - Full ERP/accounting workflow.
 - Full production deployment, HA database cluster, audit/compliance hoàn chỉnh.
 
@@ -421,6 +423,49 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 
 ---
 
+## Phase 1.5 - Production-like architecture demo
+
+Phase 1.5 bắt đầu sau buổi báo cáo mentor Đạt ngày 11/06/2026. Mục tiêu không phải làm production ERP, mà là biến demo hiện tại từ một backend app nhiều mini-lab thành mô hình gần kiến trúc target hơn.
+
+### Vì sao cần Phase 1.5?
+
+- Đã hiểu từng công nghệ riêng lẻ, nhưng demo vẫn còn nặng monolith `tenant-demo`.
+- Kafka hiện mới là same-app producer/consumer, chưa tạo cảm giác event đi giữa service thật.
+- Log hiện đọc được trong terminal, nhưng nhiều service sẽ cần centralized log search.
+- Spring Cloud Gateway đã đủ để hiểu gateway concept; target architecture lại dùng Kong, nên cần một Kong lab.
+- React Web UI baseline đã chạy, nhưng chưa nên polish UI sâu trước khi backend/service boundaries rõ hơn.
+
+### Thứ tự thực hiện đề xuất
+
+| Thứ tự | Milestone | Mục tiêu | Artifact chính | Done criteria | Trạng thái |
+|---:|---|---|---|---|---|
+| 1 | Loki/log aggregation | Gom log nhiều service vào Grafana Explore | `docs/07-architecture/log-aggregation-loki/`, `lab-code/loki-lab/` | Tìm log theo service/requestId trong Grafana | Planned |
+| 2 | Kafka UI | Nhìn topic/message/consumer group/lag thay vì chỉ đọc log | `docs/07-architecture/kafka-ui/`, `lab-code/kafka-ui-lab/` | Mở UI thấy `master-data-events`, message key/value, consumer group | Planned |
+| 3 | Kong Gateway | Practice gateway platform gần target architecture | `docs/07-architecture/kong-gateway/`, `lab-code/kong-gateway-lab/` | Route `/api/master-data/**`, sau này `/api/audit/**`, giữ auth/requestId | Planned |
+| 4 | Audit Log Service split | Tạo service thứ hai có trách nhiệm rõ | `docs/07-architecture/microservice-boundaries/`, `lab-code/audit-log-service/` sau này | `master-data-service` publish event, `audit-log-service` consume và lưu/log audit | Planned |
+| 5 | Cross-service Kafka flow | Biến Kafka thành event giữa services | `MasterDataChangedEvent` từ service A sang service B | Kafka UI thấy event, audit service log/store được, không dùng Kafka như database | Planned |
+| 6 | Final React Web polish | UI demo sau khi backend boundaries ổn | `lab-code/web-ui-demo/` | UI gọi Kong, load/create master data, xem audit nếu endpoint có thật | Planned |
+
+### Service split được chọn
+
+Recommended split: giữ `tenant-demo` như `master-data-service` về mặt trách nhiệm, rồi thêm `audit-log-service` làm service thứ hai.
+
+Lý do:
+
+- tận dụng event `MasterDataChangedEvent` hiện có;
+- Kafka trở thành cross-service flow thật;
+- domain audit nhỏ, dễ hiểu, không cần dựng nghiệp vụ kế toán mới;
+- Kong có thêm route thật sau này: `/api/master-data/**` và `/api/audit/**`;
+- Loki trở nên có ý nghĩa vì có log từ nhiều service.
+
+Các split chưa chọn ngay:
+
+- `file-service`: hợp lý với MinIO nhưng kéo thêm upload/security/UI work.
+- `search-service`: thực tế hơn cho projection nhưng Elasticsearch + reindex + eventual consistency dễ phình scope.
+- notification/reporting service: dễ bị giả tạo nếu chưa có use case rõ.
+
+---
+
 ## File Reference
 
 | Cần làm gì | File/khu vực |
@@ -444,6 +489,11 @@ Mục tiêu: đóng Phase 1 mở rộng bằng summary trung thực: đã implem
 | Kafka/async mini-lab | `docs/07-architecture/messaging-kafka/kafka-async-messaging.md`, `docs/07-architecture/messaging-kafka/kafka-event-shapes.md`, `docs/07-architecture/messaging-kafka/kafka-code-guide-spring-boot.md`, `docs/07-architecture/messaging-kafka/kafka-mini-lab-plan.md`, `lab-code/kafka-lab/` |
 | Observability mini-lab | `docs/07-architecture/observability/observability-foundation.md`, `docs/07-architecture/observability/logging-metrics-tracing.md`, `docs/07-architecture/observability/micrometer-custom-metrics.md`, `docs/07-architecture/observability/prometheus-grafana-local-lab.md`, `docs/07-architecture/observability/spring-boot-actuator-code-guide.md`, `docs/07-architecture/observability/observability-mini-lab-plan.md`, `lab-code/observability-lab/` |
 | API Gateway/service discovery mini-lab | `docs/07-architecture/api-gateway-service-discovery/api-gateway-foundation.md`, `docs/07-architecture/api-gateway-service-discovery/spring-cloud-gateway-code-guide.md`, `docs/07-architecture/api-gateway-service-discovery/service-discovery-load-balancing-awareness.md`, `docs/07-architecture/api-gateway-service-discovery/api-gateway-mini-lab-plan.md`, `lab-code/gateway-demo/` |
+| Phase 1.5 plan | `docs/99-tong-ket/phase1-5-production-like-demo-plan.md` |
+| Loki/log aggregation | `docs/07-architecture/log-aggregation-loki/`, `lab-code/loki-lab/` |
+| Kafka UI | `docs/07-architecture/kafka-ui/`, `lab-code/kafka-ui-lab/` |
+| Kong Gateway | `docs/07-architecture/kong-gateway/`, `lab-code/kong-gateway-lab/` |
+| Microservice boundaries | `docs/07-architecture/microservice-boundaries/` |
 | Mini-lab template | `docs/99-tong-ket/technology-mini-lab-template.md` |
 | DDD awareness | `docs/08-design/ddd-awareness.md` - để cuối Phase 1 mở rộng |
 | Tổng kết tiến độ | `docs/99-tong-ket/nhung-gi-da-nam-duoc.md` |

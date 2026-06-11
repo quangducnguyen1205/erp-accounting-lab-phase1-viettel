@@ -38,6 +38,8 @@ Spring Boot tenant-demo
 -> React Web UI demo Docker-first
 ```
 
+Sau feedback mentor ngày 11/06/2026, Phase 1.5 sẽ đưa demo gần target hơn bằng Loki log aggregation, Kafka UI, Kong Gateway và một service split nhỏ (`audit-log-service`).
+
 ## Adoption map theo công nghệ
 
 | Topic | Vai trò trong kiến trúc | Khi repo nên học/dùng | Mini-lab trigger | Trạng thái hiện tại | Rủi ro overdo |
@@ -53,6 +55,10 @@ Spring Boot tenant-demo
 | MinIO object storage | Lưu file qua S3 API: hóa đơn, chứng từ, attachment. | Đã học storage slice sau search. | Upload/download file, store metadata tenant-aware. | Mini-lab verified; advanced object management optional later. | File security/ACL/presigned URL phức tạp nếu làm sâu. |
 | Redis cache | Cache dữ liệu/config/feature flags, giảm load DB. | Đã học sau MinIO. | Tenant-safe cache key: `tenant:{id}:...`, cache-aside by code. | Mini-lab verified. | Cache leakage nếu key thiếu tenant; cache trước khi có bottleneck. |
 | Kafka async messaging | Event/message giữa services, decouple async workflow. | Đã học sau cache/storage. | Publish `MasterDataChangedEvent`, consumer log. | Mini-lab verified. | Chạy Kafka chỉ để “có Kafka” rất nặng. |
+| Kafka UI | Inspect topic/message/consumer group/lag. | Phase 1.5, trước khi tách service để debug Kafka rõ hơn. | Mở topic `master-data-events`, xem key/value và consumer group. | Planned. | Nhầm Kafka UI với monitoring/alerting production. |
+| Loki/log aggregation | Centralized logs cho nhiều service. | Phase 1.5, trước khi có nhiều service/log terminal. | Tìm log theo service/requestId trong Grafana Explore. | Planned. | Dùng high-cardinality labels hoặc log token/body. |
+| Kong Gateway | Gateway platform gần target architecture hơn Spring Cloud Gateway lab. | Phase 1.5 sau khi đã hiểu gateway concept. | DB-less route `/api/master-data/**`, sau này `/api/audit/**`. | Planned. | Đưa business logic hoặc expose Admin API public. |
+| Microservice boundary split | Tách responsibility/service ownership rõ ràng. | Phase 1.5 khi cần Kafka cross-service và nhiều service logs. | Thêm `audit-log-service` consume `MasterDataChangedEvent`. | Planned. | Split artificial hoặc tạo domain mới quá phức tạp. |
 | Debezium CDC | Đồng bộ thay đổi DB sang Kafka/search/reporting. | Sau khi hiểu Kafka và search. | Awareness diagram hoặc read-only CDC note. | Later awareness. | Setup CDC phức tạp, dễ lệch Phase 1. |
 | gRPC internal communication | Giao tiếp service-to-service typed/efficient. | Khi so sánh REST vs internal RPC. | Chỉ note/diagram, chưa cần code. | Awareness. | Thêm IDL/protobuf khi chỉ có một service. |
 | Realtime: SignalR/WebSocket/SSE/long polling | Notification/live updates tới frontend. | Khi có notification/progress update feature. | Compare SSE vs WebSocket ở mức note. | Chưa làm. | Realtime infra dễ phình scope. |
@@ -79,6 +85,10 @@ Spring Boot tenant-demo
 | `com.viettel.demo.observability` + `lab-code/observability-lab` | Logging/metrics/local monitoring | Verified | RequestId/MDC, custom Micrometer metrics, Prometheus target UP, Grafana datasource/dashboard. |
 | `lab-code/gateway-demo` | API Gateway/static routing | Verified | Spring Cloud Gateway route `/api/**` đến `tenant-demo`, service discovery để awareness. |
 | `lab-code/web-ui-demo` | React Web thin client | Verified | Docker-first Vite app; Keycloak login bằng public client, gọi Gateway `/api/master-data`, lookup by code, create data và hiển thị requestId. |
+| `lab-code/loki-lab` | Loki log aggregation lab | Planned stub | README stub, runtime chưa implement. |
+| `lab-code/kafka-ui-lab` | Kafka UI inspection lab | Planned stub | README stub, runtime chưa implement. |
+| `lab-code/kong-gateway-lab` | Kong Gateway lab | Planned stub | README stub, runtime chưa implement. |
+| Future `audit-log-service` | Second backend service / Kafka consumer | Planned | Recommended split để Kafka thành cross-service flow thật. |
 | Keycloak Authorization/RBAC task | Authorization layer sau AuthN | Verified | Role/authority check nhỏ, phân biệt `401`/`403`, vẫn giữ tenant-aware query. |
 | `presentation-notes/demo-script-keycloak-tenant-flow.md` | Mentor-facing demo path | Prepared | Script start DB/Keycloak/app, verify tenant 1/2, cross-tenant id. |
 | SQL playground `01-09` | PostgreSQL learning lab | Implemented | Schema, EXPLAIN, index pattern, migration, ACID/isolation. |
@@ -137,11 +147,13 @@ Nếu chưa trả lời được 5 câu này, chưa nên implement công nghệ 
 
 ## Đề xuất hướng tiếp theo
 
-Hướng tốt nhất sau tài liệu này:
+Hướng tốt nhất sau tài liệu này là đi theo Phase 1.5:
 
-1. Dry-run `docs/99-tong-ket/phase1-final-demo-script.md` để trình bày flow cuối Phase 1.
-2. Nếu còn thời gian, chỉ bổ sung DDD/domain-boundary awareness và final reflection.
-3. Các phần như service discovery/load balancing production-grade, tracing/log aggregation, Debezium CDC hoặc MinIO advanced object management nên để backlog sau Phase 1.
-4. React Web UI chỉ giữ ở mức thin demo; không dùng React Native/Expo trong repo này.
+1. Loki/Grafana log aggregation lab.
+2. Kafka UI lab.
+3. Kong Gateway DB-less lab.
+4. `audit-log-service` split.
+5. Kafka cross-service verification.
+6. Final React Web demo polish sau khi backend boundaries ổn.
 
-Không nên mở thêm nhiều mini-lab mới trước khi chốt Phase 1.
+Không nên mở UI lớn hoặc domain kế toán mới trước khi log/gateway/service boundary rõ.

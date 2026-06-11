@@ -9,6 +9,7 @@ Mục tiêu của repo không phải là lưu mọi nháp học tập, mà là l
 - Đã hoàn thành nền tảng SaaS, multi-tenant, SQL playground, migration/locking, ACID/isolation và tenant-aware backend API.
 - Đã có demo Spring Boot nhỏ trong `lab-code/tenant-demo` với PostgreSQL/Flyway, tenant-aware API, JWT tạm fallback, Keycloak AuthN/AuthZ mode và các mini-lab architecture.
 - Phase 1 hiện đã demo được flow end-to-end bằng React Web UI mỏng -> Keycloak -> Gateway -> `tenant-demo` -> PostgreSQL/Redis/Kafka/Observability. UI này là demo web, không phải React Native/Expo và không phải frontend production.
+- Sau buổi báo cáo mentor ngày 11/06/2026, hướng tiếp theo là Phase 1.5: centralized logs bằng Loki, Kafka UI, Kong Gateway, service split nhỏ bằng `audit-log-service`, rồi mới polish UI cuối.
 
 ## Cấu trúc thư mục
 
@@ -33,6 +34,9 @@ Mục tiêu của repo không phải là lưu mọi nháp học tập, mà là l
 │   ├── redis-lab/
 │   ├── kafka-lab/
 │   ├── observability-lab/
+│   ├── loki-lab/
+│   ├── kafka-ui-lab/
+│   ├── kong-gateway-lab/
 │   ├── gateway-demo/
 │   └── web-ui-demo/
 ├── reports/
@@ -110,6 +114,7 @@ Nếu demo phát triển thành một project thật sự lớn, nên tách sang
 - `docs/README.md`: index tài liệu.
 - `ROADMAP.md`: tiến độ và kế hoạch học.
 - `docs/99-tong-ket/phase1-final-demo-script.md`: demo script cuối Phase 1 cho UI/Gateway/backend/integrations.
+- `docs/99-tong-ket/phase1-5-production-like-demo-plan.md`: kế hoạch Phase 1.5 sau feedback mentor 11/06.
 - `presentation-notes/demo-script-keycloak-tenant-flow.md`: demo script backend Keycloak cũ, vẫn hữu ích nếu chỉ muốn trình bày auth flow.
 
 Workflow học code dự kiến:

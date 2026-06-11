@@ -26,7 +26,8 @@ Thư mục `docs/` là source of truth cho kiến thức Phase 1 đã được c
 | Security/JWT/Keycloak | Auth flow và tenant context từ token | Core/mini-lab |
 | Frontend React Web | Thin UI demo Docker-first cho Keycloak/Gateway/backend flow | Final Phase 1 demo |
 | Architecture map | Kết nối target diagram với repo | Mentor-facing |
-| Elasticsearch/MinIO/Redis/Kafka/Observability/API Gateway | Mini-lab công nghệ sau Keycloak, học từng cái một | Post-Keycloak |
+| Elasticsearch/MinIO/Redis/Kafka/Observability/API Gateway | Mini-lab công nghệ sau Keycloak, học từng cái một | Phase 1 done |
+| Loki/Kafka UI/Kong/microservice boundaries | Phase 1.5 production-like demo hardening | Planned |
 | DDD/final reflection | Optional hoặc cuối phase, không chặn learning tech | Optional/later |
 
 ## Cấu trúc chuẩn cho công nghệ mới
@@ -42,6 +43,7 @@ Khi thêm một công nghệ sau Keycloak, ưu tiên cấu trúc:
 Template chung: `99-tong-ket/technology-mini-lab-template.md`.
 Chuẩn viết theory doc chi tiết: `99-tong-ket/theory-doc-writing-standard.md`.
 Demo script cuối Phase 1: `99-tong-ket/phase1-final-demo-script.md`.
+Plan Phase 1.5: `99-tong-ket/phase1-5-production-like-demo-plan.md`.
 
 ## Không làm trong docs public
 

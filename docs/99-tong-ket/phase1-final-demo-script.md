@@ -2,6 +2,8 @@
 
 Tài liệu này là route demo thực tế cho Phase 1. Mục tiêu là trình bày flow backend architecture đã học, không overclaim production ERP.
 
+Sau feedback mentor ngày 11/06/2026, script này vẫn là baseline demo đã hoàn thành. Demo nghiêm túc hơn tuần sau sẽ đi theo plan Phase 1.5: `phase1-5-production-like-demo-plan.md`.
+
 ## 1. Chuẩn bị nhanh
 
 Kiểm tra Keycloak local nếu vừa reset volume:
