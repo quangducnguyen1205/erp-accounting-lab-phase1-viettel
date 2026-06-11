@@ -9,7 +9,7 @@
 #
 # Không paste token thật vào file này.
 
-@newCode = KAFKA-DEMO-autoIncrement
+@newCode = KAFKA-DEMO-{{$timestamp}}
 @updatedName = Kafka demo item updated
 #@createdMasterDataId = TODO_COPY_ID_FROM_CREATE_RESPONSE
 

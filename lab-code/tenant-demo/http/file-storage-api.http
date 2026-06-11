@@ -16,7 +16,7 @@
 GET http://localhost:19000/minio/health/ready
 
 # TODO: sau khi upload tenant 1, copy fileId từ response.
-@tenant1FileId = <copy-file-id-from-upload-response>
+#@tenant1FileId = <copy-file-id-from-upload-response>
 
 ### Upload file as tenant 1 -> expected 201
 # IntelliJ HTTP Client sẽ đọc file local theo path bạn chọn.
