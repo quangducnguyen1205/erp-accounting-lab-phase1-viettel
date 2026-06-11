@@ -144,4 +144,7 @@ Loki/Grafana dùng Docker named volumes. Log history local còn tồn tại khi 
 - Kubernetes.
 - Production access control, retention policy, tenant log isolation.
 
-Doc nền: `docs/07-architecture/log-aggregation-loki/`.
+Docs nền:
+
+- `docs/07-architecture/log-aggregation-loki/loki-foundation.md`
+- `docs/07-architecture/log-aggregation-loki/loki-local-lab-config-walkthrough.md`

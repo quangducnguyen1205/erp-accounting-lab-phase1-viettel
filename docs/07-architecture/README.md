@@ -34,7 +34,7 @@ Demo script cuối Phase 1: [../99-tong-ket/phase1-final-demo-script.md](../99-t
 | Observability | Done at Phase 1 level | [observability/observability-foundation.md](observability/observability-foundation.md) |
 | API Gateway/service discovery | Done at Phase 1 level: static route verified, service discovery awareness only | [api-gateway-service-discovery/api-gateway-foundation.md](api-gateway-service-discovery/api-gateway-foundation.md) |
 | React Web UI | Done as thin final demo: Docker-first Keycloak/Gateway UI | [../06-frontend/react-web-keycloak-gateway-demo.md](../06-frontend/react-web-keycloak-gateway-demo.md) |
-| Loki/log aggregation | Phase 1.5 local lab implemented | [log-aggregation-loki/loki-foundation.md](log-aggregation-loki/loki-foundation.md) |
+| Loki/log aggregation | Phase 1.5 local lab implemented | [log-aggregation-loki/loki-foundation.md](log-aggregation-loki/loki-foundation.md), [log-aggregation-loki/loki-local-lab-config-walkthrough.md](log-aggregation-loki/loki-local-lab-config-walkthrough.md) |
 | Kafka UI | Phase 1.5 planned | [kafka-ui/kafka-ui-foundation.md](kafka-ui/kafka-ui-foundation.md) |
 | Kong Gateway | Phase 1.5 planned | [kong-gateway/kong-gateway-foundation.md](kong-gateway/kong-gateway-foundation.md) |
 | Microservice boundaries | Phase 1.5 planned | [microservice-boundaries/phase1-service-split-options.md](microservice-boundaries/phase1-service-split-options.md) |
@@ -45,6 +45,7 @@ Demo script cuối Phase 1: [../99-tong-ket/phase1-final-demo-script.md](../99-t
 - Concept/foundation doc: giải thích "là gì, vì sao dùng, khi nào không dùng".
 - Shape/config/API doc: giải thích request/response/config/error shape nếu công nghệ có protocol/API riêng.
 - Code guide doc: giải thích Spring Boot/package/config/service/test shape.
+- Config/code walkthrough doc: giải thích từng file config/code mới và runtime flow thực tế.
 - Lab README: chỉ giữ lệnh chạy local và cleanup.
 - Summary/report: ghi lại kết quả sau khi đã tự code/verify.
 
