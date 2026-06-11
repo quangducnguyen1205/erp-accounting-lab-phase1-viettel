@@ -12,3 +12,6 @@ services:
       VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM:-viettel-lab}
       VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID:-tenant-demo-web}
       VITE_REQUEST_ID_PREFIX: ${VITE_REQUEST_ID_PREFIX:-web-demo}
+    labels:
+      logging.service: web-ui-demo
+      logging.environment: local

@@ -16,13 +16,13 @@ React Web UI
 
 Elasticsearch và MinIO đã có HTTP mini-lab riêng. UI không gọi trực tiếp PostgreSQL, Redis, Kafka, MinIO, Prometheus hoặc Grafana trong business flow.
 
-Phase 1.5 planning đã tạo các lab stub:
+Phase 1.5 đã bắt đầu chuyển một số stub thành runtime lab:
 
-- `loki-lab/`: centralized logs bằng Loki/Grafana.
+- `loki-lab/`: centralized logs bằng Loki + Grafana + Grafana Alloy.
 - `kafka-ui-lab/`: inspect topic/message/consumer group.
 - `kong-gateway-lab/`: Kong DB-less/declarative gateway lab.
 
-Các stub này hiện chỉ có README, chưa bật runtime hoặc Makefile targets.
+`kafka-ui-lab/` và `kong-gateway-lab/` hiện vẫn là README stub. `loki-lab/` đã có Docker Compose và Makefile targets riêng.
 
 ## Nguyên tắc tối thượng
 
@@ -109,6 +109,7 @@ make minio-up       # MinIO cho file storage mini-lab
 make redis-up       # Redis cho cache mini-lab
 make kafka-up       # Kafka cho async messaging mini-lab
 make observability-up # Prometheus + Grafana cho observability mini-lab
+make loki-up        # Loki + Alloy + Grafana cho centralized logs
 make gateway-run    # Spring Cloud Gateway static route mini-lab
 make web-ui-up      # React Web UI demo Docker-first
 ```
@@ -120,7 +121,7 @@ make infra-up
 make infra-status
 ```
 
-`infra-up` bật PostgreSQL + Keycloak + Elasticsearch + MinIO + Redis + Kafka. Prometheus/Grafana chạy riêng bằng `make observability-up`, gateway chạy riêng bằng `make gateway-run`, React Web UI chạy riêng bằng `make web-ui-up` để full infra mặc định không quá nặng. Khi chỉ học một lab nhỏ, vẫn nên dùng target riêng như `make kafka-up`, `make redis-up`, `make observability-up`, `make gateway-run` hoặc `make web-ui-up` để máy nhẹ hơn và dễ debug hơn.
+`infra-up` bật PostgreSQL + Keycloak + Elasticsearch + MinIO + Redis + Kafka. Prometheus/Grafana metrics chạy riêng bằng `make observability-up`, Loki/Grafana logs chạy riêng bằng `make loki-up`, gateway chạy riêng bằng `make gateway-run`, React Web UI chạy riêng bằng `make web-ui-up` để full infra mặc định không quá nặng. Khi chỉ học một lab nhỏ, vẫn nên dùng target riêng như `make kafka-up`, `make redis-up`, `make observability-up`, `make loki-up`, `make gateway-run` hoặc `make web-ui-up` để máy nhẹ hơn và dễ debug hơn.
 
 Spring Boot app vẫn chạy riêng bằng:
 

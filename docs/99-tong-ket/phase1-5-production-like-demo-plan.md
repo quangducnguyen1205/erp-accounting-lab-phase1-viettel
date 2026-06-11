@@ -105,7 +105,7 @@ Lý do chính:
 
 ## 7. Immediate implementation order
 
-1. **Loki/log aggregation lab**: gom log từ `tenant-demo`, gateway và service mới sau này; search bằng Grafana Explore.
+1. **Loki/log aggregation lab**: đã có local Docker lab với Loki + Grafana + Grafana Alloy để gom Docker container logs và search bằng Grafana Explore.
 2. **Kafka UI lab**: inspect topic/message/consumer group trước khi split service.
 3. **Kong Gateway lab**: DB-less/declarative route `/api/master-data/**`, sau này `/api/audit/**`.
 4. **Audit-log-service skeleton + implementation**: service nhỏ consume Kafka event, có own logs/metrics và optional DB table.
@@ -123,6 +123,6 @@ Lý do chính:
 
 ## 9. Suggested next Codex task
 
-> Implement the Loki/Grafana log aggregation local lab first, Docker-first, with docs and safe Makefile targets. Keep Prometheus/Grafana metrics lab intact. Do not add audit-log-service yet.
+> Implement Kafka UI local lab next, Docker-first, so the student can inspect topic/message/consumer group before splitting `audit-log-service`.
 
-Lý do: log aggregation là nền cho mọi bước sau. Khi có thêm Kong/Kafka UI/audit service, việc debug bằng requestId/service label trong Grafana Explore sẽ dễ hơn nhiều.
+Lý do: Loki/log aggregation đã có nền local. Kafka UI là bước tiếp theo để biến Kafka từ log-only learning sang nhìn được broker/topic/message/consumer group trước khi tạo cross-service flow.

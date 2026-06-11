@@ -27,7 +27,7 @@ Thư mục `docs/` là source of truth cho kiến thức Phase 1 đã được c
 | Frontend React Web | Thin UI demo Docker-first cho Keycloak/Gateway/backend flow | Final Phase 1 demo |
 | Architecture map | Kết nối target diagram với repo | Mentor-facing |
 | Elasticsearch/MinIO/Redis/Kafka/Observability/API Gateway | Mini-lab công nghệ sau Keycloak, học từng cái một | Phase 1 done |
-| Loki/Kafka UI/Kong/microservice boundaries | Phase 1.5 production-like demo hardening | Planned |
+| Loki/Kafka UI/Kong/microservice boundaries | Phase 1.5 production-like demo hardening | In progress: Loki local lab implemented |
 | DDD/final reflection | Optional hoặc cuối phase, không chặn learning tech | Optional/later |
 
 ## Cấu trúc chuẩn cho công nghệ mới

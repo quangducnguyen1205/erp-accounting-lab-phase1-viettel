@@ -79,13 +79,11 @@ Các giá trị này nên nằm trong log line/structured fields để search, k
 
 ## 6. Áp dụng vào repo này
 
-Phase 1.5 nên log aggregation theo hướng:
+Phase 1.5 log aggregation theo hướng:
 
 ```text
-Kong / Spring Gateway logs
-tenant-demo logs
-future audit-log-service logs
--> Alloy or simple collector
+Docker container stdout logs
+-> Grafana Alloy
 -> Loki
 -> Grafana Explore
 ```
@@ -96,16 +94,41 @@ Request logging hiện đã có `X-Request-Id`/MDC. Khi log vào Loki, demo có 
 2. copy requestId từ UI;
 3. vào Grafana Explore;
 4. tìm requestId để thấy log backend;
-5. sau khi có audit service, thấy thêm consumer log.
+5. sau khi có audit service hoặc Dockerized backend service, thấy thêm service log trong cùng Grafana Explore.
 
 ## 7. Local lab direction
 
-Mini-lab nên Docker-first:
+Mini-lab hiện tại Docker-first ở `lab-code/loki-lab/`:
 
 - Loki container.
-- Collector container đọc Docker logs hoặc mounted log file.
+- Alloy container đọc Docker logs qua Docker socket.
 - Grafana datasource Loki.
-- Makefile targets: `loki-up`, `loki-status`, `loki-down`.
+- Makefile targets: `loki-up`, `loki-status`, `loki-info`, `loki-logs`, `loki-down`.
+
+Local ports:
+
+| Tool | URL |
+|---|---|
+| Loki readiness | `http://localhost:3100/ready` |
+| Grafana Explore | `http://localhost:13001` |
+| Alloy debug UI | `http://localhost:12345` |
+
+Query examples:
+
+```logql
+{service="web-ui-demo"}
+{container="viettel-web-ui-demo"}
+{service="web-ui-demo"} |= "web-demo"
+```
+
+### Giới hạn hiện tại
+
+Alloy Docker collector chỉ đọc log container. `tenant-demo` và `gateway-demo` hiện thường chạy bằng Maven trên host, nên log của hai app đó vẫn nằm ở terminal host nếu chưa Dockerize. Điều này là giới hạn có chủ ý để không refactor deployment trong task Loki đầu tiên.
+
+Khi sang bước microservice split, có thể chọn một trong hai hướng:
+
+- Dockerize backend services để Alloy đọc stdout logs trực tiếp.
+- Hoặc thêm file-log collector nếu app ghi log ra file host.
 
 Không cần:
 

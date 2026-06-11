@@ -13,11 +13,11 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | Phase 1 core done, Phase 1.5 planning started |
+| **Tiến độ** | Phase 1 core done, Phase 1.5 implementation started |
 | **Tổng task** | 110 |
 | **Đã hoàn thành** | 104 / 110 |
-| **Focus hiện tại** | Phase 1.5 - production-like architecture demo planning |
-| **Milestone tiếp theo** | #19 - Loki log aggregation + Kafka UI inspection |
+| **Focus hiện tại** | Phase 1.5 - centralized logs + runtime tooling |
+| **Milestone tiếp theo** | #19 - Kafka UI inspection |
 | **Demo hiện tại** | React Web UI -> Keycloak -> Gateway -> tenant-demo -> PostgreSQL/Redis/Kafka/Observability; Elasticsearch/MinIO qua HTTP mini-lab |
 
 Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; Milestone #14 đã chốt Redis cache-aside tenant-safe read path; Milestone #15 đã chốt Kafka/async messaging reference flow nhỏ; Milestone #16 đã chốt Observability baseline với Actuator, request logging, Micrometer metrics và Prometheus/Grafana local lab. Milestone #17 đã chốt API Gateway static route và React Web UI Docker-first để nhìn flow end-to-end. React Native/Expo không thuộc repo này.
@@ -439,7 +439,7 @@ Phase 1.5 bắt đầu sau buổi báo cáo mentor Đạt ngày 11/06/2026. Mụ
 
 | Thứ tự | Milestone | Mục tiêu | Artifact chính | Done criteria | Trạng thái |
 |---:|---|---|---|---|---|
-| 1 | Loki/log aggregation | Gom log nhiều service vào Grafana Explore | `docs/07-architecture/log-aggregation-loki/`, `lab-code/loki-lab/` | Tìm log theo service/requestId trong Grafana | Planned |
+| 1 | Loki/log aggregation | Gom Docker container logs vào Grafana Explore | `docs/07-architecture/log-aggregation-loki/`, `lab-code/loki-lab/` | Loki ready, Grafana datasource provisioned, query logs theo service/container/requestId text | Implemented local lab |
 | 2 | Kafka UI | Nhìn topic/message/consumer group/lag thay vì chỉ đọc log | `docs/07-architecture/kafka-ui/`, `lab-code/kafka-ui-lab/` | Mở UI thấy `master-data-events`, message key/value, consumer group | Planned |
 | 3 | Kong Gateway | Practice gateway platform gần target architecture | `docs/07-architecture/kong-gateway/`, `lab-code/kong-gateway-lab/` | Route `/api/master-data/**`, sau này `/api/audit/**`, giữ auth/requestId | Planned |
 | 4 | Audit Log Service split | Tạo service thứ hai có trách nhiệm rõ | `docs/07-architecture/microservice-boundaries/`, `lab-code/audit-log-service/` sau này | `master-data-service` publish event, `audit-log-service` consume và lưu/log audit | Planned |

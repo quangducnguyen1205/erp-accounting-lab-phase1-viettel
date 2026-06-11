@@ -56,7 +56,7 @@ Sau feedback mentor ngày 11/06/2026, Phase 1.5 sẽ đưa demo gần target hơ
 | Redis cache | Cache dữ liệu/config/feature flags, giảm load DB. | Đã học sau MinIO. | Tenant-safe cache key: `tenant:{id}:...`, cache-aside by code. | Mini-lab verified. | Cache leakage nếu key thiếu tenant; cache trước khi có bottleneck. |
 | Kafka async messaging | Event/message giữa services, decouple async workflow. | Đã học sau cache/storage. | Publish `MasterDataChangedEvent`, consumer log. | Mini-lab verified. | Chạy Kafka chỉ để “có Kafka” rất nặng. |
 | Kafka UI | Inspect topic/message/consumer group/lag. | Phase 1.5, trước khi tách service để debug Kafka rõ hơn. | Mở topic `master-data-events`, xem key/value và consumer group. | Planned. | Nhầm Kafka UI với monitoring/alerting production. |
-| Loki/log aggregation | Centralized logs cho nhiều service. | Phase 1.5, trước khi có nhiều service/log terminal. | Tìm log theo service/requestId trong Grafana Explore. | Planned. | Dùng high-cardinality labels hoặc log token/body. |
+| Loki/log aggregation | Centralized logs cho nhiều service. | Phase 1.5, trước khi có nhiều service/log terminal. | Tìm log theo service/container/requestId text trong Grafana Explore. | Local lab implemented với Loki + Grafana + Alloy. | Dùng high-cardinality labels hoặc log token/body. |
 | Kong Gateway | Gateway platform gần target architecture hơn Spring Cloud Gateway lab. | Phase 1.5 sau khi đã hiểu gateway concept. | DB-less route `/api/master-data/**`, sau này `/api/audit/**`. | Planned. | Đưa business logic hoặc expose Admin API public. |
 | Microservice boundary split | Tách responsibility/service ownership rõ ràng. | Phase 1.5 khi cần Kafka cross-service và nhiều service logs. | Thêm `audit-log-service` consume `MasterDataChangedEvent`. | Planned. | Split artificial hoặc tạo domain mới quá phức tạp. |
 | Debezium CDC | Đồng bộ thay đổi DB sang Kafka/search/reporting. | Sau khi hiểu Kafka và search. | Awareness diagram hoặc read-only CDC note. | Later awareness. | Setup CDC phức tạp, dễ lệch Phase 1. |
@@ -85,7 +85,7 @@ Sau feedback mentor ngày 11/06/2026, Phase 1.5 sẽ đưa demo gần target hơ
 | `com.viettel.demo.observability` + `lab-code/observability-lab` | Logging/metrics/local monitoring | Verified | RequestId/MDC, custom Micrometer metrics, Prometheus target UP, Grafana datasource/dashboard. |
 | `lab-code/gateway-demo` | API Gateway/static routing | Verified | Spring Cloud Gateway route `/api/**` đến `tenant-demo`, service discovery để awareness. |
 | `lab-code/web-ui-demo` | React Web thin client | Verified | Docker-first Vite app; Keycloak login bằng public client, gọi Gateway `/api/master-data`, lookup by code, create data và hiển thị requestId. |
-| `lab-code/loki-lab` | Loki log aggregation lab | Planned stub | README stub, runtime chưa implement. |
+| `lab-code/loki-lab` | Loki log aggregation lab | Local lab implemented | Docker Compose Loki + Grafana + Alloy, Makefile targets `loki-*`. |
 | `lab-code/kafka-ui-lab` | Kafka UI inspection lab | Planned stub | README stub, runtime chưa implement. |
 | `lab-code/kong-gateway-lab` | Kong Gateway lab | Planned stub | README stub, runtime chưa implement. |
 | Future `audit-log-service` | Second backend service / Kafka consumer | Planned | Recommended split để Kafka thành cross-service flow thật. |

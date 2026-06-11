@@ -34,7 +34,7 @@ Demo script cuối Phase 1: [../99-tong-ket/phase1-final-demo-script.md](../99-t
 | Observability | Done at Phase 1 level | [observability/observability-foundation.md](observability/observability-foundation.md) |
 | API Gateway/service discovery | Done at Phase 1 level: static route verified, service discovery awareness only | [api-gateway-service-discovery/api-gateway-foundation.md](api-gateway-service-discovery/api-gateway-foundation.md) |
 | React Web UI | Done as thin final demo: Docker-first Keycloak/Gateway UI | [../06-frontend/react-web-keycloak-gateway-demo.md](../06-frontend/react-web-keycloak-gateway-demo.md) |
-| Loki/log aggregation | Phase 1.5 planned | [log-aggregation-loki/loki-foundation.md](log-aggregation-loki/loki-foundation.md) |
+| Loki/log aggregation | Phase 1.5 local lab implemented | [log-aggregation-loki/loki-foundation.md](log-aggregation-loki/loki-foundation.md) |
 | Kafka UI | Phase 1.5 planned | [kafka-ui/kafka-ui-foundation.md](kafka-ui/kafka-ui-foundation.md) |
 | Kong Gateway | Phase 1.5 planned | [kong-gateway/kong-gateway-foundation.md](kong-gateway/kong-gateway-foundation.md) |
 | Microservice boundaries | Phase 1.5 planned | [microservice-boundaries/phase1-service-split-options.md](microservice-boundaries/phase1-service-split-options.md) |

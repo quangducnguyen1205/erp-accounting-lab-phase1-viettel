@@ -1,0 +1,56 @@
+services:
+  loki:
+    image: grafana/loki:3.3.2
+    container_name: viettel-loki
+    command: -config.file=/etc/loki/loki-config.yml
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki-config.yml:/etc/loki/loki-config.yml:ro
+      - loki-data:/loki
+    labels:
+      logging.service: loki
+      logging.environment: local
+
+  alloy:
+    image: grafana/alloy:v1.5.1
+    container_name: viettel-alloy
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    ports:
+      - "12345:12345"
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - alloy-data:/var/lib/alloy/data
+    depends_on:
+      - loki
+    labels:
+      logging.service: alloy
+      logging.environment: local
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: viettel-loki-grafana
+    ports:
+      - "13001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana-loki-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - loki
+    labels:
+      logging.service: grafana-loki
+      logging.environment: local
+
+volumes:
+  loki-data:
+  alloy-data:
+  grafana-loki-data:

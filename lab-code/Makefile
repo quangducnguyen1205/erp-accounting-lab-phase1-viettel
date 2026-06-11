@@ -22,6 +22,7 @@ MINIO_DIR      := minio-lab
 REDIS_DIR      := redis-lab
 KAFKA_DIR      := kafka-lab
 OBSERVABILITY_DIR := observability-lab
+LOKI_DIR       := loki-lab
 GATEWAY_DIR    := gateway-demo
 WEB_UI_DIR     := web-ui-demo
 
@@ -130,6 +131,47 @@ observability-down: ## Dừng Prometheus + Grafana local cho observability mini-
 observability-status: ## Kiểm tra Prometheus + Grafana local
 	@docker ps --filter "name=viettel-prometheus" --filter "name=viettel-grafana" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 
+# --- Loki log aggregation mini-lab -----------------------------
+
+.PHONY: loki-up
+loki-up: ## Khởi chạy Loki + Alloy + Grafana local cho log aggregation
+	cd $(LOKI_DIR) && docker compose up -d
+
+.PHONY: loki-down
+loki-down: ## Dừng Loki + Alloy + Grafana local
+	cd $(LOKI_DIR) && docker compose down
+
+.PHONY: loki-status
+loki-status: ## Kiểm tra Loki + Alloy + Grafana local
+	@docker ps --filter "name=viettel-loki" --filter "name=viettel-alloy" --filter "name=viettel-loki-grafana" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+.PHONY: loki-logs
+loki-logs: ## Xem log của Loki + Alloy + Grafana local
+	cd $(LOKI_DIR) && docker compose logs -f
+
+.PHONY: loki-info
+loki-info: ## In hướng dẫn nhanh cho Loki log aggregation lab
+	@echo ""
+	@echo "Loki log aggregation lab nằm ở $(LOKI_DIR)/"
+	@echo "Workflow chính là Docker-first."
+	@echo ""
+	@echo "Chạy:"
+	@echo "  make loki-up"
+	@echo "  make loki-status"
+	@echo ""
+	@echo "URLs:"
+	@echo "  Loki readiness: http://localhost:3100/ready"
+	@echo "  Grafana Explore: http://localhost:13001"
+	@echo "  Alloy debug UI: http://localhost:12345"
+	@echo ""
+	@echo "Ghi chú: Alloy Docker collector chỉ đọc log container. App chạy bằng Maven trên host vẫn hiện log ở terminal host."
+
+.PHONY: logs-up
+logs-up: loki-up ## Alias: khởi chạy Loki log aggregation lab
+
+.PHONY: logs-down
+logs-down: loki-down ## Alias: dừng Loki log aggregation lab
+
 # --- API Gateway mini-lab --------------------------------------
 
 .PHONY: gateway-run
@@ -197,6 +239,7 @@ web-ui-logs: ## Xem log React Web UI demo container
 # - redis-up cho cache mini-lab
 # - kafka-up cho async messaging mini-lab
 # - observability-up cho Prometheus/Grafana mini-lab
+# - loki-up cho Loki/Grafana log aggregation mini-lab
 # - gateway-run cho API Gateway static route mini-lab
 # - web-ui-up cho React Web UI demo Docker-first
 #
@@ -204,8 +247,9 @@ web-ui-logs: ## Xem log React Web UI demo container
 # Elasticsearch + MinIO + Redis + Kafka. App Spring Boot vẫn chạy riêng
 # bằng `make app-run`, Gateway chạy riêng bằng `make gateway-run`, UI chạy
 # riêng bằng `make web-ui-up`.
-# Prometheus/Grafana là observability optional, chạy riêng bằng
-# `make observability-up` để full infra mặc định không quá nặng.
+# Prometheus/Grafana metrics và Loki/Grafana logs là observability optional,
+# chạy riêng bằng `make observability-up` hoặc `make loki-up` để full infra
+# mặc định không quá nặng.
 
 .PHONY: infra-up
 infra-up: db-up keycloak-up elastic-up minio-up redis-up kafka-up ## Khởi chạy PostgreSQL + KeyCloak + Elasticsearch + MinIO + Redis + Kafka
