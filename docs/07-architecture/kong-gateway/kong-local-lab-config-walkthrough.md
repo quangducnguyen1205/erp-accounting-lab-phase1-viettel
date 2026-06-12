@@ -103,11 +103,13 @@ Hiện có:
 - route `tenant-demo-master-data-api`;
 - service `tenant-demo-health`;
 - route `tenant-demo-health-route`;
-- CORS plugin cho route master data.
+- service `audit-log-api`;
+- route `audit-log-events-api`;
+- CORS plugin cho route master data và audit events.
 
 Khi sửa:
 
-- thêm route `/api/audit/**` sau khi có `audit-log-service`;
+- thêm route khác nếu có service boundary thật;
 - chỉ expose actuator endpoint cụ thể, không route rộng `/actuator/**`;
 - không đưa business logic vào Kong.
 
@@ -185,6 +187,26 @@ strip_path: true
 
 Kong chỉ expose đúng health endpoint để verify nhanh, không expose toàn bộ actuator.
 
+### Audit Events API
+
+Client gọi:
+
+```text
+http://localhost:18000/api/audit-events
+http://localhost:18000/api/audit-events/{eventId}
+```
+
+Kong route:
+
+```yaml
+service: audit-log-api
+url: http://host.docker.internal:8082
+route path: /api/audit-events
+strip_path: false
+```
+
+Kong vẫn chỉ forward request. `audit-log-service` tự validate JWT, tự lấy `tenant_id` và tự filter audit table theo tenant hiện tại.
+
 ## 5. Docker Networking
 
 Browser trên host:
@@ -206,8 +228,8 @@ Không dùng `localhost:8080` trong `kong.yml`. Bên trong container Kong, `loca
 ```text
 React Web hoặc curl
   -> Kong proxy :18000
-  -> route /api/master-data
-  -> tenant-demo :8080
+  -> route /api/master-data hoặc /api/audit-events
+  -> tenant-demo :8080 hoặc audit-log-service :8082
   -> Spring Security validates token
   -> JwtTenantContextFilter sets tenant
   -> Service/Repository query tenant-aware
@@ -271,6 +293,14 @@ curl -i http://localhost:18000/api/master-data
 ```
 
 Kỳ vọng thiếu token trả `401` từ backend.
+
+Verify audit route nếu `audit-log-service` đang chạy:
+
+```bash
+curl -i http://localhost:18000/api/audit-events
+```
+
+Kỳ vọng thiếu token trả `401` từ `audit-log-service`.
 
 Với token hợp lệ:
 

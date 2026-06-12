@@ -52,7 +52,7 @@ audit-log-service
 - domain nhỏ, dễ giải thích;
 - Kafka trở thành cross-service thật;
 - Loki có nhiều service log để search;
-- Kong có thêm route `/api/audit/**` nếu expose query audit.
+- Kong có thêm route `/api/audit-events/**` nếu expose query audit.
 
 Nhược điểm:
 

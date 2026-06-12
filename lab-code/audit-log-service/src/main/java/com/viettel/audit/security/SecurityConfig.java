@@ -1,0 +1,77 @@
+package com.viettel.audit.security;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtDecoders;
+import org.springframework.security.oauth2.jwt.JwtValidators;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
+import org.springframework.security.web.SecurityFilterChain;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+@Configuration
+@EnableMethodSecurity
+public class SecurityConfig {
+
+    @Bean
+    SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            JwtTenantContextFilter jwtTenantContextFilter,
+            JwtAuthenticationConverter jwtAuthenticationConverter
+    ) throws Exception {
+        return http
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/actuator/prometheus", "/actuator/prometheus/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/audit-events", "/api/audit-events/**")
+                        .hasAnyRole("ADMIN", "ACCOUNTANT", "VIEWER")
+                        .anyRequest().authenticated()
+                )
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
+                        jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)
+                ))
+                .addFilterAfter(jwtTenantContextFilter, BearerTokenAuthenticationFilter.class)
+                .build();
+    }
+
+    @Bean
+    JwtAuthenticationConverter jwtAuthenticationConverter(KeycloakRoleConverter keycloakRoleConverter) {
+        JwtGrantedAuthoritiesConverter scopeConverter = new JwtGrantedAuthoritiesConverter();
+
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            Set<GrantedAuthority> authorities = new LinkedHashSet<>();
+            authorities.addAll(scopeConverter.convert(jwt));
+            authorities.addAll(keycloakRoleConverter.convert(jwt));
+            return authorities;
+        });
+        return converter;
+    }
+
+    @Bean
+    JwtDecoder jwtDecoder(AuditSecurityProperties securityProperties) {
+        String issuerUri = securityProperties.getIssuerUri();
+        String jwkSetUri = securityProperties.getJwkSetUri();
+
+        if (jwkSetUri != null && !jwkSetUri.isBlank()) {
+            NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+            decoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(issuerUri));
+            return decoder;
+        }
+
+        return JwtDecoders.fromIssuerLocation(issuerUri);
+    }
+}

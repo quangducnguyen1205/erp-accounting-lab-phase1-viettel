@@ -22,6 +22,7 @@ MINIO_DIR      := minio-lab
 REDIS_DIR      := redis-lab
 KAFKA_DIR      := kafka-lab
 KAFKA_UI_DIR   := kafka-ui-lab
+AUDIT_LOG_DIR  := audit-log-service
 OBSERVABILITY_DIR := observability-lab
 LOKI_DIR       := loki-lab
 GATEWAY_DIR    := gateway-demo
@@ -165,6 +166,56 @@ kafka-ui-info: ## In hướng dẫn nhanh cho Kafka UI lab
 	@echo "  Kafka UI: http://localhost:18082"
 	@echo ""
 	@echo "Ghi chú: Kafka UI container kết nối Kafka broker qua Docker network viettel-kafka-net và bootstrap server kafka:9092."
+
+# --- Audit Log Service mini-lab --------------------------------
+
+.PHONY: audit-log-validate
+audit-log-validate: ## Validate audit-log-service Maven project
+	mvn -f $(AUDIT_LOG_DIR)/pom.xml validate
+
+.PHONY: audit-log-run
+audit-log-run: ## Chạy audit-log-service bằng Maven ở port 8082
+	mvn -f $(AUDIT_LOG_DIR)/pom.xml spring-boot:run
+
+.PHONY: audit-log-build
+audit-log-build: ## Build Docker image cho audit-log-service
+	cd $(AUDIT_LOG_DIR) && docker build -t viettel-audit-log-service:latest .
+
+.PHONY: audit-log-up
+audit-log-up: db-up kafka-up keycloak-up ## Khởi chạy audit-log-service container ở port 8082
+	cd $(AUDIT_LOG_DIR) && docker compose up -d --build
+
+.PHONY: audit-log-down
+audit-log-down: ## Dừng audit-log-service container
+	cd $(AUDIT_LOG_DIR) && docker compose down
+
+.PHONY: audit-log-status
+audit-log-status: ## Kiểm tra audit-log-service container
+	@docker ps --filter "name=viettel-audit-log-service" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+.PHONY: audit-log-logs
+audit-log-logs: ## Xem log audit-log-service container
+	cd $(AUDIT_LOG_DIR) && docker compose logs -f
+
+.PHONY: audit-log-config
+audit-log-config: ## Validate/hiển thị Docker Compose config cho audit-log-service
+	cd $(AUDIT_LOG_DIR) && docker compose config
+
+.PHONY: audit-log-info
+audit-log-info: ## In hướng dẫn nhanh cho audit-log-service
+	@echo ""
+	@echo "Audit Log Service nằm ở $(AUDIT_LOG_DIR)/"
+	@echo "Workflow chính là Docker-first."
+	@echo ""
+	@echo "Chạy:"
+	@echo "  make audit-log-up"
+	@echo "  make audit-log-status"
+	@echo ""
+	@echo "URLs:"
+	@echo "  Direct service: http://localhost:8082"
+	@echo "  Through Kong:   http://localhost:18000/api/audit-events"
+	@echo ""
+	@echo "Ghi chú: service consume Kafka topic master-data-events bằng group audit-log-service."
 
 # --- Observability mini-lab ------------------------------------
 
@@ -326,6 +377,7 @@ web-ui-logs: ## Xem log React Web UI demo container
 # - redis-up cho cache mini-lab
 # - kafka-up cho async messaging mini-lab
 # - kafka-ui-up cho Kafka topic/message/consumer inspection
+# - audit-log-up cho service split đầu tiên và Kafka cross-service flow
 # - observability-up cho Prometheus/Grafana mini-lab
 # - loki-up cho Loki/Grafana log aggregation mini-lab
 # - gateway-run cho API Gateway static route mini-lab
@@ -341,6 +393,7 @@ web-ui-logs: ## Xem log React Web UI demo container
 # Kafka UI là inspect tool optional, chạy riêng bằng `make kafka-ui-up` để
 # full infra mặc định không quá nặng.
 # Kong Gateway là Phase 1.5 platform lab, chạy riêng bằng `make kong-up`.
+# audit-log-service chạy riêng bằng `make audit-log-up` khi demo service split.
 
 .PHONY: infra-up
 infra-up: db-up keycloak-up elastic-up minio-up redis-up kafka-up ## Khởi chạy PostgreSQL + KeyCloak + Elasticsearch + MinIO + Redis + Kafka

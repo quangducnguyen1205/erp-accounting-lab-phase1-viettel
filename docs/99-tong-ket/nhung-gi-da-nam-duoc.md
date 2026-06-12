@@ -899,7 +899,30 @@ Chọn `audit-log-service` làm service thứ hai vì:
 - tận dụng event `MasterDataChangedEvent` hiện có;
 - Kafka trở thành flow giữa hai service thật;
 - domain audit nhỏ, không cần dựng nghiệp vụ kế toán phức tạp;
-- Kong có thêm route thật sau này;
+- Kong có thêm route thật;
 - Loki có nhiều service logs để search.
+
+### Audit-log-service split
+
+Trạng thái: đã thêm và verify service split đầu tiên ở `lab-code/audit-log-service/`.
+
+Đã có:
+
+- Spring Boot service riêng, port `8082`;
+- Kafka consumer group `audit-log-service` đọc topic `master-data-events`;
+- event DTO `MasterDataChangedEvent` duplicate có chủ đích, chưa dùng shared contract module;
+- schema riêng `audit_log`, table `audit_events`, unique `event_id` để chống duplicate;
+- read-only API `GET /api/audit-events` và `GET /api/audit-events/{eventId}`;
+- JWT Resource Server, role mapping và `tenant_id` filter riêng trong audit service;
+- Kong route `/api/audit-events` tới audit service;
+- Docker-first compose và Makefile targets `audit-log-*`;
+- full E2E đã chạy qua Kong: `tenant1-user` tạo `master_data` -> Kafka event -> audit service consume/store -> tenant 1 đọc được audit event;
+- tenant isolation đã verify: `tenant2-user` đọc audit list không thấy event tenant 1;
+- role behavior đã verify: `tenant2-user` VIEWER create `master_data` bị `403`, nên không tạo audit event cho action fail.
+
+Caveat:
+
+- chưa có outbox pattern, retry/DLT, schema registry hoặc production audit compliance;
+- PostgreSQL local vẫn dùng chung container/database nhưng tách schema `audit_log` để giữ demo nhẹ.
 
 Kế hoạch chi tiết nằm ở `docs/99-tong-ket/phase1-5-production-like-demo-plan.md`.

@@ -52,6 +52,7 @@ Không dùng `localhost:8080` bên trong container Kong, vì `localhost` lúc đ
 |---|---|---|
 | `GET /tenant-demo/actuator/health` | `tenant-demo /actuator/health` | health route để verify nhanh |
 | `/api/master-data...` | `tenant-demo /api/master-data...` | giữ nguyên path, preserve `Authorization` và `X-Request-Id` |
+| `/api/audit-events...` | `audit-log-service /api/audit-events...` | read-only audit API sau service split |
 
 Kong không validate JWT trong mini-lab này. Backend `tenant-demo` vẫn validate token, map role, set tenant context và query tenant-aware.
 
@@ -60,12 +61,14 @@ Kong không validate JWT trong mini-lab này. Backend `tenant-demo` vẫn valida
 ```bash
 curl -i http://localhost:18000/tenant-demo/actuator/health
 curl -i http://localhost:18000/api/master-data
+curl -i http://localhost:18000/api/audit-events
 ```
 
 Kỳ vọng:
 
 - health route trả health response nếu `tenant-demo` đang chạy;
 - `/api/master-data` thiếu token trả `401` từ backend;
+- `/api/audit-events` thiếu token trả `401` từ audit-log-service nếu service đang chạy;
 - có token hợp lệ thì backend xử lý như khi gọi trực tiếp.
 
 ## Dừng lab

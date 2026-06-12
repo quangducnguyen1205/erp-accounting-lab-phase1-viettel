@@ -21,8 +21,9 @@ Phase 1.5 đã bắt đầu chuyển một số stub thành runtime lab:
 - `loki-lab/`: centralized logs bằng Loki + Grafana + Grafana Alloy.
 - `kafka-ui-lab/`: inspect topic/message/consumer group.
 - `kong-gateway-lab/`: Kong DB-less/declarative gateway lab.
+- `audit-log-service/`: service split đầu tiên, consume Kafka event và expose audit API.
 
-`loki-lab/`, `kafka-ui-lab/` và `kong-gateway-lab/` đã có Docker Compose và Makefile targets riêng. Bước tiếp theo là `audit-log-service` để Kafka thành cross-service flow thật hơn.
+`loki-lab/`, `kafka-ui-lab/`, `kong-gateway-lab/` và `audit-log-service/` đã có Docker Compose và Makefile targets riêng. Cross-service Kafka flow đã verify; bước tiếp theo là polish React Web UI để đọc audit events qua Kong nếu cần demo trực quan hơn.
 
 ## Nguyên tắc tối thượng
 
@@ -109,6 +110,7 @@ make minio-up       # MinIO cho file storage mini-lab
 make redis-up       # Redis cho cache mini-lab
 make kafka-up       # Kafka cho async messaging mini-lab
 make kafka-ui-up    # Kafka UI cho inspect topic/message/consumer group
+make audit-log-up   # Audit service consume Kafka event, expose /api/audit-events
 make observability-up # Prometheus + Grafana cho observability mini-lab
 make loki-up        # Loki + Alloy + Grafana cho centralized logs
 make gateway-run    # Spring Cloud Gateway static route mini-lab
@@ -122,7 +124,7 @@ make infra-up
 make infra-status
 ```
 
-`infra-up` bật PostgreSQL + Keycloak + Elasticsearch + MinIO + Redis + Kafka. Prometheus/Grafana metrics chạy riêng bằng `make observability-up`, Loki/Grafana logs chạy riêng bằng `make loki-up`, Kafka UI chạy riêng bằng `make kafka-ui-up`, gateway chạy riêng bằng `make gateway-run`, React Web UI chạy riêng bằng `make web-ui-up` để full infra mặc định không quá nặng. Khi chỉ học một lab nhỏ, vẫn nên dùng target riêng như `make kafka-up`, `make kafka-ui-up`, `make redis-up`, `make observability-up`, `make loki-up`, `make gateway-run` hoặc `make web-ui-up` để máy nhẹ hơn và dễ debug hơn.
+`infra-up` bật PostgreSQL + Keycloak + Elasticsearch + MinIO + Redis + Kafka. Prometheus/Grafana metrics chạy riêng bằng `make observability-up`, Loki/Grafana logs chạy riêng bằng `make loki-up`, Kafka UI chạy riêng bằng `make kafka-ui-up`, audit service chạy riêng bằng `make audit-log-up`, gateway chạy riêng bằng `make gateway-run` hoặc `make kong-up`, React Web UI chạy riêng bằng `make web-ui-up` để full infra mặc định không quá nặng. Khi chỉ học một lab nhỏ, vẫn nên dùng target riêng như `make kafka-up`, `make kafka-ui-up`, `make audit-log-up`, `make redis-up`, `make observability-up`, `make loki-up`, `make gateway-run` hoặc `make web-ui-up` để máy nhẹ hơn và dễ debug hơn.
 
 Spring Boot app vẫn chạy riêng bằng:
 

@@ -1,0 +1,63 @@
+server:
+  port: ${SERVER_PORT:8082}
+
+spring:
+  application:
+    name: audit-log-service
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:erpdb}?currentSchema=${DB_SCHEMA:audit_log}
+    username: ${DB_USER:erpuser}
+    password: ${DB_PASSWORD:erpuser}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: ${DB_SCHEMA:audit_log}
+        format_sql: true
+
+  flyway:
+    enabled: true
+    schemas: ${DB_SCHEMA:audit_log}
+    default-schema: ${DB_SCHEMA:audit_log}
+    create-schemas: true
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [requestId=%X{requestId:-no-request}] %logger{36} - %msg%n"
+  level:
+    org.flywaydb: info
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: audit-log-service
+    phase: phase-1-5-production-like-demo
+    description: Cross-service Kafka audit log learning demo
+
+app:
+  security:
+    issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:18080/realms/viettel-lab}
+    # Use this when service runs in Docker but token issuer is still localhost.
+    jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:}
+    client-id: ${KEYCLOAK_CLIENT_ID:tenant-demo-api-client}
+
+  kafka:
+    enabled: ${APP_KAFKA_ENABLED:true}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
+    master-data-topic: ${KAFKA_MASTER_DATA_TOPIC:master-data-events}
+    consumer-group-id: ${KAFKA_CONSUMER_GROUP_ID:audit-log-service}

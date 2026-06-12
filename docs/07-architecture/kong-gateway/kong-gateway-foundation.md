@@ -52,7 +52,7 @@ Ví dụ Phase 1.5:
 Route /api/master-data/**
 -> Service master-data-service http://host.docker.internal:8080
 
-Route /api/audit/**
+Route /api/audit-events/**
 -> Service audit-log-service http://host.docker.internal:8082
 ```
 
@@ -94,7 +94,7 @@ Route ban đầu đã implement:
 
 Route sau khi split service:
 
-- `/api/audit/**` -> `audit-log-service`.
+- `/api/audit-events/**` -> `audit-log-service`.
 
 Yêu cầu:
 

@@ -1,0 +1,34 @@
+services:
+  audit-log-service:
+    build: .
+    image: viettel-audit-log-service:latest
+    container_name: viettel-audit-log-service
+    ports:
+      - "8082:8082"
+    environment:
+      SERVER_PORT: 8082
+      DB_HOST: host.docker.internal
+      DB_PORT: 5432
+      DB_NAME: erpdb
+      DB_SCHEMA: audit_log
+      DB_USER: erpuser
+      DB_PASSWORD: erpuser
+      KEYCLOAK_ISSUER_URI: http://localhost:18080/realms/viettel-lab
+      KEYCLOAK_JWK_SET_URI: http://host.docker.internal:18080/realms/viettel-lab/protocol/openid-connect/certs
+      KEYCLOAK_CLIENT_ID: tenant-demo-api-client
+      APP_KAFKA_ENABLED: "true"
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_MASTER_DATA_TOPIC: master-data-events
+      KAFKA_CONSUMER_GROUP_ID: audit-log-service
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - kafka-net
+    labels:
+      logging.service: audit-log-service
+      logging.environment: local
+
+networks:
+  kafka-net:
+    external: true
+    name: viettel-kafka-net

@@ -16,7 +16,8 @@ Nhóm này chuẩn bị mini-lab Kong Gateway cho Phase 1.5. Spring Cloud Gatewa
 - Runtime Docker lab đã có ở `lab-code/kong-gateway-lab/`.
 - Makefile targets `kong-up/status/logs/down/info/config` đã có.
 - Kong DB-less route trực tiếp tới `tenant-demo` host app ở port `8080`.
-- Hướng tiếp theo: sau khi có `audit-log-service`, thêm route `/api/audit/**`.
+- Route `/api/audit-events` đã được thêm để trỏ tới `audit-log-service`.
+- Hướng tiếp theo: verify cross-service Kafka flow end-to-end qua Kong.
 
 ## Caveat
 

@@ -1,0 +1,26 @@
+### Cross-service Kafka demo
+### 1) Create master_data through Kong as ACCOUNTANT.
+### 2) Open Kafka UI topic master-data-events.
+### 3) Read audit events through Kong.
+
+### Create master_data through Kong
+POST http://localhost:18000/api/master-data
+Authorization: Bearer <ACCOUNTANT_ACCESS_TOKEN>
+Content-Type: application/json
+X-Request-Id: cross-service-create-001
+
+{
+  "code": "KAFKA-DEMO-{{$timestamp}}",
+  "name": "Kafka cross-service demo item",
+  "category": "Demo",
+  "isActive": true
+}
+
+### Read audit events through Kong
+GET http://localhost:18000/api/audit-events?limit=20
+Authorization: Bearer <ACCOUNTANT_ACCESS_TOKEN>
+X-Request-Id: cross-service-audit-001
+
+### Missing token should remain blocked
+GET http://localhost:18000/api/audit-events
+X-Request-Id: cross-service-audit-missing-token

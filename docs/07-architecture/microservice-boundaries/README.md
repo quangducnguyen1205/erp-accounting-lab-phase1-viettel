@@ -7,12 +7,14 @@ Nhóm này chuẩn bị quyết định service split cho Phase 1.5. Mục tiêu
 ## Reading Order
 
 1. [phase1-service-split-options.md](phase1-service-split-options.md) - phân tích các option split và khuyến nghị `audit-log-service`.
+2. [audit-log-service-split-plan.md](audit-log-service-split-plan.md) - boundary, ownership, tenant isolation và done criteria cho service split đầu tiên.
+3. [audit-log-service-code-walkthrough.md](audit-log-service-code-walkthrough.md) - giải thích code/config/runtime flow của `lab-code/audit-log-service`.
 
 ## Trạng thái
 
-- Planning doc đã có.
-- Chưa implement service split trong commit này.
-- Hướng tiếp theo sau Loki/Kafka UI/Kong: thêm `audit-log-service`.
+- `audit-log-service` đã được thêm làm service split đầu tiên.
+- Service consume `MasterDataChangedEvent`, lưu audit vào schema riêng và expose read-only API tenant-aware.
+- Hướng tiếp theo: verify cross-service Kafka flow end-to-end rồi polish React Web UI.
 
 ## Caveat
 

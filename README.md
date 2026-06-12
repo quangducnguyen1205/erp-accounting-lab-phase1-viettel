@@ -9,7 +9,7 @@ Mục tiêu của repo không phải là lưu mọi nháp học tập, mà là l
 - Đã hoàn thành nền tảng SaaS, multi-tenant, SQL playground, migration/locking, ACID/isolation và tenant-aware backend API.
 - Đã có demo Spring Boot nhỏ trong `lab-code/tenant-demo` với PostgreSQL/Flyway, tenant-aware API, JWT tạm fallback, Keycloak AuthN/AuthZ mode và các mini-lab architecture.
 - Phase 1 hiện đã demo được flow end-to-end bằng React Web UI mỏng -> Keycloak -> Gateway -> `tenant-demo` -> PostgreSQL/Redis/Kafka/Observability. UI này là demo web, không phải React Native/Expo và không phải frontend production.
-- Sau buổi báo cáo mentor ngày 11/06/2026, Phase 1.5 bắt đầu bằng runtime tooling: Loki log aggregation, Kafka UI và Kong Gateway đã có local lab; bước tiếp theo là service split nhỏ bằng `audit-log-service`, cross-service Kafka flow, rồi mới polish UI cuối.
+- Sau buổi báo cáo mentor ngày 11/06/2026, Phase 1.5 bắt đầu bằng runtime tooling: Loki log aggregation, Kafka UI và Kong Gateway đã có local lab; `audit-log-service` đã được thêm làm service split đầu tiên để biến Kafka thành cross-service flow, rồi mới polish UI cuối.
 
 ## Cấu trúc thư mục
 
@@ -33,6 +33,7 @@ Mục tiêu của repo không phải là lưu mọi nháp học tập, mà là l
 │   ├── minio-lab/
 │   ├── redis-lab/
 │   ├── kafka-lab/
+│   ├── audit-log-service/
 │   ├── observability-lab/
 │   ├── loki-lab/
 │   ├── kafka-ui-lab/
@@ -105,6 +106,7 @@ Repository này vẫn được ưu tiên làm kho kiến thức Phase 1, nhưng 
 - `lab-code/tenant-demo/`: Spring Boot + PostgreSQL/Flyway + tenant-aware API.
 - `lab-code/keycloak-lab/`: Keycloak/OIDC mini-lab local.
 - `lab-code/gateway-demo/`: Spring Cloud Gateway static route tới `tenant-demo`.
+- `lab-code/audit-log-service/`: service split đầu tiên, consume `MasterDataChangedEvent` và expose audit API tenant-aware.
 - `lab-code/web-ui-demo/`: React Web/Vite thin client chạy Docker-first, gọi Gateway sau khi login Keycloak. Đây là demo trực quan cuối Phase 1, không phải React Native/Expo.
 
 Nếu demo phát triển thành một project thật sự lớn, nên tách sang repository riêng để repo kiến thức này vẫn gọn, rõ và dễ đọc. Trong Phase 1, lab code vẫn được giữ nhỏ và bám sát mục tiêu học.

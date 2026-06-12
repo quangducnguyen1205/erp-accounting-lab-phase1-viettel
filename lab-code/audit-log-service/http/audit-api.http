@@ -1,0 +1,21 @@
+### Audit health - public
+GET http://localhost:8082/actuator/health
+
+### List current tenant audit events - direct service
+GET http://localhost:8082/api/audit-events?limit=20
+Authorization: Bearer <ACCESS_TOKEN>
+X-Request-Id: audit-direct-001
+
+### Get one audit event by eventId - direct service
+GET http://localhost:8082/api/audit-events/<EVENT_ID>
+Authorization: Bearer <ACCESS_TOKEN>
+X-Request-Id: audit-direct-002
+
+### List current tenant audit events - through Kong
+GET http://localhost:18000/api/audit-events?limit=20
+Authorization: Bearer <ACCESS_TOKEN>
+X-Request-Id: audit-kong-001
+
+### Missing token through Kong - expected 401
+GET http://localhost:18000/api/audit-events
+X-Request-Id: audit-kong-missing-token
