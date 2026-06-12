@@ -22,7 +22,7 @@ Phase 1.5 đã bắt đầu chuyển một số stub thành runtime lab:
 - `kafka-ui-lab/`: inspect topic/message/consumer group.
 - `kong-gateway-lab/`: Kong DB-less/declarative gateway lab.
 
-`loki-lab/` và `kafka-ui-lab/` đã có Docker Compose và Makefile targets riêng. `kong-gateway-lab/` hiện vẫn là README stub cho bước tiếp theo.
+`loki-lab/`, `kafka-ui-lab/` và `kong-gateway-lab/` đã có Docker Compose và Makefile targets riêng. Bước tiếp theo là `audit-log-service` để Kafka thành cross-service flow thật hơn.
 
 ## Nguyên tắc tối thượng
 

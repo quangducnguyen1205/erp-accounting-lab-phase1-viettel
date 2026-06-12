@@ -107,8 +107,8 @@ Lý do chính:
 
 1. **Loki/log aggregation lab**: đã có local Docker lab với Loki + Grafana + Grafana Alloy để gom Docker container logs và search bằng Grafana Explore.
 2. **Kafka UI lab**: đã có local Docker lab để inspect broker/topic/message/consumer group trước khi split service.
-3. **Kong Gateway lab**: bước kế tiếp, DB-less/declarative route `/api/master-data/**`, sau này `/api/audit/**`.
-4. **Audit-log-service skeleton + implementation**: service nhỏ consume Kafka event, có own logs/metrics và optional DB table.
+3. **Kong Gateway lab**: đã có DB-less/declarative route `/api/master-data/**`, sau này `/api/audit/**`.
+4. **Audit-log-service skeleton + implementation**: bước kế tiếp, service nhỏ consume Kafka event, có own logs/metrics và optional DB table.
 5. **Cross-service Kafka verification**: create/update master data -> event -> audit service consumed/stored/logged.
 6. **Final React Web polish**: UI gọi Kong, có route xem audit nếu API thật đã có.
 
@@ -123,6 +123,6 @@ Lý do chính:
 
 ## 9. Suggested next Codex task
 
-> Implement Kong Gateway local lab next, Docker-first, using DB-less/declarative config to route `/api/master-data/**` to the current backend and prepare a future `/api/audit/**` route.
+> Implement `audit-log-service` next, Docker-first enough for local learning, as a small Kafka consumer service for `MasterDataChangedEvent`.
 
-Lý do: Loki/log aggregation và Kafka UI đã có nền local. Kong là gateway platform gần target architecture hơn Spring Cloud Gateway, và cần có trước khi split thêm `audit-log-service` để route nhiều backend service.
+Lý do: Loki/log aggregation, Kafka UI và Kong Gateway đã có nền local. `audit-log-service` là split nhỏ rõ trách nhiệm nhất để biến Kafka thành cross-service flow thật.

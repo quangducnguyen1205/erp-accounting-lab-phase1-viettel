@@ -71,6 +71,8 @@ Nhờ đó khi demo có thể:
 
 UI không gọi trực tiếp Redis, Kafka, PostgreSQL, MinIO, Prometheus hoặc Grafana trong business flow. Các thành phần này được quan sát gián tiếp qua backend.
 
+Mặc định UI demo vẫn dùng Spring Cloud Gateway ở `http://localhost:8081`. Khi muốn thử Kong Gateway lab, có thể đổi `VITE_API_BASE_URL` sang `http://localhost:18000` sau khi đã verify route Kong bằng curl. Không đổi default nếu chưa kiểm tra login/API flow qua Kong end-to-end.
+
 ## Keycloak setup tối thiểu
 
 Đường khuyến nghị hiện tại là chạy bootstrap local:

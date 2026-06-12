@@ -36,7 +36,7 @@ Demo script cuối Phase 1: [../99-tong-ket/phase1-final-demo-script.md](../99-t
 | React Web UI | Done as thin final demo: Docker-first Keycloak/Gateway UI | [../06-frontend/react-web-keycloak-gateway-demo.md](../06-frontend/react-web-keycloak-gateway-demo.md) |
 | Loki/log aggregation | Phase 1.5 local lab implemented | [log-aggregation-loki/loki-foundation.md](log-aggregation-loki/loki-foundation.md), [log-aggregation-loki/loki-local-lab-config-walkthrough.md](log-aggregation-loki/loki-local-lab-config-walkthrough.md) |
 | Kafka UI | Phase 1.5 local lab implemented | [kafka-ui/kafka-ui-foundation.md](kafka-ui/kafka-ui-foundation.md), [kafka-ui/kafka-ui-local-lab-config-walkthrough.md](kafka-ui/kafka-ui-local-lab-config-walkthrough.md) |
-| Kong Gateway | Phase 1.5 planned | [kong-gateway/kong-gateway-foundation.md](kong-gateway/kong-gateway-foundation.md) |
+| Kong Gateway | Phase 1.5 local lab implemented | [kong-gateway/kong-gateway-foundation.md](kong-gateway/kong-gateway-foundation.md), [kong-gateway/kong-local-lab-config-walkthrough.md](kong-gateway/kong-local-lab-config-walkthrough.md) |
 | Microservice boundaries | Phase 1.5 planned | [microservice-boundaries/phase1-service-split-options.md](microservice-boundaries/phase1-service-split-options.md) |
 | Awareness/later | Planned | [awareness/README.md](awareness/README.md) |
 

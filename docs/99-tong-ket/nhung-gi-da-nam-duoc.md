@@ -871,6 +871,27 @@ Caveat:
 - Kafka UI là local/dev inspection tool, không expose public nếu chưa có auth/network control;
 - message payload có thể nhạy cảm, nên event không được chứa secret/token.
 
+### Kong Gateway local lab
+
+Trạng thái: đã có Docker-first Kong Gateway lab ở `lab-code/kong-gateway-lab/`.
+
+Đã nắm được:
+
+- Kong chạy DB-less, không cần PostgreSQL riêng cho gateway config;
+- declarative config nằm trong `kong.yml`;
+- service/route/plugin là model config chính của Kong;
+- Kong proxy local ở `http://localhost:18000`;
+- Admin API local-only ở `http://localhost:18001`;
+- route `/api/master-data...` đi trực tiếp tới `tenant-demo` host app qua `host.docker.internal:8080`;
+- route `/tenant-demo/actuator/health` dùng để verify nhanh;
+- Kong preserve `Authorization` và `X-Request-Id`, backend vẫn validate token/RBAC/tenant query.
+
+Caveat:
+
+- Kong lab chưa bật JWT/OIDC plugin, rate limit, consumer model hoặc mTLS;
+- Admin API không được expose public trong production;
+- React Web UI vẫn mặc định gọi Spring Cloud Gateway, có thể đổi `VITE_API_BASE_URL=http://localhost:18000` sau khi verify Kong.
+
 ### Service split được chọn
 
 Chọn `audit-log-service` làm service thứ hai vì:

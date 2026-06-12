@@ -7,12 +7,16 @@ Nhóm này chuẩn bị mini-lab Kong Gateway cho Phase 1.5. Spring Cloud Gatewa
 ## Reading Order
 
 1. [kong-gateway-foundation.md](kong-gateway-foundation.md) - Kong vs Spring Cloud Gateway, service/route/plugin, DB-less config, lab direction.
+2. [kong-local-lab-config-walkthrough.md](kong-local-lab-config-walkthrough.md) - anatomy config Kong DB-less trước, rồi map vào `lab-code/kong-gateway-lab/`.
+3. [../../../lab-code/kong-gateway-lab/README.md](../../../lab-code/kong-gateway-lab/README.md) - lệnh chạy local.
 
 ## Trạng thái
 
-- Planning/foundation doc đã có.
-- Runtime Docker lab chưa implement trong commit này.
-- Hướng tiếp theo: tạo `lab-code/kong-gateway-lab/` DB-less/declarative config route tới `tenant-demo`, sau này `audit-log-service`.
+- Foundation doc đã có.
+- Runtime Docker lab đã có ở `lab-code/kong-gateway-lab/`.
+- Makefile targets `kong-up/status/logs/down/info/config` đã có.
+- Kong DB-less route trực tiếp tới `tenant-demo` host app ở port `8080`.
+- Hướng tiếp theo: sau khi có `audit-log-service`, thêm route `/api/audit/**`.
 
 ## Caveat
 

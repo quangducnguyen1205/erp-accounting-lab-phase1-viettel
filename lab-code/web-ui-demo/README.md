@@ -41,6 +41,12 @@ VITE_REQUEST_ID_PREFIX=web-demo
 
 `VITE_API_BASE_URL` trỏ tới Gateway, không trỏ trực tiếp tới `tenant-demo`.
 
+Mặc định UI dùng Spring Cloud Gateway lab ở `http://localhost:8081`. Khi muốn thử Kong Gateway lab sau khi đã verify route bằng curl, có thể đổi:
+
+```text
+VITE_API_BASE_URL=http://localhost:18000
+```
+
 ## Keycloak client cần chuẩn bị
 
 Đường khuyến nghị hiện tại là bootstrap tự động:

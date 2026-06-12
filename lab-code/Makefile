@@ -25,6 +25,7 @@ KAFKA_UI_DIR   := kafka-ui-lab
 OBSERVABILITY_DIR := observability-lab
 LOKI_DIR       := loki-lab
 GATEWAY_DIR    := gateway-demo
+KONG_DIR       := kong-gateway-lab
 WEB_UI_DIR     := web-ui-demo
 
 # --- Docker / Database -----------------------------------------
@@ -234,6 +235,44 @@ gateway-validate: ## Validate gateway-demo Maven project
 gateway-status: ## Kiểm tra gateway-demo health endpoint
 	curl -s http://localhost:8081/actuator/health
 
+# --- Kong Gateway mini-lab -------------------------------------
+
+.PHONY: kong-up
+kong-up: ## Khởi chạy Kong Gateway DB-less local ở port 18000
+	cd $(KONG_DIR) && docker compose up -d
+
+.PHONY: kong-down
+kong-down: ## Dừng Kong Gateway local
+	cd $(KONG_DIR) && docker compose down
+
+.PHONY: kong-status
+kong-status: ## Kiểm tra Kong Gateway local
+	@docker ps --filter "name=viettel-kong" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+.PHONY: kong-logs
+kong-logs: ## Xem log Kong Gateway local
+	cd $(KONG_DIR) && docker compose logs -f
+
+.PHONY: kong-config
+kong-config: ## Validate/hiển thị Docker Compose config cho Kong lab
+	cd $(KONG_DIR) && docker compose config
+
+.PHONY: kong-info
+kong-info: ## In hướng dẫn nhanh cho Kong Gateway lab
+	@echo ""
+	@echo "Kong Gateway lab nằm ở $(KONG_DIR)/"
+	@echo "Workflow chính là Docker-first, DB-less declarative config."
+	@echo ""
+	@echo "Chạy:"
+	@echo "  make kong-up"
+	@echo "  make kong-status"
+	@echo ""
+	@echo "URLs:"
+	@echo "  Kong proxy:     http://localhost:18000"
+	@echo "  Kong Admin API: http://localhost:18001 (local-only)"
+	@echo ""
+	@echo "Ghi chú: Kong container route tới tenant-demo host app qua host.docker.internal:8080."
+
 # --- React Web UI demo -----------------------------------------
 
 .PHONY: web-ui-info
@@ -290,6 +329,7 @@ web-ui-logs: ## Xem log React Web UI demo container
 # - observability-up cho Prometheus/Grafana mini-lab
 # - loki-up cho Loki/Grafana log aggregation mini-lab
 # - gateway-run cho API Gateway static route mini-lab
+# - kong-up cho Kong Gateway DB-less platform lab
 # - web-ui-up cho React Web UI demo Docker-first
 #
 # Dùng infra-up khi cần demo đầy đủ hơn: PostgreSQL + Keycloak +
@@ -300,6 +340,7 @@ web-ui-logs: ## Xem log React Web UI demo container
 # chạy riêng bằng `make observability-up` hoặc `make loki-up`.
 # Kafka UI là inspect tool optional, chạy riêng bằng `make kafka-ui-up` để
 # full infra mặc định không quá nặng.
+# Kong Gateway là Phase 1.5 platform lab, chạy riêng bằng `make kong-up`.
 
 .PHONY: infra-up
 infra-up: db-up keycloak-up elastic-up minio-up redis-up kafka-up ## Khởi chạy PostgreSQL + KeyCloak + Elasticsearch + MinIO + Redis + Kafka
