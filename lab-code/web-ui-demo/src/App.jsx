@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { createMasterData, loadMasterData, loadMasterDataByCode } from './api';
+import { createMasterData, loadAuditEvents, loadMasterData, loadMasterDataByCode } from './api';
 import { config } from './config';
 import { getAuthSnapshot, initKeycloak, keycloak, refreshToken } from './keycloak';
 
@@ -12,6 +12,11 @@ const initialAuthState = {
   warning: '',
   error: ''
 };
+
+const gatewayPresets = [
+  { label: 'Kong Gateway', url: 'http://localhost:18000' },
+  { label: 'Spring Gateway legacy', url: 'http://localhost:8081' }
+];
 
 function defaultForm() {
   return {
@@ -139,19 +144,38 @@ function AuthPanel({ authState, actionDisabledReason, onLogin, onLogout, onRefre
   );
 }
 
-function ApiPanel() {
+function ApiPanel({ apiBaseUrl, setApiBaseUrl }) {
+  const normalizedBaseUrl = apiBaseUrl.trim();
+
   return (
     <section className="panel">
       <div className="panel-heading">
         <h2>API through Gateway</h2>
-        <span className="badge">Thin client</span>
+        <span className={normalizedBaseUrl === 'http://localhost:18000' ? 'badge badge-ok' : 'badge'}>
+          {normalizedBaseUrl === 'http://localhost:18000' ? 'Kong' : 'Gateway'}
+        </span>
       </div>
       <dl className="facts">
         <dt>API base</dt>
-        <dd>{config.apiBaseUrl}</dd>
-        <dt>Path</dt>
+        <dd>
+          <input
+            value={apiBaseUrl}
+            onChange={(event) => setApiBaseUrl(event.target.value)}
+            aria-label="API base URL"
+          />
+        </dd>
+        <dt>Master API</dt>
         <dd>/api/master-data</dd>
+        <dt>Audit API</dt>
+        <dd>/api/audit-events</dd>
       </dl>
+      <div className="preset-row">
+        {gatewayPresets.map((preset) => (
+          <button type="button" key={preset.url} onClick={() => setApiBaseUrl(preset.url)}>
+            {preset.label}
+          </button>
+        ))}
+      </div>
       <p className="hint">
         Browser gọi Gateway. Gateway forward `Authorization` và `X-Request-Id`; backend vẫn validate JWT và enforce tenant-aware query.
       </p>
@@ -281,13 +305,104 @@ function CreateMasterDataForm({ form, setForm, onSubmit, disabled, loading }) {
   );
 }
 
+function AuditEventsPanel({ events, onLoad, loading, disabled }) {
+  return (
+    <section className="panel wide">
+      <div className="panel-heading">
+        <div>
+          <h2>Audit Events</h2>
+          <p className="hint inline-hint">Read-only API từ audit-log-service qua Kong.</p>
+        </div>
+        <button onClick={onLoad} disabled={disabled || loading}>
+          {loading ? 'Loading...' : 'Load audit events'}
+        </button>
+      </div>
+
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Event ID</th>
+              <th>Tenant</th>
+              <th>Type</th>
+              <th>Aggregate</th>
+              <th>Code</th>
+              <th>Change</th>
+              <th>Occurred</th>
+              <th>Consumed</th>
+            </tr>
+          </thead>
+          <tbody>
+            {events.map((event) => (
+              <tr key={event.eventId}>
+                <td><code>{event.eventId}</code></td>
+                <td>{event.tenantId}</td>
+                <td>{event.eventType}</td>
+                <td>{event.aggregateType}:{event.aggregateId}</td>
+                <td>{event.aggregateCode ?? event.code ?? '(missing)'}</td>
+                <td>{event.changeType}</td>
+                <td>{event.occurredAt}</td>
+                <td>{event.consumedAt}</td>
+              </tr>
+            ))}
+            {events.length === 0 && (
+              <tr>
+                <td colSpan="8" className="empty">
+                  Chưa có audit event trong phiên UI này hoặc tenant hiện tại chưa có event.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <p className="hint">
+        Sau khi create `master_data`, đợi một chút rồi bấm nút này. UI chỉ kết luận audit đã có khi API trả event thật.
+      </p>
+    </section>
+  );
+}
+
+function DemoChecklist({ authReady, apiBaseUrl, rows, auditEvents, lastResult }) {
+  const isKong = apiBaseUrl.trim() === 'http://localhost:18000';
+
+  return (
+    <section className="panel">
+      <div className="panel-heading">
+        <h2>Demo checklist</h2>
+        <span className="badge">Phase 1.5</span>
+      </div>
+      <ul className="checklist">
+        <li className={authReady ? 'done' : ''}>Login Keycloak</li>
+        <li className={isKong ? 'done' : ''}>API base là Kong `http://localhost:18000`</li>
+        <li className={rows.length > 0 ? 'done' : ''}>Load master data</li>
+        <li className={auditEvents.length > 0 ? 'done' : ''}>Load audit events</li>
+        <li className={lastResult?.requestId ? 'done' : ''}>Có requestId để kiểm log</li>
+      </ul>
+      <dl className="facts tool-links">
+        <dt>Kong</dt>
+        <dd>http://localhost:18000</dd>
+        <dt>Kafka UI</dt>
+        <dd>http://localhost:18082</dd>
+        <dt>Grafana logs</dt>
+        <dd>http://localhost:13001</dd>
+        <dt>Grafana metrics</dt>
+        <dd>http://localhost:13000</dd>
+      </dl>
+    </section>
+  );
+}
+
 export default function App() {
   const [authState, setAuthState] = useState(initialAuthState);
+  const [apiBaseUrl, setApiBaseUrl] = useState(config.apiBaseUrl);
   const [rows, setRows] = useState([]);
+  const [auditEvents, setAuditEvents] = useState([]);
   const [lookupCode, setLookupCode] = useState('LAPTOP-01');
   const [lookupResult, setLookupResult] = useState(null);
   const [form, setForm] = useState(defaultForm);
   const [lastResult, setLastResult] = useState(null);
+  const [postCreateHint, setPostCreateHint] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -380,7 +495,7 @@ export default function App() {
   }
 
   async function handleLoad() {
-    const result = await runRequest(loadMasterData);
+    const result = await runRequest(() => loadMasterData(apiBaseUrl.trim()));
     if (result?.ok && Array.isArray(result.data)) {
       setRows(result.data);
     }
@@ -393,7 +508,7 @@ export default function App() {
       return;
     }
 
-    const result = await runRequest(() => loadMasterDataByCode(code));
+    const result = await runRequest(() => loadMasterDataByCode(code, apiBaseUrl.trim()));
     if (result?.ok) {
       setLookupResult(result.data);
     }
@@ -401,10 +516,26 @@ export default function App() {
 
   async function handleCreate(event) {
     event.preventDefault();
-    const result = await runRequest(() => createMasterData(form));
+    setPostCreateHint('');
+    const result = await runRequest(() => createMasterData(form, apiBaseUrl.trim()));
     if (result?.ok) {
       setForm(defaultForm());
-      await handleLoad();
+      if (result.data) {
+        setRows((current) => {
+          if (result.data.id === undefined) {
+            return [result.data, ...current];
+          }
+          return [result.data, ...current.filter((row) => row.id !== result.data.id)];
+        });
+      }
+      setPostCreateHint('Nếu Kafka và audit-log-service đang chạy, đợi một chút rồi bấm Load audit events để xác nhận audit event đã được lưu.');
+    }
+  }
+
+  async function handleLoadAuditEvents() {
+    const result = await runRequest(() => loadAuditEvents(apiBaseUrl.trim()));
+    if (result?.ok && Array.isArray(result.data)) {
+      setAuditEvents(result.data);
     }
   }
 
@@ -442,13 +573,20 @@ export default function App() {
             }
           }}
         />
-        <ApiPanel />
+        <ApiPanel apiBaseUrl={apiBaseUrl} setApiBaseUrl={setApiBaseUrl} />
       </div>
 
       <StatusLine lastResult={lastResult} />
       {error && <pre className="error-box">{error}</pre>}
 
       <div className="grid">
+        <DemoChecklist
+          authReady={authReady}
+          apiBaseUrl={apiBaseUrl}
+          rows={rows}
+          auditEvents={auditEvents}
+          lastResult={lastResult}
+        />
         <MasterDataList rows={rows} onLoad={handleLoad} loading={loading} disabled={!authReady} />
         <MasterDataByCodeLookup
           code={lookupCode}
@@ -459,6 +597,8 @@ export default function App() {
           disabled={!authReady}
         />
         <CreateMasterDataForm form={form} setForm={setForm} onSubmit={handleCreate} loading={loading} disabled={!authReady} />
+        {postCreateHint && <p className="status status-ok">{postCreateHint}</p>}
+        <AuditEventsPanel events={auditEvents} onLoad={handleLoadAuditEvents} loading={loading} disabled={!authReady} />
       </div>
     </main>
   );

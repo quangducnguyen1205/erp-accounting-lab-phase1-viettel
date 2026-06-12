@@ -5,8 +5,8 @@ Mini-lab này là UI web rất nhỏ để nhìn được flow Phase 1:
 ```text
 React Web UI
 -> Keycloak login
--> Spring Cloud Gateway :8081
--> tenant-demo :8080
+-> Kong Gateway :18000
+-> tenant-demo :8080 / audit-log-service :8082
 -> PostgreSQL / Redis / Kafka / Observability
 ```
 
@@ -32,19 +32,19 @@ cp .env.example .env
 Giá trị mặc định:
 
 ```text
-VITE_API_BASE_URL=http://localhost:8081
+VITE_API_BASE_URL=http://localhost:18000
 VITE_KEYCLOAK_URL=http://localhost:18080
 VITE_KEYCLOAK_REALM=viettel-lab
 VITE_KEYCLOAK_CLIENT_ID=tenant-demo-web
 VITE_REQUEST_ID_PREFIX=web-demo
 ```
 
-`VITE_API_BASE_URL` trỏ tới Gateway, không trỏ trực tiếp tới `tenant-demo`.
+`VITE_API_BASE_URL` trỏ tới Gateway, không trỏ trực tiếp tới `tenant-demo` hoặc `audit-log-service`.
 
-Mặc định UI dùng Spring Cloud Gateway lab ở `http://localhost:8081`. Khi muốn thử Kong Gateway lab sau khi đã verify route bằng curl, có thể đổi:
+Mặc định Phase 1.5 dùng Kong Gateway ở `http://localhost:18000`. Spring Cloud Gateway lab cũ vẫn có thể chọn trong UI hoặc đổi env nếu cần so sánh:
 
 ```text
-VITE_API_BASE_URL=http://localhost:18000
+VITE_API_BASE_URL=http://localhost:8081
 ```
 
 ## Keycloak client cần chuẩn bị
@@ -153,20 +153,21 @@ Build output `dist/` chỉ nằm trong Docker image/layer; không commit `dist/`
    make infra-up
    ```
 
-2. Start `tenant-demo` ở Keycloak mode:
+2. Start `tenant-demo` ở Keycloak + Kafka mode:
 
    ```bash
    cd lab-code
-   make app-run
+   APP_AUTH_MODE=keycloak APP_MESSAGING_ENABLED=true KAFKA_BOOTSTRAP_SERVERS=localhost:19092 make app-run
    ```
 
    File `tenant-demo/.env` nên có `APP_AUTH_MODE=keycloak` và issuer URI đúng với Keycloak local.
 
-3. Start Gateway:
+3. Start audit service và Kong:
 
    ```bash
    cd lab-code
-   make gateway-run
+   make audit-log-up
+   make kong-up
    ```
 
 4. Start UI:
@@ -182,15 +183,34 @@ Build output `dist/` chỉ nằm trong Docker image/layer; không commit `dist/`
    - Bấm `Load master data`.
    - Bấm `Load by code` với một code có thật như `LAPTOP-01`.
    - Tạo record với code `UI-DEMO-*`.
+   - Đợi một chút rồi bấm `Load audit events`.
    - Xem `requestId` sau request.
-   - Đối chiếu log `tenant-demo` bằng requestId đó.
+   - Đối chiếu log `tenant-demo` và `audit-log-service` bằng requestId/event log.
 
 ## Quan sát backend integrations
 
 - PostgreSQL: record được lưu qua `tenant-demo`.
 - Redis: nếu cache enabled, dùng `Load by code` trên UI hoặc HTTP file cache để gọi cùng code hai lần và quan sát hit/miss bằng log/metric backend. UI không tự đoán cache status.
 - Kafka: create/update `master_data` phát `MasterDataChangedEvent` nếu messaging enabled.
+- Audit service: bấm `Load audit events` để đọc audit records qua Kong; tenant 2 không thấy audit event tenant 1.
 - Observability: Prometheus/Grafana quan sát metric từ `tenant-demo`, không phải UI gọi trực tiếp Prometheus/Grafana.
+
+## Audit events demo
+
+Section `Audit Events` gọi:
+
+```text
+GET ${VITE_API_BASE_URL}/api/audit-events
+```
+
+Expected behavior:
+
+| User | Expected |
+|---|---|
+| `tenant1-user/password` | Load/create master data được; load audit events tenant 1 được. |
+| `tenant2-user/password` | Load master data được; create trả `403`; không thấy audit events tenant 1. |
+
+UI không kết luận Kafka/audit thành công sau POST. Chỉ khi `GET /api/audit-events` trả event thật thì mới coi audit đã lưu.
 
 ## Debug login state
 

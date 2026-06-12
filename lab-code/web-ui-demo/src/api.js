@@ -26,7 +26,8 @@ export async function apiRequest(path, options = {}) {
   await refreshToken();
 
   const requestId = newRequestId();
-  const endpoint = `${config.apiBaseUrl}${path}`;
+  const apiBaseUrl = options.apiBaseUrl ?? config.apiBaseUrl;
+  const endpoint = `${apiBaseUrl}${path}`;
   const headers = {
     Authorization: `Bearer ${keycloak.token}`,
     'X-Request-Id': requestId,
@@ -56,17 +57,22 @@ export async function apiRequest(path, options = {}) {
   };
 }
 
-export function loadMasterData() {
-  return apiRequest('/api/master-data');
+export function loadMasterData(apiBaseUrl) {
+  return apiRequest('/api/master-data', { apiBaseUrl });
 }
 
-export function loadMasterDataByCode(code) {
-  return apiRequest(`/api/master-data/code/${encodeURIComponent(code)}`);
+export function loadMasterDataByCode(code, apiBaseUrl) {
+  return apiRequest(`/api/master-data/code/${encodeURIComponent(code)}`, { apiBaseUrl });
 }
 
-export function createMasterData(payload) {
+export function createMasterData(payload, apiBaseUrl) {
   return apiRequest('/api/master-data', {
+    apiBaseUrl,
     method: 'POST',
     body: payload
   });
+}
+
+export function loadAuditEvents(apiBaseUrl, limit = 20) {
+  return apiRequest(`/api/audit-events?limit=${encodeURIComponent(limit)}`, { apiBaseUrl });
 }

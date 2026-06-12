@@ -890,7 +890,7 @@ Caveat:
 
 - Kong lab chưa bật JWT/OIDC plugin, rate limit, consumer model hoặc mTLS;
 - Admin API không được expose public trong production;
-- React Web UI vẫn mặc định gọi Spring Cloud Gateway, có thể đổi `VITE_API_BASE_URL=http://localhost:18000` sau khi verify Kong.
+- React Web UI Phase 1.5 đã đổi mặc định sang Kong `VITE_API_BASE_URL=http://localhost:18000`; Spring Cloud Gateway vẫn giữ như legacy lab để so sánh concept.
 
 ### Service split được chọn
 
@@ -919,6 +919,7 @@ Trạng thái: đã thêm và verify service split đầu tiên ở `lab-code/au
 - full E2E đã chạy qua Kong: `tenant1-user` tạo `master_data` -> Kafka event -> audit service consume/store -> tenant 1 đọc được audit event;
 - tenant isolation đã verify: `tenant2-user` đọc audit list không thấy event tenant 1;
 - role behavior đã verify: `tenant2-user` VIEWER create `master_data` bị `403`, nên không tạo audit event cho action fail.
+- React Web UI đã có section `Audit Events` để gọi `GET /api/audit-events` qua Kong trong final demo.
 
 Caveat:
 

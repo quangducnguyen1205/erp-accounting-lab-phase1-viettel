@@ -13,11 +13,11 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | Phase 1 core done, Phase 1.5 service split verified |
+| **Tiến độ** | Phase 1 core done, Phase 1.5 final UI route in polish |
 | **Tổng task** | 111 |
-| **Đã hoàn thành** | 109 / 111 |
-| **Focus hiện tại** | Phase 1.5 - final React Web polish sau service split |
-| **Milestone tiếp theo** | #23 - thêm audit-events screen / Kong base URL option cho final UI |
+| **Đã hoàn thành** | 110 / 111 |
+| **Focus hiện tại** | Phase 1.5 - final demo dry-run |
+| **Milestone tiếp theo** | #24 - final demo script hardening / optional UI visual polish |
 | **Demo hiện tại** | React Web UI -> Keycloak -> Gateway -> tenant-demo -> PostgreSQL/Redis/Kafka/Observability; Elasticsearch/MinIO qua HTTP mini-lab |
 
 Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; Milestone #14 đã chốt Redis cache-aside tenant-safe read path; Milestone #15 đã chốt Kafka/async messaging reference flow nhỏ; Milestone #16 đã chốt Observability baseline với Actuator, request logging, Micrometer metrics và Prometheus/Grafana local lab. Milestone #17 đã chốt API Gateway static route và React Web UI Docker-first để nhìn flow end-to-end. React Native/Expo không thuộc repo này.
@@ -156,7 +156,7 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 | Temporary JWT auth | Core bridge | `docs/05-security/jwt-spring-security-temporary.md` | `SecurityConfig`, `JwtTokenService`, `JwtTenantContextFilter` | MockMvc + HTTP valid/invalid JWT | #5 | Đã đóng |
 | Keycloak/OAuth2/OIDC | Mini-lab AuthN/token validation | `docs/05-security/keycloak-oidc-mental-model.md`, `docs/05-security/keycloak-oauth2-oidc-awareness.md`, `docs/05-security/keycloak-admin-console-guide.md` | `lab-code/keycloak-lab/`, `APP_AUTH_MODE=keycloak` | Lấy token Keycloak, gọi API tenant-aware, verify issuer/JWKS/claims | #9 | Đã verify mini-lab |
 | Keycloak Authorization / RBAC / tenant-scope | Mini-lab đã verify | `docs/05-security/keycloak-authorization-rbac-tenant-scope.md`, `docs/05-security/keycloak-authorization-code-guide-spring-boot.md` | Role claim, Spring Security authorities converter, endpoint/service authorization nhỏ | Allowed role `200`, missing role `403`, cross-tenant vẫn `404`/không leak | #12 | Đã đóng |
-| React Web frontend | Thin demo Docker-first | `docs/06-frontend/react-web-keycloak-gateway-demo.md` | `lab-code/web-ui-demo/` gọi Gateway bằng Keycloak token | Login Keycloak, ACCOUNTANT load/create, VIEWER load nhưng create `403`, requestId nối log | #17 | Đã verify demo |
+| React Web frontend | Thin demo Docker-first | `docs/06-frontend/react-web-keycloak-gateway-demo.md` | `lab-code/web-ui-demo/` gọi Kong bằng Keycloak token | Login Keycloak, ACCOUNTANT load/create/load audit events, VIEWER load nhưng create `403`, requestId nối log | #17/#23 | Đã update Phase 1.5 demo |
 | API Gateway/service discovery/load balancer | Mini-lab static route + awareness | `docs/07-architecture/api-gateway-service-discovery/api-gateway-foundation.md`, `docs/07-architecture/api-gateway-service-discovery/service-discovery-load-balancing-awareness.md` | `lab-code/gateway-demo/` route `/api/**` tới `tenant-demo` | Gateway forward Authorization + X-Request-Id, backend vẫn validate token/tenant | #17 | Đã đóng |
 | Elasticsearch / Elastic Stack | Mini-lab đã verify | `docs/07-architecture/search-elasticsearch/elasticsearch-search-service.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-request-response-shapes.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-code-guide-spring-boot.md` | `lab-code/elasticsearch-lab/` + `com.viettel.demo.search` | Search tenant 1/2, no leakage | #11 | Đã đóng |
 | MinIO / S3 object storage | Mini-lab đã verify | `docs/07-architecture/object-storage-minio/minio-object-storage.md`, `docs/07-architecture/object-storage-minio/minio-s3-api-shapes.md`, `docs/07-architecture/object-storage-minio/minio-code-guide-spring-boot.md` | upload/download mini-lab | HTTP upload/download + tenant metadata | #13 | Đã đóng |
@@ -444,7 +444,7 @@ Phase 1.5 bắt đầu sau buổi báo cáo mentor Đạt ngày 11/06/2026. Mụ
 | 3 | Kong Gateway | Practice gateway platform gần target architecture | `docs/07-architecture/kong-gateway/`, `lab-code/kong-gateway-lab/` | Route `/api/master-data/**` và `/api/audit-events/**`, giữ auth/requestId | Implemented local lab |
 | 4 | Audit Log Service split | Tạo service thứ hai có trách nhiệm rõ | `docs/07-architecture/microservice-boundaries/`, `lab-code/audit-log-service/` | `master-data-service` publish event, `audit-log-service` consume và lưu/log audit | Verified |
 | 5 | Cross-service Kafka flow | Biến Kafka thành event giữa services | `MasterDataChangedEvent` từ service A sang service B | Kafka UI thấy event, audit service log/store được, không dùng Kafka như database | Verified |
-| 6 | Final React Web polish | UI demo sau khi backend boundaries ổn | `lab-code/web-ui-demo/` | UI gọi Kong, load/create master data, xem audit nếu endpoint có thật | Next |
+| 6 | Final React Web polish | UI demo sau khi backend boundaries ổn | `lab-code/web-ui-demo/` | UI gọi Kong, load/create master data, xem audit events qua Kong | Implemented, manual browser dry-run next |
 
 ### Service split được chọn
 
@@ -510,7 +510,7 @@ Các split chưa chọn ngay:
 
 ## Việc làm ngay trong 1-2 ngày tới
 
-### Task tiếp theo: Phase 1 final demo dry-run
+### Task tiếp theo: Phase 1.5 final demo dry-run
 
 1. Đọc:
    - `docs/99-tong-ket/phase1-final-demo-script.md`.
@@ -521,11 +521,12 @@ Các split chưa chọn ngay:
    - `Valid redirect URIs = http://localhost:5173/*`;
    - `Web origins = http://localhost:5173`;
    - `tenant1-user` có role `ACCOUNTANT`, `tenant2-user` có role `VIEWER`.
-3. Chạy `tenant-demo` ở `8080`, gateway ở `8081`, React Web UI ở `5173`, rồi dry-run script:
-   - ACCOUNTANT load/create qua Gateway;
+3. Chạy `tenant-demo` ở `8080`, audit-log-service ở `8082`, Kong ở `18000`, React Web UI ở `5173`, rồi dry-run script:
+   - ACCOUNTANT load/create qua Kong;
+   - load audit events qua Kong;
    - VIEWER load được nhưng create trả `403`;
-   - `X-Request-Id` trên UI xuất hiện trong log `tenant-demo`;
-   - Redis/Kafka/Observability quan sát qua backend nếu feature flag tương ứng bật.
+   - `X-Request-Id` trên UI xuất hiện trong log `tenant-demo`/`audit-log-service`;
+   - Redis/Kafka/Kafka UI/Observability quan sát qua backend nếu feature flag tương ứng bật.
 4. Dùng infra chung khi cần demo nhiều thành phần, hoặc target riêng khi chỉ test từng lab:
 
 ```bash

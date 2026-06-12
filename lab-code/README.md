@@ -9,12 +9,12 @@ Phase 1 hiện có đường demo end-to-end:
 ```text
 React Web UI
 -> Keycloak login
--> Spring Cloud Gateway
--> tenant-demo backend
+-> Kong Gateway
+-> tenant-demo backend + audit-log-service
 -> PostgreSQL / Redis / Kafka / Observability
 ```
 
-Elasticsearch và MinIO đã có HTTP mini-lab riêng. UI không gọi trực tiếp PostgreSQL, Redis, Kafka, MinIO, Prometheus hoặc Grafana trong business flow.
+Spring Cloud Gateway vẫn được giữ như lab gateway concept cũ; Phase 1.5 final demo mặc định dùng Kong. Elasticsearch và MinIO đã có HTTP mini-lab riêng. UI không gọi trực tiếp PostgreSQL, Redis, Kafka, MinIO, Prometheus hoặc Grafana trong business flow.
 
 Phase 1.5 đã bắt đầu chuyển một số stub thành runtime lab:
 
@@ -23,7 +23,7 @@ Phase 1.5 đã bắt đầu chuyển một số stub thành runtime lab:
 - `kong-gateway-lab/`: Kong DB-less/declarative gateway lab.
 - `audit-log-service/`: service split đầu tiên, consume Kafka event và expose audit API.
 
-`loki-lab/`, `kafka-ui-lab/`, `kong-gateway-lab/` và `audit-log-service/` đã có Docker Compose và Makefile targets riêng. Cross-service Kafka flow đã verify; bước tiếp theo là polish React Web UI để đọc audit events qua Kong nếu cần demo trực quan hơn.
+`loki-lab/`, `kafka-ui-lab/`, `kong-gateway-lab/` và `audit-log-service/` đã có Docker Compose và Makefile targets riêng. Cross-service Kafka flow đã verify; React Web UI đã có đường gọi Kong và section đọc audit events cho final demo.
 
 ## Nguyên tắc tối thượng
 
@@ -134,4 +134,4 @@ make app-run
 
 Mục tiêu là giữ từng mini-lab cô lập được, nhưng vẫn có một đường nhanh để bật hạ tầng demo chung.
 
-React Web UI demo nằm ở `web-ui-demo/`. UI chạy bằng Docker, gọi Gateway, và không gọi trực tiếp PostgreSQL/Redis/Kafka/MinIO/Prometheus/Grafana trong business flow.
+React Web UI demo nằm ở `web-ui-demo/`. UI chạy bằng Docker, mặc định gọi Kong Gateway, và không gọi trực tiếp PostgreSQL/Redis/Kafka/MinIO/Prometheus/Grafana trong business flow.

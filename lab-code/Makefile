@@ -341,7 +341,7 @@ web-ui-info: ## In hướng dẫn chạy React Web UI demo bằng Docker
 	@echo "Build kiểm tra:"
 	@echo "  make web-ui-build"
 	@echo ""
-	@echo "Mặc định UI mở ở http://localhost:5173 và gọi Gateway http://localhost:8081"
+	@echo "Mặc định UI mở ở http://localhost:5173 và gọi Kong Gateway http://localhost:18000"
 
 .PHONY: web-ui-build
 web-ui-build: ## Build React Web UI demo bằng Docker

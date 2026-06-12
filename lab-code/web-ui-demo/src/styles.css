@@ -148,6 +148,10 @@ input {
   margin: 12px 0 0;
 }
 
+.inline-hint {
+  margin-top: 4px;
+}
+
 .warning-box {
   background: #fff8c5;
   border: 1px solid #d4a72c;
@@ -245,6 +249,46 @@ th {
   border: 1px solid #e5ebf1;
   border-radius: 8px;
   padding: 12px;
+}
+
+.preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.checklist {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.checklist li {
+  border: 1px solid #e5ebf1;
+  border-radius: 6px;
+  color: #5e6b78;
+  padding: 8px 10px;
+}
+
+.checklist li::before {
+  content: "○";
+  margin-right: 8px;
+}
+
+.checklist li.done {
+  border-color: #b6e3c6;
+  color: #1a7f37;
+}
+
+.checklist li.done::before {
+  content: "✓";
+}
+
+.tool-links {
+  grid-template-columns: 120px minmax(0, 1fr);
 }
 
 .check-row {

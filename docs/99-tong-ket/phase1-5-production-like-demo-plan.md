@@ -10,8 +10,9 @@ Hiện repo đã có:
 
 - React Web UI Docker-first login Keycloak và gọi Gateway.
 - Keycloak/OIDC/RBAC local lab, đã bổ sung PostgreSQL persistence và bootstrap script để demo dễ tái tạo.
-- Spring Cloud Gateway static route đến `tenant-demo`.
+- Spring Cloud Gateway static route lab để học route/filter concept, và Kong Gateway DB-less lab làm gateway chính cho Phase 1.5.
 - `tenant-demo` Spring Boot backend: tenant-aware `master_data`, PostgreSQL/Flyway, Redis cache-aside, Kafka producer/consumer, MinIO, Elasticsearch, Actuator/logging/Micrometer.
+- `audit-log-service`: service split đầu tiên, consume Kafka event và expose read-only audit API theo tenant.
 - Prometheus/Grafana local lab cho metrics.
 - Docker-first workflow qua `lab-code/Makefile`.
 
@@ -20,8 +21,9 @@ Flow hiện tại:
 ```text
 React Web
 -> Keycloak
--> Spring Cloud Gateway
--> tenant-demo
+-> Kong Gateway
+  -> tenant-demo
+  -> audit-log-service
 -> PostgreSQL / Redis / Kafka / MinIO / Elasticsearch / Actuator metrics
 -> Prometheus/Grafana
 ```
@@ -109,8 +111,8 @@ Lý do chính:
 2. **Kafka UI lab**: đã có local Docker lab để inspect broker/topic/message/consumer group trước khi split service.
 3. **Kong Gateway lab**: đã có DB-less/declarative route `/api/master-data/**` và `/api/audit-events/**`.
 4. **Audit-log-service skeleton + implementation**: đã có service nhỏ consume Kafka event, có schema audit riêng, logs và read API.
-5. **Cross-service Kafka verification**: bước kế tiếp, create/update master data -> event -> audit service consumed/stored/logged.
-6. **Final React Web polish**: UI gọi Kong, có route xem audit nếu API thật đã có.
+5. **Cross-service Kafka verification**: đã verify create master data -> event -> audit service consumed/stored/logged.
+6. **Final React Web polish**: UI gọi Kong, có section xem audit events qua audit API.
 
 ## 8. Non-goals
 
@@ -123,6 +125,6 @@ Lý do chính:
 
 ## 9. Suggested next Codex task
 
-> Polish React Web UI to read audit events through Kong and make the final demo route easier to present.
+> Final demo dry-run and optional visual polish after the React Web UI audit events section.
 
 Lý do: Loki/log aggregation, Kafka UI, Kong Gateway và `audit-log-service` đã có nền local. Cross-service Kafka flow đã verify: create `master_data` qua Kong -> tenant-demo publish Kafka event -> audit-log-service consume/store -> đọc audit event qua Kong theo tenant.
