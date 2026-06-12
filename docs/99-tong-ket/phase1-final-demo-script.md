@@ -103,9 +103,14 @@ Grafana local dùng `admin/admin` chỉ cho lab local.
 ```logql
 {service=~"tenant-demo|audit-log-service|kong-gateway|web-ui-demo"}
 {service=~"tenant-demo|audit-log-service|kong-gateway"} |= "requestId="
+{service=~"tenant-demo|audit-log-service|kong-gateway"} |= "UI-DEMO"
 ```
 
 Điểm cần nói: UI gọi Kong Gateway, Gateway forward `Authorization` và `X-Request-Id`; từng backend service vẫn validate JWT, map role, set tenant context và query tenant-aware.
+
+Nếu cần demo riêng cách đọc log, dùng guide:
+
+- `docs/07-architecture/log-aggregation-loki/how-to-read-logs-in-grafana.md`
 
 ### B. Redis cache-aside
 

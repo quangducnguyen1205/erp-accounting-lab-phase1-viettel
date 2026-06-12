@@ -8,7 +8,8 @@ Nhóm này chuẩn bị mini-lab centralized logging cho Phase 1.5. Mục tiêu 
 
 1. [loki-foundation.md](loki-foundation.md) - Loki là gì, collector/agent, Grafana Explore, labels, Promtail/Alloy caveat.
 2. [loki-local-lab-config-walkthrough.md](loki-local-lab-config-walkthrough.md) - giải thích từng file config trong `lab-code/loki-lab/` và log flow Docker -> Alloy -> Loki -> Grafana.
-3. [../../../lab-code/loki-lab/README.md](../../../lab-code/loki-lab/README.md) - command chạy lab, URL, query mẫu và cleanup.
+3. [how-to-read-logs-in-grafana.md](how-to-read-logs-in-grafana.md) - cách đọc log trong Grafana Explore theo service/layer/requestId/business code/status.
+4. [../../../lab-code/loki-lab/README.md](../../../lab-code/loki-lab/README.md) - command chạy lab, URL, query mẫu và cleanup.
 
 ## Trạng thái
 
@@ -41,12 +42,14 @@ http://localhost:13001
 Vào `Explore`, chọn datasource `Loki`, query ví dụ:
 
 ```logql
-{service="web-ui-demo"}
-{container="viettel-web-ui-demo"}
-{service="web-ui-demo"} |= "web-demo"
+{service=~"tenant-demo|audit-log-service|kong-gateway|web-ui-demo"}
+{service="tenant-demo"}
+{service=~"tenant-demo|audit-log-service|kong-gateway"} |= "requestId="
 ```
 
-Lưu ý: Alloy Docker collector chỉ đọc Docker container logs. `tenant-demo` và `gateway-demo` nếu chạy bằng Maven trên host thì log vẫn nằm ở terminal host cho tới khi có Dockerized run path hoặc file-log collector.
+Xem thêm guide thực hành: [how-to-read-logs-in-grafana.md](how-to-read-logs-in-grafana.md).
+
+Lưu ý: lab dùng mô hình hybrid. Docker services được collect từ stdout; `tenant-demo` host Maven được collect qua file `lab-code/logs/tenant-demo.log` khi chạy `make app-run-logs`.
 
 ## Caveat
 

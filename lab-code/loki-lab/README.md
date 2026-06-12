@@ -158,9 +158,16 @@ http://localhost:13001
 {service="web-ui-demo"} |= "web-demo"
 {service=~"tenant-demo|audit-log-service|kong-gateway"} |= "requestId="
 {service=~"tenant-demo|audit-log-service|kong-gateway"} |= "UI-LOKI-E2E"
+{service=~"tenant-demo|audit-log-service|kong-gateway"} |= "LOKI-WATCH"
+{service="tenant-demo"} |= "409"
+{service=~"tenant-demo|kong-gateway"} |= "403"
 ```
 
 Với `tenant-demo`, query chỉ có log nếu app được chạy bằng `make app-run-logs`.
+
+Nếu muốn đọc log theo đúng cách demo backend engineer, xem:
+
+- `docs/07-architecture/log-aggregation-loki/how-to-read-logs-in-grafana.md`
 
 ## Cleanup
 

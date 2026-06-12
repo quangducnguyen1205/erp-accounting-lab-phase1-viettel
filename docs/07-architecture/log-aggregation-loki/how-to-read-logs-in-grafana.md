@@ -1,0 +1,162 @@
+# How to read logs in Grafana Loki
+
+Mục tiêu của guide này không phải học thêm tool mới, mà là biết cách một backend engineer đọc log khi một request đi qua nhiều lớp: Gateway -> business service -> Kafka -> consumer service.
+
+## Mở Grafana Explore
+
+1. Mở `http://localhost:13001`.
+2. Login local lab: `admin / admin`.
+3. Vào `Explore`.
+4. Chọn datasource `Loki`.
+5. Chọn time range ngắn, ví dụ `Last 15 minutes`, để log dễ đọc.
+
+## Query theo service
+
+Query tổng hợp các service chính:
+
+```logql
+{service=~"tenant-demo|audit-log-service|kong-gateway|web-ui-demo"}
+```
+
+Query này hữu ích để biết hệ thống còn đang phát log không, nhưng thường hơi nhiễu để debug sâu.
+
+Gateway layer:
+
+```logql
+{service="kong-gateway"}
+```
+
+Dùng query này khi frontend báo API lỗi. Gateway log cho biết request có tới gateway không, method/path/status là gì, và Kong trả gì cho client.
+
+Business service:
+
+```logql
+{service="tenant-demo"}
+```
+
+Trong repo này, `tenant-demo` thường chạy bằng Maven/IntelliJ trên host. Khi chạy `make app-run-logs`, app ghi vào `lab-code/logs/tenant-demo.log`; Alloy tail file đó vào Loki với `source="file"`. Đây là nơi xem auth/RBAC, tenant context, DB operation, Redis cache, Kafka publish.
+
+Async consumer service:
+
+```logql
+{service="audit-log-service"}
+```
+
+Dùng query này để xem event Kafka đã được consume/store chưa, hoặc audit API có trả theo tenant đúng không.
+
+Frontend container:
+
+```logql
+{service="web-ui-demo"}
+```
+
+Đây chủ yếu là log Vite/container. Browser JavaScript console vẫn nằm ở trình duyệt, không tự đi vào Loki.
+
+## Trace theo business code hoặc event
+
+Với demo, cách dễ nhất là tạo code như `LOKI-WATCH-*` hoặc `LOKI-DEMO-*`, rồi search text:
+
+```logql
+{service=~"tenant-demo|audit-log-service|kong-gateway"} |= "LOKI-WATCH"
+```
+
+Nếu dùng code cụ thể:
+
+```logql
+{service=~"tenant-demo|audit-log-service|kong-gateway"} |= "LOKI-DEMO-1781306213"
+```
+
+Cách này thường dễ hơn requestId trong flow async, vì event Kafka không tự động mang MDC/requestId qua process khác nếu mình chưa thiết kế propagation.
+
+## Trace theo requestId
+
+Request logging filter ghi `requestId` trong log message:
+
+```logql
+{service=~"tenant-demo|audit-log-service|kong-gateway"} |= "requestId="
+```
+
+Nếu UI hiển thị một request id cụ thể, search:
+
+```logql
+{service=~"tenant-demo|audit-log-service|kong-gateway"} |= "web-demo-..."
+```
+
+RequestId tốt nhất cho một HTTP request đồng bộ. Với Kafka async, có thể cần eventId hoặc business code để nối producer và consumer.
+
+## Debug theo status/error
+
+Duplicate code:
+
+```logql
+{service="tenant-demo"} |= "409"
+```
+
+Ý nghĩa: duplicate `master_data.code` đã được map thành API conflict, không còn là server crash `500`.
+
+Viewer forbidden:
+
+```logql
+{service=~"tenant-demo|kong-gateway"} |= "403"
+```
+
+Ý nghĩa: user đã authenticated nhưng không đủ quyền tạo master data.
+
+Quick error scan:
+
+```logql
+{service=~"tenant-demo|audit-log-service|kong-gateway"} |= "ERROR"
+```
+
+Nếu không có kết quả trong window đang xem, đó thường là tín hiệu tốt. Nhưng WARN/ERROR cũ vẫn có thể còn trong Loki volume nếu service từng bị tắt dependency.
+
+## Query theo source
+
+Host file logs:
+
+```logql
+{source="file"}
+```
+
+Hiện chủ yếu là `tenant-demo` khi chạy `make app-run-logs`.
+
+Docker stdout logs:
+
+```logql
+{source="docker"}
+```
+
+Gồm `audit-log-service`, `kong-gateway`, `web-ui-demo` và các container khác có label phù hợp.
+
+## Label vs text search
+
+Nên dùng label ít biến động:
+
+- `service`
+- `source`
+- `environment`
+- `container`
+- `filename`
+- `job`
+
+Không dùng các giá trị sau làm label:
+
+- `requestId`
+- `tenantId`
+- `userId`
+- code nghiệp vụ
+- token
+- object key
+
+Lý do: chúng có cardinality cao hoặc nhạy cảm. Hãy để chúng trong log message và search bằng `|=`.
+
+## Debug flow gợi ý
+
+1. Bắt đầu từ `{service="kong-gateway"}` để xem request có tới gateway không.
+2. Sang `{service="tenant-demo"}` để xem backend auth, tenant, DB, Kafka publish.
+3. Sang `{service="audit-log-service"}` để xem Kafka consume/store.
+4. Search theo code/eventId nếu flow async.
+5. Search theo requestId nếu đang debug một HTTP request cụ thể.
+6. Search `409`, `403`, `ERROR` khi cần xem lỗi.
+
+Đây là cách đọc log thực dụng: đi từ lớp ngoài vào lớp trong, rồi nối các dòng log bằng requestId hoặc business key.
