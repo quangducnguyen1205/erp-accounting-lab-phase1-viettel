@@ -18,11 +18,13 @@ Nếu chưa chắc realm/client/user/mapper/JWKS liên hệ với Spring Boot nh
 docs/05-security/keycloak-oidc-mental-model.md
 ```
 
-## Chạy Keycloak
+## Chạy Keycloak persistent local
 
 ```bash
-cd lab-code/keycloak-lab
-docker compose up -d
+cd lab-code
+make keycloak-up
+make keycloak-setup
+make keycloak-status
 ```
 
 Admin console:
@@ -37,13 +39,60 @@ Dev-only admin:
 admin / admin
 ```
 
-Dừng lab:
+`keycloak-lab` hiện dùng PostgreSQL riêng cho Keycloak, có named volume để realm/client/user không mất khi dừng container.
+
+Dừng lab nhưng giữ dữ liệu:
 
 ```bash
-docker compose down
+make keycloak-down
 ```
 
-## Thiết lập thủ công trong Admin Console
+Xem log:
+
+```bash
+make keycloak-logs
+```
+
+Reset phá dữ liệu có chủ đích:
+
+```bash
+make keycloak-reset
+make keycloak-up
+make keycloak-setup
+```
+
+`keycloak-reset` xóa volume PostgreSQL của Keycloak local. Chỉ dùng khi thật sự muốn tạo lại realm/client/user từ đầu.
+
+## Bootstrap tự động
+
+Script:
+
+```text
+lab-code/keycloak-lab/setup-keycloak-demo.sh
+```
+
+tạo/cập nhật:
+
+- realm `viettel-lab`;
+- API client `tenant-demo-api-client`;
+- Web public client `tenant-demo-web`;
+- roles `ADMIN`, `ACCOUNTANT`, `VIEWER`;
+- users:
+  - `tenant1-user / password`, `tenant_id=1`, role `ACCOUNTANT`;
+  - `tenant2-user / password`, `tenant_id=2`, role `VIEWER`;
+- User Profile attribute `tenant_id` cho Keycloak 26.x;
+- protocol mapper `tenant_id` cho access token.
+
+Script dùng `kcadm.sh` bên trong container Keycloak. Re-run được ở mức local lab, không phải production config migration tool.
+
+Doc chi tiết:
+
+```text
+docs/07-architecture/overview/keycloak-local-persistence-and-bootstrap.md
+docs/07-architecture/overview/keycloak-lab-config-walkthrough.md
+```
+
+## Thiết lập thủ công trong Admin Console nếu cần hiểu UI
 
 ### 1. Tạo realm
 
@@ -197,15 +246,17 @@ Ghi chú Keycloak 26.x: nếu custom user attribute như `tenant_id` không lưu
 - [x] Keycloak chạy ở `localhost:18080`.
 - [x] Realm `viettel-lab` tồn tại.
 - [x] Client `tenant-demo-api-client` lấy được token.
+- [x] Web client `tenant-demo-web` dùng được cho React Web UI local.
 - [x] Token tenant 1 có `tenant_id = 1`.
 - [x] Token tenant 2 có `tenant_id = 2`.
 - [x] Mở được `.well-known/openid-configuration` và chỉ ra `issuer`, `jwks_uri`.
 - [x] `tenant-demo` gọi được bằng Keycloak token khi chạy `APP_AUTH_MODE=keycloak`.
 - [x] Giải thích được khác biệt giữa JWT tạm và Keycloak/OIDC.
+- [x] Keycloak local có persistent PostgreSQL volume và bootstrap script.
 
 ## Giới hạn của lab hiện tại
 
-- Realm/client/user được tạo thủ công, chưa có realm import/export chuẩn.
+- Realm/client/user được bootstrap bằng script local, chưa phải realm import/export/IaC production.
 - Password grant/direct access grants chỉ dùng để học local nhanh.
-- Chưa làm HTTPS, key rotation, RBAC role matrix, production Keycloak database/cluster.
-- Nếu chạy `docker compose down` và môi trường không persist volume, có thể phải tạo lại realm/client/user.
+- Chưa làm HTTPS, key rotation, RBAC role matrix, production Keycloak cluster/hardening.
+- `keycloak-reset` sẽ xóa volume và cần chạy lại `make keycloak-setup`.

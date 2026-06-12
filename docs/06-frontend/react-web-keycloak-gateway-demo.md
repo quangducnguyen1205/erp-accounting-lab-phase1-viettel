@@ -73,7 +73,15 @@ UI không gọi trực tiếp Redis, Kafka, PostgreSQL, MinIO, Prometheus hoặc
 
 ## Keycloak setup tối thiểu
 
-Trong realm `viettel-lab`, tạo public client:
+Đường khuyến nghị hiện tại là chạy bootstrap local:
+
+```bash
+cd lab-code
+make keycloak-up
+make keycloak-setup
+```
+
+Bootstrap tạo realm `viettel-lab`, API client `tenant-demo-api-client`, Web public client `tenant-demo-web`, users/roles và mapper `tenant_id`. Nếu cần debug bằng Admin Console, cấu hình tối thiểu cho Web client là:
 
 | Setting | Giá trị gợi ý |
 |---|---|
@@ -93,7 +101,15 @@ Token cần có:
 
 Nếu thiếu `tenant_id`, backend nên fail rõ ở tenant context flow.
 
-Nếu reset volume Keycloak, cấu hình lại web client theo checklist ngắn:
+Nếu reset volume Keycloak, chạy lại:
+
+```bash
+cd lab-code
+make keycloak-up
+make keycloak-setup
+```
+
+Nếu làm thủ công, checklist ngắn:
 
 1. Realm: `viettel-lab`.
 2. Client: `tenant-demo-web`.

@@ -15,14 +15,14 @@
 |--------|:-------:|
 | **Tiến độ** | Phase 1 core done, Phase 1.5 implementation started |
 | **Tổng task** | 110 |
-| **Đã hoàn thành** | 104 / 110 |
-| **Focus hiện tại** | Phase 1.5 - centralized logs + runtime tooling |
-| **Milestone tiếp theo** | #19 - Kafka UI inspection |
+| **Đã hoàn thành** | 105 / 110 |
+| **Focus hiện tại** | Phase 1.5 - runtime tooling trước khi split service |
+| **Milestone tiếp theo** | #20 - Kong Gateway runtime lab |
 | **Demo hiện tại** | React Web UI -> Keycloak -> Gateway -> tenant-demo -> PostgreSQL/Redis/Kafka/Observability; Elasticsearch/MinIO qua HTTP mini-lab |
 
 Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; Milestone #14 đã chốt Redis cache-aside tenant-safe read path; Milestone #15 đã chốt Kafka/async messaging reference flow nhỏ; Milestone #16 đã chốt Observability baseline với Actuator, request logging, Micrometer metrics và Prometheus/Grafana local lab. Milestone #17 đã chốt API Gateway static route và React Web UI Docker-first để nhìn flow end-to-end. React Native/Expo không thuộc repo này.
 
-Ghi chú 11/06 sau khi báo cáo mentor Đạt: Phase 1 core learning coi như đủ nền. Phase 1.5 sẽ đi theo hướng demo production-like hơn: centralized logs bằng Loki/Grafana, Kafka UI, Kong Gateway, tách thêm `audit-log-service`, Kafka cross-service flow, rồi mới polish React Web UI cuối.
+Ghi chú 11/06 sau khi báo cáo mentor Đạt: Phase 1 core learning coi như đủ nền. Phase 1.5 sẽ đi theo hướng demo production-like hơn: centralized logs bằng Loki/Grafana, Kafka UI, Kong Gateway, tách thêm `audit-log-service`, Kafka cross-service flow, rồi mới polish React Web UI cuối. Keycloak local đã được chuyển sang persistent DB + bootstrap script để demo không phụ thuộc thao tác tạo realm/client/user thủ công sau mỗi lần reset.
 
 ---
 
@@ -440,8 +440,8 @@ Phase 1.5 bắt đầu sau buổi báo cáo mentor Đạt ngày 11/06/2026. Mụ
 | Thứ tự | Milestone | Mục tiêu | Artifact chính | Done criteria | Trạng thái |
 |---:|---|---|---|---|---|
 | 1 | Loki/log aggregation | Gom Docker container logs vào Grafana Explore | `docs/07-architecture/log-aggregation-loki/`, `lab-code/loki-lab/` | Loki ready, Grafana datasource provisioned, query logs theo service/container/requestId text | Implemented local lab |
-| 2 | Kafka UI | Nhìn topic/message/consumer group/lag thay vì chỉ đọc log | `docs/07-architecture/kafka-ui/`, `lab-code/kafka-ui-lab/` | Mở UI thấy `master-data-events`, message key/value, consumer group | Planned |
-| 3 | Kong Gateway | Practice gateway platform gần target architecture | `docs/07-architecture/kong-gateway/`, `lab-code/kong-gateway-lab/` | Route `/api/master-data/**`, sau này `/api/audit/**`, giữ auth/requestId | Planned |
+| 2 | Kafka UI | Nhìn topic/message/consumer group/lag thay vì chỉ đọc log | `docs/07-architecture/kafka-ui/`, `lab-code/kafka-ui-lab/` | Mở UI thấy broker/topic/message/consumer group; sẵn sàng inspect `MasterDataChangedEvent` | Implemented local lab |
+| 3 | Kong Gateway | Practice gateway platform gần target architecture | `docs/07-architecture/kong-gateway/`, `lab-code/kong-gateway-lab/` | Route `/api/master-data/**`, sau này `/api/audit/**`, giữ auth/requestId | Next |
 | 4 | Audit Log Service split | Tạo service thứ hai có trách nhiệm rõ | `docs/07-architecture/microservice-boundaries/`, `lab-code/audit-log-service/` sau này | `master-data-service` publish event, `audit-log-service` consume và lưu/log audit | Planned |
 | 5 | Cross-service Kafka flow | Biến Kafka thành event giữa services | `MasterDataChangedEvent` từ service A sang service B | Kafka UI thấy event, audit service log/store được, không dùng Kafka như database | Planned |
 | 6 | Final React Web polish | UI demo sau khi backend boundaries ổn | `lab-code/web-ui-demo/` | UI gọi Kong, load/create master data, xem audit nếu endpoint có thật | Planned |

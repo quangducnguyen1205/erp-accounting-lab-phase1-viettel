@@ -22,3 +22,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    networks:
+      - kafka-net
+
+networks:
+  kafka-net:
+    name: viettel-kafka-net

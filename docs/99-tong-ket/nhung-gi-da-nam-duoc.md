@@ -839,6 +839,38 @@ Caveat:
 - chưa có tracing, alerting, production retention, masking PII/secrets hoặc multi-tenant log isolation;
 - Loki lab không thay thế Prometheus metrics lab, mà bổ sung phần "what happened?".
 
+### Keycloak local persistence/bootstrap
+
+Trạng thái: Keycloak local đã chuyển từ setup dễ mất sang demo infrastructure bền hơn.
+
+Đã có:
+
+- PostgreSQL container riêng cho Keycloak trong `lab-code/keycloak-lab/`;
+- named volume giữ realm/client/user/role sau `make keycloak-down`;
+- script `setup-keycloak-demo.sh` tạo/cập nhật realm `viettel-lab`, API client, Web client, roles, users và mapper `tenant_id`;
+- target `make keycloak-setup` để tái tạo cấu hình sau khi reset volume.
+
+Caveat:
+
+- vẫn là Keycloak `start-dev` local, không phải production IAM;
+- `keycloak-reset` là lệnh destructive, phải chạy lại bootstrap sau reset.
+
+### Kafka UI local lab
+
+Trạng thái: đã có Docker-first Kafka UI lab ở `lab-code/kafka-ui-lab/`.
+
+Đã nắm được:
+
+- Kafka UI kết nối Kafka broker qua Docker network `viettel-kafka-net`;
+- container Kafka UI phải dùng bootstrap server `kafka:9092`, không dùng `localhost:19092`;
+- UI giúp xem broker, topic, partition, offset, key/value, consumer group và lag;
+- dùng để inspect `MasterDataChangedEvent` trước khi tách `audit-log-service`.
+
+Caveat:
+
+- Kafka UI là local/dev inspection tool, không expose public nếu chưa có auth/network control;
+- message payload có thể nhạy cảm, nên event không được chứa secret/token.
+
 ### Service split được chọn
 
 Chọn `audit-log-service` làm service thứ hai vì:

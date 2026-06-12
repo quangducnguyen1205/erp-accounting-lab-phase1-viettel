@@ -55,7 +55,7 @@ Sau feedback mentor ngày 11/06/2026, Phase 1.5 sẽ đưa demo gần target hơ
 | MinIO object storage | Lưu file qua S3 API: hóa đơn, chứng từ, attachment. | Đã học storage slice sau search. | Upload/download file, store metadata tenant-aware. | Mini-lab verified; advanced object management optional later. | File security/ACL/presigned URL phức tạp nếu làm sâu. |
 | Redis cache | Cache dữ liệu/config/feature flags, giảm load DB. | Đã học sau MinIO. | Tenant-safe cache key: `tenant:{id}:...`, cache-aside by code. | Mini-lab verified. | Cache leakage nếu key thiếu tenant; cache trước khi có bottleneck. |
 | Kafka async messaging | Event/message giữa services, decouple async workflow. | Đã học sau cache/storage. | Publish `MasterDataChangedEvent`, consumer log. | Mini-lab verified. | Chạy Kafka chỉ để “có Kafka” rất nặng. |
-| Kafka UI | Inspect topic/message/consumer group/lag. | Phase 1.5, trước khi tách service để debug Kafka rõ hơn. | Mở topic `master-data-events`, xem key/value và consumer group. | Planned. | Nhầm Kafka UI với monitoring/alerting production. |
+| Kafka UI | Inspect topic/message/consumer group/lag. | Phase 1.5, trước khi tách service để debug Kafka rõ hơn. | Mở topic `master-data-events`, xem key/value và consumer group. | Local lab implemented. | Nhầm Kafka UI với monitoring/alerting production. |
 | Loki/log aggregation | Centralized logs cho nhiều service. | Phase 1.5, trước khi có nhiều service/log terminal. | Tìm log theo service/container/requestId text trong Grafana Explore. | Local lab implemented với Loki + Grafana + Alloy. | Dùng high-cardinality labels hoặc log token/body. |
 | Kong Gateway | Gateway platform gần target architecture hơn Spring Cloud Gateway lab. | Phase 1.5 sau khi đã hiểu gateway concept. | DB-less route `/api/master-data/**`, sau này `/api/audit/**`. | Planned. | Đưa business logic hoặc expose Admin API public. |
 | Microservice boundary split | Tách responsibility/service ownership rõ ràng. | Phase 1.5 khi cần Kafka cross-service và nhiều service logs. | Thêm `audit-log-service` consume `MasterDataChangedEvent`. | Planned. | Split artificial hoặc tạo domain mới quá phức tạp. |
@@ -76,7 +76,7 @@ Sau feedback mentor ngày 11/06/2026, Phase 1.5 sẽ đưa demo gần target hơ
 | `TenantContext` + `JwtTenantContextFilter` | Request-scoped tenant context | Implemented | Token/header context được đưa vào service layer. |
 | `MasterDataRepository` | Tenant-aware data access | Implemented | Method explicit có `tenantId`, không dùng query thiếu tenant. |
 | `DataLeakageTest` | Regression guard chống leakage | Implemented | `make app-test` pass với tenant isolation cases. |
-| `lab-code/keycloak-lab` | Authorization Server/OIDC mini-lab | Mini-labbed | Keycloak issue token, `tenant_id` claim, issuer/JWKS. |
+| `lab-code/keycloak-lab` | Authorization Server/OIDC mini-lab | Mini-labbed + persistent local setup | Keycloak issue token, `tenant_id` claim, issuer/JWKS; PostgreSQL volume + bootstrap script for demo reproducibility. |
 | `APP_AUTH_MODE=keycloak` | Resource Server validate Keycloak token | Verified | Keycloak token gọi API tenant-aware thành công. |
 | `com.viettel.demo.search` | Elasticsearch search projection | Verified | Reindex/search `master_data`, query luôn filter tenantId. |
 | `com.viettel.demo.storage` | Object storage + metadata source of truth | Verified | Upload/download qua backend, metadata PostgreSQL tenant-aware, object trong MinIO. |
@@ -86,7 +86,7 @@ Sau feedback mentor ngày 11/06/2026, Phase 1.5 sẽ đưa demo gần target hơ
 | `lab-code/gateway-demo` | API Gateway/static routing | Verified | Spring Cloud Gateway route `/api/**` đến `tenant-demo`, service discovery để awareness. |
 | `lab-code/web-ui-demo` | React Web thin client | Verified | Docker-first Vite app; Keycloak login bằng public client, gọi Gateway `/api/master-data`, lookup by code, create data và hiển thị requestId. |
 | `lab-code/loki-lab` | Loki log aggregation lab | Local lab implemented | Docker Compose Loki + Grafana + Alloy, Makefile targets `loki-*`. |
-| `lab-code/kafka-ui-lab` | Kafka UI inspection lab | Planned stub | README stub, runtime chưa implement. |
+| `lab-code/kafka-ui-lab` | Kafka UI inspection lab | Local lab implemented | Docker Compose + Makefile targets, connects to Kafka via `viettel-kafka-net`. |
 | `lab-code/kong-gateway-lab` | Kong Gateway lab | Planned stub | README stub, runtime chưa implement. |
 | Future `audit-log-service` | Second backend service / Kafka consumer | Planned | Recommended split để Kafka thành cross-service flow thật. |
 | Keycloak Authorization/RBAC task | Authorization layer sau AuthN | Verified | Role/authority check nhỏ, phân biệt `401`/`403`, vẫn giữ tenant-aware query. |
@@ -149,11 +149,9 @@ Nếu chưa trả lời được 5 câu này, chưa nên implement công nghệ 
 
 Hướng tốt nhất sau tài liệu này là đi theo Phase 1.5:
 
-1. Loki/Grafana log aggregation lab.
-2. Kafka UI lab.
-3. Kong Gateway DB-less lab.
-4. `audit-log-service` split.
-5. Kafka cross-service verification.
-6. Final React Web demo polish sau khi backend boundaries ổn.
+1. Kong Gateway DB-less lab.
+2. `audit-log-service` split.
+3. Kafka cross-service verification.
+4. Final React Web demo polish sau khi backend boundaries ổn.
 
-Không nên mở UI lớn hoặc domain kế toán mới trước khi log/gateway/service boundary rõ.
+Loki/Grafana log aggregation và Kafka UI đã có local lab. Không nên mở UI lớn hoặc domain kế toán mới trước khi gateway/service boundary rõ.

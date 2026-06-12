@@ -43,6 +43,16 @@ VITE_REQUEST_ID_PREFIX=web-demo
 
 ## Keycloak client cần chuẩn bị
 
+Đường khuyến nghị hiện tại là bootstrap tự động:
+
+```bash
+cd lab-code
+make keycloak-up
+make keycloak-setup
+```
+
+Script này tạo realm, API client, Web client, role, user và `tenant_id` mapper cho local demo. Nếu muốn hiểu Admin Console hoặc debug thủ công, checklist bên dưới là cấu hình tối thiểu cần có.
+
 Trong realm `viettel-lab`, tạo public client cho SPA:
 
 | Setting | Giá trị gợi ý |
@@ -63,7 +73,15 @@ Claim cần có trong access token:
 
 Backend vẫn validate token qua issuer/JWKS và tự enforce tenant isolation. UI không được tin là nguồn tenant đáng tin cậy.
 
-Nếu reset volume Keycloak, cấu hình lại tối thiểu:
+Nếu reset volume Keycloak, ưu tiên chạy lại:
+
+```bash
+cd lab-code
+make keycloak-up
+make keycloak-setup
+```
+
+Nếu cấu hình tay trong Admin Console, checklist tối thiểu:
 
 1. Vào realm `viettel-lab`.
 2. Tạo hoặc kiểm tra client `tenant-demo-web`.

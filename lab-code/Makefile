@@ -21,6 +21,7 @@ KEYCLOAK_DIR   := keycloak-lab
 MINIO_DIR      := minio-lab
 REDIS_DIR      := redis-lab
 KAFKA_DIR      := kafka-lab
+KAFKA_UI_DIR   := kafka-ui-lab
 OBSERVABILITY_DIR := observability-lab
 LOKI_DIR       := loki-lab
 GATEWAY_DIR    := gateway-demo
@@ -50,16 +51,30 @@ db-shell: ## Mở psql shell trực tiếp vào database
 
 # --- KeyCloak mini-lab ------------------------------------
 .PHONY: keycloak-up
-keycloak-up: ## Khởi chạy KeyCloak local cho auth mini-lab
+keycloak-up: ## Khởi chạy KeyCloak local persistent DB cho auth mini-lab
 	cd $(KEYCLOAK_DIR) && docker compose up -d
 
 .PHONY: keycloak-down
-keycloak-down: ## Dừng KeyCloak local cho auth mini-lab
+keycloak-down: ## Dừng KeyCloak local, giữ lại volume PostgreSQL của Keycloak
 	cd $(KEYCLOAK_DIR) && docker compose down
 
 .PHONY: keycloak-status
 keycloak-status: ## Kiểm tra KeyCloak local
 	@docker ps --filter "name=viettel-keycloak" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+.PHONY: keycloak-logs
+keycloak-logs: ## Xem log KeyCloak local persistent lab
+	cd $(KEYCLOAK_DIR) && docker compose logs -f
+
+.PHONY: keycloak-setup
+keycloak-setup: ## Bootstrap realm/client/user/role local cho KeyCloak demo
+	$(KEYCLOAK_DIR)/setup-keycloak-demo.sh
+
+.PHONY: keycloak-reset
+keycloak-reset: ## DESTRUCTIVE: dừng KeyCloak và xóa volume DB realm/client/user local
+	@echo "WARNING: target này xóa volume PostgreSQL của Keycloak local."
+	@echo "Sau đó cần chạy lại: make keycloak-up && make keycloak-setup"
+	cd $(KEYCLOAK_DIR) && docker compose down -v
 
 # --- Elasticsearch mini-lab ------------------------------------
 
@@ -116,6 +131,39 @@ kafka-down: ## Dừng Kafka local cho async messaging mini-lab
 .PHONY: kafka-status
 kafka-status: ## Kiểm tra Kafka local
 	@docker ps --filter "name=viettel-kafka" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+# --- Kafka UI mini-lab -----------------------------------------
+
+.PHONY: kafka-ui-up
+kafka-ui-up: kafka-up ## Khởi chạy Kafka UI local ở port 18082
+	cd $(KAFKA_UI_DIR) && docker compose up -d
+
+.PHONY: kafka-ui-down
+kafka-ui-down: ## Dừng Kafka UI local, không dừng Kafka broker
+	cd $(KAFKA_UI_DIR) && docker compose down
+
+.PHONY: kafka-ui-status
+kafka-ui-status: ## Kiểm tra Kafka UI local
+	@docker ps --filter "name=viettel-kafka-ui" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+.PHONY: kafka-ui-logs
+kafka-ui-logs: ## Xem log Kafka UI local
+	cd $(KAFKA_UI_DIR) && docker compose logs -f
+
+.PHONY: kafka-ui-info
+kafka-ui-info: ## In hướng dẫn nhanh cho Kafka UI lab
+	@echo ""
+	@echo "Kafka UI lab nằm ở $(KAFKA_UI_DIR)/"
+	@echo "Workflow chính là Docker-first."
+	@echo ""
+	@echo "Chạy:"
+	@echo "  make kafka-ui-up"
+	@echo "  make kafka-ui-status"
+	@echo ""
+	@echo "URL:"
+	@echo "  Kafka UI: http://localhost:18082"
+	@echo ""
+	@echo "Ghi chú: Kafka UI container kết nối Kafka broker qua Docker network viettel-kafka-net và bootstrap server kafka:9092."
 
 # --- Observability mini-lab ------------------------------------
 
@@ -238,6 +286,7 @@ web-ui-logs: ## Xem log React Web UI demo container
 # - minio-up cho file storage mini-lab
 # - redis-up cho cache mini-lab
 # - kafka-up cho async messaging mini-lab
+# - kafka-ui-up cho Kafka topic/message/consumer inspection
 # - observability-up cho Prometheus/Grafana mini-lab
 # - loki-up cho Loki/Grafana log aggregation mini-lab
 # - gateway-run cho API Gateway static route mini-lab
@@ -248,8 +297,9 @@ web-ui-logs: ## Xem log React Web UI demo container
 # bằng `make app-run`, Gateway chạy riêng bằng `make gateway-run`, UI chạy
 # riêng bằng `make web-ui-up`.
 # Prometheus/Grafana metrics và Loki/Grafana logs là observability optional,
-# chạy riêng bằng `make observability-up` hoặc `make loki-up` để full infra
-# mặc định không quá nặng.
+# chạy riêng bằng `make observability-up` hoặc `make loki-up`.
+# Kafka UI là inspect tool optional, chạy riêng bằng `make kafka-ui-up` để
+# full infra mặc định không quá nặng.
 
 .PHONY: infra-up
 infra-up: db-up keycloak-up elastic-up minio-up redis-up kafka-up ## Khởi chạy PostgreSQL + KeyCloak + Elasticsearch + MinIO + Redis + Kafka

@@ -24,6 +24,20 @@ Kafka local expose bootstrap server:
 localhost:19092
 ```
 
+Kafka UI local dùng Docker network chung để kết nối broker bằng địa chỉ nội bộ:
+
+```text
+kafka:9092
+```
+
+Chạy UI từ `lab-code/`:
+
+```bash
+make kafka-ui-up
+```
+
+Mở `http://localhost:18082` để inspect topic/message/consumer group.
+
 ## Giải thích `docker-compose.yml`
 
 File `docker-compose.yml` trong thư mục này chỉ dùng để dựng **Kafka local 1 node** cho mini-lab. Ý chính của file:
@@ -91,6 +105,7 @@ Trong project này:
 
 - Spring Boot app chạy trên host sẽ connect qua `localhost:19092`.
 - Docker internal tools/container khác sẽ dùng `kafka:9092`.
+- Kafka UI join network `viettel-kafka-net` nên cũng dùng `kafka:9092`.
 - File compose chỉ lo **hạ tầng Kafka local**; phần logic publish/consume nằm ở code Spring Boot.
 
 ## Tạo/list topic bằng CLI

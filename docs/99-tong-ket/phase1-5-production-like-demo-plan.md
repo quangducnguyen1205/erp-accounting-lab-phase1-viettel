@@ -9,7 +9,7 @@ Tài liệu này ghi lại hướng đi sau buổi báo cáo mentor Đạt ngày
 Hiện repo đã có:
 
 - React Web UI Docker-first login Keycloak và gọi Gateway.
-- Keycloak/OIDC/RBAC local lab.
+- Keycloak/OIDC/RBAC local lab, đã bổ sung PostgreSQL persistence và bootstrap script để demo dễ tái tạo.
 - Spring Cloud Gateway static route đến `tenant-demo`.
 - `tenant-demo` Spring Boot backend: tenant-aware `master_data`, PostgreSQL/Flyway, Redis cache-aside, Kafka producer/consumer, MinIO, Elasticsearch, Actuator/logging/Micrometer.
 - Prometheus/Grafana local lab cho metrics.
@@ -106,8 +106,8 @@ Lý do chính:
 ## 7. Immediate implementation order
 
 1. **Loki/log aggregation lab**: đã có local Docker lab với Loki + Grafana + Grafana Alloy để gom Docker container logs và search bằng Grafana Explore.
-2. **Kafka UI lab**: inspect topic/message/consumer group trước khi split service.
-3. **Kong Gateway lab**: DB-less/declarative route `/api/master-data/**`, sau này `/api/audit/**`.
+2. **Kafka UI lab**: đã có local Docker lab để inspect broker/topic/message/consumer group trước khi split service.
+3. **Kong Gateway lab**: bước kế tiếp, DB-less/declarative route `/api/master-data/**`, sau này `/api/audit/**`.
 4. **Audit-log-service skeleton + implementation**: service nhỏ consume Kafka event, có own logs/metrics và optional DB table.
 5. **Cross-service Kafka verification**: create/update master data -> event -> audit service consumed/stored/logged.
 6. **Final React Web polish**: UI gọi Kong, có route xem audit nếu API thật đã có.
@@ -123,6 +123,6 @@ Lý do chính:
 
 ## 9. Suggested next Codex task
 
-> Implement Kafka UI local lab next, Docker-first, so the student can inspect topic/message/consumer group before splitting `audit-log-service`.
+> Implement Kong Gateway local lab next, Docker-first, using DB-less/declarative config to route `/api/master-data/**` to the current backend and prepare a future `/api/audit/**` route.
 
-Lý do: Loki/log aggregation đã có nền local. Kafka UI là bước tiếp theo để biến Kafka từ log-only learning sang nhìn được broker/topic/message/consumer group trước khi tạo cross-service flow.
+Lý do: Loki/log aggregation và Kafka UI đã có nền local. Kong là gateway platform gần target architecture hơn Spring Cloud Gateway, và cần có trước khi split thêm `audit-log-service` để route nhiều backend service.
