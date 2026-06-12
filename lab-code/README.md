@@ -132,6 +132,14 @@ Spring Boot app vẫn chạy riêng bằng:
 make app-run
 ```
 
+Khi demo Loki/Grafana log aggregation và muốn thấy cả log `tenant-demo` trong Grafana Explore, dùng target file-log:
+
+```bash
+make app-run-logs
+```
+
+Target này chạy app ở Keycloak + Kafka mode mặc định và ghi log vào `lab-code/logs/tenant-demo.log` để Alloy tail sang Loki. File log sinh ra là local artifact, không commit.
+
 Mục tiêu là giữ từng mini-lab cô lập được, nhưng vẫn có một đường nhanh để bật hạ tầng demo chung.
 
 React Web UI demo nằm ở `web-ui-demo/`. UI chạy bằng Docker, mặc định gọi Kong Gateway, và không gọi trực tiếp PostgreSQL/Redis/Kafka/MinIO/Prometheus/Grafana trong business flow.

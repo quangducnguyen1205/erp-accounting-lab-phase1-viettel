@@ -365,6 +365,7 @@ function AuditEventsPanel({ events, onLoad, loading, disabled }) {
 
 function DemoChecklist({ authReady, apiBaseUrl, rows, auditEvents, lastResult }) {
   const isKong = apiBaseUrl.trim() === 'http://localhost:18000';
+  const auditEventsLoaded = lastResult?.ok && lastResult.endpoint?.includes('/api/audit-events');
 
   return (
     <section className="panel">
@@ -376,7 +377,7 @@ function DemoChecklist({ authReady, apiBaseUrl, rows, auditEvents, lastResult })
         <li className={authReady ? 'done' : ''}>Login Keycloak</li>
         <li className={isKong ? 'done' : ''}>API base là Kong `http://localhost:18000`</li>
         <li className={rows.length > 0 ? 'done' : ''}>Load master data</li>
-        <li className={auditEvents.length > 0 ? 'done' : ''}>Load audit events</li>
+        <li className={auditEventsLoaded ? 'done' : ''}>Load audit events</li>
         <li className={lastResult?.requestId ? 'done' : ''}>Có requestId để kiểm log</li>
       </ul>
       <dl className="facts tool-links">
@@ -419,10 +420,6 @@ export default function App() {
 
   useEffect(() => {
     let active = true;
-    console.info('[web-ui-demo] Keycloak init start', {
-      realm: config.keycloakRealm,
-      clientId: config.keycloakClientId
-    });
 
     initKeycloak()
       .then(() => {

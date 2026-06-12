@@ -28,6 +28,7 @@ LOKI_DIR       := loki-lab
 GATEWAY_DIR    := gateway-demo
 KONG_DIR       := kong-gateway-lab
 WEB_UI_DIR     := web-ui-demo
+LOG_DIR        := logs
 
 # --- Docker / Database -----------------------------------------
 
@@ -234,8 +235,12 @@ observability-status: ## Kiểm tra Prometheus + Grafana local
 # --- Loki log aggregation mini-lab -----------------------------
 
 .PHONY: loki-up
-loki-up: ## Khởi chạy Loki + Alloy + Grafana local cho log aggregation
+loki-up: logs-dir ## Khởi chạy Loki + Alloy + Grafana local cho log aggregation
 	cd $(LOKI_DIR) && docker compose up -d
+
+.PHONY: logs-dir
+logs-dir: ## Tạo thư mục log local để Alloy tail host-run app logs
+	@mkdir -p $(LOG_DIR)
 
 .PHONY: loki-down
 loki-down: ## Dừng Loki + Alloy + Grafana local
@@ -264,7 +269,7 @@ loki-info: ## In hướng dẫn nhanh cho Loki log aggregation lab
 	@echo "  Grafana Explore: http://localhost:13001"
 	@echo "  Alloy debug UI: http://localhost:12345"
 	@echo ""
-	@echo "Ghi chú: Alloy Docker collector chỉ đọc log container. App chạy bằng Maven trên host vẫn hiện log ở terminal host."
+	@echo "Ghi chú: Docker logs đi qua Docker collector; tenant-demo host Maven logs đi qua file $(LOG_DIR)/tenant-demo.log nếu chạy bằng make app-run-logs."
 
 .PHONY: logs-up
 logs-up: loki-up ## Alias: khởi chạy Loki log aggregation lab
@@ -451,6 +456,15 @@ sql-reset: ## Xóa toàn bộ bảng rồi tạo lại từ đầu
 .PHONY: app-run
 app-run: ## Chạy Spring Boot application
 	cd $(APP_DIR) && if [ -f .env ]; then set -a; . ./.env; set +a; fi; ./mvnw spring-boot:run
+
+.PHONY: app-run-logs
+app-run-logs: logs-dir ## Chạy tenant-demo Keycloak+Kafka mode và ghi file log để Loki/Alloy tail
+	cd $(APP_DIR) && if [ -f .env ]; then set -a; . ./.env; set +a; fi; \
+	APP_AUTH_MODE=$${APP_AUTH_MODE:-keycloak} \
+	APP_MESSAGING_ENABLED=$${APP_MESSAGING_ENABLED:-true} \
+	KAFKA_BOOTSTRAP_SERVERS=$${KAFKA_BOOTSTRAP_SERVERS:-localhost:19092} \
+	LOGGING_FILE_NAME=$${LOGGING_FILE_NAME:-../$(LOG_DIR)/tenant-demo.log} \
+	./mvnw spring-boot:run
 
 .PHONY: app-test
 app-test: ## Chạy integration tests

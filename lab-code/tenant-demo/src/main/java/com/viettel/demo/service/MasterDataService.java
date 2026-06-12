@@ -5,10 +5,12 @@ import com.viettel.demo.cache.CachedMasterData;
 import com.viettel.demo.cache.MasterDataCacheGateway;
 import com.viettel.demo.context.TenantContext;
 import com.viettel.demo.entity.MasterData;
+import com.viettel.demo.exception.MasterDataCodeConflictException;
 import com.viettel.demo.messaging.MasterDataChangedEvent;
 import com.viettel.demo.messaging.MasterDataEventPublisher;
 import com.viettel.demo.observability.ApplicationMetrics;
 import com.viettel.demo.repository.MasterDataRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -128,8 +130,18 @@ public class MasterDataService {
         if (data == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "MasterData cannot be null");
         }
+        Long tenantId = currentTenantId();
+        String normalizedCode = normalizeCode(data.getCode());
+        rejectDuplicateCode(tenantId, normalizedCode, null);
+        data.setCode(normalizedCode);
+
         // tenant_id sẽ được set tự động trong @PrePersist của entity.
-        MasterData saved = repository.save(data);
+        MasterData saved;
+        try {
+            saved = repository.saveAndFlush(data);
+        } catch (DataIntegrityViolationException e) {
+            throw mapMasterDataCodeConflict(e, normalizedCode);
+        }
         /*
          * Kafka mini-lab:
          * Publish sau khi repository.save(...) đã thành công để event mô tả
@@ -152,11 +164,18 @@ public class MasterDataService {
         }
         MasterData existing = getById(id);
         // Cập nhật các field cần thiết (code, name, category, isActive).
-        existing.setCode(data.getCode());
+        String normalizedCode = normalizeCode(data.getCode());
+        rejectDuplicateCode(currentTenantId(), normalizedCode, existing.getId());
+        existing.setCode(normalizedCode);
         existing.setName(data.getName());
         existing.setCategory(data.getCategory());
         existing.setIsActive(data.getIsActive());
-        MasterData saved = repository.save(existing);
+        MasterData saved;
+        try {
+            saved = repository.saveAndFlush(existing);
+        } catch (DataIntegrityViolationException e) {
+            throw mapMasterDataCodeConflict(e, normalizedCode);
+        }
         eventPublisher.publish(MasterDataChangedEvent.from(saved, "UPDATED"));
         return saved;
     }
@@ -180,5 +199,29 @@ public class MasterDataService {
 
     private Duration elapsedSince(long startedAt) {
         return Duration.ofNanos(System.nanoTime() - startedAt);
+    }
+
+    private String normalizeCode(String code) {
+        if (code == null || code.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Code cannot be blank");
+        }
+        return code.trim();
+    }
+
+    private void rejectDuplicateCode(Long tenantId, String code, Long currentId) {
+        repository.findByTenantIdAndCode(tenantId, code)
+                .filter(existing -> currentId == null || !existing.getId().equals(currentId))
+                .ifPresent(existing -> {
+                    throw new MasterDataCodeConflictException(code);
+                });
+    }
+
+    private RuntimeException mapMasterDataCodeConflict(DataIntegrityViolationException exception, String code) {
+        Throwable cause = exception.getMostSpecificCause();
+        String message = cause == null ? "" : String.valueOf(cause.getMessage());
+        if (message.contains("unique_tenant_code")) {
+            return new MasterDataCodeConflictException(code);
+        }
+        return exception;
     }
 }

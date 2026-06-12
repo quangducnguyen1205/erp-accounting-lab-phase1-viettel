@@ -4,11 +4,17 @@
 
 Mini-lab này gom log từ Docker container vào một nơi để không phải mở nhiều terminal khi demo nhiều service.
 
-Flow hiện tại:
+Flow hiện tại có hai nguồn log:
 
 ```text
 Docker container stdout logs
 -> Docker daemon
+-> Grafana Alloy
+-> Loki
+-> Grafana Explore
+
+tenant-demo host Maven logs
+-> lab-code/logs/tenant-demo.log
 -> Grafana Alloy
 -> Loki
 -> Grafana Explore
@@ -25,9 +31,10 @@ Docker container stdout logs
 
 Giới hạn quan trọng:
 
-- Lab này hiện collect **Docker container stdout logs only**.
-- `tenant-demo` và `gateway-demo` nếu chạy bằng `make app-run` hoặc `make gateway-run` thì log nằm ở host terminal, chưa tự chảy vào Loki.
-- Muốn collect host-terminal Maven logs thì cần Dockerize service hoặc thêm file-log collector sau.
+- Lab này collect Docker container stdout logs.
+- Lab này cũng tail file `lab-code/logs/tenant-demo.log` để demo `tenant-demo` host-run logs trong Loki.
+- `tenant-demo` chỉ ghi file đó khi chạy bằng `make app-run-logs`.
+- `gateway-demo` nếu chạy bằng `make gateway-run` thì log vẫn nằm ở host terminal; Kong container logs vẫn được collect qua Docker source.
 - `requestId` nên nằm trong log message để search text, không dùng làm Loki label.
 
 ## 2. File Map
@@ -36,10 +43,10 @@ Giới hạn quan trọng:
 |---|---|---|---|
 | `lab-code/loki-lab/docker-compose.yml` | Chạy Loki, Grafana, Alloy local bằng Docker. | Khi đổi image, port, volume, service lab. | Secret thật, production credential, cấu hình cloud/private IP. |
 | `lab-code/loki-lab/loki-config.yml` | Cấu hình Loki single-node local. | Khi học storage/schema/retention local. | Production retention/security config nếu chưa hiểu. |
-| `lab-code/loki-lab/alloy/config.alloy` | Pipeline collect Docker logs và forward sang Loki. | Khi đổi log source, label, collector pipeline. | Label high-cardinality như requestId/userId/tenantId/token. |
+| `lab-code/loki-lab/alloy/config.alloy` | Pipeline collect Docker logs, tail `tenant-demo` file log và forward sang Loki. | Khi đổi log source, label, collector pipeline. | Label high-cardinality như requestId/userId/tenantId/token. |
 | `lab-code/loki-lab/grafana/provisioning/datasources/loki.yml` | Tự add Loki datasource vào Grafana. | Khi đổi tên datasource hoặc URL Loki nội bộ. | Password/secret datasource thật. |
 | `lab-code/loki-lab/README.md` | Lệnh chạy, URL, query mẫu, cleanup. | Khi đổi workflow/port/Makefile target. | Lý thuyết quá dài hoặc log/token thật. |
-| `lab-code/Makefile` | Target `make loki-*`. | Khi thêm/sửa command chạy lab. | Lệnh destructive hoặc phụ thuộc tool local ngoài Docker. |
+| `lab-code/Makefile` | Target `make loki-*`, `make app-run-logs`. | Khi thêm/sửa command chạy lab. | Lệnh destructive hoặc phụ thuộc tool local ngoài Docker. |
 
 ## 3. `docker-compose.yml` Walkthrough
 
@@ -98,6 +105,7 @@ alloy:
   volumes:
     - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
     - /var/run/docker.sock:/var/run/docker.sock:ro
+    - ../logs:/var/log/viettel-lab:ro
     - alloy-data:/var/lib/alloy/data
   depends_on:
     - loki
@@ -127,6 +135,20 @@ Security caveat:
 - Docker socket rất quyền lực. Dù mount read-only, container có thể thấy metadata/log của Docker host.
 - Local lab chấp nhận được để học.
 - Production cần cân nhắc collector deployment, quyền, network boundary và hardening kỹ hơn.
+
+Mount file log directory:
+
+```yaml
+- ../logs:/var/log/viettel-lab:ro
+```
+
+Vì `tenant-demo` thường chạy bằng Maven trên host, log không nằm trong Docker stdout. Mount này cho phép Alloy đọc file `lab-code/logs/tenant-demo.log` trong container ở path `/var/log/viettel-lab/tenant-demo.log`.
+
+Điểm cần nhớ:
+
+- Đây chỉ là file-log bridge cho local demo.
+- Generated `*.log` không được commit.
+- File source không biến requestId thành label; requestId vẫn nằm trong nội dung log.
 
 ### `grafana` service
 
@@ -303,6 +325,10 @@ discovery.docker
 -> discovery.relabel
 -> loki.source.docker
 -> loki.write
+
+local.file_match
+-> loki.source.file
+-> loki.write
 ```
 
 ### `discovery.docker "containers"`
@@ -455,6 +481,56 @@ Vai trò:
 
 Nói cách khác, đây là đoạn biến Docker logs thành Loki streams.
 
+### `local.file_match "tenant_demo_host_logs"`
+
+```alloy
+local.file_match "tenant_demo_host_logs" {
+  path_targets = [
+    {
+      __path__    = "/var/log/viettel-lab/tenant-demo.log",
+      service     = "tenant-demo",
+      environment = "local",
+      source      = "file",
+      job         = "host-file",
+    },
+  ]
+  sync_period = "5s"
+}
+```
+
+Vai trò:
+
+- Chỉ ra file log nào Alloy cần tail.
+- Gắn label ổn định cho stream log file.
+- `sync_period = "5s"` giúp Alloy phát hiện file nhanh trong demo.
+
+Repo-specific mapping:
+
+- Host path `lab-code/logs/tenant-demo.log` được mount vào Alloy thành `/var/log/viettel-lab/tenant-demo.log`.
+- Service label là `tenant-demo` để query cùng tên với backend service.
+- `source="file"` giúp phân biệt với Docker stdout logs.
+
+Không làm:
+
+- Không label theo `requestId`, `tenantId`, `userId`, code hoặc token.
+- Không collect mọi file trong repo.
+
+### `loki.source.file "tenant_demo_host_logs"`
+
+```alloy
+loki.source.file "tenant_demo_host_logs" {
+  targets    = local.file_match.tenant_demo_host_logs.targets
+  forward_to = [loki.write.local.receiver]
+}
+```
+
+Vai trò:
+
+- Tail file targets từ `local.file_match`.
+- Forward từng log line sang `loki.write.local`.
+
+Nói cách khác, đây là đoạn biến file `tenant-demo.log` thành Loki stream.
+
 ### `loki.write "local"`
 
 ```alloy
@@ -467,7 +543,7 @@ loki.write "local" {
 
 Vai trò:
 
-- Nhận log từ `loki.source.docker`.
+- Nhận log từ `loki.source.docker` và `loki.source.file`.
 - Push log sang Loki.
 
 Vì sao URL là `http://loki:3100`?
@@ -514,7 +590,7 @@ Trong repo này:
 {service="tenant-demo"} |= "requestId=demo-001"
 ```
 
-Sau này nếu `tenant-demo` chạy container, query này sẽ hữu ích để nối UI action với backend logs.
+Query này dùng được khi chạy `tenant-demo` bằng `make app-run-logs`.
 
 ## 7. Grafana Datasource Provisioning
 
@@ -562,6 +638,7 @@ make loki-status
 make loki-info
 make loki-logs
 make loki-down
+make app-run-logs
 ```
 
 Ý nghĩa:
@@ -571,6 +648,7 @@ make loki-down
 - `loki-info`: in URL và lưu ý nhanh.
 - `loki-logs`: tail logs của chính Loki lab stack.
 - `loki-down`: dừng/xóa container lab, giữ named volumes.
+- `app-run-logs`: chạy `tenant-demo` host Maven với file logging `lab-code/logs/tenant-demo.log`, Keycloak mode và Kafka enabled mặc định.
 
 Aliases:
 
@@ -616,7 +694,10 @@ Query ví dụ:
 {service="web-ui-demo"}
 {container=~".*web.*"}
 {service="loki"}
+{service="tenant-demo"}
 {service="web-ui-demo"} |= "web-demo"
+{service=~"tenant-demo|audit-log-service|kong-gateway"} |= "requestId="
+{service=~"tenant-demo|audit-log-service|kong-gateway"} |= "UI-LOKI-E2E"
 ```
 
 Nếu muốn có log từ `web-ui-demo`:
@@ -633,11 +714,19 @@ Sau đó quay lại Grafana Explore query:
 {service="web-ui-demo"}
 ```
 
+Nếu muốn có log từ `tenant-demo` host Maven:
+
+```bash
+cd lab-code
+make app-run-logs
+```
+
 Nếu query `tenant-demo` hoặc `gateway-demo` chưa ra kết quả, kiểm tra cách chạy:
 
-- Chạy bằng Maven host terminal: chưa vào Loki.
-- Chạy bằng container Docker stdout: Alloy có thể collect.
-- Chưa Dockerize hoặc chưa file-log collector: chưa collect được.
+- `tenant-demo` chạy bằng `make app-run`: log chỉ ở terminal, không chắc có file để tail.
+- `tenant-demo` chạy bằng `make app-run-logs`: log vào `lab-code/logs/tenant-demo.log` và được Alloy tail.
+- Dockerized services: Alloy collect qua Docker stdout.
+- `gateway-demo` Maven host chưa có file-log collector riêng; dùng Kong container logs cho gateway platform demo.
 
 Cleanup:
 
@@ -649,7 +738,7 @@ make web-ui-down
 
 ## 10. Common Mistakes
 
-- Mong đợi Maven host logs tự xuất hiện trong Loki.
+- Mong đợi Maven host logs tự xuất hiện trong Loki khi không chạy `make app-run-logs`.
 - Nhầm `/actuator/metrics` với logs. Actuator/Micrometer là metrics, Loki là logs.
 - Tưởng Grafana collect logs. Grafana chỉ query datasource; Alloy mới collect logs.
 - Dùng Loki như database nghiệp vụ.

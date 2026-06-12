@@ -7,15 +7,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -181,6 +184,60 @@ public class DataLeakageTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tenantId", is(2)))
                 .andExpect(jsonPath("$.id", is(201)));
+    }
+
+    @Test
+    void duplicate_code_in_same_tenant_should_return_409() throws Exception {
+        String payload = """
+                {
+                  "code": "DUPLICATE-DEMO",
+                  "name": "Duplicate Demo",
+                  "category": "TEST",
+                  "isActive": true
+                }
+                """;
+
+        mockMvc.perform(post("/api/master-data")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantOneToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.tenantId", is(1)))
+                .andExpect(jsonPath("$.code", is("DUPLICATE-DEMO")));
+
+        mockMvc.perform(post("/api/master-data")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantOneToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status", is(409)))
+                .andExpect(jsonPath("$.message", containsString("MasterData code already exists")));
+    }
+
+    @Test
+    void same_code_in_different_tenants_should_still_be_allowed() throws Exception {
+        String payload = """
+                {
+                  "code": "TENANT-SAFE-DUPLICATE",
+                  "name": "Tenant Safe Duplicate",
+                  "category": "TEST",
+                  "isActive": true
+                }
+                """;
+
+        mockMvc.perform(post("/api/master-data")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantOneToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.tenantId", is(1)));
+
+        mockMvc.perform(post("/api/master-data")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantTwoToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.tenantId", is(2)));
     }
 
     /*

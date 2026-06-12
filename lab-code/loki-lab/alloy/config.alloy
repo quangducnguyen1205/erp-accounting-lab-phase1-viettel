@@ -49,6 +49,24 @@ loki.source.docker "containers" {
   forward_to       = [loki.write.local.receiver]
 }
 
+local.file_match "tenant_demo_host_logs" {
+  path_targets = [
+    {
+      __path__    = "/var/log/viettel-lab/tenant-demo.log",
+      service     = "tenant-demo",
+      environment = "local",
+      source      = "file",
+      job         = "host-file",
+    },
+  ]
+  sync_period = "5s"
+}
+
+loki.source.file "tenant_demo_host_logs" {
+  targets    = local.file_match.tenant_demo_host_logs.targets
+  forward_to = [loki.write.local.receiver]
+}
+
 loki.write "local" {
   endpoint {
     url = "http://loki:3100/loki/api/v1/push"

@@ -44,11 +44,13 @@ APP_SEARCH_ENABLED=true
 APP_FILE_STORAGE_ENABLED=true
 ```
 
-Sau đó chạy app:
+Sau đó chạy app. Nếu muốn Loki/Grafana đọc được log của `tenant-demo` trong demo, dùng target file-log:
 
 ```bash
-make app-run
+make app-run-logs
 ```
+
+Target này ghi log vào `lab-code/logs/tenant-demo.log` để Alloy tail sang Loki. Nếu không cần Loki cho `tenant-demo`, vẫn có thể dùng `make app-run`.
 
 Mở terminal khác cho `audit-log-service` và Kong:
 
@@ -76,6 +78,7 @@ Các URL chính:
 | Kafka UI | `http://localhost:18082` |
 | Prometheus | `http://localhost:19090` |
 | Grafana | `http://localhost:13000` |
+| Grafana Loki logs | `http://localhost:13001` |
 
 Grafana local dùng `admin/admin` chỉ cho lab local.
 
@@ -95,6 +98,12 @@ Grafana local dùng `admin/admin` chỉ cho lab local.
 6. Bấm `Create` với code `UI-DEMO-*`.
 7. Đợi một chút rồi bấm `Load audit events`.
 8. Ghi lại `requestId` trên UI và đối chiếu log `tenant-demo` / `audit-log-service`.
+9. Nếu Loki đang chạy, mở `http://localhost:13001` -> Explore -> Loki và query:
+
+```logql
+{service=~"tenant-demo|audit-log-service|kong-gateway|web-ui-demo"}
+{service=~"tenant-demo|audit-log-service|kong-gateway"} |= "requestId="
+```
 
 Điểm cần nói: UI gọi Kong Gateway, Gateway forward `Authorization` và `X-Request-Id`; từng backend service vẫn validate JWT, map role, set tenant context và query tenant-aware.
 

@@ -11,6 +11,16 @@ Docker container stdout logs
 -> Grafana Explore
 ```
 
+Từ demo Phase 1.5, lab cũng collect `tenant-demo` host Maven logs nếu app chạy bằng target file-log:
+
+```text
+tenant-demo host Maven logs
+-> lab-code/logs/tenant-demo.log
+-> Grafana Alloy
+-> Loki
+-> Grafana Explore
+```
+
 ## Local ports
 
 | Tool | URL |
@@ -48,10 +58,18 @@ docker compose down
 
 ## Alloy đang collect gì?
 
-Alloy đọc Docker logs qua Docker socket:
+Alloy đọc hai nguồn log local.
+
+Nguồn 1: Docker logs qua Docker socket:
 
 ```text
 /var/run/docker.sock -> discovery.docker -> loki.source.docker -> Loki
+```
+
+Nguồn 2: file log của `tenant-demo` khi chạy `make app-run-logs`:
+
+```text
+lab-code/logs/tenant-demo.log -> loki.source.file -> Loki
 ```
 
 Các label chính:
@@ -64,24 +82,40 @@ Các label chính:
 | `environment` | `local` |
 | `source` | `docker` |
 
+Với `tenant-demo` file log, label chính là:
+
+| Label | Giá trị |
+|---|---|
+| `service` | `tenant-demo` |
+| `environment` | `local` |
+| `source` | `file` |
+| `job` | `host-file` |
+
 Không dùng `requestId`, `tenantId`, `userId`, token, event id hoặc object key làm label vì dễ tạo high-cardinality. `requestId` nằm trong nội dung log để search text.
 
-## Quan trọng: app chạy host terminal thì chưa được collect
+## Chạy tenant-demo để Loki thấy log
 
-Hiện `tenant-demo` và `gateway-demo` thường chạy bằng Maven trên host:
+Nếu chạy app bằng target thường:
 
 ```bash
 make app-run
-make gateway-run
 ```
 
-Log của hai lệnh này xuất hiện ở terminal host, không phải Docker stdout, nên Alloy Docker collector chưa đọc được. Có 3 hướng sau:
+log vẫn hiện ở terminal host, nhưng chưa chắc có file để Alloy đọc.
 
-1. Dockerize service sau này để Alloy collect trực tiếp.
-2. Thêm file-log collector sau này nếu muốn đọc log từ file host.
-3. Trong Phase 1.5 hiện tại, dùng lab này để xem Dockerized services trước, ví dụ `web-ui-demo`, Keycloak, Kafka, Redis, Loki/Grafana/Alloy.
+Khi demo centralized logs, dùng:
 
-Không ép refactor Docker hóa backend trong task này để tránh làm phình scope.
+```bash
+make app-run-logs
+```
+
+Target này bật Keycloak + Kafka mode mặc định và set:
+
+```text
+LOGGING_FILE_NAME=../logs/tenant-demo.log
+```
+
+File `lab-code/logs/*.log` là generated local log, không commit. `gateway-demo` nếu chạy host Maven vẫn chưa có file-log collector riêng; Kong container logs thì được collect qua Docker source.
 
 ## Verification flow
 
@@ -115,15 +149,18 @@ http://localhost:13001
 {service="web-ui-demo"}
 {container="viettel-web-ui-demo"}
 {service="kafka"}
+{service="tenant-demo"}
 ```
 
 6. Tìm request id nếu log line có request id:
 
 ```logql
 {service="web-ui-demo"} |= "web-demo"
+{service=~"tenant-demo|audit-log-service|kong-gateway"} |= "requestId="
+{service=~"tenant-demo|audit-log-service|kong-gateway"} |= "UI-LOKI-E2E"
 ```
 
-Với backend/gateway đang chạy host terminal, request log chỉ hiện trong terminal đó. Sau khi service được containerize hoặc thêm file-log collector, cùng requestId có thể search trong Grafana Explore.
+Với `tenant-demo`, query chỉ có log nếu app được chạy bằng `make app-run-logs`.
 
 ## Cleanup
 
