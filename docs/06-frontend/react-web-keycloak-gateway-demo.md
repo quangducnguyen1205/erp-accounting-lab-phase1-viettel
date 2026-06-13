@@ -196,7 +196,7 @@ Production không nên mở CORS bừa bãi. Cần giới hạn origin thật, a
 6. Dashboard: kiểm user/tenant/role/API base URL.
 7. Master Data: load/create `master_data`.
 8. Master Data: dùng `Load by code` để gọi `GET /api/master-data/code/{code}` qua Gateway. Nếu Redis enabled, gọi cùng code hai lần rồi kiểm log/metric backend để thấy miss/hit; UI không tự kết luận cache status.
-9. Activity Log/Audit Events: bấm `Load audit events` để gọi `GET /api/audit-events` qua Kong tới `audit-log-service`.
+9. Activity Log: bấm `Load activity` để gọi `GET /api/audit-events` qua Kong tới `audit-log-service`.
 10. Demo docs: dùng URL/LogQL trong final demo script để mở Grafana Loki/Kafka UI khi cần giải thích backend flow.
 
 Đối chiếu:

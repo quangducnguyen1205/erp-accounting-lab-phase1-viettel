@@ -13,11 +13,11 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | Phase 1 core done, Phase 1.5 final UI direction reset to product app |
+| **Tiến độ** | Phase 1 core done, Phase 1.5 final UI realigned as product app |
 | **Tổng task** | 111 |
 | **Đã hoàn thành** | 110 / 111 |
-| **Focus hiện tại** | Phase 1.5 - `Master Data Portal` UI redesign and demo runner |
-| **Milestone tiếp theo** | #24 - implement product-style React UI, then Keycloak theme later |
+| **Focus hiện tại** | Phase 1.5 - `Master Data Portal` visual review and Keycloak theme backlog |
+| **Milestone tiếp theo** | #24 - browser QA/product polish, then Keycloak theme later |
 | **Demo hiện tại** | React Web UI -> Keycloak -> Gateway -> tenant-demo -> PostgreSQL/Redis/Kafka/Observability; UI direction is Master Data Portal; Elasticsearch/MinIO qua HTTP mini-lab |
 
 Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; Milestone #14 đã chốt Redis cache-aside tenant-safe read path; Milestone #15 đã chốt Kafka/async messaging reference flow nhỏ; Milestone #16 đã chốt Observability baseline với Actuator, request logging, Micrometer metrics và Prometheus/Grafana local lab. Milestone #17 đã chốt API Gateway static route và React Web UI Docker-first để nhìn flow end-to-end. React Native/Expo không thuộc repo này.

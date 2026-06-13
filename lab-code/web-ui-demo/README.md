@@ -18,7 +18,7 @@ Master Data Portal
 
 Mục tiêu UI cuối là quản lý master data và xem activity log như một web product bình thường. Backend/infra vẫn được demo bằng lời nói, Loki/Kafka UI và docs, không phải bằng cách biến màn hình chính thành architecture dashboard.
 
-Ghi chú: code hiện tại đã có multi-screen demo shell; pass tiếp theo sẽ đổi nhãn/IA từ architecture/demo console sang `Master Data Portal`.
+Ghi chú: code hiện tại đã được đổi nhãn/IA sang `Master Data Portal`: Dashboard, Master Data, Activity Log, Account.
 
 ## Stack
 
@@ -199,7 +199,7 @@ Build output `dist/` chỉ nằm trong Docker image/layer; không commit `dist/`
    - Master Data: bấm `Load master data`.
    - Master Data: bấm `Load by code` với một code có thật như `LAPTOP-01`.
    - Master Data: tạo record với code `UI-DEMO-*`.
-   - Activity Log/Audit Events: đợi một chút rồi bấm `Load audit events`.
+   - Activity Log: đợi một chút rồi bấm `Load activity`.
    - Demo docs: mở Grafana Loki/Kafka UI từ URL trong demo script nếu cần giải thích backend flow.
    - Xem `requestId` sau request.
    - Đối chiếu log `tenant-demo` và `audit-log-service` bằng requestId/event log.
@@ -209,12 +209,12 @@ Build output `dist/` chỉ nằm trong Docker image/layer; không commit `dist/`
 - PostgreSQL: record được lưu qua `tenant-demo`.
 - Redis: nếu cache enabled, dùng `Load by code` trên UI hoặc HTTP file cache để gọi cùng code hai lần và quan sát hit/miss bằng log/metric backend. UI không tự đoán cache status.
 - Kafka: create/update `master_data` phát `MasterDataChangedEvent` nếu messaging enabled.
-- Audit service: bấm `Load audit events` để đọc audit records qua Kong; tenant 2 không thấy audit event tenant 1.
+- Activity Log: bấm `Load activity` để đọc activity records qua Kong; tenant 2 không thấy activity tenant 1.
 - Observability: Prometheus/Grafana quan sát metric từ `tenant-demo`, không phải UI gọi trực tiếp Prometheus/Grafana.
 
-## Activity log / audit events demo
+## Activity Log demo
 
-Activity Log dùng API audit hiện có:
+Activity Log là cách UI nói về audit history. Bên dưới vẫn dùng API audit hiện có:
 
 ```text
 GET ${VITE_API_BASE_URL}/api/audit-events
@@ -224,8 +224,8 @@ Expected behavior:
 
 | User | Expected |
 |---|---|
-| `tenant1-user/password` | Load/create master data được; load audit events tenant 1 được. |
-| `tenant2-user/password` | Load master data được; create trả `403`; không thấy audit events tenant 1. |
+| `tenant1-user/password` | Load/create master data được; load activity tenant 1 được. |
+| `tenant2-user/password` | Load master data được; create trả `403`; không thấy activity tenant 1. |
 
 UI không kết luận Kafka/audit thành công sau POST. Chỉ khi `GET /api/audit-events` trả event thật thì mới coi audit đã lưu.
 
@@ -236,8 +236,8 @@ UI không kết luận Kafka/audit thành công sau POST. Chỉ khi `GET /api/au
 | Welcome | Login Keycloak, account hint local, không hiển thị token. |
 | Dashboard | Business overview: total records, active records, recent changes, current tenant/role. |
 | Master Data | Load/list, load by code, create, `401`/`403`/`409`/unavailable states. |
-| Activity Log | Audit table/timeline, tenant2 empty success state. Current API path remains `/api/audit-events`. |
-| Account | Username, tenant_id, roles, token status hidden, API gateway preset, logout. |
+| Activity Log | Activity table/timeline, tenant2 empty success state. Current API path remains `/api/audit-events`. |
+| Account | Username, tenant_id, roles, token status hidden, API gateway preset, logout and secondary demo tool links. |
 
 Backend/observability links stay in docs or a small secondary demo note, not primary product navigation.
 

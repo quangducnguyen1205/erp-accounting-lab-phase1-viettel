@@ -4,7 +4,7 @@ Tài liệu này là route demo thực tế cho Phase 1. Mục tiêu là trình 
 
 Sau feedback mentor ngày 11/06/2026, script này vẫn là baseline demo đã hoàn thành. Demo nghiêm túc hơn tuần sau sẽ đi theo plan Phase 1.5: `phase1-5-production-like-demo-plan.md`.
 
-UI hiện tại đã chạy được flow chính. Product direction mới là `Master Data Portal`: một business app nhỏ để quản lý master data và xem activity log, không phải architecture console. Figma full screen export vẫn là backlog do MCP limit; React implementation cần pass tiếp theo để đổi nhãn/IA theo `docs/06-frontend/final-web-ui-design-plan.md`.
+UI hiện tại đã chạy được flow chính và đã được realign theo product direction mới: `Master Data Portal`. Đây là một business app nhỏ để quản lý master data và xem activity log, không phải architecture console. Figma full screen export vẫn là backlog do MCP limit; Keycloak custom login theme vẫn là future work.
 
 ## 1. Chuẩn bị nhanh
 
@@ -129,7 +129,7 @@ Grafana local dùng `admin/admin` chỉ cho lab local.
 4. Bấm `Load master data`.
 5. Bấm `Load by code` với code có thật, ví dụ `LAPTOP-01`.
 6. Bấm `Create` với code `UI-DEMO-*`.
-7. Đợi một chút rồi bấm `Load audit events` hoặc vào Activity Log nếu UI đã được đổi tên.
+7. Đợi một chút rồi vào Activity Log và bấm `Load activity`.
 8. Ghi lại `requestId` trên UI và đối chiếu log `tenant-demo` / `audit-log-service`.
 9. Nếu Loki đang chạy, mở `http://localhost:13001` -> Explore -> Loki và query:
 

@@ -1,100 +1,110 @@
 import { Badge } from '../components/Badge';
+import { EmptyState } from '../components/EmptyState';
 import { StatusCard } from '../components/StatusCard';
 
-const stackCards = [
-  ['Web UI', 'Thin React client', 'UI'],
-  ['Keycloak', 'Login, users, roles, token issuer', 'AUTH'],
-  ['Kong Gateway', 'Main Phase 1.5 gateway route', 'ACTIVE'],
-  ['tenant-demo', 'Master Data Service on port 8080', 'API'],
-  ['Kafka', 'master-data-events transport', 'EVENTS'],
-  ['audit-log-service', 'Consumes events and exposes audit API', 'SERVICE'],
-  ['PostgreSQL', 'Service-owned relational data', 'DATA'],
-  ['Loki/Grafana', 'Centralized local logs', 'LOGS'],
-  ['Kafka UI', 'Topic, message and consumer group inspection', 'TOOL']
-];
-
-function ChecklistItem({ label, state }) {
-  const className = state === 'done' ? 'done' : state === 'manual' ? 'manual' : '';
-  return (
-    <li className={className}>
-      <span>{label}</span>
-      <small>{state === 'done' ? 'done' : state === 'manual' ? 'manual check' : 'pending'}</small>
-    </li>
-  );
+function primaryRole(userInfo) {
+  const roles = [...(userInfo?.realmRoles ?? []), ...(userInfo?.clientRoles ?? [])];
+  return roles.find((role) => ['ADMIN', 'ACCOUNTANT', 'VIEWER'].includes(role)) ?? roles[0] ?? 'NO_ROLE';
 }
 
-export function DashboardScreen({ authState, apiBaseUrl, setApiBaseUrl, gatewayPresets, gatewayName, lastResult, demoProgress }) {
-  const isKong = apiBaseUrl.trim() === 'http://localhost:18000';
-  const roles = [...(authState.userInfo?.realmRoles ?? []), ...(authState.userInfo?.clientRoles ?? [])];
+function isActiveRecord(row) {
+  return row.isActive ?? row.active ?? row.status === 'ACTIVE';
+}
+
+function formatActivity(event) {
+  const action = event.changeType ?? event.eventType ?? 'Changed';
+  const code = event.aggregateCode ?? event.code ?? event.aggregateId ?? '(unknown record)';
+  return `${action} ${code}`;
+}
+
+export function DashboardScreen({ authState, rows, auditEvents, masterDataLoaded, activityLoaded, lastResult, onNavigate }) {
+  const activeRecords = rows.filter(isActiveRecord).length;
+  const role = primaryRole(authState.userInfo);
+  const recentEvents = auditEvents.slice(0, 4);
 
   return (
     <div className="screen-grid">
       <section className="screen-heading">
         <p className="eyebrow">Dashboard</p>
-        <h2>Architecture Overview</h2>
-        <p>A live map for the final demo path: browser to Keycloak to Kong to backend services to Kafka and Loki.</p>
+        <h2>Business overview</h2>
+        <p>Track tenant-scoped reference records and recent activity for the current account.</p>
       </section>
 
-      <section className="stack-grid">
-        {stackCards.map(([title, body, badge]) => (
-          <StatusCard key={title} label="Stack component" title={title} badge={badge} tone={badge === 'ACTIVE' ? 'blue' : 'neutral'}>
-            {body}
-          </StatusCard>
-        ))}
+      <section className="stack-grid panel-span-3">
+        <StatusCard label="Records" title={masterDataLoaded ? rows.length : 'Not loaded'} badge="Total" tone="blue">
+          Total master data records loaded in this browser session.
+        </StatusCard>
+        <StatusCard label="Active records" title={masterDataLoaded ? activeRecords : 'Not loaded'} badge="Active" tone="success">
+          Active records are computed from the loaded list.
+        </StatusCard>
+        <StatusCard label="Recent changes" title={activityLoaded ? auditEvents.length : 'Not loaded'} badge="Activity" tone="teal">
+          Activity is loaded from the audit API when requested.
+        </StatusCard>
+        <StatusCard label="Tenant" title={authState.userInfo?.tenantId ?? '(none)'} badge="Tenant" tone="indigo">
+          Tenant scope comes from the validated Keycloak token.
+        </StatusCard>
+        <StatusCard label="Role" title={role} badge="Access" tone={role === 'ACCOUNTANT' ? 'success' : 'indigo'}>
+          Role controls whether create actions are allowed by the backend.
+        </StatusCard>
       </section>
 
       <section className="panel panel-span-2">
         <div className="panel-heading">
           <div>
-            <h3>Current status</h3>
-            <p>Runtime context from the authenticated browser session.</p>
+            <h3>Recent activity</h3>
+            <p>Latest activity loaded for the current tenant.</p>
           </div>
-          <Badge tone={isKong ? 'blue' : 'warning'}>{gatewayName}</Badge>
+          <Badge tone={activityLoaded ? 'success' : 'neutral'}>{activityLoaded ? 'Loaded' : 'Not loaded'}</Badge>
         </div>
-        <div className="status-grid">
-          <label>
-            API base URL
-            <input value={apiBaseUrl} onChange={(event) => setApiBaseUrl(event.target.value)} aria-label="API base URL" />
-          </label>
-          <div className="preset-row">
-            {gatewayPresets.map((preset) => (
-              <button type="button" className="button-secondary" key={preset.url} onClick={() => setApiBaseUrl(preset.url)}>
-                {preset.label}
-              </button>
+        {recentEvents.length > 0 ? (
+          <ul className="activity-list">
+            {recentEvents.map((event) => (
+              <li key={event.eventId ?? `${event.aggregateId}-${event.consumedAt}`}>
+                <div>
+                  <strong>{formatActivity(event)}</strong>
+                  <span>{event.occurredAt ?? event.consumedAt ?? 'Time not returned'}</span>
+                </div>
+                <code>{event.eventId ?? '(no event id)'}</code>
+              </li>
             ))}
-          </div>
-          <dl className="facts">
-            <dt>User</dt>
-            <dd>{authState.userInfo?.username ?? 'Guest'}</dd>
-            <dt>tenant_id</dt>
-            <dd>{authState.userInfo?.tenantId ?? '(none)'}</dd>
-            <dt>Roles</dt>
-            <dd>{roles.join(', ') || '(none)'}</dd>
-            <dt>Last requestId</dt>
-            <dd><code>{lastResult?.requestId ?? '(none yet)'}</code></dd>
-          </dl>
-        </div>
+          </ul>
+        ) : (
+          <EmptyState title="Load activity to see recent changes">
+            Open Activity Log after creating or loading tenant activity.
+          </EmptyState>
+        )}
       </section>
 
       <section className="panel">
         <div className="panel-heading">
           <div>
-            <h3>Demo checklist</h3>
-            <p>Only mark what the UI can observe. Tool checks stay manual.</p>
+            <h3>Getting started</h3>
+            <p>Run the normal business workflow.</p>
           </div>
-          <Badge tone="indigo">Phase 1.5</Badge>
+          <Badge tone="blue">Workflow</Badge>
         </div>
-        <ul className="checklist">
-          <ChecklistItem label="Infrastructure running" state="manual" />
-          <ChecklistItem label="Logged in" state={authState.authenticated ? 'done' : 'pending'} />
-          <ChecklistItem label="API base URL is Kong" state={isKong ? 'done' : 'pending'} />
-          <ChecklistItem label="Create master data" state={demoProgress.createdMasterData ? 'done' : 'pending'} />
-          <ChecklistItem label="Audit event appears or audit API loaded" state={demoProgress.auditEventsLoaded ? 'done' : 'pending'} />
-          <ChecklistItem label="Kafka UI shows message" state="manual" />
-          <ChecklistItem label="Loki shows logs" state="manual" />
-          <ChecklistItem label="Tenant2 isolation verified" state={demoProgress.tenantIsolationChecked ? 'done' : 'pending'} />
-          <ChecklistItem label="Viewer create returns 403" state={demoProgress.viewerCreateForbidden ? 'done' : 'pending'} />
-        </ul>
+        <div className="action-list">
+          <button type="button" className="button-secondary" onClick={() => onNavigate('master-data')}>Load master data</button>
+          <button type="button" className="button-secondary" onClick={() => onNavigate('master-data')}>Create a record</button>
+          <button type="button" className="button-secondary" onClick={() => onNavigate('activity-log')}>Review activity</button>
+        </div>
+        <p className="hint">For the live architecture explanation, use the demo script to inspect Kafka UI and Grafana Loki outside the product flow.</p>
+      </section>
+
+      <section className="panel panel-span-3">
+        <div className="panel-heading">
+          <div>
+            <h3>Last request</h3>
+            <p>Use this when a user action needs backend troubleshooting.</p>
+          </div>
+          <Badge tone={lastResult?.ok ? 'success' : lastResult ? 'danger' : 'neutral'}>{lastResult ? `HTTP ${lastResult.status}` : 'No request yet'}</Badge>
+        </div>
+        <dl className="facts">
+          <dt>Request ID</dt>
+          <dd><code>{lastResult?.requestId ?? '(none yet)'}</code></dd>
+          <dt>Endpoint</dt>
+          <dd>{lastResult?.endpoint ?? '(none yet)'}</dd>
+        </dl>
       </section>
     </div>
   );

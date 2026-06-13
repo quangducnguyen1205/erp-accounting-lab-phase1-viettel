@@ -7,6 +7,7 @@ export function AppShell({ activeScreen, onNavigate, authState, apiBaseUrl, gate
       <Sidebar activeScreen={activeScreen} onNavigate={onNavigate} />
       <div className="console-main">
         <Topbar
+          activeScreen={activeScreen}
           authState={authState}
           apiBaseUrl={apiBaseUrl}
           gatewayName={gatewayName}

@@ -2,9 +2,9 @@
 
 ## Status
 
-Existing Figma file:
+Existing Figma file, currently with the old file title:
 
-[AI Knowledge Workspace - Phase 1.5 Ops Console](https://www.figma.com/design/kyPvlljW1KhQhoUvqLcjco)
+[Phase 1.5 UI design file](https://www.figma.com/design/kyPvlljW1KhQhoUvqLcjco)
 
 Current status on 2026-06-13:
 
@@ -232,8 +232,8 @@ lab-code/web-ui-demo/src/
     WelcomeScreen.jsx
     DashboardScreen.jsx
     MasterDataScreen.jsx
-    AuditEventsScreen.jsx
-    ObservabilityScreen.jsx
+    ActivityLogScreen.jsx
+    AccountScreen.jsx
 ```
 
 Recommended rename/mapping:
@@ -258,15 +258,15 @@ No backend API contract change is required.
 
 ## Approved For Coding Next
 
-The next coding task should implement the product redesign:
+The React coding pass now implements the product redesign:
 
-1. Replace old brand/title text with `Master Data Portal`.
-2. Change primary nav to Dashboard, Master Data, Activity Log, Account.
-3. Replace architecture dashboard with business overview.
-4. Move gateway/API settings into Account.
-5. Keep requestId/status/error handling.
-6. Keep Kong as default API path.
-7. Keep Keycloak theme as future work.
+1. Old brand/title text is replaced with `Master Data Portal`.
+2. Primary nav is Dashboard, Master Data, Activity Log, Account.
+3. Architecture dashboard is replaced with a business overview.
+4. Gateway/API settings moved into Account.
+5. requestId/status/error handling remains.
+6. Kong remains the default API path.
+7. Keycloak theme remains future work.
 
 ## Future Work
 

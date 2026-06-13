@@ -60,9 +60,9 @@ The UI should feel like a real internal portal that happens to be backed by the 
 
 ## Figma
 
-Existing Figma file:
+Existing Figma file, currently with the old file title:
 
-[AI Knowledge Workspace - Phase 1.5 Ops Console](https://www.figma.com/design/kyPvlljW1KhQhoUvqLcjco)
+[Phase 1.5 UI design file](https://www.figma.com/design/kyPvlljW1KhQhoUvqLcjco)
 
 Current limitation:
 
@@ -137,7 +137,7 @@ Cards:
 
 Panels:
 
-- Recent activity: latest loaded audit events if available.
+- Recent activity: latest loaded activity records if available.
 - Getting started: load records, create a record, review activity.
 - Small demo note: backend flow can be explained verbally during the mentor demo.
 
@@ -331,7 +331,7 @@ Use Inter if already available; otherwise use the system font stack.
 
 ### Phase D: Activity Log
 
-- Rename Audit Events UI to Activity Log.
+- Keep the backend audit API, but present the UI as Activity Log.
 - Keep actual endpoint `/api/audit-events`.
 - Show empty HTTP 200 as a valid tenant isolation state.
 

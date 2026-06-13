@@ -249,6 +249,12 @@ code {
   color: var(--muted);
 }
 
+.token-note {
+  color: var(--muted);
+  font-size: 0.88rem;
+  margin-top: 18px;
+}
+
 .console-shell {
   display: grid;
   grid-template-columns: 248px minmax(0, 1fr);
@@ -470,6 +476,27 @@ code {
   text-decoration: none;
 }
 
+.tool-link-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tool-link {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  color: inherit;
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  text-decoration: none;
+}
+
+.tool-link span {
+  color: var(--muted);
+}
+
 .badge {
   align-items: center;
   border: 1px solid #cbd5e1;
@@ -565,11 +592,17 @@ code {
 
 .status-grid label,
 .form-grid label,
-.inline-form label {
+.inline-form label,
+.field-label {
   color: #334155;
   display: grid;
   font-weight: 800;
   gap: 7px;
+}
+
+.table-filter {
+  margin-bottom: 16px;
+  max-width: 420px;
 }
 
 .preset-row,
@@ -651,6 +684,43 @@ code {
   text-transform: uppercase;
 }
 
+.activity-list,
+.action-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+
+.activity-list {
+  list-style: none;
+}
+
+.activity-list li {
+  align-items: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+  padding: 12px 14px;
+}
+
+.activity-list div {
+  display: grid;
+  gap: 2px;
+}
+
+.activity-list span {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.action-list button {
+  justify-content: center;
+  text-align: left;
+}
+
 .table-wrap {
   overflow-x: auto;
 }
@@ -728,6 +798,15 @@ td {
 .form-actions {
   grid-column: 1 / -1;
   justify-content: flex-end;
+}
+
+.account-actions {
+  justify-content: flex-start;
+  margin-top: 18px;
+}
+
+.account-presets {
+  margin-top: 14px;
 }
 
 .hint {
@@ -859,7 +938,8 @@ td {
   }
 
   .screen-grid,
-  .stack-grid {
+  .stack-grid,
+  .tool-link-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -900,6 +980,7 @@ td {
 
   .screen-grid,
   .stack-grid,
+  .tool-link-grid,
   .state-grid,
   .flow-strip,
   .form-grid,

@@ -3,7 +3,7 @@ export function RequestStatus({ lastResult, error }) {
     return (
       <section className="request-status request-status-idle">
         <strong>No request yet</strong>
-        <span>Run an action, then use the requestId here to inspect backend logs in Loki.</span>
+        <span>Run an action, then use the requestId here if you need to inspect backend logs.</span>
       </section>
     );
   }

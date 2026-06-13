@@ -7,49 +7,51 @@ export function WelcomeScreen({ authState, onLogin }) {
       <section className="welcome-hero">
         <div className="welcome-architecture">
           <div className="brand-block brand-block-large">
-            <span className="brand-mark">AI</span>
+            <span className="brand-mark">MD</span>
             <div>
-              <strong>AI Knowledge Workspace</strong>
-              <span>Phase 1.5 Backend Architecture Demo</span>
+              <strong>Master Data Portal</strong>
+              <span>Manage shared business data across tenants</span>
             </div>
           </div>
 
           <p>
-            A focused local ops console for demonstrating Keycloak login, Kong routing,
-            tenant-aware APIs, Kafka events, audit logs, and centralized observability.
+            Create, review and track shared reference records for each tenant.
+            Authentication, roles and tenant isolation are handled behind the scenes.
           </p>
 
           <div className="flow-grid">
-            {['React Web', 'Keycloak', 'Kong', 'tenant-demo', 'Kafka', 'audit-log-service', 'Loki'].map((item) => (
+            {['Tenant records', 'Activity history', 'Role-aware access', 'Request status'].map((item) => (
               <span key={item}>{item}</span>
             ))}
           </div>
         </div>
 
         <div className="welcome-card">
-          <p className="eyebrow">Local learning console</p>
-          <h1>Sign in to run the Phase 1.5 demo</h1>
+          <p className="eyebrow">Local business portal</p>
+          <h1>Master Data Portal</h1>
           <p>
-            The UI is a thin client. Backend services still validate JWTs, roles and tenant scope.
-            Full access tokens are never displayed.
+            Manage shared business data across tenants. Sign in to load records,
+            create a new entry and review activity history.
           </p>
 
           <button type="button" className="button-primary button-large" onClick={onLogin} disabled={authState.initializing}>
-            {authState.initializing ? 'Initializing Keycloak...' : 'Sign in with Keycloak'}
+            {authState.initializing ? 'Preparing sign in...' : 'Sign in'}
           </button>
 
           <div className="account-hints">
             <h2>Demo accounts</h2>
             <div>
               <code>tenant1-user / password</code>
-              <Badge tone="success">ACCOUNTANT</Badge>
+              <Badge tone="success">Accountant</Badge>
             </div>
             <div>
               <code>tenant2-user / password</code>
-              <Badge tone="indigo">VIEWER</Badge>
+              <Badge tone="indigo">Viewer</Badge>
             </div>
             <small>Local-only credentials for the learning lab.</small>
           </div>
+
+          <p className="token-note">Access tokens are never displayed in this UI.</p>
 
           {authState.warning && <Alert tone="warning" title="Auth warning">{authState.warning}</Alert>}
           {authState.error && <Alert tone="danger" title="Login error">{authState.error}</Alert>}

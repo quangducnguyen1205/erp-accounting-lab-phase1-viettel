@@ -1,18 +1,18 @@
 const navItems = [
-  { id: 'dashboard', label: 'Dashboard', eyebrow: 'Stack status' },
-  { id: 'master-data', label: 'Master Data', eyebrow: 'Business API' },
-  { id: 'audit-events', label: 'Audit Events', eyebrow: 'Kafka flow' },
-  { id: 'observability', label: 'Observability', eyebrow: 'Logs/tools' }
+  { id: 'dashboard', label: 'Dashboard', eyebrow: 'Overview' },
+  { id: 'master-data', label: 'Master Data', eyebrow: 'Records' },
+  { id: 'activity-log', label: 'Activity Log', eyebrow: 'History' },
+  { id: 'account', label: 'Account', eyebrow: 'Settings' }
 ];
 
 export function Sidebar({ activeScreen, onNavigate }) {
   return (
     <aside className="sidebar">
       <div className="brand-block">
-        <span className="brand-mark">AI</span>
+        <span className="brand-mark">MD</span>
         <div>
-          <strong>AI Knowledge</strong>
-          <span>Workspace Ops Console</span>
+          <strong>Master Data</strong>
+          <span>Portal</span>
         </div>
       </div>
 
@@ -31,8 +31,8 @@ export function Sidebar({ activeScreen, onNavigate }) {
       </nav>
 
       <div className="sidebar-note">
-        <strong>Local Phase 1.5</strong>
-        <span>Kong to services to Kafka to Loki</span>
+        <strong>Local demo</strong>
+        <span>Tenant records and activity history</span>
       </div>
     </aside>
   );

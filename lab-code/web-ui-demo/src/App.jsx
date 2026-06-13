@@ -4,10 +4,10 @@ import { RequestStatus } from './components/RequestStatus';
 import { createMasterData, loadAuditEvents, loadMasterData, loadMasterDataByCode } from './api';
 import { config } from './config';
 import { getAuthSnapshot, initKeycloak, keycloak, refreshToken } from './keycloak';
-import { AuditEventsScreen } from './screens/AuditEventsScreen';
+import { AccountScreen } from './screens/AccountScreen';
+import { ActivityLogScreen } from './screens/ActivityLogScreen';
 import { DashboardScreen } from './screens/DashboardScreen';
 import { MasterDataScreen } from './screens/MasterDataScreen';
-import { ObservabilityScreen } from './screens/ObservabilityScreen';
 import { WelcomeScreen } from './screens/WelcomeScreen';
 
 const initialAuthState = {
@@ -27,9 +27,9 @@ const gatewayPresets = [
 
 function defaultForm() {
   return {
-    code: `UI-DEMO-${Date.now()}`,
-    name: 'UI Demo Master Data',
-    category: 'WEB_DEMO',
+    code: `MDP-${Date.now()}`,
+    name: 'Portal Master Data',
+    category: 'BUSINESS_REFERENCE',
     isActive: true
   };
 }
@@ -92,6 +92,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [demoProgress, setDemoProgress] = useState({
+    masterDataLoaded: false,
     createdMasterData: false,
     auditEventsLoaded: false,
     tenantIsolationChecked: false,
@@ -189,6 +190,7 @@ export default function App() {
     const result = await runRequest(() => loadMasterData(apiBaseUrl.trim()));
     if (result?.ok && Array.isArray(result.data)) {
       setRows(result.data);
+      setDemoProgress((current) => ({ ...current, masterDataLoaded: true }));
     }
   }
 
@@ -221,7 +223,7 @@ export default function App() {
           return [result.data, ...current.filter((row) => row.id !== result.data.id)];
         });
       }
-      setPostCreateHint('Kafka/audit-log-service running? Wait a moment, then load Audit Events to confirm the event was stored.');
+      setPostCreateHint('Record created. Wait a moment, then open Activity Log to confirm the change appears.');
       return;
     }
 
@@ -275,36 +277,47 @@ export default function App() {
           onGenerateCode={handleGenerateCode}
           postCreateHint={postCreateHint}
           lastResult={lastResult}
+          userInfo={authState.userInfo}
         />
       );
     }
 
-    if (activeScreen === 'audit-events') {
+    if (activeScreen === 'activity-log') {
       return (
-        <AuditEventsScreen
+        <ActivityLogScreen
           events={auditEvents}
           onLoad={handleLoadAuditEvents}
           loading={loading}
           disabled={!authReady}
-          auditEventsLoaded={demoProgress.auditEventsLoaded}
+          activityLoaded={demoProgress.auditEventsLoaded}
           tenantId={currentTenantId}
         />
       );
     }
 
-    if (activeScreen === 'observability') {
-      return <ObservabilityScreen />;
+    if (activeScreen === 'account') {
+      return (
+        <AccountScreen
+          authState={authState}
+          apiBaseUrl={apiBaseUrl}
+          setApiBaseUrl={setApiBaseUrl}
+          gatewayPresets={gatewayPresets}
+          gatewayName={currentGatewayName}
+          onLogout={() => keycloak.logout({ redirectUri: window.location.origin })}
+          onRefresh={handleRefreshToken}
+        />
+      );
     }
 
     return (
       <DashboardScreen
         authState={authState}
-        apiBaseUrl={apiBaseUrl}
-        setApiBaseUrl={setApiBaseUrl}
-        gatewayPresets={gatewayPresets}
-        gatewayName={currentGatewayName}
+        rows={rows}
+        auditEvents={auditEvents}
+        masterDataLoaded={demoProgress.masterDataLoaded}
+        activityLoaded={demoProgress.auditEventsLoaded}
         lastResult={lastResult}
-        demoProgress={demoProgress}
+        onNavigate={setActiveScreen}
       />
     );
   }
