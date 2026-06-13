@@ -16,8 +16,8 @@
 | **Tiến độ** | Phase 1 core done, Phase 1.5 final UI route in polish |
 | **Tổng task** | 111 |
 | **Đã hoàn thành** | 110 / 111 |
-| **Focus hiện tại** | Phase 1.5 - final demo dry-run |
-| **Milestone tiếp theo** | #24 - final demo script hardening / optional UI visual polish |
+| **Focus hiện tại** | Phase 1.5 - final web UI design-first polish |
+| **Milestone tiếp theo** | #24 - implement approved React Web UI redesign |
 | **Demo hiện tại** | React Web UI -> Keycloak -> Gateway -> tenant-demo -> PostgreSQL/Redis/Kafka/Observability; Elasticsearch/MinIO qua HTTP mini-lab |
 
 Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; Milestone #14 đã chốt Redis cache-aside tenant-safe read path; Milestone #15 đã chốt Kafka/async messaging reference flow nhỏ; Milestone #16 đã chốt Observability baseline với Actuator, request logging, Micrometer metrics và Prometheus/Grafana local lab. Milestone #17 đã chốt API Gateway static route và React Web UI Docker-first để nhìn flow end-to-end. React Native/Expo không thuộc repo này.
@@ -447,7 +447,7 @@ Phase 1.5 bắt đầu sau buổi báo cáo mentor Đạt ngày 11/06/2026. Mụ
 | 3 | Kong Gateway | Practice gateway platform gần target architecture | `docs/07-architecture/kong-gateway/`, `lab-code/kong-gateway-lab/` | Route `/api/master-data/**` và `/api/audit-events/**`, giữ auth/requestId | Implemented local lab |
 | 4 | Audit Log Service split | Tạo service thứ hai có trách nhiệm rõ | `docs/07-architecture/microservice-boundaries/`, `lab-code/audit-log-service/` | `master-data-service` publish event, `audit-log-service` consume và lưu/log audit | Verified |
 | 5 | Cross-service Kafka flow | Biến Kafka thành event giữa services | `MasterDataChangedEvent` từ service A sang service B | Kafka UI thấy event, audit service log/store được, không dùng Kafka như database | Verified |
-| 6 | Final React Web polish | UI demo sau khi backend boundaries ổn | `lab-code/web-ui-demo/` | UI gọi Kong, load/create master data, xem audit events qua Kong | Implemented, manual browser dry-run next |
+| 6 | Final React Web polish | UI demo sau khi backend boundaries ổn | `lab-code/web-ui-demo/`, `docs/06-frontend/final-web-ui-design-plan.md` | UI gọi Kong, load/create master data, xem audit events qua Kong; design plan chốt hướng SaaS admin console | Design-first in progress |
 
 ### Service split được chọn
 
@@ -513,24 +513,25 @@ Các split chưa chọn ngay:
 
 ## Việc làm ngay trong 1-2 ngày tới
 
-### Task tiếp theo: Phase 1.5 final demo dry-run
+### Task tiếp theo: Implement approved Phase 1.5 web UI design
 
 1. Đọc:
+   - `docs/06-frontend/final-web-ui-design-plan.md`.
    - `docs/99-tong-ket/phase1-final-demo-script.md`.
    - `docs/06-frontend/react-web-keycloak-gateway-demo.md`.
    - `docs/07-architecture/overview/target-architecture-adoption-map.md`.
-2. Chuẩn bị Keycloak public client `tenant-demo-web` nếu reset volume:
-   - public client / client authentication off;
-   - `Valid redirect URIs = http://localhost:5173/*`;
-   - `Web origins = http://localhost:5173`;
-   - `tenant1-user` có role `ACCOUNTANT`, `tenant2-user` có role `VIEWER`.
-3. Chạy `tenant-demo` ở `8080`, audit-log-service ở `8082`, Kong ở `18000`, React Web UI ở `5173`, rồi dry-run script:
+2. Polish React Web UI theo hướng sidebar/topbar, Dashboard, Master Data, Audit Events và Observability screens.
+3. Giữ API contracts hiện tại:
+   - UI gọi Kong `http://localhost:18000`;
+   - backend services tự validate JWT/tenant/role;
+   - không gọi trực tiếp PostgreSQL/Redis/Kafka/MinIO/Grafana từ business UI.
+4. Sau UI polish, chạy lại full stack dry-run:
    - ACCOUNTANT load/create qua Kong;
    - load audit events qua Kong;
    - VIEWER load được nhưng create trả `403`;
    - `X-Request-Id` trên UI xuất hiện trong log `tenant-demo`/`audit-log-service`;
    - Redis/Kafka/Kafka UI/Observability quan sát qua backend nếu feature flag tương ứng bật.
-4. Dùng infra chung khi cần demo nhiều thành phần, hoặc target riêng khi chỉ test từng lab:
+5. Dùng infra chung khi cần demo nhiều thành phần, hoặc target riêng khi chỉ test từng lab:
 
 ```bash
 cd lab-code

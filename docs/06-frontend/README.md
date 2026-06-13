@@ -7,12 +7,14 @@ Folder này chỉ chứa phần frontend cần thiết để demo flow kiến tr
 ## Reading Order
 
 1. [react-web-keycloak-gateway-demo.md](react-web-keycloak-gateway-demo.md) - React Web + Keycloak + Gateway demo.
+2. [final-web-ui-design-plan.md](final-web-ui-design-plan.md) - Design-first plan for the final Phase 1.5 Ops Console polish.
 
 ## Trạng Thái
 
 - React Web UI demo đã được implement và verify ở `lab-code/web-ui-demo/`.
 - UI chạy theo Docker-first workflow qua `make web-ui-up`, không yêu cầu local npm.
 - UI là thin client: login Keycloak, gọi API qua Gateway, load/create `master_data`, lookup by code cho Redis demo path và hiển thị requestId để đối chiếu log.
+- Final UI polish đang đi theo hướng design-first qua Figma + [final-web-ui-design-plan.md](final-web-ui-design-plan.md), chưa implement React redesign.
 - Không dùng React Native hoặc Expo trong repo Viettel Phase 1 này.
 
 ## Caveat
