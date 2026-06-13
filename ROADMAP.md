@@ -13,12 +13,12 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | Phase 1 core done, Phase 1.5 final UI route in polish |
+| **Tiến độ** | Phase 1 core done, Phase 1.5 final UI direction reset to product app |
 | **Tổng task** | 111 |
 | **Đã hoàn thành** | 110 / 111 |
-| **Focus hiện tại** | Phase 1.5 - final web UI review and dry-run |
-| **Milestone tiếp theo** | #24 - final UI visual review, Figma export when available, demo dry-run |
-| **Demo hiện tại** | React Web UI -> Keycloak -> Gateway -> tenant-demo -> PostgreSQL/Redis/Kafka/Observability; Elasticsearch/MinIO qua HTTP mini-lab |
+| **Focus hiện tại** | Phase 1.5 - `Master Data Portal` UI redesign and demo runner |
+| **Milestone tiếp theo** | #24 - implement product-style React UI, then Keycloak theme later |
+| **Demo hiện tại** | React Web UI -> Keycloak -> Gateway -> tenant-demo -> PostgreSQL/Redis/Kafka/Observability; UI direction is Master Data Portal; Elasticsearch/MinIO qua HTTP mini-lab |
 
 Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; Milestone #14 đã chốt Redis cache-aside tenant-safe read path; Milestone #15 đã chốt Kafka/async messaging reference flow nhỏ; Milestone #16 đã chốt Observability baseline với Actuator, request logging, Micrometer metrics và Prometheus/Grafana local lab. Milestone #17 đã chốt API Gateway static route và React Web UI Docker-first để nhìn flow end-to-end. React Native/Expo không thuộc repo này.
 
@@ -521,7 +521,7 @@ Các split chưa chọn ngay:
    - `docs/99-tong-ket/phase1-final-demo-script.md`.
    - `docs/06-frontend/react-web-keycloak-gateway-demo.md`.
    - `docs/07-architecture/overview/target-architecture-adoption-map.md`.
-2. Chạy UI mới và review visual/UX theo các screen: Welcome, Dashboard, Master Data, Audit Events, Observability.
+2. Chạy UI mới và review visual/UX theo các screen: Welcome, Dashboard, Master Data, Activity Log, Account.
 3. Khi Figma MCP limit reset hoặc có quyền cao hơn, hoàn thiện frames/screenshots còn pending trong Figma để phục vụ handoff trực quan.
 4. Giữ API contracts hiện tại:
    - UI gọi Kong `http://localhost:18000`;

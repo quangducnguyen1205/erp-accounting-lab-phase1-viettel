@@ -30,6 +30,7 @@ GATEWAY_DIR    := gateway-demo
 KONG_DIR       := kong-gateway-lab
 WEB_UI_DIR     := web-ui-demo
 LOG_DIR        := logs
+PID_DIR        := .pids
 
 # --- Docker / Database -----------------------------------------
 
@@ -240,6 +241,10 @@ logs-dir: ## Tạo thư mục log local để Alloy tail host-run app logs
 	@mkdir -p $(LOG_DIR)
 	@touch $(LOG_DIR)/.gitkeep
 
+.PHONY: pids-dir
+pids-dir: ## Tạo thư mục PID local cho one-command demo runner
+	@mkdir -p $(PID_DIR)
+
 .PHONY: logs-clean
 logs-clean: logs-dir ## Xóa generated *.log local, giữ lại logs/.gitkeep
 	@find $(LOG_DIR) -maxdepth 1 -type f -name '*.log' -delete
@@ -380,6 +385,131 @@ web-ui-status: ## Kiểm tra React Web UI demo container
 .PHONY: web-ui-logs
 web-ui-logs: ## Xem log React Web UI demo container
 	docker logs -f viettel-web-ui-demo
+
+# --- Full local demo runner ------------------------------------
+#
+# Java backend services still run on the host via Maven/IntelliJ by
+# default. These targets are only convenience wrappers for a local demo:
+# Docker starts infra/tooling/web UI, then Maven services run in the
+# background with file logging enabled for Loki.
+
+.PHONY: demo-info
+demo-info: ## In hướng dẫn one-command local demo
+	@echo ""
+	@echo "Full local demo runner"
+	@echo "======================"
+	@echo ""
+	@echo "Start:"
+	@echo "  make demo-up"
+	@echo ""
+	@echo "Status:"
+	@echo "  make demo-status"
+	@echo ""
+	@echo "Stop:"
+	@echo "  make demo-down"
+	@echo "  make logs-clean   # optional, only when you want to delete generated *.log files"
+	@echo ""
+	@echo "What runs through Docker:"
+	@echo "  PostgreSQL, Keycloak, Kafka, Kafka UI, Kong, Loki/Grafana/Alloy, React Web UI"
+	@echo ""
+	@echo "What runs through Maven on host:"
+	@echo "  tenant-demo          -> $(LOG_DIR)/tenant-demo.log"
+	@echo "  audit-log-service    -> $(LOG_DIR)/audit-log-service.log"
+	@echo ""
+	@echo "URLs:"
+	@echo "  Web UI:        http://localhost:5173"
+	@echo "  Keycloak:      http://localhost:18080"
+	@echo "  Kong proxy:    http://localhost:18000"
+	@echo "  Kafka UI:      http://localhost:18082"
+	@echo "  Grafana Loki:  http://localhost:13001"
+	@echo ""
+	@echo "For IntelliJ development, you can still run tenant-demo and audit-log-service manually."
+
+.PHONY: demo-up
+demo-up: logs-dir pids-dir common-security-install ## Khởi chạy full local demo stack: Docker infra/tooling + Java Maven services background
+	@echo "Starting Docker infra/tooling..."
+	$(MAKE) db-up
+	$(MAKE) keycloak-up
+	$(MAKE) keycloak-setup
+	$(MAKE) kafka-up
+	$(MAKE) kong-up
+	$(MAKE) kafka-ui-up
+	$(MAKE) loki-up
+	$(MAKE) web-ui-up
+	@echo "Starting Java services with file logging..."
+	@rm -f $(LOG_DIR)/tenant-demo.log $(LOG_DIR)/audit-log-service.log
+	@if [ -f $(PID_DIR)/tenant-demo.pid ] && kill -0 $$(cat $(PID_DIR)/tenant-demo.pid) 2>/dev/null; then \
+		echo "tenant-demo already running with PID $$(cat $(PID_DIR)/tenant-demo.pid)"; \
+	else \
+		nohup sh -c 'cd $(APP_DIR) && if [ -f .env ]; then set -a; . ./.env; set +a; fi; \
+			APP_AUTH_MODE=keycloak \
+			APP_MESSAGING_ENABLED=true \
+			KAFKA_BOOTSTRAP_SERVERS=localhost:19092 \
+			LOGGING_FILE_NAME=../$(LOG_DIR)/tenant-demo.log \
+			exec ./mvnw spring-boot:run' > $(LOG_DIR)/tenant-demo-runner.log 2>&1 & \
+		echo $$! > $(PID_DIR)/tenant-demo.pid; \
+		echo "tenant-demo starting with PID $$(cat $(PID_DIR)/tenant-demo.pid). Logs: $(LOG_DIR)/tenant-demo.log"; \
+	fi
+	@if [ -f $(PID_DIR)/audit-log-service.pid ] && kill -0 $$(cat $(PID_DIR)/audit-log-service.pid) 2>/dev/null; then \
+		echo "audit-log-service already running with PID $$(cat $(PID_DIR)/audit-log-service.pid)"; \
+	else \
+		nohup sh -c 'cd $(AUDIT_LOG_DIR) && if [ -f .env ]; then set -a; . ./.env; set +a; fi; \
+			LOGGING_FILE_NAME=../$(LOG_DIR)/audit-log-service.log \
+			exec mvn spring-boot:run' > $(LOG_DIR)/audit-log-service-runner.log 2>&1 & \
+		echo $$! > $(PID_DIR)/audit-log-service.pid; \
+		echo "audit-log-service starting with PID $$(cat $(PID_DIR)/audit-log-service.pid). Logs: $(LOG_DIR)/audit-log-service.log"; \
+	fi
+	@echo ""
+	@echo "Demo stack is starting. Give Java services a moment, then open http://localhost:5173"
+	@echo "If a Java service fails, inspect $(LOG_DIR)/*-runner.log and $(LOG_DIR)/*.log"
+
+.PHONY: demo-status
+demo-status: ## Kiểm tra trạng thái full local demo stack
+	@echo ""
+	@echo "Java service processes:"
+	@if [ -f $(PID_DIR)/tenant-demo.pid ] && kill -0 $$(cat $(PID_DIR)/tenant-demo.pid) 2>/dev/null; then \
+		echo "  tenant-demo: running PID $$(cat $(PID_DIR)/tenant-demo.pid)"; \
+	else \
+		echo "  tenant-demo: not running"; \
+	fi
+	@if [ -f $(PID_DIR)/audit-log-service.pid ] && kill -0 $$(cat $(PID_DIR)/audit-log-service.pid) 2>/dev/null; then \
+		echo "  audit-log-service: running PID $$(cat $(PID_DIR)/audit-log-service.pid)"; \
+	else \
+		echo "  audit-log-service: not running"; \
+	fi
+	@echo ""
+	@echo "Docker services:"
+	@docker ps --filter "name=erp-postgres" --filter "name=viettel-keycloak" --filter "name=viettel-kafka" --filter "name=viettel-kafka-ui" --filter "name=viettel-kong" --filter "name=viettel-loki" --filter "name=viettel-alloy" --filter "name=viettel-loki-grafana" --filter "name=viettel-web-ui-demo" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+	@echo ""
+	@$(MAKE) logs-list
+
+.PHONY: demo-down
+demo-down: ## Dừng full local demo stack, giữ volumes và logs
+	@echo "Stopping Java service processes..."
+	@if [ -f $(PID_DIR)/tenant-demo.pid ] && kill -0 $$(cat $(PID_DIR)/tenant-demo.pid) 2>/dev/null; then \
+		kill $$(cat $(PID_DIR)/tenant-demo.pid); \
+		echo "Stopped tenant-demo PID $$(cat $(PID_DIR)/tenant-demo.pid)"; \
+	else \
+		echo "tenant-demo was not running"; \
+	fi
+	@rm -f $(PID_DIR)/tenant-demo.pid
+	@if [ -f $(PID_DIR)/audit-log-service.pid ] && kill -0 $$(cat $(PID_DIR)/audit-log-service.pid) 2>/dev/null; then \
+		kill $$(cat $(PID_DIR)/audit-log-service.pid); \
+		echo "Stopped audit-log-service PID $$(cat $(PID_DIR)/audit-log-service.pid)"; \
+	else \
+		echo "audit-log-service was not running"; \
+	fi
+	@rm -f $(PID_DIR)/audit-log-service.pid
+	@echo "Stopping Docker infra/tooling..."
+	-$(MAKE) web-ui-down
+	-$(MAKE) kong-down
+	-$(MAKE) kafka-ui-down
+	-$(MAKE) loki-down
+	-$(MAKE) kafka-down
+	-$(MAKE) keycloak-down
+	-$(MAKE) db-down
+	@echo ""
+	@echo "Demo stack stopped. Logs are kept under $(LOG_DIR)/. Run 'make logs-clean' when you want to delete generated logs."
 
 # --- Common dev infra ------------------------------------------
 #

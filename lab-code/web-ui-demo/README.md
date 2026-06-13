@@ -1,6 +1,6 @@
 # React Web UI demo
 
-Mini-lab này là React Web ops console để nhìn được flow Phase 1.5:
+Mini-lab này là React Web frontend để nhìn được flow Phase 1.5:
 
 ```text
 React Web UI
@@ -10,7 +10,15 @@ React Web UI
 -> PostgreSQL / Redis / Kafka / Observability
 ```
 
-Đây không phải frontend production. UI là thin client để demo kiến trúc backend, nhưng layout đã được polish theo hướng SaaS/admin console.
+Đây không phải frontend production. UI là thin client gọi backend qua Gateway, nhưng product direction mới là một business app nhỏ:
+
+```text
+Master Data Portal
+```
+
+Mục tiêu UI cuối là quản lý master data và xem activity log như một web product bình thường. Backend/infra vẫn được demo bằng lời nói, Loki/Kafka UI và docs, không phải bằng cách biến màn hình chính thành architecture dashboard.
+
+Ghi chú: code hiện tại đã có multi-screen demo shell; pass tiếp theo sẽ đổi nhãn/IA từ architecture/demo console sang `Master Data Portal`.
 
 ## Stack
 
@@ -18,7 +26,7 @@ React Web UI
 - `keycloak-js` cho login OIDC.
 - `fetch` gọi API qua Gateway.
 - CSS thuần, không dùng UI framework.
-- Single-page app nhiều màn hình bằng state nội bộ: Welcome, Dashboard, Master Data, Audit Events, Observability.
+- Single-page app nhiều màn hình bằng state nội bộ. Target IA mới: Welcome, Dashboard, Master Data, Activity Log, Account.
 
 Không dùng React Native hoặc Expo trong repo này.
 
@@ -187,12 +195,12 @@ Build output `dist/` chỉ nằm trong Docker image/layer; không commit `dist/`
 5. Trên UI:
 
    - Login bằng Keycloak.
-   - Dashboard: kiểm API base URL đang là Kong và user/tenant/role đúng.
+   - Dashboard/Account: kiểm API base URL đang là Kong và user/tenant/role đúng.
    - Master Data: bấm `Load master data`.
    - Master Data: bấm `Load by code` với một code có thật như `LAPTOP-01`.
    - Master Data: tạo record với code `UI-DEMO-*`.
-   - Audit Events: đợi một chút rồi bấm `Load audit events`.
-   - Observability: mở Grafana Loki/Kafka UI từ link và dùng LogQL recipes có sẵn.
+   - Activity Log/Audit Events: đợi một chút rồi bấm `Load audit events`.
+   - Demo docs: mở Grafana Loki/Kafka UI từ URL trong demo script nếu cần giải thích backend flow.
    - Xem `requestId` sau request.
    - Đối chiếu log `tenant-demo` và `audit-log-service` bằng requestId/event log.
 
@@ -204,9 +212,9 @@ Build output `dist/` chỉ nằm trong Docker image/layer; không commit `dist/`
 - Audit service: bấm `Load audit events` để đọc audit records qua Kong; tenant 2 không thấy audit event tenant 1.
 - Observability: Prometheus/Grafana quan sát metric từ `tenant-demo`, không phải UI gọi trực tiếp Prometheus/Grafana.
 
-## Audit events demo
+## Activity log / audit events demo
 
-Section `Audit Events` gọi:
+Activity Log dùng API audit hiện có:
 
 ```text
 GET ${VITE_API_BASE_URL}/api/audit-events
@@ -221,15 +229,17 @@ Expected behavior:
 
 UI không kết luận Kafka/audit thành công sau POST. Chỉ khi `GET /api/audit-events` trả event thật thì mới coi audit đã lưu.
 
-## Màn hình hiện có
+## Target screen direction
 
 | Screen | Vai trò |
 |---|---|
 | Welcome | Login Keycloak, account hint local, không hiển thị token. |
-| Dashboard | Stack cards, current status, API base URL preset, demo checklist. |
+| Dashboard | Business overview: total records, active records, recent changes, current tenant/role. |
 | Master Data | Load/list, load by code, create, `401`/`403`/`409`/unavailable states. |
-| Audit Events | Cross-service Kafka flow panel, audit table, tenant2 empty success state. |
-| Observability | Link local tools và LogQL recipes; không gọi Grafana/Kafka UI API trực tiếp. |
+| Activity Log | Audit table/timeline, tenant2 empty success state. Current API path remains `/api/audit-events`. |
+| Account | Username, tenant_id, roles, token status hidden, API gateway preset, logout. |
+
+Backend/observability links stay in docs or a small secondary demo note, not primary product navigation.
 
 ## Debug login state
 

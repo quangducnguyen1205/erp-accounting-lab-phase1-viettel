@@ -2,47 +2,62 @@
 
 ## Status
 
-Figma file:
+Existing Figma file:
 
 [AI Knowledge Workspace - Phase 1.5 Ops Console](https://www.figma.com/design/kyPvlljW1KhQhoUvqLcjco)
 
 Current status on 2026-06-13:
 
-- `00 Design System` exists and was generated in Figma in the previous design pass.
-- `01 Web App Screens + Demo Flow` exists as a page, but the full screen set could not be generated in this pass.
-- `02 Keycloak Theme + Handoff Notes` exists as a page, but the Keycloak frames could not be generated in this pass.
-- The Figma Starter MCP tool-call limit is currently blocking metadata inspection, screen creation and screenshot export.
-- React implementation now follows this handoff directly in `lab-code/web-ui-demo/src/` as a multi-screen console. Full Figma frames/screenshots are still useful for visual review, but no longer block the first React implementation.
+- The previous Figma design-system page exists, but it still reflects the old architecture-console direction.
+- The product direction has changed to `Master Data Portal`.
+- The Figma Starter MCP tool-call limit is currently blocking metadata inspection, screen creation, file rename and screenshot export.
+- This document and [final-web-ui-design-plan.md](final-web-ui-design-plan.md) are the source of truth until the next Figma pass.
 
-This document records the exact intended Figma frames and screenshot handoff so the next Figma pass can complete the screen set without rethinking the design.
+## Product Direction
 
-## Pages And Frames
+The UI should be a normal SaaS-style business web app:
+
+```text
+Master Data Portal
+```
+
+It is not an architecture console. Backend technologies are still real and demoable, but they should be explained verbally and in docs rather than becoming the main product navigation.
+
+## Pages And Frames To Create Next
 
 ### `00 Design System`
 
-Existing page from the previous pass.
+Keep or revise the existing design-system page, but update labels and examples to the new product name.
 
-Contains:
+Components to include:
 
-- color tokens;
-- typography and spacing examples;
-- controls and state examples;
-- application component patterns.
+- sidebar nav item;
+- topbar;
+- status badge;
+- role badge;
+- tenant badge;
+- requestId chip;
+- API status card;
+- table;
+- form field;
+- primary/secondary/danger buttons;
+- alert/toast;
+- empty state.
 
-### `01 Web App Screens + Demo Flow`
+### `01 Product Screens`
 
 Frames to create:
 
 1. `01 Welcome - Logged Out`
-2. `02 Dashboard - Architecture Overview`
-3. `03 Master Data - ACCOUNTANT Success`
+2. `02 Dashboard - Business Overview`
+3. `03 Master Data - Accountant Success`
 4. `04 Master Data - Error States`
-5. `05 Audit Events - Tenant 1`
-6. `06 Audit Events - Tenant 2 Empty`
-7. `07 Observability`
-8. `08 Demo Flow Map`
+5. `05 Activity Log - Tenant 1`
+6. `06 Activity Log - Tenant 2 Empty`
+7. `07 Account - Auth And Gateway Settings`
+8. `08 Demo Flow Notes`
 
-### `02 Keycloak Theme + Handoff Notes`
+### `02 Keycloak Theme Concept`
 
 Frames to create:
 
@@ -50,9 +65,77 @@ Frames to create:
 2. `02 Keycloak Login - Error`
 3. `03 Keycloak Theme Handoff`
 
+## Frame Notes
+
+### Welcome - Logged Out
+
+- Title: `Master Data Portal`.
+- Subtitle: `Manage shared business data across tenants`.
+- Primary action: `Sign in`.
+- Demo users:
+  - `tenant1-user / password` - Accountant.
+  - `tenant2-user / password` - Viewer.
+- Note: tokens are never displayed.
+
+### Dashboard - Business Overview
+
+Show business metrics, not stack cards:
+
+- total master data records;
+- active records;
+- recent changes;
+- current tenant;
+- current role;
+- recent activity preview.
+
+### Master Data
+
+Show the core business task:
+
+- search/filter;
+- load list;
+- load by code;
+- create record;
+- table with Code, Name, Type, Status, Updated;
+- requestId/status near actions;
+- duplicate `409`, forbidden `403`, missing auth `401`, unavailable and unexpected error states.
+
+### Activity Log
+
+Use user-facing language:
+
+- `Activity Log`, not `Kafka Events`.
+- Empty state: `No activity for this tenant`.
+- Positive tenant isolation copy for tenant 2.
+- Event details can include event ID in small text.
+
+### Account
+
+Show:
+
+- username;
+- `tenant_id`;
+- roles;
+- token status: `available (hidden)`;
+- API base URL preset: Kong Gateway and Spring Gateway legacy;
+- logout.
+
+### Demo Flow Notes
+
+Keep backend explanation secondary:
+
+```text
+Sign in
+-> Create master data
+-> Activity appears
+-> Mentor can inspect Kafka UI and Loki outside the product UI
+-> Tenant2 isolation
+-> Viewer create returns 403
+```
+
 ## Screenshot Gallery
 
-Screenshots were not exported in this pass because the Figma MCP tool-call limit blocked `get_metadata`, `use_figma` and screenshot operations.
+Screenshots were not exported because the Figma MCP tool-call limit blocked screen creation and export.
 
 Expected screenshot directory:
 
@@ -60,98 +143,81 @@ Expected screenshot directory:
 docs/06-frontend/images/final-ui-design/
 ```
 
-Expected screenshot filenames:
+Expected screenshot filenames after the next Figma pass:
 
 ```text
 01-welcome-logged-out.png
-02-dashboard-architecture-overview.png
+02-dashboard-business-overview.png
 03-master-data-accountant-success.png
 04-master-data-error-states.png
-05-audit-events-tenant1.png
-06-audit-events-tenant2-empty.png
-07-observability.png
-08-demo-flow-map.png
+05-activity-log-tenant1.png
+06-activity-log-tenant2-empty.png
+07-account-auth-gateway-settings.png
+08-demo-flow-notes.png
 09-keycloak-login-default.png
 10-keycloak-login-error.png
 11-keycloak-theme-handoff.png
 ```
 
-The folder is kept in Git with `.gitkeep`; generated PNGs should be added only after they are exported from the actual Figma frames and checked for secrets/tokens.
+The folder should stay in Git with `.gitkeep`; generated PNGs should be added only after checking for secrets/tokens/private data.
 
 ## Design Decisions
 
 ### Sidebar And Topbar Layout
 
-The final UI should move away from a single technical test page and become a small SaaS-style console:
-
-- left sidebar for route-level navigation;
-- topbar for user, tenant, role and API base URL;
-- dense content panels for backend demo workflows;
-- no oversized marketing hero after login.
-
-Recommended nav items:
-
-- Dashboard.
-- Master Data.
-- Audit Events.
-- Observability.
+- Sidebar: Dashboard, Master Data, Activity Log, Account.
+- Topbar: product context, current tenant/role, login/logout status.
+- Avoid stack cards as primary UI.
 
 ### Role And Tenant Visibility
 
-The authenticated state should be visible without exposing tokens:
+The UI may display:
 
 - username;
 - `tenant_id`;
-- role badge, for example `ACCOUNTANT` or `VIEWER`;
-- token availability shown only as `available (hidden)`.
+- role badge;
+- token state as `available (hidden)`.
 
-The UI can display these claims for learning, but backend services remain responsible for JWT validation, role checks and tenant isolation.
+Backend services remain responsible for JWT validation, role checks and tenant isolation.
 
 ### RequestId And Status Visibility
 
 Every API action should show:
 
 - HTTP status;
-- endpoint;
+- endpoint/action;
 - requestId;
-- short explanation for `401`, `403`, `409`, `500` and service-unavailable states.
+- short explanation for `401`, `403`, `409`, `500` and unavailable states.
 
-This supports the core demo behavior: take a requestId from the UI and search it in Loki/Grafana.
+### Observability Is Outside The Product Flow
 
-### Observability Is Links And Recipes
+The product UI may include small demo notes or links, but it should not call Grafana/Loki/Kafka UI APIs.
 
-The Observability screen should not call Grafana, Loki or Kafka UI APIs directly.
+The demo script can explain:
 
-It should provide:
-
-- local tool links;
-- practical LogQL recipes;
-- explanation that `service` and `source` are labels;
-- explanation that requestId/code/status are searched as text.
+- activity is backed by Kafka and `audit-log-service`;
+- logs are inspected in Grafana Loki;
+- Kafka transport is inspected in Kafka UI.
 
 ### Keycloak Theme Is Separate From React UI
-
-The Keycloak login theme is a later implementation task. It should visually match the React console, but it must not change authentication logic.
 
 Future theme path:
 
 ```text
-lab-code/keycloak-lab/themes/<theme-name>/login/theme.properties
-lab-code/keycloak-lab/themes/<theme-name>/login/login.ftl
-lab-code/keycloak-lab/themes/<theme-name>/login/resources/css/styles.css
+lab-code/keycloak-lab/themes/master-data-portal/login/theme.properties
+lab-code/keycloak-lab/themes/master-data-portal/login/login.ftl
+lab-code/keycloak-lab/themes/master-data-portal/login/resources/css/styles.css
 ```
+
+Do not change auth logic when implementing the theme.
 
 ## Implementation Mapping
 
-Potential React structure for the later implementation:
+The next React task should adjust the already-created component structure:
 
 ```text
 lab-code/web-ui-demo/src/
   App.jsx
-  api.js
-  config.js
-  keycloak.js
-  styles.css
   components/
     AppShell.jsx
     Sidebar.jsx
@@ -170,44 +236,41 @@ lab-code/web-ui-demo/src/
     ObservabilityScreen.jsx
 ```
 
-The current app may stay single-route if that keeps the demo simpler, but the component boundaries above make the redesign easier to read.
+Recommended rename/mapping:
 
-Current API helpers already map cleanly:
+| Current concept | Product concept |
+|---|---|
+| Audit Events | Activity Log |
+| Observability | Account secondary demo/help notes, not primary nav |
+| Architecture dashboard | Business dashboard |
+| AI Knowledge Workspace | Master Data Portal |
+
+Current API helpers remain usable:
 
 | UI screen | Existing helper |
 |---|---|
 | Master Data list | `loadMasterData(apiBaseUrl)` |
 | Load by code | `loadMasterDataByCode(code, apiBaseUrl)` |
 | Create master data | `createMasterData(payload, apiBaseUrl)` |
-| Audit Events | `loadAuditEvents(apiBaseUrl, limit)` |
+| Activity Log | `loadAuditEvents(apiBaseUrl, limit)` |
 
 No backend API contract change is required.
 
 ## Approved For Coding Next
 
-The first React implementation has been completed from this handoff. The next coding/refinement pass should review the running UI and adjust visuals/states against the approved design direction:
+The next coding task should implement the product redesign:
 
-1. Review app shell: sidebar, topbar, route state and layout tokens.
-2. Review Dashboard screen: architecture cards and demo checklist.
-3. Review Master Data screen: list/create/load-by-code and API state handling.
-4. Review Audit Events screen: table, flow panel and tenant2 empty success state.
-5. Review Observability screen: local tool links and LogQL recipes.
-6. Run final QA: ACCOUNTANT flow, VIEWER flow, duplicate `409`, requestId log search.
+1. Replace old brand/title text with `Master Data Portal`.
+2. Change primary nav to Dashboard, Master Data, Activity Log, Account.
+3. Replace architecture dashboard with business overview.
+4. Move gateway/API settings into Account.
+5. Keep requestId/status/error handling.
+6. Keep Kong as default API path.
+7. Keep Keycloak theme as future work.
 
 ## Future Work
 
-- Keycloak custom login theme implementation.
-- Optional tool health probes.
-- Optional metrics dashboard link polish.
-- Optional screenshots regeneration after visual review.
-
-## Remaining Manual/Figma Work
-
-The next Figma pass should:
-
-1. Open `01 Web App Screens + Demo Flow`.
-2. Create the eight web app frames listed above.
-3. Open `02 Keycloak Theme + Handoff Notes`.
-4. Create the three Keycloak/handoff frames listed above.
-5. Export PNG screenshots into `docs/06-frontend/images/final-ui-design/`.
-6. Update this handoff doc from pending screenshots to an embedded screenshot gallery.
+- Rename/update Figma file when MCP limit allows.
+- Generate product-focused Figma frames and screenshots.
+- Implement Keycloak custom login theme.
+- Optional final visual QA after the React redesign.

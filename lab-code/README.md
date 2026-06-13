@@ -7,7 +7,7 @@ Thư mục này là không gian thực hành code, song song với lý thuyết 
 Phase 1 hiện có đường demo end-to-end:
 
 ```text
-React Web UI
+React Web UI / Master Data Portal
 -> Keycloak login
 -> Kong Gateway
 -> tenant-demo backend + audit-log-service
@@ -24,7 +24,7 @@ Phase 1.5 đã bắt đầu chuyển một số stub thành runtime lab:
 - `audit-log-service/`: service split đầu tiên, consume Kafka event và expose audit API.
 - `common-security/`: shared Maven module cho tenant context, JWT tenant filter và Keycloak role converter dùng chung.
 
-`loki-lab/`, `kafka-ui-lab/` và `kong-gateway-lab/` đã có Docker Compose và Makefile targets riêng. `audit-log-service/` là Java service độc lập nhưng chạy Maven/IntelliJ trên host giống `tenant-demo`. Cross-service Kafka flow đã verify; React Web UI đã có đường gọi Kong và section đọc audit events cho final demo.
+`loki-lab/`, `kafka-ui-lab/` và `kong-gateway-lab/` đã có Docker Compose và Makefile targets riêng. `audit-log-service/` là Java service độc lập nhưng chạy Maven/IntelliJ trên host giống `tenant-demo`. Cross-service Kafka flow đã verify; React Web UI đang được realign thành `Master Data Portal`, một business UI nhỏ cho master data và activity log thay vì architecture console.
 
 ## Nguyên tắc tối thượng
 
@@ -161,6 +161,23 @@ File `lab-code/logs/*.log` là local artifact, không commit.
 
 Mục tiêu là giữ từng mini-lab cô lập được, nhưng vẫn có một đường nhanh để bật hạ tầng demo chung.
 
-React Web UI demo nằm ở `web-ui-demo/`. UI chạy bằng Docker, mặc định gọi Kong Gateway, và không gọi trực tiếp PostgreSQL/Redis/Kafka/MinIO/Prometheus/Grafana trong business flow.
+Khi muốn bật toàn bộ demo local nhanh hơn, dùng one-command runner:
+
+```bash
+make demo-info
+make demo-up
+make demo-status
+```
+
+`demo-up` bật Docker infra/tooling/web UI, rồi chạy `tenant-demo` và `audit-log-service` bằng Maven trên host ở background. PID local nằm trong `.pids/`; log Java service nằm trong `logs/`.
+
+Dừng demo:
+
+```bash
+make demo-down
+make logs-clean   # optional, chỉ khi muốn xóa generated *.log
+```
+
+React Web UI demo nằm ở `web-ui-demo/`. UI chạy bằng Docker, mặc định gọi Kong Gateway, và không gọi trực tiếp PostgreSQL/Redis/Kafka/MinIO/Prometheus/Grafana trong business flow. Product direction mới là `Master Data Portal`.
 
 `common-security/` không phải runtime service. Keycloak vẫn là Auth Service/Identity Provider; `tenant-demo` và `audit-log-service` tự validate JWT như Resource Server, rồi dùng shared module để tránh duplicate `TenantContext`, tenant claim filter và role converter. Khi chạy Maven service riêng từ local, Makefile sẽ install module này trước qua `make common-security-install`.

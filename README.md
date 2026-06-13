@@ -8,7 +8,7 @@ Mục tiêu của repo không phải là lưu mọi nháp học tập, mà là l
 
 - Đã hoàn thành nền tảng SaaS, multi-tenant, SQL playground, migration/locking, ACID/isolation và tenant-aware backend API.
 - Đã có demo Spring Boot nhỏ trong `lab-code/tenant-demo` với PostgreSQL/Flyway, tenant-aware API, JWT tạm fallback, Keycloak AuthN/AuthZ mode và các mini-lab architecture.
-- Phase 1 hiện đã demo được flow end-to-end bằng React Web UI mỏng -> Keycloak -> Gateway -> `tenant-demo` -> PostgreSQL/Redis/Kafka/Observability. UI này là demo web, không phải React Native/Expo và không phải frontend production.
+- Phase 1 hiện đã demo được flow end-to-end bằng React Web UI mỏng -> Keycloak -> Gateway -> `tenant-demo` -> PostgreSQL/Redis/Kafka/Observability. UI này là demo web, không phải React Native/Expo và không phải frontend production. Product direction mới cho UI là `Master Data Portal`: master data + activity log như một app nghiệp vụ nhỏ, không phải architecture console.
 - Sau buổi báo cáo mentor ngày 11/06/2026, Phase 1.5 bắt đầu bằng runtime tooling: Loki log aggregation, Kafka UI và Kong Gateway đã có local lab; `audit-log-service` đã được thêm làm service split đầu tiên để biến Kafka thành cross-service flow, rồi mới polish UI cuối.
 
 ## Cấu trúc thư mục

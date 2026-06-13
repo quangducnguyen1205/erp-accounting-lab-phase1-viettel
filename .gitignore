@@ -35,6 +35,9 @@ node_modules/
 dist/
 **/dist/
 
+# Local demo process bookkeeping
+lab-code/.pids/
+
 # File build từ LaTeX
 *.aux
 *.log
