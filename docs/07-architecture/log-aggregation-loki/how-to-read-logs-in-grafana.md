@@ -10,6 +10,34 @@ Mục tiêu của guide này không phải học thêm tool mới, mà là biế
 4. Chọn datasource `Loki`.
 5. Chọn time range ngắn, ví dụ `Last 15 minutes`, để log dễ đọc.
 
+Nếu muốn xem từng bước bằng ảnh UI thật, đọc thêm:
+
+- [grafana-loki-ui-screenshot-guide.md](grafana-loki-ui-screenshot-guide.md)
+
+## Using Grafana UI without memorizing LogQL
+
+Bạn không cần nhớ toàn bộ LogQL ngay từ đầu. Cách làm thực tế:
+
+1. Mở `Explore`.
+2. Chọn datasource `Loki`.
+3. Ở Builder mode, mở `Label filters`.
+4. Chọn label `service`.
+5. Chọn value như `tenant-demo`, `audit-log-service`, `kong-gateway`, hoặc `web-ui-demo`.
+6. Bấm `Run query`.
+7. Khi đã đúng service/layer, chuyển sang Code mode hoặc dùng line filter để thêm:
+
+```logql
+|= "LOKI-UI-DEMO"
+```
+
+hoặc:
+
+```logql
+|= "requestId="
+```
+
+Tư duy là: chọn label trước để thu hẹp phạm vi, rồi mới search text trong log message.
+
 ## Query theo service
 
 Query tổng hợp các service chính:

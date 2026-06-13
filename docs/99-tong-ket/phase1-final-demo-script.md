@@ -111,6 +111,7 @@ Grafana local dùng `admin/admin` chỉ cho lab local.
 Nếu cần demo riêng cách đọc log, dùng guide:
 
 - `docs/07-architecture/log-aggregation-loki/how-to-read-logs-in-grafana.md`
+- `docs/07-architecture/log-aggregation-loki/grafana-loki-ui-screenshot-guide.md`
 
 ### B. Redis cache-aside
 
