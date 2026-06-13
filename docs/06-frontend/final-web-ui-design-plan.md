@@ -51,6 +51,8 @@ Because the current Figma account is on a Starter plan, the file is organized in
 
 The Figma MCP call limit stopped the automated screen generation after the design-system page. This markdown spec is therefore the source of truth for the remaining screen design until the next manual or automated Figma pass.
 
+Screen handoff and expected screenshot filenames are tracked in [final-web-ui-figma-screen-handoff.md](final-web-ui-figma-screen-handoff.md).
+
 ## Screen List
 
 ### 1. Welcome / Logged Out
