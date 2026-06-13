@@ -1,10 +1,10 @@
-package com.viettel.audit.context;
+package com.viettel.common.security;
 
 /*
- * Request-scoped tenant holder for audit-log-service.
+ * Request-scoped tenant holder shared by backend resource servers.
  *
- * Service nay khong dung chung class voi tenant-demo de giu boundary ro:
- * moi service tu validate token va tu tao tenant context cua minh.
+ * This is infrastructure plumbing only: services still validate JWTs,
+ * enforce route rules, and query their own tenant-scoped data.
  */
 public final class TenantContext {
 

@@ -24,6 +24,8 @@ Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. 
 
 Ghi chú 11/06 sau khi báo cáo mentor Đạt: Phase 1 core learning coi như đủ nền. Phase 1.5 sẽ đi theo hướng demo production-like hơn: centralized logs bằng Loki/Grafana, Kafka UI, Kong Gateway, tách thêm `audit-log-service`, Kafka cross-service flow, rồi mới polish React Web UI cuối. Keycloak local đã được chuyển sang persistent DB + bootstrap script để demo không phụ thuộc thao tác tạo realm/client/user thủ công sau mỗi lần reset.
 
+Ghi chú security Phase 1.5: không tạo runtime `auth-service` tự viết. Keycloak đã là Auth Service/Identity Provider của demo; `tenant-demo` và `audit-log-service` là Resource Server tự validate JWT. Phần duplicated security plumbing được gom vào shared module `lab-code/common-security`.
+
 ---
 
 ## Chú thích
@@ -156,6 +158,7 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 | Temporary JWT auth | Core bridge | `docs/05-security/jwt-spring-security-temporary.md` | `SecurityConfig`, `JwtTokenService`, `JwtTenantContextFilter` | MockMvc + HTTP valid/invalid JWT | #5 | Đã đóng |
 | Keycloak/OAuth2/OIDC | Mini-lab AuthN/token validation | `docs/05-security/keycloak-oidc-mental-model.md`, `docs/05-security/keycloak-oauth2-oidc-awareness.md`, `docs/05-security/keycloak-admin-console-guide.md` | `lab-code/keycloak-lab/`, `APP_AUTH_MODE=keycloak` | Lấy token Keycloak, gọi API tenant-aware, verify issuer/JWKS/claims | #9 | Đã verify mini-lab |
 | Keycloak Authorization / RBAC / tenant-scope | Mini-lab đã verify | `docs/05-security/keycloak-authorization-rbac-tenant-scope.md`, `docs/05-security/keycloak-authorization-code-guide-spring-boot.md` | Role claim, Spring Security authorities converter, endpoint/service authorization nhỏ | Allowed role `200`, missing role `403`, cross-tenant vẫn `404`/không leak | #12 | Đã đóng |
+| Shared security module | Phase 1.5 refactor | `docs/07-architecture/security/keycloak-vs-auth-service.md`, `docs/07-architecture/security/common-security-code-walkthrough.md` | `lab-code/common-security/`, tenant-demo/audit-log-service dependency | Maven validate/test, behavior giữ nguyên 401/403/tenant isolation | #24 | Đã thêm |
 | React Web frontend | Thin demo Docker-first | `docs/06-frontend/react-web-keycloak-gateway-demo.md` | `lab-code/web-ui-demo/` gọi Kong bằng Keycloak token | Login Keycloak, ACCOUNTANT load/create/load audit events, VIEWER load nhưng create `403`, requestId nối log | #17/#23 | Đã update Phase 1.5 demo |
 | API Gateway/service discovery/load balancer | Mini-lab static route + awareness | `docs/07-architecture/api-gateway-service-discovery/api-gateway-foundation.md`, `docs/07-architecture/api-gateway-service-discovery/service-discovery-load-balancing-awareness.md` | `lab-code/gateway-demo/` route `/api/**` tới `tenant-demo` | Gateway forward Authorization + X-Request-Id, backend vẫn validate token/tenant | #17 | Đã đóng |
 | Elasticsearch / Elastic Stack | Mini-lab đã verify | `docs/07-architecture/search-elasticsearch/elasticsearch-search-service.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-request-response-shapes.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-code-guide-spring-boot.md` | `lab-code/elasticsearch-lab/` + `com.viettel.demo.search` | Search tenant 1/2, no leakage | #11 | Đã đóng |

@@ -2,16 +2,13 @@ package com.viettel.demo.security;
 
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /*
  * ==============================================================
@@ -23,9 +20,8 @@ import java.util.Objects;
  * Spring Security Resource Server/JwtDecoder chịu trách nhiệm validate
  * chữ ký, expiration và issuer trước.
  *
- * Service này chỉ làm hai việc học tập:
- * 1. tạo dev token cho tenant 1/tenant 2;
- * 2. đọc claim từ Jwt object đã validate để JwtTenantContextFilter dùng.
+ * Service này chỉ tạo dev token cho tenant 1/tenant 2.
+ * Phần đọc tenant_id từ Jwt đã validate nằm trong common-security.
  *
  * [Quan trọng]
  * - JWT_SECRET không phải password user.
@@ -69,40 +65,5 @@ public class JwtTokenService {
 
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
         return jwtEncoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
-    }
-
-    public JwtClaims extractClaims(Jwt jwt) {
-        Objects.requireNonNull(jwt, "jwt must not be null");
-        return new JwtClaims(
-                extractTenantId(jwt),
-                jwt.getSubject(),
-                extractRoles(jwt)
-        );
-    }
-
-    private Long extractTenantId(Jwt jwt) {
-        Object rawTenantId = jwt.getClaim("tenant_id");
-        if (rawTenantId instanceof Number number) {
-            return number.longValue();
-        }
-        if (rawTenantId instanceof String text && !text.isBlank()) {
-            return Long.parseLong(text);
-        }
-        throw new IllegalArgumentException("tenant_id claim is missing or invalid");
-    }
-
-    private List<String> extractRoles(Jwt jwt) {
-        Object rawRoles = jwt.getClaim("roles");
-        if (!(rawRoles instanceof List<?> values)) {
-            return List.of();
-        }
-
-        List<String> roles = new ArrayList<>();
-        for (Object value : values) {
-            if (value != null) {
-                roles.add(value.toString());
-            }
-        }
-        return roles;
     }
 }

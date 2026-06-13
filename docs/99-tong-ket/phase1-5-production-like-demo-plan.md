@@ -13,6 +13,7 @@ Hiện repo đã có:
 - Spring Cloud Gateway static route lab để học route/filter concept, và Kong Gateway DB-less lab làm gateway chính cho Phase 1.5.
 - `tenant-demo` Spring Boot backend: tenant-aware `master_data`, PostgreSQL/Flyway, Redis cache-aside, Kafka producer/consumer, MinIO, Elasticsearch, Actuator/logging/Micrometer.
 - `audit-log-service`: service split đầu tiên, consume Kafka event và expose read-only audit API theo tenant.
+- `common-security`: shared Maven module cho security plumbing dùng lại giữa `tenant-demo` và `audit-log-service`; không phải runtime auth-service.
 - Prometheus/Grafana local lab cho metrics.
 - Docker-first workflow qua `lab-code/Makefile`.
 
@@ -78,6 +79,9 @@ Observability
 Kafka UI
   -> inspect broker/topic/message/consumer group
 
+Shared code
+  -> common-security module for JWT tenant context and role conversion
+
 Optional existing labs
   -> MinIO file storage
   -> Elasticsearch search
@@ -113,6 +117,7 @@ Lý do chính:
 4. **Audit-log-service skeleton + implementation**: đã có service nhỏ consume Kafka event, có schema audit riêng, logs và read API.
 5. **Cross-service Kafka verification**: đã verify create master data -> event -> audit service consumed/stored/logged.
 6. **Final React Web polish**: UI gọi Kong, có section xem audit events qua audit API.
+7. **Shared security module**: không tạo runtime `auth-service`; Keycloak là IAM/Auth Service, còn duplicated Resource Server plumbing được gom vào `lab-code/common-security`.
 
 ## 8. Non-goals
 

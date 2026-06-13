@@ -1,6 +1,8 @@
 package com.viettel.demo.security;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import com.viettel.common.security.JwtAuthenticationConverters;
+import com.viettel.common.security.JwtTenantContextFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -8,17 +10,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
-
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 /*
  * ==============================================================
@@ -64,8 +60,6 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             AuthProperties authProperties,
-            JwtProperties jwtProperties,
-            JwtTokenService jwtTokenService,
             JwtAuthenticationConverter jwtAuthenticationConverter
     ) throws Exception {
         http
@@ -97,7 +91,7 @@ public class SecurityConfig {
                             jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)
                     ))
                     .addFilterAfter(
-                            new JwtTenantContextFilter(jwtTokenService),
+                            new JwtTenantContextFilter(),
                             BearerTokenAuthenticationFilter.class
                     )
                     .build();
@@ -136,29 +130,22 @@ public class SecurityConfig {
                         jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)
                 ))
                 .addFilterAfter(
-                        new JwtTenantContextFilter(jwtTokenService),
+                        new JwtTenantContextFilter(),
                         BearerTokenAuthenticationFilter.class
                 )
                 .build();
     }
 
     @Bean
-    JwtAuthenticationConverter jwtAuthenticationConverter(KeycloakRoleConverter keycloakRoleConverter) {
+    JwtAuthenticationConverter jwtAuthenticationConverter(AuthProperties authProperties) {
         /*
          * Converter này chạy theo từng Jwt đã validate, không chạy lúc app startup.
          * Scope OAuth2 mặc định vẫn thành SCOPE_*, còn Keycloak/local roles
          * được map thêm thành ROLE_* để dùng hasRole(...) hoặc @PreAuthorize.
          */
-        JwtGrantedAuthoritiesConverter scopeConverter = new JwtGrantedAuthoritiesConverter();
-
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            Set<GrantedAuthority> authorities = new LinkedHashSet<>();
-            authorities.addAll(scopeConverter.convert(jwt));
-            authorities.addAll(keycloakRoleConverter.convert(jwt));
-            return authorities;
-        });
-        return converter;
+        return JwtAuthenticationConverters.withDefaultScopesAndKeycloakRoles(
+                authProperties.getKeycloak().getClientId()
+        );
     }
 
     @Bean

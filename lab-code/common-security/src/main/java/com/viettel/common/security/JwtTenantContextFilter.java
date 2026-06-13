@@ -1,6 +1,5 @@
-package com.viettel.audit.security;
+package com.viettel.common.security;
 
-import com.viettel.audit.context.TenantContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,15 +7,29 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-@Component
+/*
+ * Bridges a Spring-validated Jwt into TenantContext for one request.
+ *
+ * The filter does not validate tokens itself. It must run after Spring
+ * Security's BearerTokenAuthenticationFilter.
+ */
 public class JwtTenantContextFilter extends OncePerRequestFilter {
 
-    public static final String TENANT_ID_REQUEST_ATTRIBUTE = "tenantId";
+    public static final String TENANT_ID_REQUEST_ATTRIBUTE = SecurityConstants.TENANT_ID_REQUEST_ATTRIBUTE;
+
+    private final TenantClaimResolver tenantClaimResolver;
+
+    public JwtTenantContextFilter() {
+        this(new TenantClaimResolver());
+    }
+
+    public JwtTenantContextFilter(TenantClaimResolver tenantClaimResolver) {
+        this.tenantClaimResolver = tenantClaimResolver;
+    }
 
     @Override
     protected void doFilterInternal(
@@ -27,7 +40,7 @@ public class JwtTenantContextFilter extends OncePerRequestFilter {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
-                Long tenantId = extractTenantId(jwt);
+                Long tenantId = tenantClaimResolver.resolveTenantId(jwt);
                 if (tenantId == null || tenantId <= 0) {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid tenant_id claim");
                     return;
@@ -44,16 +57,5 @@ public class JwtTenantContextFilter extends OncePerRequestFilter {
         } finally {
             TenantContext.clear();
         }
-    }
-
-    private Long extractTenantId(Jwt jwt) {
-        Object rawTenantId = jwt.getClaim("tenant_id");
-        if (rawTenantId instanceof Number number) {
-            return number.longValue();
-        }
-        if (rawTenantId instanceof String text && !text.isBlank()) {
-            return Long.parseLong(text);
-        }
-        return null;
     }
 }

@@ -1,6 +1,6 @@
 package com.viettel.demo.entity;
 
-import com.viettel.demo.context.TenantContext;
+import com.viettel.common.security.TenantContext;
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;

@@ -22,6 +22,7 @@ Phase 1.5 đã bắt đầu chuyển một số stub thành runtime lab:
 - `kafka-ui-lab/`: inspect topic/message/consumer group.
 - `kong-gateway-lab/`: Kong DB-less/declarative gateway lab.
 - `audit-log-service/`: service split đầu tiên, consume Kafka event và expose audit API.
+- `common-security/`: shared Maven module cho tenant context, JWT tenant filter và Keycloak role converter dùng chung.
 
 `loki-lab/`, `kafka-ui-lab/`, `kong-gateway-lab/` và `audit-log-service/` đã có Docker Compose và Makefile targets riêng. Cross-service Kafka flow đã verify; React Web UI đã có đường gọi Kong và section đọc audit events cho final demo.
 
@@ -38,13 +39,16 @@ Phase 1.5 đã bắt đầu chuyển một số stub thành runtime lab:
 ```text
 lab-code/
 ├── README.md                          ← File này
+├── common-security/                   ← Shared security plumbing cho các Resource Server
+│   └── src/main/java/com/viettel/common/security/
+│       ├── TenantContext.java                 ← ThreadLocal tenant context dùng chung
+│       ├── JwtTenantContextFilter.java        ← Đọc tenant_id từ JWT đã validate
+│       └── KeycloakRoleConverter.java         ← Map Keycloak roles sang ROLE_*
 ├── tenant-demo/                       ← PoC chính: Spring Boot + PostgreSQL
 │   ├── src/main/java/com/viettel/demo/
 │   │   ├── TenantDemoApplication.java         ← Entry point
-│   │   ├── config/
-│   │   │   └── TenantFilter.java              ← TODO: Servlet filter
-│   │   ├── context/
-│   │   │   └── TenantContext.java             ← TODO: ThreadLocal
+│   │   ├── security/
+│   │   │   └── SecurityConfig.java            ← Resource Server + endpoint rules
 │   │   ├── entity/
 │   │   │   ├── TenantAwareEntity.java         ← TODO: Base entity
 │   │   │   └── MasterData.java                ← TODO: Business entity
@@ -110,6 +114,7 @@ make minio-up       # MinIO cho file storage mini-lab
 make redis-up       # Redis cho cache mini-lab
 make kafka-up       # Kafka cho async messaging mini-lab
 make kafka-ui-up    # Kafka UI cho inspect topic/message/consumer group
+make common-security-install # Install shared security module cho local Maven services
 make audit-log-up   # Audit service consume Kafka event, expose /api/audit-events
 make observability-up # Prometheus + Grafana cho observability mini-lab
 make loki-up        # Loki + Alloy + Grafana cho centralized logs
@@ -143,3 +148,5 @@ Target này chạy app ở Keycloak + Kafka mode mặc định và ghi log vào 
 Mục tiêu là giữ từng mini-lab cô lập được, nhưng vẫn có một đường nhanh để bật hạ tầng demo chung.
 
 React Web UI demo nằm ở `web-ui-demo/`. UI chạy bằng Docker, mặc định gọi Kong Gateway, và không gọi trực tiếp PostgreSQL/Redis/Kafka/MinIO/Prometheus/Grafana trong business flow.
+
+`common-security/` không phải runtime service. Keycloak vẫn là Auth Service/Identity Provider; `tenant-demo` và `audit-log-service` tự validate JWT như Resource Server, rồi dùng shared module để tránh duplicate `TenantContext`, tenant claim filter và role converter. Khi chạy Maven service riêng từ local, Makefile sẽ install module này trước qua `make common-security-install`.

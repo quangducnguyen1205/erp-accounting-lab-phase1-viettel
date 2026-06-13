@@ -1,10 +1,9 @@
-package com.viettel.demo.security;
+package com.viettel.common.security;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -13,36 +12,15 @@ import java.util.Map;
 import java.util.Set;
 
 /*
- * ==============================================================
- * KeycloakRoleConverter — map Keycloak roles sang Spring authorities
- * ==============================================================
- *
- * [Vai trò]
- * Converter này chỉ đọc role claims trong Jwt đã được Spring Security
- * validate, rồi chuyển thành GrantedAuthority dạng ROLE_*.
- *
- * [Claim được hỗ trợ]
- * - Keycloak client roles: resource_access.<client-id>.roles
- * - Keycloak realm roles:  realm_access.roles
- * - Local JWT lab roles:   roles
- *
- * [Điều không làm trong converter]
- * - Không validate JWT signature/issuer/expiration.
- * - Không đọc hoặc set tenant_id.
- * - Không query database.
- * - Không quyết định tenant data scope.
- *
- * ==============================================================
+ * Maps local lab roles, Keycloak realm roles, and Keycloak client roles to
+ * Spring Security ROLE_* authorities.
  */
-@Component
 public class KeycloakRoleConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
 
-    private static final String ROLE_PREFIX = "ROLE_";
+    private final String clientId;
 
-    private final AuthProperties authProperties;
-
-    public KeycloakRoleConverter(AuthProperties authProperties) {
-        this.authProperties = authProperties;
+    public KeycloakRoleConverter(String clientId) {
+        this.clientId = clientId;
     }
 
     @Override
@@ -53,8 +31,8 @@ public class KeycloakRoleConverter implements Converter<Jwt, Collection<GrantedA
         addRoles(authorities, extractRoles(jwt.getClaim("realm_access")));
 
         Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
-        if (resourceAccess != null) {
-            Object clientAccess = resourceAccess.get(authProperties.getKeycloak().getClientId());
+        if (resourceAccess != null && clientId != null && !clientId.isBlank()) {
+            Object clientAccess = resourceAccess.get(clientId);
             addRoles(authorities, extractRoles(clientAccess));
         }
 
@@ -84,7 +62,7 @@ public class KeycloakRoleConverter implements Converter<Jwt, Collection<GrantedA
 
         for (String role : roles) {
             if (role != null && !role.isBlank()) {
-                authorities.add(new SimpleGrantedAuthority(ROLE_PREFIX + role));
+                authorities.add(new SimpleGrantedAuthority(SecurityConstants.ROLE_PREFIX + role));
             }
         }
     }

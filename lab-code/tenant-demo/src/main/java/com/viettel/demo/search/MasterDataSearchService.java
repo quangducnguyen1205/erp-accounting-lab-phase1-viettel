@@ -1,6 +1,6 @@
 package com.viettel.demo.search;
 
-import com.viettel.demo.context.TenantContext;
+import com.viettel.common.security.TenantContext;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

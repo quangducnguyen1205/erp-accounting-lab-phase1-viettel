@@ -16,9 +16,10 @@ Thư mục này nối các mini-lab trong repo với target architecture rộng 
 8. [log-aggregation-loki/](log-aggregation-loki/) - Phase 1.5 centralized logs bằng Loki/Grafana.
 9. [kafka-ui/](kafka-ui/) - Phase 1.5 Kafka topic/message/consumer inspection.
 10. [kong-gateway/](kong-gateway/) - Phase 1.5 Kong Gateway platform lab.
-11. [microservice-boundaries/](microservice-boundaries/) - Phase 1.5 service split decision.
-12. [../06-frontend/](../06-frontend/) - React Web UI demo mỏng để trình bày end-to-end.
-13. [awareness/](awareness/) - các chủ đề target architecture chưa implement trong Phase 1.
+11. [security/](security/) - Keycloak vs auth-service và shared `common-security` module.
+12. [microservice-boundaries/](microservice-boundaries/) - Phase 1.5 service split decision.
+13. [../06-frontend/](../06-frontend/) - React Web UI demo mỏng để trình bày end-to-end.
+14. [awareness/](awareness/) - các chủ đề target architecture chưa implement trong Phase 1.
 
 Demo script cuối Phase 1: [../99-tong-ket/phase1-final-demo-script.md](../99-tong-ket/phase1-final-demo-script.md).
 
@@ -37,6 +38,7 @@ Demo script cuối Phase 1: [../99-tong-ket/phase1-final-demo-script.md](../99-t
 | Loki/log aggregation | Phase 1.5 local lab implemented | [log-aggregation-loki/loki-foundation.md](log-aggregation-loki/loki-foundation.md), [log-aggregation-loki/loki-local-lab-config-walkthrough.md](log-aggregation-loki/loki-local-lab-config-walkthrough.md) |
 | Kafka UI | Phase 1.5 local lab implemented | [kafka-ui/kafka-ui-foundation.md](kafka-ui/kafka-ui-foundation.md), [kafka-ui/kafka-ui-local-lab-config-walkthrough.md](kafka-ui/kafka-ui-local-lab-config-walkthrough.md) |
 | Kong Gateway | Phase 1.5 local lab implemented | [kong-gateway/kong-gateway-foundation.md](kong-gateway/kong-gateway-foundation.md), [kong-gateway/kong-local-lab-config-walkthrough.md](kong-gateway/kong-local-lab-config-walkthrough.md) |
+| Security shared module | Phase 1.5 refactor: Keycloak remains Auth Service, duplicated resource-server plumbing extracted | [security/keycloak-vs-auth-service.md](security/keycloak-vs-auth-service.md), [security/common-security-code-walkthrough.md](security/common-security-code-walkthrough.md) |
 | Microservice boundaries | Phase 1.5 first split implemented | [microservice-boundaries/audit-log-service-split-plan.md](microservice-boundaries/audit-log-service-split-plan.md), [microservice-boundaries/audit-log-service-code-walkthrough.md](microservice-boundaries/audit-log-service-code-walkthrough.md) |
 | Awareness/later | Planned | [awareness/README.md](awareness/README.md) |
 

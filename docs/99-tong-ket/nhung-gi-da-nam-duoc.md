@@ -913,7 +913,7 @@ Trạng thái: đã thêm và verify service split đầu tiên ở `lab-code/au
 - event DTO `MasterDataChangedEvent` duplicate có chủ đích, chưa dùng shared contract module;
 - schema riêng `audit_log`, table `audit_events`, unique `event_id` để chống duplicate;
 - read-only API `GET /api/audit-events` và `GET /api/audit-events/{eventId}`;
-- JWT Resource Server, role mapping và `tenant_id` filter riêng trong audit service;
+- JWT Resource Server rules riêng trong audit service; role mapping và `tenant_id` filter plumbing dùng chung qua `lab-code/common-security`;
 - Kong route `/api/audit-events` tới audit service;
 - Docker-first compose và Makefile targets `audit-log-*`;
 - full E2E đã chạy qua Kong: `tenant1-user` tạo `master_data` -> Kafka event -> audit service consume/store -> tenant 1 đọc được audit event;
@@ -925,5 +925,22 @@ Caveat:
 
 - chưa có outbox pattern, retry/DLT, schema registry hoặc production audit compliance;
 - PostgreSQL local vẫn dùng chung container/database nhưng tách schema `audit_log` để giữ demo nhẹ.
+
+### Shared common-security module
+
+Trạng thái: đã gom phần security plumbing bị duplicate giữa `tenant-demo` và `audit-log-service` vào `lab-code/common-security/`.
+
+Đã chốt kiến trúc:
+
+- không tạo runtime `auth-service` Spring Boot riêng;
+- Keycloak đã là Auth Service/Identity Provider/IAM cho demo;
+- `tenant-demo` và `audit-log-service` vẫn là Resource Server, tự validate JWT bằng issuer/JWKS;
+- `common-security` chỉ là shared Maven library cho `TenantContext`, `JwtTenantContextFilter`, tenant claim resolver và Keycloak role converter;
+- endpoint-specific authorization rules vẫn nằm trong từng service.
+
+Caveat:
+
+- shared module tạo coupling ở code level, phù hợp với learning monorepo;
+- không đưa business logic, JPA entity/repository, Kafka DTO hoặc gateway route vào `common-security`.
 
 Kế hoạch chi tiết nằm ở `docs/99-tong-ket/phase1-5-production-like-demo-plan.md`.

@@ -1,6 +1,6 @@
 package com.viettel.demo.storage;
 
-import com.viettel.demo.context.TenantContext;
+import com.viettel.common.security.TenantContext;
 import com.viettel.demo.entity.FileMetadata;
 import com.viettel.demo.repository.FileMetadataRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

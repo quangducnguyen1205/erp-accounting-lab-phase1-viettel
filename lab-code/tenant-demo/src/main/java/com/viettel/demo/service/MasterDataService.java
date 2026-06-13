@@ -3,7 +3,7 @@ package com.viettel.demo.service;
 import com.viettel.demo.cache.CacheProperties;
 import com.viettel.demo.cache.CachedMasterData;
 import com.viettel.demo.cache.MasterDataCacheGateway;
-import com.viettel.demo.context.TenantContext;
+import com.viettel.common.security.TenantContext;
 import com.viettel.demo.entity.MasterData;
 import com.viettel.demo.exception.MasterDataCodeConflictException;
 import com.viettel.demo.messaging.MasterDataChangedEvent;

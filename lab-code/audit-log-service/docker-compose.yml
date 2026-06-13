@@ -1,6 +1,8 @@
 services:
   audit-log-service:
-    build: .
+    build:
+      context: ..
+      dockerfile: audit-log-service/Dockerfile
     image: viettel-audit-log-service:latest
     container_name: viettel-audit-log-service
     ports:

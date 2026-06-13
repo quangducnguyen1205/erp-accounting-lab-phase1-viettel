@@ -2,7 +2,7 @@ package com.viettel.audit.audit;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.viettel.audit.context.TenantContext;
+import com.viettel.common.security.TenantContext;
 import com.viettel.audit.event.MasterDataChangedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -23,6 +23,7 @@ REDIS_DIR      := redis-lab
 KAFKA_DIR      := kafka-lab
 KAFKA_UI_DIR   := kafka-ui-lab
 AUDIT_LOG_DIR  := audit-log-service
+COMMON_SECURITY_DIR := common-security
 OBSERVABILITY_DIR := observability-lab
 LOKI_DIR       := loki-lab
 GATEWAY_DIR    := gateway-demo
@@ -170,17 +171,25 @@ kafka-ui-info: ## In hướng dẫn nhanh cho Kafka UI lab
 
 # --- Audit Log Service mini-lab --------------------------------
 
+.PHONY: common-security-validate
+common-security-validate: ## Validate shared common-security Maven module
+	mvn -f $(COMMON_SECURITY_DIR)/pom.xml validate
+
+.PHONY: common-security-install
+common-security-install: ## Install shared common-security module vào local Maven repo
+	mvn -f $(COMMON_SECURITY_DIR)/pom.xml -DskipTests install
+
 .PHONY: audit-log-validate
-audit-log-validate: ## Validate audit-log-service Maven project
+audit-log-validate: common-security-install ## Validate audit-log-service Maven project
 	mvn -f $(AUDIT_LOG_DIR)/pom.xml validate
 
 .PHONY: audit-log-run
-audit-log-run: ## Chạy audit-log-service bằng Maven ở port 8082
+audit-log-run: common-security-install ## Chạy audit-log-service bằng Maven ở port 8082
 	mvn -f $(AUDIT_LOG_DIR)/pom.xml spring-boot:run
 
 .PHONY: audit-log-build
 audit-log-build: ## Build Docker image cho audit-log-service
-	cd $(AUDIT_LOG_DIR) && docker build -t viettel-audit-log-service:latest .
+	docker build -f $(AUDIT_LOG_DIR)/Dockerfile -t viettel-audit-log-service:latest .
 
 .PHONY: audit-log-up
 audit-log-up: db-up kafka-up keycloak-up ## Khởi chạy audit-log-service container ở port 8082
@@ -454,11 +463,11 @@ sql-reset: ## Xóa toàn bộ bảng rồi tạo lại từ đầu
 # --- Spring Boot App (placeholder) ------------------------------
 
 .PHONY: app-run
-app-run: ## Chạy Spring Boot application
+app-run: common-security-install ## Chạy Spring Boot application
 	cd $(APP_DIR) && if [ -f .env ]; then set -a; . ./.env; set +a; fi; ./mvnw spring-boot:run
 
 .PHONY: app-run-logs
-app-run-logs: logs-dir ## Chạy tenant-demo Keycloak+Kafka mode và ghi file log để Loki/Alloy tail
+app-run-logs: common-security-install logs-dir ## Chạy tenant-demo Keycloak+Kafka mode và ghi file log để Loki/Alloy tail
 	cd $(APP_DIR) && if [ -f .env ]; then set -a; . ./.env; set +a; fi; \
 	APP_AUTH_MODE=$${APP_AUTH_MODE:-keycloak} \
 	APP_MESSAGING_ENABLED=$${APP_MESSAGING_ENABLED:-true} \
@@ -467,7 +476,7 @@ app-run-logs: logs-dir ## Chạy tenant-demo Keycloak+Kafka mode và ghi file lo
 	./mvnw spring-boot:run
 
 .PHONY: app-test
-app-test: ## Chạy integration tests
+app-test: common-security-install ## Chạy integration tests
 	cd $(APP_DIR) && if [ -f .env ]; then set -a; . ./.env; set +a; fi; ./mvnw test
 
 # --- Help -------------------------------------------------------

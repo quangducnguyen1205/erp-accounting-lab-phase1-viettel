@@ -1,7 +1,7 @@
 package com.viettel.audit.observability;
 
-import com.viettel.audit.context.TenantContext;
-import com.viettel.audit.security.JwtTenantContextFilter;
+import com.viettel.common.security.TenantContext;
+import com.viettel.common.security.JwtTenantContextFilter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
