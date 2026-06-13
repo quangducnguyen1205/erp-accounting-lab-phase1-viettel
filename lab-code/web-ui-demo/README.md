@@ -1,6 +1,6 @@
 # React Web UI demo
 
-Mini-lab này là UI web rất nhỏ để nhìn được flow Phase 1:
+Mini-lab này là React Web ops console để nhìn được flow Phase 1.5:
 
 ```text
 React Web UI
@@ -10,7 +10,7 @@ React Web UI
 -> PostgreSQL / Redis / Kafka / Observability
 ```
 
-Đây không phải frontend production. UI chỉ là thin client để demo kiến trúc backend.
+Đây không phải frontend production. UI là thin client để demo kiến trúc backend, nhưng layout đã được polish theo hướng SaaS/admin console.
 
 ## Stack
 
@@ -18,6 +18,7 @@ React Web UI
 - `keycloak-js` cho login OIDC.
 - `fetch` gọi API qua Gateway.
 - CSS thuần, không dùng UI framework.
+- Single-page app nhiều màn hình bằng state nội bộ: Welcome, Dashboard, Master Data, Audit Events, Observability.
 
 Không dùng React Native hoặc Expo trong repo này.
 
@@ -186,10 +187,12 @@ Build output `dist/` chỉ nằm trong Docker image/layer; không commit `dist/`
 5. Trên UI:
 
    - Login bằng Keycloak.
-   - Bấm `Load master data`.
-   - Bấm `Load by code` với một code có thật như `LAPTOP-01`.
-   - Tạo record với code `UI-DEMO-*`.
-   - Đợi một chút rồi bấm `Load audit events`.
+   - Dashboard: kiểm API base URL đang là Kong và user/tenant/role đúng.
+   - Master Data: bấm `Load master data`.
+   - Master Data: bấm `Load by code` với một code có thật như `LAPTOP-01`.
+   - Master Data: tạo record với code `UI-DEMO-*`.
+   - Audit Events: đợi một chút rồi bấm `Load audit events`.
+   - Observability: mở Grafana Loki/Kafka UI từ link và dùng LogQL recipes có sẵn.
    - Xem `requestId` sau request.
    - Đối chiếu log `tenant-demo` và `audit-log-service` bằng requestId/event log.
 
@@ -217,6 +220,16 @@ Expected behavior:
 | `tenant2-user/password` | Load master data được; create trả `403`; không thấy audit events tenant 1. |
 
 UI không kết luận Kafka/audit thành công sau POST. Chỉ khi `GET /api/audit-events` trả event thật thì mới coi audit đã lưu.
+
+## Màn hình hiện có
+
+| Screen | Vai trò |
+|---|---|
+| Welcome | Login Keycloak, account hint local, không hiển thị token. |
+| Dashboard | Stack cards, current status, API base URL preset, demo checklist. |
+| Master Data | Load/list, load by code, create, `401`/`403`/`409`/unavailable states. |
+| Audit Events | Cross-service Kafka flow panel, audit table, tenant2 empty success state. |
+| Observability | Link local tools và LogQL recipes; không gọi Grafana/Kafka UI API trực tiếp. |
 
 ## Debug login state
 

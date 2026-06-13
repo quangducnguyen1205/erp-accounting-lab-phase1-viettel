@@ -16,8 +16,8 @@
 | **Tiến độ** | Phase 1 core done, Phase 1.5 final UI route in polish |
 | **Tổng task** | 111 |
 | **Đã hoàn thành** | 110 / 111 |
-| **Focus hiện tại** | Phase 1.5 - final web UI design-first polish |
-| **Milestone tiếp theo** | #24 - complete Figma screen set, then implement approved React Web UI redesign |
+| **Focus hiện tại** | Phase 1.5 - final web UI review and dry-run |
+| **Milestone tiếp theo** | #24 - final UI visual review, Figma export when available, demo dry-run |
 | **Demo hiện tại** | React Web UI -> Keycloak -> Gateway -> tenant-demo -> PostgreSQL/Redis/Kafka/Observability; Elasticsearch/MinIO qua HTTP mini-lab |
 
 Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; Milestone #14 đã chốt Redis cache-aside tenant-safe read path; Milestone #15 đã chốt Kafka/async messaging reference flow nhỏ; Milestone #16 đã chốt Observability baseline với Actuator, request logging, Micrometer metrics và Prometheus/Grafana local lab. Milestone #17 đã chốt API Gateway static route và React Web UI Docker-first để nhìn flow end-to-end. React Native/Expo không thuộc repo này.
@@ -447,7 +447,7 @@ Phase 1.5 bắt đầu sau buổi báo cáo mentor Đạt ngày 11/06/2026. Mụ
 | 3 | Kong Gateway | Practice gateway platform gần target architecture | `docs/07-architecture/kong-gateway/`, `lab-code/kong-gateway-lab/` | Route `/api/master-data/**` và `/api/audit-events/**`, giữ auth/requestId | Implemented local lab |
 | 4 | Audit Log Service split | Tạo service thứ hai có trách nhiệm rõ | `docs/07-architecture/microservice-boundaries/`, `lab-code/audit-log-service/` | `master-data-service` publish event, `audit-log-service` consume và lưu/log audit | Verified |
 | 5 | Cross-service Kafka flow | Biến Kafka thành event giữa services | `MasterDataChangedEvent` từ service A sang service B | Kafka UI thấy event, audit service log/store được, không dùng Kafka như database | Verified |
-| 6 | Final React Web polish | UI demo sau khi backend boundaries ổn | `lab-code/web-ui-demo/`, `docs/06-frontend/final-web-ui-design-plan.md`, `docs/06-frontend/final-web-ui-figma-screen-handoff.md` | UI gọi Kong, load/create master data, xem audit events qua Kong; design plan chốt hướng SaaS admin console | Design-first in progress |
+| 6 | Final React Web polish | UI demo sau khi backend boundaries ổn | `lab-code/web-ui-demo/`, `docs/06-frontend/final-web-ui-design-plan.md`, `docs/06-frontend/final-web-ui-figma-screen-handoff.md` | UI gọi Kong, load/create master data, xem audit events qua Kong; design plan chốt hướng SaaS admin console | Implemented, visual review next |
 
 ### Service split được chọn
 
@@ -513,7 +513,7 @@ Các split chưa chọn ngay:
 
 ## Việc làm ngay trong 1-2 ngày tới
 
-### Task tiếp theo: Complete Figma screen set, then implement approved Phase 1.5 web UI design
+### Task tiếp theo: Final UI visual review and demo dry-run
 
 1. Đọc:
    - `docs/06-frontend/final-web-ui-design-plan.md`.
@@ -521,8 +521,8 @@ Các split chưa chọn ngay:
    - `docs/99-tong-ket/phase1-final-demo-script.md`.
    - `docs/06-frontend/react-web-keycloak-gateway-demo.md`.
    - `docs/07-architecture/overview/target-architecture-adoption-map.md`.
-2. Khi Figma MCP limit reset hoặc có quyền cao hơn, hoàn thiện frames/screenshots còn pending trong Figma.
-3. Sau review, polish React Web UI theo hướng sidebar/topbar, Dashboard, Master Data, Audit Events và Observability screens.
+2. Chạy UI mới và review visual/UX theo các screen: Welcome, Dashboard, Master Data, Audit Events, Observability.
+3. Khi Figma MCP limit reset hoặc có quyền cao hơn, hoàn thiện frames/screenshots còn pending trong Figma để phục vụ handoff trực quan.
 4. Giữ API contracts hiện tại:
    - UI gọi Kong `http://localhost:18000`;
    - backend services tự validate JWT/tenant/role;

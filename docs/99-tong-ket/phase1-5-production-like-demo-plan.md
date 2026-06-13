@@ -116,7 +116,7 @@ Lý do chính:
 3. **Kong Gateway lab**: đã có DB-less/declarative route `/api/master-data/**` và `/api/audit-events/**`.
 4. **Audit-log-service skeleton + implementation**: đã có service nhỏ consume Kafka event, có schema audit riêng, logs và read API.
 5. **Cross-service Kafka verification**: đã verify create master data -> event -> audit service consumed/stored/logged.
-6. **Final React Web polish**: UI gọi Kong, có section xem audit events qua audit API. Baseline đã chạy; bước polish tiếp theo đi theo design-first plan ở `docs/06-frontend/final-web-ui-design-plan.md` và Figma handoff ở `docs/06-frontend/final-web-ui-figma-screen-handoff.md`.
+6. **Final React Web polish**: UI gọi Kong, có section xem audit events qua audit API. Baseline đã được polish thành multi-screen ops console theo design-first plan ở `docs/06-frontend/final-web-ui-design-plan.md` và Figma handoff ở `docs/06-frontend/final-web-ui-figma-screen-handoff.md`; bước tiếp theo là visual review/full demo dry-run.
 7. **Shared security module**: không tạo runtime `auth-service`; Keycloak là IAM/Auth Service, còn duplicated Resource Server plumbing được gom vào `lab-code/common-security`.
 
 ## 8. Non-goals
@@ -130,6 +130,6 @@ Lý do chính:
 
 ## 9. Suggested next Codex task
 
-> Complete the pending Figma screen set from `docs/06-frontend/final-web-ui-figma-screen-handoff.md`, then implement the approved React Web UI design and run the final demo dry-run again.
+> Run a visual review and full demo dry-run of the new multi-screen React Web UI. Complete the pending Figma screen exports later when the Figma MCP limit allows it.
 
 Lý do: Loki/log aggregation, Kafka UI, Kong Gateway và `audit-log-service` đã có nền local. Cross-service Kafka flow đã verify: create `master_data` qua Kong -> tenant-demo publish Kafka event -> audit-log-service consume/store -> đọc audit event qua Kong theo tenant. UI hiện đã functional nhưng cần polish thành SaaS admin console trước demo mentor nghiêm túc.

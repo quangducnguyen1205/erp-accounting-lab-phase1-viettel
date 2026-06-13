@@ -12,6 +12,7 @@ Current status on 2026-06-13:
 - `01 Web App Screens + Demo Flow` exists as a page, but the full screen set could not be generated in this pass.
 - `02 Keycloak Theme + Handoff Notes` exists as a page, but the Keycloak frames could not be generated in this pass.
 - The Figma Starter MCP tool-call limit is currently blocking metadata inspection, screen creation and screenshot export.
+- React implementation now follows this handoff directly in `lab-code/web-ui-demo/src/` as a multi-screen console. Full Figma frames/screenshots are still useful for visual review, but no longer block the first React implementation.
 
 This document records the exact intended Figma frames and screenshot handoff so the next Figma pass can complete the screen set without rethinking the design.
 
@@ -184,14 +185,14 @@ No backend API contract change is required.
 
 ## Approved For Coding Next
 
-After the Figma screen set is reviewed, the React implementation can proceed in this order:
+The first React implementation has been completed from this handoff. The next coding/refinement pass should review the running UI and adjust visuals/states against the approved design direction:
 
-1. App shell: sidebar, topbar, route state and layout tokens.
-2. Dashboard screen: architecture cards and demo checklist.
-3. Master Data screen: list/create/load-by-code and API state handling.
-4. Audit Events screen: table, flow panel and tenant2 empty success state.
-5. Observability screen: local tool links and LogQL recipes.
-6. Final QA: ACCOUNTANT flow, VIEWER flow, duplicate `409`, requestId log search.
+1. Review app shell: sidebar, topbar, route state and layout tokens.
+2. Review Dashboard screen: architecture cards and demo checklist.
+3. Review Master Data screen: list/create/load-by-code and API state handling.
+4. Review Audit Events screen: table, flow panel and tenant2 empty success state.
+5. Review Observability screen: local tool links and LogQL recipes.
+6. Run final QA: ACCOUNTANT flow, VIEWER flow, duplicate `409`, requestId log search.
 
 ## Future Work
 

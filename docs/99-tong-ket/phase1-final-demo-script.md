@@ -4,7 +4,7 @@ Tài liệu này là route demo thực tế cho Phase 1. Mục tiêu là trình 
 
 Sau feedback mentor ngày 11/06/2026, script này vẫn là baseline demo đã hoàn thành. Demo nghiêm túc hơn tuần sau sẽ đi theo plan Phase 1.5: `phase1-5-production-like-demo-plan.md`.
 
-UI hiện tại đã chạy được flow chính. Phần polish cuối nên đi theo design-first spec ở `docs/06-frontend/final-web-ui-design-plan.md` trước khi chỉnh React code.
+UI hiện tại đã chạy được flow chính và đã được polish thành multi-screen ops console theo design-first spec ở `docs/06-frontend/final-web-ui-design-plan.md`. Figma full screen export vẫn là backlog do MCP limit, nhưng React implementation đã theo handoff.
 
 ## 1. Chuẩn bị nhanh
 
