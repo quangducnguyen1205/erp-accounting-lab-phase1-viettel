@@ -89,8 +89,14 @@ The consumer stores event tenant. The read API still filters by JWT tenant. Do n
 cd lab-code
 make kafka-up
 make kafka-ui-up
-make audit-log-up
 make kong-up
+```
+
+Mở terminal riêng cho audit service Maven host-run:
+
+```bash
+cd lab-code
+make audit-log-run-logs
 ```
 
 Then create/update `master_data` through Kong or HTTP file:

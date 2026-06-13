@@ -50,7 +50,7 @@ Vào `Explore`, chọn datasource `Loki`, query ví dụ:
 
 Xem thêm guide thực hành: [how-to-read-logs-in-grafana.md](how-to-read-logs-in-grafana.md).
 
-Lưu ý: lab dùng mô hình hybrid. Docker services được collect từ stdout; `tenant-demo` host Maven được collect qua file `lab-code/logs/tenant-demo.log` khi chạy `make app-run-logs`.
+Lưu ý: lab dùng mô hình hybrid. Docker services được collect từ stdout; `tenant-demo` và `audit-log-service` host Maven được collect qua `lab-code/logs/tenant-demo.log` và `lab-code/logs/audit-log-service.log` khi chạy `make app-run-logs` / `make audit-log-run-logs`.
 
 ## Caveat
 

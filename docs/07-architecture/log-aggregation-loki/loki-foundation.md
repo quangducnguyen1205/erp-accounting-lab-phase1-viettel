@@ -82,8 +82,21 @@ Các giá trị này nên nằm trong log line/structured fields để search, k
 Phase 1.5 log aggregation theo hướng:
 
 ```text
-Docker container stdout logs
--> Grafana Alloy
+tenant-demo host Maven/IntelliJ
+-> lab-code/logs/tenant-demo.log
+-> Grafana Alloy file source
+-> Loki
+-> Grafana Explore
+
+audit-log-service host Maven/IntelliJ
+-> lab-code/logs/audit-log-service.log
+-> Grafana Alloy file source
+-> Loki
+-> Grafana Explore
+
+Docker infra/tools
+-> Docker stdout logs
+-> Grafana Alloy Docker source
 -> Loki
 -> Grafana Explore
 ```
@@ -94,14 +107,15 @@ Request logging hiện đã có `X-Request-Id`/MDC. Khi log vào Loki, demo có 
 2. copy requestId từ UI;
 3. vào Grafana Explore;
 4. tìm requestId để thấy log backend;
-5. sau khi có audit service hoặc Dockerized backend service, thấy thêm service log trong cùng Grafana Explore.
+5. thấy `tenant-demo`, `audit-log-service`, Kong và web UI logs trong cùng Grafana Explore nếu Java services chạy bằng `make app-run-logs` / `make audit-log-run-logs`.
 
 ## 7. Local lab direction
 
-Mini-lab hiện tại Docker-first ở `lab-code/loki-lab/`:
+Mini-lab hiện tại chạy Docker-first cho tooling ở `lab-code/loki-lab/`:
 
 - Loki container.
 - Alloy container đọc Docker logs qua Docker socket.
+- Alloy container tail Java service file logs từ `lab-code/logs/`.
 - Grafana datasource Loki.
 - Makefile targets: `loki-up`, `loki-status`, `loki-info`, `loki-logs`, `loki-down`.
 

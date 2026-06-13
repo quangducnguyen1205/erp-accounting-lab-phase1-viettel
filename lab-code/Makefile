@@ -185,47 +185,35 @@ audit-log-validate: common-security-install ## Validate audit-log-service Maven 
 
 .PHONY: audit-log-run
 audit-log-run: common-security-install ## Chạy audit-log-service bằng Maven ở port 8082
-	mvn -f $(AUDIT_LOG_DIR)/pom.xml spring-boot:run
+	cd $(AUDIT_LOG_DIR) && if [ -f .env ]; then set -a; . ./.env; set +a; fi; mvn spring-boot:run
 
-.PHONY: audit-log-build
-audit-log-build: ## Build Docker image cho audit-log-service
-	docker build -f $(AUDIT_LOG_DIR)/Dockerfile -t viettel-audit-log-service:latest .
-
-.PHONY: audit-log-up
-audit-log-up: db-up kafka-up keycloak-up ## Khởi chạy audit-log-service container ở port 8082
-	cd $(AUDIT_LOG_DIR) && docker compose up -d --build
-
-.PHONY: audit-log-down
-audit-log-down: ## Dừng audit-log-service container
-	cd $(AUDIT_LOG_DIR) && docker compose down
+.PHONY: audit-log-run-logs
+audit-log-run-logs: common-security-install logs-dir ## Chạy audit-log-service bằng Maven và ghi file log để Loki/Alloy tail
+	@rm -f $(LOG_DIR)/audit-log-service.log
+	cd $(AUDIT_LOG_DIR) && if [ -f .env ]; then set -a; . ./.env; set +a; fi; \
+	LOGGING_FILE_NAME=$${LOGGING_FILE_NAME:-../$(LOG_DIR)/audit-log-service.log} \
+	mvn spring-boot:run
 
 .PHONY: audit-log-status
-audit-log-status: ## Kiểm tra audit-log-service container
-	@docker ps --filter "name=viettel-audit-log-service" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
-
-.PHONY: audit-log-logs
-audit-log-logs: ## Xem log audit-log-service container
-	cd $(AUDIT_LOG_DIR) && docker compose logs -f
-
-.PHONY: audit-log-config
-audit-log-config: ## Validate/hiển thị Docker Compose config cho audit-log-service
-	cd $(AUDIT_LOG_DIR) && docker compose config
+audit-log-status: ## Kiểm tra audit-log-service host health endpoint
+	curl -s http://localhost:8082/actuator/health
 
 .PHONY: audit-log-info
 audit-log-info: ## In hướng dẫn nhanh cho audit-log-service
 	@echo ""
 	@echo "Audit Log Service nằm ở $(AUDIT_LOG_DIR)/"
-	@echo "Workflow chính là Docker-first."
+	@echo "Workflow chính là Maven/IntelliJ host-run."
 	@echo ""
 	@echo "Chạy:"
-	@echo "  make audit-log-up"
+	@echo "  make audit-log-run"
+	@echo "  make audit-log-run-logs   # ghi $(LOG_DIR)/audit-log-service.log cho Loki"
 	@echo "  make audit-log-status"
 	@echo ""
 	@echo "URLs:"
 	@echo "  Direct service: http://localhost:8082"
 	@echo "  Through Kong:   http://localhost:18000/api/audit-events"
 	@echo ""
-	@echo "Ghi chú: service consume Kafka topic master-data-events bằng group audit-log-service."
+	@echo "Ghi chú: cần PostgreSQL, Keycloak và Kafka chạy trước khi demo đầy đủ."
 
 # --- Observability mini-lab ------------------------------------
 
@@ -250,6 +238,17 @@ loki-up: logs-dir ## Khởi chạy Loki + Alloy + Grafana local cho log aggregat
 .PHONY: logs-dir
 logs-dir: ## Tạo thư mục log local để Alloy tail host-run app logs
 	@mkdir -p $(LOG_DIR)
+	@touch $(LOG_DIR)/.gitkeep
+
+.PHONY: logs-clean
+logs-clean: logs-dir ## Xóa generated *.log local, giữ lại logs/.gitkeep
+	@find $(LOG_DIR) -maxdepth 1 -type f -name '*.log' -delete
+	@touch $(LOG_DIR)/.gitkeep
+	@echo "Removed generated log files in $(LOG_DIR)/"
+
+.PHONY: logs-list
+logs-list: logs-dir ## Liệt kê log files local và kích thước hiện tại
+	@find $(LOG_DIR) -maxdepth 1 -type f -name '*.log' -exec ls -lh {} \;
 
 .PHONY: loki-down
 loki-down: ## Dừng Loki + Alloy + Grafana local
@@ -278,7 +277,8 @@ loki-info: ## In hướng dẫn nhanh cho Loki log aggregation lab
 	@echo "  Grafana Explore: http://localhost:13001"
 	@echo "  Alloy debug UI: http://localhost:12345"
 	@echo ""
-	@echo "Ghi chú: Docker logs đi qua Docker collector; tenant-demo host Maven logs đi qua file $(LOG_DIR)/tenant-demo.log nếu chạy bằng make app-run-logs."
+	@echo "Ghi chú: Docker logs đi qua Docker collector; Java host Maven logs đi qua $(LOG_DIR)/*.log."
+	@echo "       Chạy tenant-demo bằng make app-run-logs và audit-log-service bằng make audit-log-run-logs để Loki thấy log file."
 
 .PHONY: logs-up
 logs-up: loki-up ## Alias: khởi chạy Loki log aggregation lab
@@ -391,7 +391,7 @@ web-ui-logs: ## Xem log React Web UI demo container
 # - redis-up cho cache mini-lab
 # - kafka-up cho async messaging mini-lab
 # - kafka-ui-up cho Kafka topic/message/consumer inspection
-# - audit-log-up cho service split đầu tiên và Kafka cross-service flow
+# - audit-log-run / audit-log-run-logs cho service split đầu tiên và Kafka cross-service flow
 # - observability-up cho Prometheus/Grafana mini-lab
 # - loki-up cho Loki/Grafana log aggregation mini-lab
 # - gateway-run cho API Gateway static route mini-lab
@@ -407,7 +407,7 @@ web-ui-logs: ## Xem log React Web UI demo container
 # Kafka UI là inspect tool optional, chạy riêng bằng `make kafka-ui-up` để
 # full infra mặc định không quá nặng.
 # Kong Gateway là Phase 1.5 platform lab, chạy riêng bằng `make kong-up`.
-# audit-log-service chạy riêng bằng `make audit-log-up` khi demo service split.
+# audit-log-service chạy riêng bằng Maven/IntelliJ, dùng `make audit-log-run-logs` khi muốn Loki tail file log.
 
 .PHONY: infra-up
 infra-up: db-up keycloak-up elastic-up minio-up redis-up kafka-up ## Khởi chạy PostgreSQL + KeyCloak + Elasticsearch + MinIO + Redis + Kafka
@@ -468,6 +468,7 @@ app-run: common-security-install ## Chạy Spring Boot application
 
 .PHONY: app-run-logs
 app-run-logs: common-security-install logs-dir ## Chạy tenant-demo Keycloak+Kafka mode và ghi file log để Loki/Alloy tail
+	@rm -f $(LOG_DIR)/tenant-demo.log
 	cd $(APP_DIR) && if [ -f .env ]; then set -a; . ./.env; set +a; fi; \
 	APP_AUTH_MODE=$${APP_AUTH_MODE:-keycloak} \
 	APP_MESSAGING_ENABLED=$${APP_MESSAGING_ENABLED:-true} \

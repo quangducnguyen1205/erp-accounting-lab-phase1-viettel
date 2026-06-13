@@ -915,7 +915,8 @@ Trạng thái: đã thêm và verify service split đầu tiên ở `lab-code/au
 - read-only API `GET /api/audit-events` và `GET /api/audit-events/{eventId}`;
 - JWT Resource Server rules riêng trong audit service; role mapping và `tenant_id` filter plumbing dùng chung qua `lab-code/common-security`;
 - Kong route `/api/audit-events` tới audit service;
-- Docker-first compose và Makefile targets `audit-log-*`;
+- Maven/IntelliJ host-run workflow qua `make audit-log-run` và `make audit-log-run-logs`;
+- file log `lab-code/logs/audit-log-service.log` để Loki/Alloy tail trong demo centralized logs;
 - full E2E đã chạy qua Kong: `tenant1-user` tạo `master_data` -> Kafka event -> audit service consume/store -> tenant 1 đọc được audit event;
 - tenant isolation đã verify: `tenant2-user` đọc audit list không thấy event tenant 1;
 - role behavior đã verify: `tenant2-user` VIEWER create `master_data` bị `403`, nên không tạo audit event cho action fail.

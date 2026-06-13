@@ -72,6 +72,8 @@ Async consumer service:
 
 Dùng query này để xem event Kafka đã được consume/store chưa, hoặc audit API có trả theo tenant đúng không.
 
+`audit-log-service` cũng là Java service host-run. Khi chạy `make audit-log-run-logs`, service ghi vào `lab-code/logs/audit-log-service.log`; Alloy tail file đó vào Loki với `source="file"`.
+
 Frontend container:
 
 ```logql
@@ -146,7 +148,7 @@ Host file logs:
 {source="file"}
 ```
 
-Hiện chủ yếu là `tenant-demo` khi chạy `make app-run-logs`.
+Hiện gồm `tenant-demo` khi chạy `make app-run-logs` và `audit-log-service` khi chạy `make audit-log-run-logs`.
 
 Docker stdout logs:
 
@@ -154,7 +156,7 @@ Docker stdout logs:
 {source="docker"}
 ```
 
-Gồm `audit-log-service`, `kong-gateway`, `web-ui-demo` và các container khác có label phù hợp.
+Gồm `kong-gateway`, `web-ui-demo` và các container/infra tools khác có label phù hợp. Java backend services local hiện ưu tiên file logs.
 
 ## Label vs text search
 

@@ -8,11 +8,17 @@ Khi hệ thống có Gateway, business service, Kafka consumer và frontend cont
 
 ## 2. Local logging model in this repo
 
-`tenant-demo` thường chạy bằng Maven/IntelliJ trên host:
+`tenant-demo` và `audit-log-service` thường chạy bằng Maven/IntelliJ trên host:
 
 ```text
 tenant-demo runs on host Maven/IntelliJ
   -> writes lab-code/logs/tenant-demo.log
+  -> Alloy file source
+  -> Loki
+  -> Grafana Explore
+
+audit-log-service runs on host Maven/IntelliJ
+  -> writes lab-code/logs/audit-log-service.log
   -> Alloy file source
   -> Loki
   -> Grafana Explore
@@ -28,7 +34,7 @@ Docker services
   -> Grafana Explore
 ```
 
-Vì vậy mô hình local tốt nhất của repo này là hybrid: Java service vẫn thuận tiện chạy host, còn Loki vẫn đọc được qua file log; Docker services vẫn dùng stdout.
+Vì vậy mô hình local tốt nhất của repo này là hybrid: Java services vẫn thuận tiện chạy host, còn Loki vẫn đọc được qua file log; Docker services vẫn dùng stdout.
 
 ## 3. What backend engineers usually slice logs by
 
@@ -101,6 +107,8 @@ LogQL:
 
 Đây là async Kafka consumer service. Dùng query này để xem `MasterDataChangedEvent` đã được consume/store chưa và audit API có filter tenant đúng không.
 
+Trong workflow hiện tại, logs của service này đến từ `lab-code/logs/audit-log-service.log` khi chạy bằng `make audit-log-run-logs`.
+
 ### Step 7 - Trace by business code
 
 ![Query by business code](./images/07-query-by-business-code.png)
@@ -164,7 +172,7 @@ LogQL:
 {source=~"file|docker"}
 ```
 
-`source="file"` cho host-run `tenant-demo`; `source="docker"` cho Docker services như Kong, audit-log-service, web-ui-demo.
+`source="file"` cho host-run Java services như `tenant-demo` và `audit-log-service`; `source="docker"` cho Docker services như Kong, web-ui-demo và infra tools.
 
 ## 5. Step-by-step UI flow
 
@@ -287,6 +295,7 @@ These values are high-cardinality or sensitive. Keep them in log message and sea
 - Expecting browser console JavaScript errors to appear in Loki. Browser console is separate.
 - Searching an old time range and thinking logs are missing.
 - Forgetting to run `tenant-demo` with `make app-run-logs`.
+- Forgetting to run `audit-log-service` with `make audit-log-run-logs`.
 - Expecting `requestId` to appear as a label.
 - Starting with a too broad query and getting lost.
 - Confusing Kafka UI with Loki: Kafka UI shows messages/consumer groups; Loki shows service logs.

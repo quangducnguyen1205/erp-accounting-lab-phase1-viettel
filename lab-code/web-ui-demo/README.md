@@ -157,16 +157,22 @@ Build output `dist/` chỉ nằm trong Docker image/layer; không commit `dist/`
 
    ```bash
    cd lab-code
-   APP_AUTH_MODE=keycloak APP_MESSAGING_ENABLED=true KAFKA_BOOTSTRAP_SERVERS=localhost:19092 make app-run
+   APP_AUTH_MODE=keycloak APP_MESSAGING_ENABLED=true KAFKA_BOOTSTRAP_SERVERS=localhost:19092 make app-run-logs
    ```
 
-   File `tenant-demo/.env` nên có `APP_AUTH_MODE=keycloak` và issuer URI đúng với Keycloak local.
+   File `tenant-demo/.env` nên có `APP_AUTH_MODE=keycloak` và issuer URI đúng với Keycloak local. Dùng `app-run-logs` khi muốn Loki thấy `tenant-demo` log.
 
-3. Start audit service và Kong:
+3. Start audit service và Kong. Audit service chạy Maven/host giống `tenant-demo`:
 
    ```bash
    cd lab-code
-   make audit-log-up
+   make audit-log-run-logs
+   ```
+
+   Mở terminal khác cho Kong:
+
+   ```bash
+   cd lab-code
    make kong-up
    ```
 

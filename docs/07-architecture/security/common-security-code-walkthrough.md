@@ -160,9 +160,9 @@ cd lab-code
 make common-security-install
 ```
 
-Các Makefile target chính như `make app-test`, `make app-run`, `make audit-log-validate`, `make audit-log-run` đã phụ thuộc target này để workflow ít bị quên bước.
+Các Makefile target chính như `make app-test`, `make app-run`, `make app-run-logs`, `make audit-log-validate`, `make audit-log-run` và `make audit-log-run-logs` đã phụ thuộc target này để workflow ít bị quên bước.
 
-Docker build của `audit-log-service` dùng build context `lab-code/` để cài `common-security` trong build stage rồi mới package audit service.
+Java backend services hiện chạy Maven/IntelliJ trên host. Docker vẫn dùng cho infra/tooling, không còn là runtime chính của `audit-log-service`.
 
 ## 6. Common Mistakes
 

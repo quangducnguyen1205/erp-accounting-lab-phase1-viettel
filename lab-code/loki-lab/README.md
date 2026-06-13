@@ -2,7 +2,7 @@
 
 Trạng thái: local Docker lab đã có Loki + Grafana + Grafana Alloy.
 
-Mini-lab này thêm centralized log checking cho nhiều container local:
+Mini-lab này thêm centralized log checking cho nhiều service/tool local:
 
 ```text
 Docker container stdout logs
@@ -11,11 +11,17 @@ Docker container stdout logs
 -> Grafana Explore
 ```
 
-Từ demo Phase 1.5, lab cũng collect `tenant-demo` host Maven logs nếu app chạy bằng target file-log:
+Từ demo Phase 1.5, Java backend services chạy bằng Maven/IntelliJ trên host. Khi muốn Loki thấy log của chúng, chạy target file-log:
 
 ```text
 tenant-demo host Maven logs
 -> lab-code/logs/tenant-demo.log
+-> Grafana Alloy
+-> Loki
+-> Grafana Explore
+
+audit-log-service host Maven logs
+-> lab-code/logs/audit-log-service.log
 -> Grafana Alloy
 -> Loki
 -> Grafana Explore
@@ -66,10 +72,11 @@ Nguồn 1: Docker logs qua Docker socket:
 /var/run/docker.sock -> discovery.docker -> loki.source.docker -> Loki
 ```
 
-Nguồn 2: file log của `tenant-demo` khi chạy `make app-run-logs`:
+Nguồn 2: file log của Java services host-run:
 
 ```text
 lab-code/logs/tenant-demo.log -> loki.source.file -> Loki
+lab-code/logs/audit-log-service.log -> loki.source.file -> Loki
 ```
 
 Các label chính:
@@ -82,40 +89,50 @@ Các label chính:
 | `environment` | `local` |
 | `source` | `docker` |
 
-Với `tenant-demo` file log, label chính là:
+Với file log Java services, label chính là:
 
 | Label | Giá trị |
 |---|---|
-| `service` | `tenant-demo` |
+| `service` | `tenant-demo` hoặc `audit-log-service` |
 | `environment` | `local` |
 | `source` | `file` |
 | `job` | `host-file` |
 
 Không dùng `requestId`, `tenantId`, `userId`, token, event id hoặc object key làm label vì dễ tạo high-cardinality. `requestId` nằm trong nội dung log để search text.
 
-## Chạy tenant-demo để Loki thấy log
+## Chạy Java services để Loki thấy log
 
-Nếu chạy app bằng target thường:
+Nếu chạy Java service bằng target thường:
 
 ```bash
 make app-run
+make audit-log-run
 ```
 
-log vẫn hiện ở terminal host, nhưng chưa chắc có file để Alloy đọc.
+log vẫn hiện ở terminal host, nhưng chưa có file để Alloy đọc.
 
-Khi demo centralized logs, dùng:
+Khi demo centralized logs, dùng file-log targets:
 
 ```bash
 make app-run-logs
+make audit-log-run-logs
 ```
 
-Target này bật Keycloak + Kafka mode mặc định và set:
+Các target này xóa file log cũ ở đầu lần chạy và set:
 
 ```text
 LOGGING_FILE_NAME=../logs/tenant-demo.log
+LOGGING_FILE_NAME=../logs/audit-log-service.log
 ```
 
-File `lab-code/logs/*.log` là generated local log, không commit. `gateway-demo` nếu chạy host Maven vẫn chưa có file-log collector riêng; Kong container logs thì được collect qua Docker source.
+File `lab-code/logs/*.log` là generated local log, không commit. Logs không bị tự xóa khi dừng service để sau demo vẫn có thể inspect. Dọn thủ công bằng:
+
+```bash
+make logs-list
+make logs-clean
+```
+
+`gateway-demo` nếu chạy host Maven vẫn chưa có file-log collector riêng; Kong container logs thì được collect qua Docker source.
 
 ## Verification flow
 
@@ -150,6 +167,7 @@ http://localhost:13001
 {container="viettel-web-ui-demo"}
 {service="kafka"}
 {service="tenant-demo"}
+{service="audit-log-service"}
 ```
 
 6. Tìm request id nếu log line có request id:
@@ -163,7 +181,7 @@ http://localhost:13001
 {service=~"tenant-demo|kong-gateway"} |= "403"
 ```
 
-Với `tenant-demo`, query chỉ có log nếu app được chạy bằng `make app-run-logs`.
+Với `tenant-demo` và `audit-log-service`, query chỉ có log nếu service được chạy bằng `make app-run-logs` / `make audit-log-run-logs`.
 
 Nếu muốn đọc log theo đúng cách demo backend engineer, xem:
 

@@ -34,7 +34,7 @@ Consumer service không nên import JPA entity/repository từ service khác. Ev
 | Security | `security/*` | Validate Keycloak JWT, map roles, set tenant context. |
 | Request logs | `observability/RequestLoggingFilter.java` | requestId + method/path/status/duration. |
 | DB migration | `db/migration/V1__create_audit_events.sql` | Schema/table/index riêng. |
-| Docker runtime | `Dockerfile`, `docker-compose.yml` | Docker-first service run. |
+| Local runtime | `Makefile` targets `audit-log-run`, `audit-log-run-logs` | Maven/IntelliJ host-run giống `tenant-demo`. |
 
 ## 3. Runtime Flow
 
@@ -90,19 +90,34 @@ Audit read API không có `tenantId` param. Tenant đến từ JWT:
 validated Jwt -> tenant_id claim -> TenantContext -> repository tenant filter
 ```
 
-## 5. Docker Config Anatomy
+## 5. Local Runtime Config Anatomy
 
-`docker-compose.yml` có ba nhóm config quan trọng:
+`audit-log-service` là Java backend service nên local workflow chính là Maven/IntelliJ host-run. Docker vẫn dùng cho infra/tooling như PostgreSQL, Keycloak, Kafka, Kong và Loki.
 
-- DB: `DB_HOST=host.docker.internal`, `DB_SCHEMA=audit_log`;
-- Keycloak: issuer vẫn là `localhost`, JWKS dùng `host.docker.internal` khi chạy trong container;
-- Kafka: container dùng `kafka:9092` trên Docker network `viettel-kafka-net`.
+Các nhóm config quan trọng:
 
-Lý do:
+| Nhóm | Default local | Vì sao |
+|---|---|---|
+| DB | `DB_HOST=localhost`, `DB_PORT=5432`, `DB_NAME=erpdb`, `DB_SCHEMA=audit_log` | Service chạy trên host, PostgreSQL chạy Docker expose ra host port. |
+| Keycloak | `KEYCLOAK_ISSUER_URI=http://localhost:18080/realms/viettel-lab` | Service validate JWT bằng issuer/JWKS từ Keycloak local. |
+| Kafka | `KAFKA_BOOTSTRAP_SERVERS=localhost:19092` | Service chạy trên host nên dùng Kafka external listener. |
+| File log | `LOGGING_FILE_NAME=../logs/audit-log-service.log` khi chạy `make audit-log-run-logs` | Alloy tail file này để đưa log vào Loki. |
 
-- token issuer phải khớp claim `iss`, thường là `http://localhost:18080/...`;
-- container không thể dùng `localhost:18080` để gọi Keycloak host, nên cần `KEYCLOAK_JWK_SET_URI=http://host.docker.internal:18080/.../certs`;
-- Kafka container-to-container phải dùng internal listener `kafka:9092`, không dùng host listener `localhost:19092`.
+Hai cách chạy:
+
+```bash
+cd lab-code
+make audit-log-run
+```
+
+Chạy service bằng Maven và log ra console.
+
+```bash
+cd lab-code
+make audit-log-run-logs
+```
+
+Chạy service bằng Maven, xóa file log cũ ở đầu lần chạy, rồi ghi thêm `lab-code/logs/audit-log-service.log` để Loki/Alloy tail. File log không được commit.
 
 ## 6. Common Mistakes
 
@@ -110,8 +125,9 @@ Lý do:
 - Consumer ghi vào bảng `master_data`.
 - Read API nhận `tenantId` từ query param.
 - Quên unique `event_id`, tạo duplicate audit rows.
-- Dùng `localhost:19092` từ trong container audit service.
-- Dùng `localhost:18080` làm JWKS URL từ trong container.
+- Dùng `kafka:9092` khi service đang chạy trên host Maven. Host-run service phải dùng `localhost:19092`.
+- Quên chạy Keycloak/Kafka/PostgreSQL trước khi start service.
+- Quên dùng `make audit-log-run-logs` nên Loki không thấy host-run audit service logs.
 - Nghĩ audit service làm cho Kafka publish atomic với DB commit.
 - Log full token/payload nhạy cảm.
 
@@ -121,7 +137,6 @@ Validate:
 
 ```bash
 mvn -f lab-code/audit-log-service/pom.xml validate
-docker compose -f lab-code/audit-log-service/docker-compose.yml config
 ```
 
 Run:
@@ -132,7 +147,7 @@ make db-up
 make keycloak-up
 make keycloak-setup
 make kafka-up
-make audit-log-up
+make audit-log-run-logs
 make kong-up
 ```
 

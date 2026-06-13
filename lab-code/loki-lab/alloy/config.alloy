@@ -49,7 +49,7 @@ loki.source.docker "containers" {
   forward_to       = [loki.write.local.receiver]
 }
 
-local.file_match "tenant_demo_host_logs" {
+local.file_match "java_service_host_logs" {
   path_targets = [
     {
       __path__    = "/var/log/viettel-lab/tenant-demo.log",
@@ -58,12 +58,19 @@ local.file_match "tenant_demo_host_logs" {
       source      = "file",
       job         = "host-file",
     },
+    {
+      __path__    = "/var/log/viettel-lab/audit-log-service.log",
+      service     = "audit-log-service",
+      environment = "local",
+      source      = "file",
+      job         = "host-file",
+    },
   ]
   sync_period = "5s"
 }
 
-loki.source.file "tenant_demo_host_logs" {
-  targets    = local.file_match.tenant_demo_host_logs.targets
+loki.source.file "java_service_host_logs" {
+  targets    = local.file_match.java_service_host_logs.targets
   forward_to = [loki.write.local.receiver]
 }
 

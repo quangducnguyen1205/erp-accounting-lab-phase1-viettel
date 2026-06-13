@@ -15,7 +15,7 @@ Hiện repo đã có:
 - `audit-log-service`: service split đầu tiên, consume Kafka event và expose read-only audit API theo tenant.
 - `common-security`: shared Maven module cho security plumbing dùng lại giữa `tenant-demo` và `audit-log-service`; không phải runtime auth-service.
 - Prometheus/Grafana local lab cho metrics.
-- Docker-first workflow qua `lab-code/Makefile`.
+- Docker-first workflow cho infra/tooling qua `lab-code/Makefile`; Java backend services (`tenant-demo`, `audit-log-service`) chạy Maven/IntelliJ trên host cho local development.
 
 Flow hiện tại:
 

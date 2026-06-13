@@ -167,14 +167,20 @@ Production không nên mở CORS bừa bãi. Cần giới hạn origin thật, a
 
    ```bash
    cd lab-code
-   make app-run
+   make app-run-logs
    ```
 
-3. Start audit service và Kong:
+3. Start audit service và Kong. Audit service là Java service Maven/host-run:
 
    ```bash
    cd lab-code
-   make audit-log-up
+   make audit-log-run-logs
+   ```
+
+   Mở terminal khác cho Kong:
+
+   ```bash
+   cd lab-code
    make kong-up
    ```
 

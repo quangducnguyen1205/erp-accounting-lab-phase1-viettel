@@ -24,7 +24,7 @@ Phase 1.5 đã bắt đầu chuyển một số stub thành runtime lab:
 - `audit-log-service/`: service split đầu tiên, consume Kafka event và expose audit API.
 - `common-security/`: shared Maven module cho tenant context, JWT tenant filter và Keycloak role converter dùng chung.
 
-`loki-lab/`, `kafka-ui-lab/`, `kong-gateway-lab/` và `audit-log-service/` đã có Docker Compose và Makefile targets riêng. Cross-service Kafka flow đã verify; React Web UI đã có đường gọi Kong và section đọc audit events cho final demo.
+`loki-lab/`, `kafka-ui-lab/` và `kong-gateway-lab/` đã có Docker Compose và Makefile targets riêng. `audit-log-service/` là Java service độc lập nhưng chạy Maven/IntelliJ trên host giống `tenant-demo`. Cross-service Kafka flow đã verify; React Web UI đã có đường gọi Kong và section đọc audit events cho final demo.
 
 ## Nguyên tắc tối thượng
 
@@ -115,7 +115,8 @@ make redis-up       # Redis cho cache mini-lab
 make kafka-up       # Kafka cho async messaging mini-lab
 make kafka-ui-up    # Kafka UI cho inspect topic/message/consumer group
 make common-security-install # Install shared security module cho local Maven services
-make audit-log-up   # Audit service consume Kafka event, expose /api/audit-events
+make audit-log-run  # Audit service Maven host-run, consume Kafka event, expose /api/audit-events
+make audit-log-run-logs # Audit service host-run + ghi lab-code/logs/audit-log-service.log cho Loki
 make observability-up # Prometheus + Grafana cho observability mini-lab
 make loki-up        # Loki + Alloy + Grafana cho centralized logs
 make gateway-run    # Spring Cloud Gateway static route mini-lab
@@ -129,7 +130,7 @@ make infra-up
 make infra-status
 ```
 
-`infra-up` bật PostgreSQL + Keycloak + Elasticsearch + MinIO + Redis + Kafka. Prometheus/Grafana metrics chạy riêng bằng `make observability-up`, Loki/Grafana logs chạy riêng bằng `make loki-up`, Kafka UI chạy riêng bằng `make kafka-ui-up`, audit service chạy riêng bằng `make audit-log-up`, gateway chạy riêng bằng `make gateway-run` hoặc `make kong-up`, React Web UI chạy riêng bằng `make web-ui-up` để full infra mặc định không quá nặng. Khi chỉ học một lab nhỏ, vẫn nên dùng target riêng như `make kafka-up`, `make kafka-ui-up`, `make audit-log-up`, `make redis-up`, `make observability-up`, `make loki-up`, `make gateway-run` hoặc `make web-ui-up` để máy nhẹ hơn và dễ debug hơn.
+`infra-up` bật PostgreSQL + Keycloak + Elasticsearch + MinIO + Redis + Kafka. Prometheus/Grafana metrics chạy riêng bằng `make observability-up`, Loki/Grafana logs chạy riêng bằng `make loki-up`, Kafka UI chạy riêng bằng `make kafka-ui-up`, audit service chạy riêng bằng Maven/IntelliJ qua `make audit-log-run` hoặc `make audit-log-run-logs`, gateway chạy riêng bằng `make gateway-run` hoặc `make kong-up`, React Web UI chạy riêng bằng `make web-ui-up` để full infra mặc định không quá nặng. Khi chỉ học một lab nhỏ, vẫn nên dùng target riêng như `make kafka-up`, `make kafka-ui-up`, `make audit-log-run`, `make redis-up`, `make observability-up`, `make loki-up`, `make gateway-run` hoặc `make web-ui-up` để máy nhẹ hơn và dễ debug hơn.
 
 Spring Boot app vẫn chạy riêng bằng:
 
@@ -143,7 +144,20 @@ Khi demo Loki/Grafana log aggregation và muốn thấy cả log `tenant-demo` t
 make app-run-logs
 ```
 
-Target này chạy app ở Keycloak + Kafka mode mặc định và ghi log vào `lab-code/logs/tenant-demo.log` để Alloy tail sang Loki. File log sinh ra là local artifact, không commit.
+Target này chạy app ở Keycloak + Kafka mode mặc định và ghi log vào `lab-code/logs/tenant-demo.log` để Alloy tail sang Loki. Với audit service, dùng:
+
+```bash
+make audit-log-run-logs
+```
+
+Target này ghi `lab-code/logs/audit-log-service.log`. Các target `*-run-logs` xóa file log cũ ở đầu lần chạy để demo mới dễ đọc, nhưng không tự xóa khi dừng service để bạn còn inspect sau demo. Khi muốn dọn thủ công:
+
+```bash
+make logs-list
+make logs-clean
+```
+
+File `lab-code/logs/*.log` là local artifact, không commit.
 
 Mục tiêu là giữ từng mini-lab cô lập được, nhưng vẫn có một đường nhanh để bật hạ tầng demo chung.
 
