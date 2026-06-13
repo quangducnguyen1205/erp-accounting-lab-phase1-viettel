@@ -168,6 +168,7 @@ Với `tenant-demo`, query chỉ có log nếu app được chạy bằng `make 
 Nếu muốn đọc log theo đúng cách demo backend engineer, xem:
 
 - `docs/07-architecture/log-aggregation-loki/how-to-read-logs-in-grafana.md`
+- `docs/07-architecture/log-aggregation-loki/grafana-loki-ui-screenshot-guide.md`
 
 ## Cleanup
 

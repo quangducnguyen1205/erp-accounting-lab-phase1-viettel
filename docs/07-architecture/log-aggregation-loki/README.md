@@ -9,7 +9,8 @@ Nhóm này chuẩn bị mini-lab centralized logging cho Phase 1.5. Mục tiêu 
 1. [loki-foundation.md](loki-foundation.md) - Loki là gì, collector/agent, Grafana Explore, labels, Promtail/Alloy caveat.
 2. [loki-local-lab-config-walkthrough.md](loki-local-lab-config-walkthrough.md) - giải thích từng file config trong `lab-code/loki-lab/` và log flow Docker -> Alloy -> Loki -> Grafana.
 3. [how-to-read-logs-in-grafana.md](how-to-read-logs-in-grafana.md) - cách đọc log trong Grafana Explore theo service/layer/requestId/business code/status.
-4. [../../../lab-code/loki-lab/README.md](../../../lab-code/loki-lab/README.md) - command chạy lab, URL, query mẫu và cleanup.
+4. [grafana-loki-ui-screenshot-guide.md](grafana-loki-ui-screenshot-guide.md) - walkthrough bằng screenshot UI thật: chọn datasource, label, service, query và đọc log lines.
+5. [../../../lab-code/loki-lab/README.md](../../../lab-code/loki-lab/README.md) - command chạy lab, URL, query mẫu và cleanup.
 
 ## Trạng thái
 
