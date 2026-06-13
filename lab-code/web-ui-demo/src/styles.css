@@ -98,6 +98,17 @@ code {
   border-color: #bfdbfe;
 }
 
+.button-danger {
+  background: #fff1f2;
+  border-color: #fecdd3;
+  color: var(--danger);
+}
+
+.button-danger:hover:not(:disabled) {
+  background: #ffe4e6;
+  border-color: #fda4af;
+}
+
 .button-large {
   padding: 0.82rem 1.2rem;
 }
@@ -605,6 +616,13 @@ code {
   max-width: 420px;
 }
 
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 168px;
+}
+
 .preset-row,
 .form-actions {
   display: flex;
@@ -776,6 +794,10 @@ td {
   display: grid;
   gap: 14px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.edit-panel {
+  border-color: #bfdbfe;
 }
 
 .inline-form {

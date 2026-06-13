@@ -76,7 +76,7 @@ Nhờ đó khi demo có thể:
 
 UI không gọi trực tiếp Redis, Kafka, PostgreSQL, MinIO, Prometheus hoặc Grafana trong business flow. Các thành phần này được quan sát gián tiếp qua backend.
 
-Mặc định UI demo hiện dùng Kong Gateway ở `http://localhost:18000`. Spring Cloud Gateway lab cũ vẫn tồn tại để so sánh route/filter concept; Dashboard có quick preset để đổi về `http://localhost:8081` khi cần.
+Mặc định UI demo hiện dùng Kong Gateway ở `http://localhost:18000`. Spring Cloud Gateway lab cũ vẫn tồn tại để so sánh route/filter concept, nhưng không còn là lựa chọn chính trong UI `Master Data Portal`.
 
 ## Keycloak setup tối thiểu
 
@@ -194,7 +194,7 @@ Production không nên mở CORS bừa bãi. Cần giới hạn origin thật, a
 
 5. Mở `http://localhost:5173`, login Keycloak.
 6. Dashboard: kiểm user/tenant/role/API base URL.
-7. Master Data: load/create `master_data`.
+7. Master Data: load/create/edit/tạm ngưng `master_data`.
 8. Master Data: dùng `Load by code` để gọi `GET /api/master-data/code/{code}` qua Gateway. Nếu Redis enabled, gọi cùng code hai lần rồi kiểm log/metric backend để thấy miss/hit; UI không tự kết luận cache status.
 9. Activity Log: bấm `Load activity` để gọi `GET /api/audit-events` qua Kong tới `audit-log-service`.
 10. Demo docs: dùng URL/LogQL trong final demo script để mở Grafana Loki/Kafka UI khi cần giải thích backend flow.
@@ -203,7 +203,7 @@ Production không nên mở CORS bừa bãi. Cần giới hạn origin thật, a
 
    - UI status và requestId.
    - `tenant-demo` log có requestId.
-   - Kafka publish/consume log nếu messaging enabled.
+   - Kafka publish/consume log nếu messaging enabled. Create/update/deactivate đều có thể phát `MasterDataChangedEvent`; tạm ngưng dùng `changeType=DEACTIVATED`.
    - Audit event xuất hiện trong UI sau khi audit service consume/store.
    - Redis cache hit/miss qua `Load by code` hoặc HTTP cache lab nếu cache enabled.
    - Prometheus/Grafana nếu observability lab đang chạy.

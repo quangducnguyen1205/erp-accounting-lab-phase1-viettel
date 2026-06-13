@@ -75,7 +75,7 @@ public class MasterDataService {
         if (id == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID cannot be null");
         }
-        return repository.findByTenantIdAndId(currentTenantId(), id)
+        return repository.findByTenantIdAndIdAndIsActiveTrue(currentTenantId(), id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "MasterData not found"));
     }
 
@@ -115,7 +115,7 @@ public class MasterDataService {
     }
 
     private MasterData findByTenantAndCode(Long tenantId, String code) {
-        return repository.findByTenantIdAndCode(tenantId, code)
+        return repository.findByTenantIdAndCodeAndIsActiveTrue(tenantId, code)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "MasterData not found"));
     }
 
@@ -123,7 +123,7 @@ public class MasterDataService {
         if (category == null || category.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category cannot be blank");
         }
-        return repository.findByTenantIdAndCategory(currentTenantId(), category);
+        return repository.findByTenantIdAndCategoryAndIsActiveTrue(currentTenantId(), category);
     }
 
     public MasterData create(MasterData data) {
@@ -163,9 +163,11 @@ public class MasterDataService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "MasterData cannot be null");
         }
         MasterData existing = getById(id);
+        Long tenantId = currentTenantId();
+        String oldCode = existing.getCode();
         // Cập nhật các field cần thiết (code, name, category, isActive).
         String normalizedCode = normalizeCode(data.getCode());
-        rejectDuplicateCode(currentTenantId(), normalizedCode, existing.getId());
+        rejectDuplicateCode(tenantId, normalizedCode, existing.getId());
         existing.setCode(normalizedCode);
         existing.setName(data.getName());
         existing.setCategory(data.getCategory());
@@ -176,6 +178,8 @@ public class MasterDataService {
         } catch (DataIntegrityViolationException e) {
             throw mapMasterDataCodeConflict(e, normalizedCode);
         }
+        evictCacheByCode(tenantId, oldCode);
+        evictCacheByCode(tenantId, normalizedCode);
         eventPublisher.publish(MasterDataChangedEvent.from(saved, "UPDATED"));
         return saved;
     }
@@ -184,9 +188,12 @@ public class MasterDataService {
         if (id == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID cannot be null");
         }
+        Long tenantId = currentTenantId();
         MasterData existing = getById(id);
         existing.setIsActive(false);
-        repository.save(existing);
+        MasterData saved = repository.saveAndFlush(existing);
+        evictCacheByCode(tenantId, saved.getCode());
+        eventPublisher.publish(MasterDataChangedEvent.from(saved, "DEACTIVATED"));
     }
 
     private Long currentTenantId() {
@@ -223,5 +230,11 @@ public class MasterDataService {
             return new MasterDataCodeConflictException(code);
         }
         return exception;
+    }
+
+    private void evictCacheByCode(Long tenantId, String code) {
+        if (cacheProperties.isEnabled() && code != null && !code.isBlank()) {
+            cacheGateway.evictByCode(tenantId, code);
+        }
     }
 }

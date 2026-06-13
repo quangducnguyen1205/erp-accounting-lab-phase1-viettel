@@ -73,6 +73,21 @@ export function createMasterData(payload, apiBaseUrl) {
   });
 }
 
+export function updateMasterData(id, payload, apiBaseUrl) {
+  return apiRequest(`/api/master-data/${encodeURIComponent(id)}`, {
+    apiBaseUrl,
+    method: 'PUT',
+    body: payload
+  });
+}
+
+export function deleteMasterData(id, apiBaseUrl) {
+  return apiRequest(`/api/master-data/${encodeURIComponent(id)}`, {
+    apiBaseUrl,
+    method: 'DELETE'
+  });
+}
+
 export function loadAuditEvents(apiBaseUrl, limit = 20) {
   return apiRequest(`/api/audit-events?limit=${encodeURIComponent(limit)}`, { apiBaseUrl });
 }

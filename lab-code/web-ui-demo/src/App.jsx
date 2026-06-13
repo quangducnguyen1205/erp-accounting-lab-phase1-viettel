@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AppShell } from './components/AppShell';
 import { RequestStatus } from './components/RequestStatus';
-import { createMasterData, loadAuditEvents, loadMasterData, loadMasterDataByCode } from './api';
+import {
+  createMasterData,
+  deleteMasterData,
+  loadAuditEvents,
+  loadMasterData,
+  loadMasterDataByCode,
+  updateMasterData
+} from './api';
 import { config } from './config';
 import { getAuthSnapshot, initKeycloak, keycloak, refreshToken } from './keycloak';
 import { AccountScreen } from './screens/AccountScreen';
@@ -231,6 +238,44 @@ export default function App() {
     }
   }
 
+  async function handleUpdate(row, payload) {
+    setPostCreateHint('');
+    const result = await runRequest(() => updateMasterData(row.id, payload, apiBaseUrl.trim()));
+
+    if (result?.ok && result.data) {
+      setRows((current) => current.map((item) => (item.id === result.data.id ? result.data : item)));
+      if (lookupResult?.id === result.data.id) {
+        setLookupResult(result.data);
+      }
+      setPostCreateHint('Đã cập nhật bản ghi.');
+      return result;
+    }
+
+    if (result?.status === 403) {
+      setDemoProgress((current) => ({ ...current, viewerCreateForbidden: true }));
+    }
+    return result;
+  }
+
+  async function handleDeactivate(row) {
+    setPostCreateHint('');
+    const result = await runRequest(() => deleteMasterData(row.id, apiBaseUrl.trim()));
+
+    if (result?.ok) {
+      setRows((current) => current.filter((item) => item.id !== row.id));
+      if (lookupResult?.id === row.id) {
+        setLookupResult(null);
+      }
+      setPostCreateHint('Đã chuyển bản ghi sang trạng thái tạm ngưng.');
+      return result;
+    }
+
+    if (result?.status === 403) {
+      setDemoProgress((current) => ({ ...current, viewerCreateForbidden: true }));
+    }
+    return result;
+  }
+
   async function handleLoadAuditEvents() {
     const result = await runRequest(() => loadAuditEvents(apiBaseUrl.trim()));
     if (result?.ok && Array.isArray(result.data)) {
@@ -273,6 +318,8 @@ export default function App() {
           form={form}
           setForm={setForm}
           onCreate={handleCreate}
+          onUpdate={handleUpdate}
+          onDeactivate={handleDeactivate}
           onGenerateCode={handleGenerateCode}
           postCreateHint={postCreateHint}
           lastResult={lastResult}

@@ -16,8 +16,8 @@
 | **Tiến độ** | Phase 1 core done, Phase 1.5 final UI realigned as product app |
 | **Tổng task** | 111 |
 | **Đã hoàn thành** | 110 / 111 |
-| **Focus hiện tại** | Phase 1.5 - `Master Data Portal` visual review and Keycloak theme backlog |
-| **Milestone tiếp theo** | #24 - browser QA/product polish, then Keycloak theme later |
+| **Focus hiện tại** | Phase 1.5 - hoàn thiện `Master Data Portal` theo hướng product app |
+| **Milestone tiếp theo** | Complete CRUD -> file upload/download -> search projection -> Keycloak theme |
 | **Demo hiện tại** | React Web UI -> Keycloak -> Gateway -> tenant-demo -> PostgreSQL/Redis/Kafka/Observability; UI direction is Master Data Portal; Elasticsearch/MinIO qua HTTP mini-lab |
 
 Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; Milestone #14 đã chốt Redis cache-aside tenant-safe read path; Milestone #15 đã chốt Kafka/async messaging reference flow nhỏ; Milestone #16 đã chốt Observability baseline với Actuator, request logging, Micrometer metrics và Prometheus/Grafana local lab. Milestone #17 đã chốt API Gateway static route và React Web UI Docker-first để nhìn flow end-to-end. React Native/Expo không thuộc repo này.
@@ -513,7 +513,7 @@ Các split chưa chọn ngay:
 
 ## Việc làm ngay trong 1-2 ngày tới
 
-### Task tiếp theo: Final UI visual review and demo dry-run
+### Task tiếp theo: Master Data Portal CRUD review and next service splits
 
 1. Đọc:
    - `docs/06-frontend/final-web-ui-design-plan.md`.
@@ -521,14 +521,14 @@ Các split chưa chọn ngay:
    - `docs/99-tong-ket/phase1-final-demo-script.md`.
    - `docs/06-frontend/react-web-keycloak-gateway-demo.md`.
    - `docs/07-architecture/overview/target-architecture-adoption-map.md`.
-2. Chạy UI mới và review visual/UX theo các screen: Welcome, Dashboard, Master Data, Activity Log, Account.
+2. Chạy UI mới và review Master Data CRUD: list, load by code, create, edit/update, tạm ngưng/soft delete, duplicate `409`, missing record `404`, viewer `403`.
 3. Khi Figma MCP limit reset hoặc có quyền cao hơn, hoàn thiện frames/screenshots còn pending trong Figma để phục vụ handoff trực quan.
 4. Giữ API contracts hiện tại:
    - UI gọi Kong `http://localhost:18000`;
    - backend services tự validate JWT/tenant/role;
    - không gọi trực tiếp PostgreSQL/Redis/Kafka/MinIO/Grafana từ business UI.
 5. Sau UI polish, chạy lại full stack dry-run:
-   - ACCOUNTANT load/create qua Kong;
+   - ACCOUNTANT load/create/edit/tạm ngưng qua Kong;
    - load audit events qua Kong;
    - VIEWER load được nhưng create trả `403`;
    - `X-Request-Id` trên UI xuất hiện trong log `tenant-demo`/`audit-log-service`;

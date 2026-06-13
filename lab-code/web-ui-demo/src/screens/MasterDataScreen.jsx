@@ -4,14 +4,6 @@ import { Badge } from '../components/Badge';
 import { DataTable } from '../components/DataTable';
 import { EmptyState } from '../components/EmptyState';
 
-const columns = [
-  { key: 'code', label: 'Mã', render: (row) => <code>{row.code}</code> },
-  { key: 'name', label: 'Tên' },
-  { key: 'category', label: 'Loại', render: (row) => row.category ?? row.type ?? '(không trả về)' },
-  { key: 'isActive', label: 'Trạng thái', render: (row) => <Badge tone={row.isActive ? 'success' : 'warning'}>{row.isActive ? 'Đang hoạt động' : 'Tạm ngưng'}</Badge> },
-  { key: 'updatedAt', label: 'Cập nhật', render: (row) => row.updatedAt ?? row.createdAt ?? '(không trả về)' }
-];
-
 export function MasterDataScreen({
   rows,
   onLoad,
@@ -24,12 +16,16 @@ export function MasterDataScreen({
   form,
   setForm,
   onCreate,
+  onUpdate,
+  onDeactivate,
   onGenerateCode,
   postCreateHint,
   lastResult,
   userInfo
 }) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [editingRow, setEditingRow] = useState(null);
+  const [editForm, setEditForm] = useState({ code: '', name: '', category: '', isActive: true });
   const roles = [...(userInfo?.realmRoles ?? []), ...(userInfo?.clientRoles ?? [])];
   const isViewer = roles.includes('VIEWER') && !roles.includes('ACCOUNTANT') && !roles.includes('ADMIN');
   const filteredRows = useMemo(() => {
@@ -49,6 +45,65 @@ export function MasterDataScreen({
     const value = field === 'isActive' ? event.target.checked : event.target.value;
     setForm((current) => ({ ...current, [field]: value }));
   };
+
+  const updateEditField = (field) => (event) => {
+    const value = field === 'isActive' ? event.target.checked : event.target.value;
+    setEditForm((current) => ({ ...current, [field]: value }));
+  };
+
+  function startEdit(row) {
+    setEditingRow(row);
+    setEditForm({
+      code: row.code ?? '',
+      name: row.name ?? '',
+      category: row.category ?? row.type ?? '',
+      isActive: row.isActive ?? row.active ?? true
+    });
+  }
+
+  async function submitEdit(event) {
+    event.preventDefault();
+    if (!editingRow) {
+      return;
+    }
+    const result = await onUpdate(editingRow, editForm);
+    if (result?.ok) {
+      setEditingRow(null);
+    }
+  }
+
+  async function deactivate(row) {
+    const confirmed = window.confirm(`Tạm ngưng bản ghi ${row.code}?`);
+    if (!confirmed) {
+      return;
+    }
+    const result = await onDeactivate(row);
+    if (result?.ok && editingRow?.id === row.id) {
+      setEditingRow(null);
+    }
+  }
+
+  const columns = [
+    { key: 'code', label: 'Mã', render: (row) => <code>{row.code}</code> },
+    { key: 'name', label: 'Tên' },
+    { key: 'category', label: 'Loại', render: (row) => row.category ?? row.type ?? '(không trả về)' },
+    { key: 'isActive', label: 'Trạng thái', render: (row) => <Badge tone={row.isActive ? 'success' : 'warning'}>{row.isActive ? 'Đang hoạt động' : 'Tạm ngưng'}</Badge> },
+    { key: 'updatedAt', label: 'Cập nhật', render: (row) => row.updatedAt ?? row.createdAt ?? '(không trả về)' },
+    {
+      key: 'actions',
+      label: 'Thao tác',
+      render: (row) => (
+        <div className="row-actions">
+          <button type="button" className="button-secondary" onClick={() => startEdit(row)} disabled={disabled || loading}>
+            Sửa
+          </button>
+          <button type="button" className="button-danger" onClick={() => deactivate(row)} disabled={disabled || loading}>
+            Tạm ngưng
+          </button>
+        </div>
+      )
+    }
+  ];
 
   return (
     <div className="screen-grid">
@@ -77,6 +132,40 @@ export function MasterDataScreen({
           emptyMessage={searchTerm ? 'Không có bản ghi đã tải nào khớp với tìm kiếm.' : 'Hãy tải dữ liệu sau khi đăng nhập. Tenant mới có thể chưa có dữ liệu.'}
         />
       </section>
+
+      {editingRow && (
+        <section className="panel panel-span-2 edit-panel">
+          <div className="panel-heading">
+            <div>
+              <h3>Sửa bản ghi</h3>
+              <p>Cập nhật mã, tên, loại hoặc trạng thái của bản ghi đang chọn.</p>
+            </div>
+            <Badge tone="blue">PUT</Badge>
+          </div>
+          <form className="form-grid" onSubmit={submitEdit}>
+            <label>
+              Mã
+              <input value={editForm.code} onChange={updateEditField('code')} required />
+            </label>
+            <label>
+              Tên
+              <input value={editForm.name} onChange={updateEditField('name')} required />
+            </label>
+            <label>
+              Loại
+              <input value={editForm.category} onChange={updateEditField('category')} required />
+            </label>
+            <label className="check-row">
+              <input type="checkbox" checked={editForm.isActive} onChange={updateEditField('isActive')} />
+              Đang hoạt động
+            </label>
+            <div className="form-actions">
+              <button type="button" className="button-secondary" onClick={() => setEditingRow(null)}>Hủy</button>
+              <button type="submit" disabled={disabled || loading}>{loading ? 'Đang lưu...' : 'Lưu thay đổi'}</button>
+            </div>
+          </form>
+        </section>
+      )}
 
       <section className="panel">
         <div className="panel-heading">
@@ -145,7 +234,7 @@ export function MasterDataScreen({
           </div>
         </form>
         <p className="hint">Mã phải duy nhất trong từng tenant. Mã trùng sẽ trả `409 Conflict`.</p>
-        {postCreateHint && <Alert tone="success" title="Tạo thành công">{postCreateHint}</Alert>}
+        {postCreateHint && <Alert tone="success" title="Thao tác thành công">{postCreateHint}</Alert>}
       </section>
 
       <section className="panel panel-span-2">

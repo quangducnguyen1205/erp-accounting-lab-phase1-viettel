@@ -129,9 +129,11 @@ Grafana local dùng `admin/admin` chỉ cho lab local.
 4. Bấm `Load master data`.
 5. Bấm `Load by code` với code có thật, ví dụ `LAPTOP-01`.
 6. Bấm `Create` với code `UI-DEMO-*`.
-7. Đợi một chút rồi vào Activity Log và bấm `Load activity`.
-8. Ghi lại `requestId` trên UI và đối chiếu log `tenant-demo` / `audit-log-service`.
-9. Nếu Loki đang chạy, mở `http://localhost:13001` -> Explore -> Loki và query:
+7. Bấm `Edit` để sửa tên/loại hoặc mã; nếu đổi sang mã trùng trong cùng tenant thì kỳ vọng `409 Conflict`.
+8. Bấm `Tạm ngưng` để demo soft delete/deactivate. Bản ghi không còn hiện trong list/lookup active, nhưng code cũ vẫn được giữ bởi unique constraint trong tenant.
+9. Đợi một chút rồi vào Activity Log và bấm `Load activity`.
+10. Ghi lại `requestId` trên UI và đối chiếu log `tenant-demo` / `audit-log-service`.
+11. Nếu Loki đang chạy, mở `http://localhost:13001` -> Explore -> Loki và query:
 
 ```logql
 {service=~"tenant-demo|audit-log-service|kong-gateway|web-ui-demo"}
@@ -163,13 +165,14 @@ UI không tự kết luận cache hit/miss; UI chỉ gọi endpoint thật và h
 
 Nếu `APP_MESSAGING_ENABLED=true`:
 
-1. Tạo hoặc update `master_data`.
+1. Tạo, update hoặc tạm ngưng `master_data`.
 2. Quan sát log:
    - `tenant-demo` producer log `Published Kafka event`;
    - `audit-log-service` log `Consumed cross-service event` và `Stored audit event`.
 3. Mở Kafka UI `http://localhost:18082`:
    - topic `master-data-events`;
    - message key dạng `tenant:{tenantId}:master-data:{id}`;
+   - `changeType` có thể là `CREATED`, `UPDATED` hoặc `DEACTIVATED`.
    - consumer group `audit-log-service`.
 4. Giải thích event có `tenantId`, Kafka key tenant-aware, PostgreSQL vẫn là source of truth.
 
@@ -205,7 +208,8 @@ Nếu observability lab đang chạy:
 | MasterData list | `GET /api/master-data` | UI qua Gateway | Có | `master-data-api.http`, `keycloak-api.http` | Ready |
 | MasterData create | `POST /api/master-data` | UI qua Gateway | Có | `master-data-api.http`, `keycloak-authorization-api.http`, `kafka-api.http` | Ready |
 | MasterData get by code / Redis | `GET /api/master-data/code/{code}` | UI hoặc HTTP, gọi hai lần để quan sát cache | Có | `cache-api.http` | Ready nếu `APP_CACHE_ENABLED=true` |
-| MasterData update / Kafka | `PUT /api/master-data/{id}` | HTTP/manual | Không | `kafka-api.http` | Ready nếu `APP_MESSAGING_ENABLED=true` |
+| MasterData update / Kafka | `PUT /api/master-data/{id}` | UI qua Gateway | Có | `kafka-api.http` | Ready nếu `APP_MESSAGING_ENABLED=true` |
+| MasterData soft delete / deactivate | `DELETE /api/master-data/{id}` | UI qua Gateway | Có | `master-data-api.http` nếu cần bổ sung thủ công | Ready, phát `DEACTIVATED` nếu messaging enabled |
 | Audit events | `GET /api/audit-events` | UI qua Kong | Có | `audit-api.http`, `cross-service-kafka-demo.http` | Ready nếu `audit-log-service` chạy |
 | Elasticsearch search | `GET /api/search/master-data?keyword=...` | HTTP/manual | Không | `search-api.http` | Ready nếu `APP_SEARCH_ENABLED=true` |
 | Elasticsearch reindex | `POST /api/search/master-data/reindex` | HTTP/manual | Không | `search-api.http` | Ready nếu `APP_SEARCH_ENABLED=true` |

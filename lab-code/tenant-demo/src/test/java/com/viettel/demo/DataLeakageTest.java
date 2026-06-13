@@ -18,7 +18,9 @@ import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -238,6 +240,85 @@ public class DataLeakageTest {
                         .content(payload))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.tenantId", is(2)));
+    }
+
+    @Test
+    void update_should_remain_tenant_scoped_and_return_updated_record() throws Exception {
+        String payload = """
+                {
+                  "code": "LAPTOP-01-UPDATED",
+                  "name": "Laptop Dell Latitude Updated",
+                  "category": "ELECTRONICS",
+                  "isActive": true
+                }
+                """;
+
+        mockMvc.perform(put("/api/master-data/101")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantOneToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tenantId", is(1)))
+                .andExpect(jsonPath("$.id", is(101)))
+                .andExpect(jsonPath("$.code", is("LAPTOP-01-UPDATED")));
+
+        mockMvc.perform(get("/api/master-data/code/LAPTOP-01-UPDATED")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantTwoToken)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void update_duplicate_code_in_same_tenant_should_return_409() throws Exception {
+        String createPayload = """
+                {
+                  "code": "UPDATE-DUPLICATE",
+                  "name": "Update Duplicate",
+                  "category": "TEST",
+                  "isActive": true
+                }
+                """;
+        String updatePayload = """
+                {
+                  "code": "UPDATE-DUPLICATE",
+                  "name": "Laptop Dell Latitude Updated",
+                  "category": "ELECTRONICS",
+                  "isActive": true
+                }
+                """;
+
+        mockMvc.perform(post("/api/master-data")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantOneToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createPayload))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(put("/api/master-data/101")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantOneToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updatePayload))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status", is(409)))
+                .andExpect(jsonPath("$.message", containsString("MasterData code already exists")));
+    }
+
+    @Test
+    void delete_should_soft_deactivate_and_hide_record_from_read_apis() throws Exception {
+        mockMvc.perform(delete("/api/master-data/101")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantOneToken)))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/master-data")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantOneToken)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+
+        mockMvc.perform(get("/api/master-data/101")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantOneToken)))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(get("/api/master-data/code/LAPTOP-01")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantOneToken)))
+                .andExpect(status().isNotFound());
     }
 
     /*

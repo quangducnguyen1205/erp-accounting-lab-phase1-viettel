@@ -36,9 +36,11 @@ public interface MasterDataRepository extends JpaRepository<MasterData, Long> {
 
     List<MasterData> findByTenantIdAndIsActiveTrue(Long tenantId);
 
-    List<MasterData> findByTenantIdAndCategory(Long tenantId, String category);
+    List<MasterData> findByTenantIdAndCategoryAndIsActiveTrue(Long tenantId, String category);
 
     Optional<MasterData> findByTenantIdAndCode(Long tenantId, String code);
 
-    Optional<MasterData> findByTenantIdAndId(Long tenantId, Long id);
+    Optional<MasterData> findByTenantIdAndCodeAndIsActiveTrue(Long tenantId, String code);
+
+    Optional<MasterData> findByTenantIdAndIdAndIsActiveTrue(Long tenantId, Long id);
 }
