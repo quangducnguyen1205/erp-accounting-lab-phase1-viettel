@@ -1,46 +1,24 @@
-package com.viettel.demo.storage;
+package com.viettel.files.file;
 
 import com.viettel.common.security.TenantContext;
-import com.viettel.demo.entity.FileMetadata;
-import com.viettel.demo.repository.FileMetadataRepository;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/*
- * ==============================================================
- * FileStorageService — use case file storage tenant-aware
- * ==============================================================
- *
- * [Vai trò]
- * Service này sẽ là nơi nối:
- * - TenantContext;
- * - metadata PostgreSQL;
- * - object key generation;
- * - FileStorageGateway gọi MinIO.
- *
- * [Luồng chính]
- * 1. Lấy tenantId từ TenantContext.
- * 2. Sinh fileId + objectKey tenant-aware ở backend.
- * 3. Upload binary stream lên MinIO qua gateway.
- * 4. Lưu metadata tenant-aware vào PostgreSQL.
- * 5. Download/delete luôn tìm metadata bằng tenantId + fileId.
- *
- * [Không làm]
- * - Không nhận tenantId từ request body.
- * - Không nhận raw objectKey từ client.
- * - Không biến MinIO thành source of truth nghiệp vụ.
- *
- * ==============================================================
- */
 @Service
-@ConditionalOnProperty(prefix = "app.file-storage", name = "enabled", havingValue = "true")
 public class FileStorageService {
+
+    private static final Logger log = LoggerFactory.getLogger(FileStorageService.class);
 
     private static final String DEFAULT_FILENAME = "file";
     private static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
@@ -48,15 +26,27 @@ public class FileStorageService {
     private final FileStorageGateway gateway;
     private final FileMetadataRepository metadataRepository;
 
-    public FileStorageService(
-            FileStorageGateway gateway,
-            FileMetadataRepository metadataRepository) {
+    public FileStorageService(FileStorageGateway gateway, FileMetadataRepository metadataRepository) {
         this.gateway = gateway;
         this.metadataRepository = metadataRepository;
     }
 
+    @Transactional(readOnly = true)
+    public List<FileMetadataResponse> listCurrentTenantFiles() {
+        Long tenantId = currentTenantId();
+        return metadataRepository.findByTenantIdOrderByCreatedAtDesc(tenantId)
+                .stream()
+                .map(FileMetadataResponse::from)
+                .toList();
+    }
+
+    @Transactional
     public FileUploadResponse upload(MultipartFile file) {
-        Long tenantId = getTenantId();
+        if (file == null || file.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File cannot be empty");
+        }
+
+        Long tenantId = currentTenantId();
         String fileId = UUID.randomUUID().toString();
         String originalFilename = sanitizeFilename(file.getOriginalFilename());
         String contentType = resolveContentType(file.getContentType());
@@ -70,18 +60,13 @@ public class FileStorageService {
         );
 
         try (InputStream inputStream = file.getInputStream()) {
-            gateway.putObject(
-                    objectKey,
-                    inputStream,
-                    sizeBytes,
-                    contentType,
-                    metadata
-            );
+            gateway.putObject(objectKey, inputStream, sizeBytes, contentType, metadata);
         } catch (IOException e) {
             throw new RuntimeException("Failed to read file input stream", e);
         }
 
         FileMetadata fileMetadata = new FileMetadata();
+        fileMetadata.setTenantId(tenantId);
         fileMetadata.setFileId(fileId);
         fileMetadata.setObjectKey(objectKey);
         fileMetadata.setOriginalFilename(originalFilename);
@@ -95,11 +80,21 @@ public class FileStorageService {
             throw e;
         }
 
+        log.info(
+                "Uploaded file fileId={}, tenantId={}, filename={}, sizeBytes={}",
+                fileId,
+                tenantId,
+                originalFilename,
+                sizeBytes
+        );
+
         return new FileUploadResponse(fileId, originalFilename, contentType, sizeBytes);
     }
 
+    @Transactional(readOnly = true)
     public FileDownloadInfo download(String fileId) {
         FileMetadata fileMetadata = findTenantFile(fileId);
+        log.info("Downloading file fileId={}, tenantId={}", fileMetadata.getFileId(), fileMetadata.getTenantId());
         return new FileDownloadInfo(
                 fileMetadata.getOriginalFilename(),
                 fileMetadata.getContentType(),
@@ -108,17 +103,21 @@ public class FileStorageService {
         );
     }
 
+    @Transactional
     public void delete(String fileId) {
         FileMetadata fileMetadata = findTenantFile(fileId);
         gateway.removeObject(fileMetadata.getObjectKey());
         metadataRepository.delete(fileMetadata);
+        log.info("Deleted file fileId={}, tenantId={}", fileMetadata.getFileId(), fileMetadata.getTenantId());
     }
 
     private FileMetadata findTenantFile(String fileId) {
-        return metadataRepository.findByTenantIdAndFileId(
-                getTenantId(),
-                fileId
-        ).orElseThrow(() -> new FileStorageNotFoundException("File not found"));
+        if (fileId == null || fileId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "fileId cannot be blank");
+        }
+
+        return metadataRepository.findByTenantIdAndFileId(currentTenantId(), fileId.trim())
+                .orElseThrow(() -> new FileStorageNotFoundException("File not found"));
     }
 
     private String generateObjectKey(Long tenantId, String fileId, String safeFilename) {
@@ -159,10 +158,10 @@ public class FileStorageService {
         }
     }
 
-    private Long getTenantId() {
+    private Long currentTenantId() {
         Long tenantId = TenantContext.getCurrentTenant();
         if (tenantId == null) {
-            throw new IllegalStateException("Tenant ID is not set");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tenant context is missing");
         }
         return tenantId;
     }

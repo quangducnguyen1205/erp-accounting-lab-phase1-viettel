@@ -1,0 +1,67 @@
+server:
+  port: ${SERVER_PORT:8083}
+
+spring:
+  application:
+    name: file-service
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:erpdb}?currentSchema=${DB_SCHEMA:file_service}
+    username: ${DB_USER:erpuser}
+    password: ${DB_PASSWORD:erpuser}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: ${DB_SCHEMA:file_service}
+        format_sql: true
+
+  flyway:
+    enabled: true
+    schemas: ${DB_SCHEMA:file_service}
+    default-schema: ${DB_SCHEMA:file_service}
+    create-schemas: true
+
+  servlet:
+    multipart:
+      max-file-size: ${APP_FILE_MAX_SIZE:10MB}
+      max-request-size: ${APP_FILE_MAX_REQUEST_SIZE:10MB}
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [requestId=%X{requestId:-no-request}] %logger{36} - %msg%n"
+  level:
+    org.flywaydb: info
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: file-service
+    phase: phase-1-5-production-like-demo
+    description: Tenant-aware MinIO upload/download learning demo
+
+app:
+  security:
+    issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:18080/realms/viettel-lab}
+    jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:}
+    client-id: ${KEYCLOAK_CLIENT_ID:tenant-demo-api-client}
+
+  file-storage:
+    endpoint: ${MINIO_ENDPOINT:http://localhost:19000}
+    access-key: ${MINIO_ACCESS_KEY:minioadmin}
+    secret-key: ${MINIO_SECRET_KEY:minioadmin}
+    bucket: ${MINIO_BUCKET:tenant-demo-files}

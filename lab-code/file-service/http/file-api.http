@@ -1,0 +1,30 @@
+### Health
+GET http://localhost:8083/actuator/health
+
+### List files through Kong
+GET http://localhost:18000/api/files
+Authorization: Bearer {{access_token}}
+X-Request-Id: file-demo-list-001
+
+### Upload file through Kong
+POST http://localhost:18000/api/files
+Authorization: Bearer {{access_token}}
+X-Request-Id: file-demo-upload-001
+Content-Type: multipart/form-data; boundary=Boundary
+
+--Boundary
+Content-Disposition: form-data; name="file"; filename="sample.txt"
+Content-Type: text/plain
+
+Hello from Master Data Portal file demo.
+--Boundary--
+
+### Download file through Kong
+GET http://localhost:18000/api/files/{{file_id}}
+Authorization: Bearer {{access_token}}
+X-Request-Id: file-demo-download-001
+
+### Delete file through Kong
+DELETE http://localhost:18000/api/files/{{file_id}}
+Authorization: Bearer {{access_token}}
+X-Request-Id: file-demo-delete-001

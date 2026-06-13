@@ -68,12 +68,11 @@ tenant-demo-files
 
 Giữ bucket private. Không bật public access cho chứng từ/file tenant.
 
-## Config dự kiến cho tenant-demo
+## Config dự kiến cho file-service
 
-Trong `.env` local sau này:
+Trong `.env` local của `lab-code/file-service` nếu muốn override default:
 
 ```env
-APP_FILE_STORAGE_ENABLED=true
 MINIO_ENDPOINT=http://localhost:19000
 MINIO_ACCESS_KEY=minioadmin
 MINIO_SECRET_KEY=minioadmin
@@ -81,15 +80,15 @@ MINIO_BUCKET=tenant-demo-files
 MINIO_REGION=us-east-1
 ```
 
-Default trong app vẫn nên là `APP_FILE_STORAGE_ENABLED=false` để `make app-test` không phụ thuộc MinIO.
+`tenant-demo` không còn sở hữu `/api/files`; upload/download runtime đã tách sang `file-service`.
 
 ## Mini-lab flow dự kiến
 
 1. Start PostgreSQL + Keycloak + MinIO.
-2. Start tenant-demo khi file storage đã tự implement.
-3. Upload file bằng API backend.
-4. Backend tạo metadata tenant-aware trong PostgreSQL.
-5. Backend upload binary object vào MinIO.
+2. Start `file-service` bằng `make file-run-logs`.
+3. Upload file bằng API backend qua Kong: `POST /api/files`.
+4. `file-service` tạo metadata tenant-aware trong PostgreSQL.
+5. `file-service` upload binary object vào MinIO.
 6. Download bằng `fileId`, không bằng raw object key.
 7. Tenant khác không download được file này.
 

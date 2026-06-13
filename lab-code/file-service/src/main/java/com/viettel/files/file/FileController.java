@@ -1,6 +1,5 @@
-package com.viettel.demo.storage;
+package com.viettel.files.file;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
@@ -17,25 +16,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-/*
- * ==============================================================
- * FileController — REST API mỏng cho file storage mini-lab
- * ==============================================================
- *
- * [Endpoint dự kiến]
- * - POST   /api/files          upload multipart file.
- * - GET    /api/files/{fileId} download file theo metadata tenant-aware.
- * - DELETE /api/files/{fileId} delete/soft-delete file.
- *
- * [Lưu ý]
- * Controller chỉ là HTTP boundary mỏng. Không gọi MinIO trực tiếp,
- * không tự lấy tenantId từ request body, không nhận raw objectKey từ client.
- *
- * ==============================================================
- */
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/files")
-@ConditionalOnProperty(prefix = "app.file-storage", name = "enabled", havingValue = "true")
 public class FileController {
 
     private final FileStorageService service;
@@ -44,26 +28,21 @@ public class FileController {
         this.service = service;
     }
 
+    @GetMapping
+    public List<FileMetadataResponse> list() {
+        return service.listCurrentTenantFiles();
+    }
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<FileUploadResponse> upload(
-            @RequestParam("file") MultipartFile file
-    ) {
+    public ResponseEntity<FileUploadResponse> upload(@RequestParam("file") MultipartFile file) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.upload(file));
     }
 
     @GetMapping("/{fileId}")
-    public ResponseEntity<Resource> download(
-            @PathVariable("fileId") String fileId
-    ) {
+    public ResponseEntity<Resource> download(@PathVariable String fileId) {
         FileDownloadInfo file = service.download(fileId);
         Resource resource = new InputStreamResource(file.content());
 
-        /*
-         * Controller chỉ dựng HTTP response:
-         * - metadata/content type đến từ PostgreSQL;
-         * - binary stream đến từ MinIO qua service/gateway;
-         * - không expose raw objectKey hoặc raw MinIO response ra client.
-         */
         return ResponseEntity.ok()
                 .contentType(resolveContentType(file.contentType()))
                 .contentLength(file.sizeBytes())
@@ -75,9 +54,7 @@ public class FileController {
     }
 
     @DeleteMapping("/{fileId}")
-    public ResponseEntity<Void> delete(
-            @PathVariable("fileId") String fileId
-    ) {
+    public ResponseEntity<Void> delete(@PathVariable String fileId) {
         service.delete(fileId);
         return ResponseEntity.noContent().build();
     }

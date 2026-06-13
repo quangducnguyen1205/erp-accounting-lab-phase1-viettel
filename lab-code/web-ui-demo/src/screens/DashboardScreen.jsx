@@ -17,7 +17,7 @@ function formatActivity(event) {
   return `${action} ${code}`;
 }
 
-export function DashboardScreen({ authState, rows, auditEvents, masterDataLoaded, activityLoaded, lastResult, onNavigate }) {
+export function DashboardScreen({ authState, rows, auditEvents, files, masterDataLoaded, activityLoaded, filesLoaded, lastResult, onNavigate }) {
   const activeRecords = rows.filter(isActiveRecord).length;
   const role = primaryRole(authState.userInfo);
   const recentEvents = auditEvents.slice(0, 4);
@@ -39,6 +39,9 @@ export function DashboardScreen({ authState, rows, auditEvents, masterDataLoaded
         </StatusCard>
         <StatusCard label="Thay đổi gần đây" title={activityLoaded ? auditEvents.length : 'Chưa tải'} badge="Lịch sử" tone="teal">
           Lịch sử hoạt động được tải từ audit API khi người dùng yêu cầu.
+        </StatusCard>
+        <StatusCard label="Tệp tin" title={filesLoaded ? files.length : 'Chưa tải'} badge="Files" tone="indigo">
+          File metadata được tải từ file-service theo tenant hiện tại.
         </StatusCard>
         <StatusCard label="Tenant" title={authState.userInfo?.tenantId ?? '(none)'} badge="Tenant" tone="indigo">
           Phạm vi tenant lấy từ Keycloak token đã được backend kiểm tra.
@@ -86,6 +89,7 @@ export function DashboardScreen({ authState, rows, auditEvents, masterDataLoaded
         <div className="action-list">
           <button type="button" className="button-secondary" onClick={() => onNavigate('master-data')}>Tải dữ liệu danh mục</button>
           <button type="button" className="button-secondary" onClick={() => onNavigate('master-data')}>Tạo bản ghi</button>
+          <button type="button" className="button-secondary" onClick={() => onNavigate('files')}>Quản lý tệp tin</button>
           <button type="button" className="button-secondary" onClick={() => onNavigate('activity-log')}>Xem lịch sử</button>
         </div>
         <p className="hint">Phần giải thích kiến trúc dùng demo script để mở Kafka UI và Grafana Loki bên ngoài luồng sản phẩm.</p>

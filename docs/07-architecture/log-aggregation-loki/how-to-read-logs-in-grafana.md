@@ -74,6 +74,14 @@ Dùng query này để xem event Kafka đã được consume/store chưa, hoặc
 
 `audit-log-service` cũng là Java service host-run. Khi chạy `make audit-log-run-logs`, service ghi vào `lab-code/logs/audit-log-service.log`; Alloy tail file đó vào Loki với `source="file"`.
 
+File service:
+
+```logql
+{service="file-service"}
+```
+
+Dùng query này để debug upload/download/list/delete file tenant-aware. `file-service` cũng chạy Maven/IntelliJ trên host; khi chạy `make file-run-logs`, service ghi vào `lab-code/logs/file-service.log` và Alloy tail vào Loki với `source="file"`.
+
 Frontend container:
 
 ```logql
@@ -87,7 +95,7 @@ Frontend container:
 Với demo, cách dễ nhất là tạo code như `LOKI-WATCH-*` hoặc `LOKI-DEMO-*`, rồi search text:
 
 ```logql
-{service=~"tenant-demo|audit-log-service|kong-gateway"} |= "LOKI-WATCH"
+{service=~"tenant-demo|audit-log-service|file-service|kong-gateway"} |= "LOKI-WATCH"
 ```
 
 Nếu dùng code cụ thể:
@@ -185,8 +193,9 @@ Lý do: chúng có cardinality cao hoặc nhạy cảm. Hãy để chúng trong 
 1. Bắt đầu từ `{service="kong-gateway"}` để xem request có tới gateway không.
 2. Sang `{service="tenant-demo"}` để xem backend auth, tenant, DB, Kafka publish.
 3. Sang `{service="audit-log-service"}` để xem Kafka consume/store.
-4. Search theo code/eventId nếu flow async.
-5. Search theo requestId nếu đang debug một HTTP request cụ thể.
-6. Search `409`, `403`, `ERROR` khi cần xem lỗi.
+4. Sang `{service="file-service"}` khi debug upload/download MinIO.
+5. Search theo code/eventId nếu flow async.
+6. Search theo requestId nếu đang debug một HTTP request cụ thể.
+7. Search `409`, `403`, `ERROR` khi cần xem lỗi.
 
 Đây là cách đọc log thực dụng: đi từ lớp ngoài vào lớp trong, rồi nối các dòng log bằng requestId hoặc business key.

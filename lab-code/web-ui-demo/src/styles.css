@@ -807,6 +807,13 @@ td {
   grid-template-columns: minmax(0, 1fr) auto;
 }
 
+.upload-form {
+  align-items: end;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
 .check-row {
   align-content: end;
   grid-template-columns: auto 1fr;

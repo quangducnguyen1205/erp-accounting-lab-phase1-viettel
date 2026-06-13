@@ -172,7 +172,7 @@ LogQL:
 {source=~"file|docker"}
 ```
 
-`source="file"` cho host-run Java services như `tenant-demo` và `audit-log-service`; `source="docker"` cho Docker services như Kong, web-ui-demo và infra tools.
+`source="file"` cho host-run Java services như `tenant-demo`, `audit-log-service` và `file-service`; `source="docker"` cho Docker services như Kong, web-ui-demo và infra tools.
 
 ## 5. Step-by-step UI flow
 

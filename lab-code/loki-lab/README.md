@@ -25,6 +25,12 @@ audit-log-service host Maven logs
 -> Grafana Alloy
 -> Loki
 -> Grafana Explore
+
+file-service host Maven logs
+-> lab-code/logs/file-service.log
+-> Grafana Alloy
+-> Loki
+-> Grafana Explore
 ```
 
 ## Local ports
@@ -77,6 +83,7 @@ Nguồn 2: file log của Java services host-run:
 ```text
 lab-code/logs/tenant-demo.log -> loki.source.file -> Loki
 lab-code/logs/audit-log-service.log -> loki.source.file -> Loki
+lab-code/logs/file-service.log -> loki.source.file -> Loki
 ```
 
 Các label chính:
@@ -93,7 +100,7 @@ Với file log Java services, label chính là:
 
 | Label | Giá trị |
 |---|---|
-| `service` | `tenant-demo` hoặc `audit-log-service` |
+| `service` | `tenant-demo`, `audit-log-service` hoặc `file-service` |
 | `environment` | `local` |
 | `source` | `file` |
 | `job` | `host-file` |
@@ -116,6 +123,7 @@ Khi demo centralized logs, dùng file-log targets:
 ```bash
 make app-run-logs
 make audit-log-run-logs
+make file-run-logs
 ```
 
 Các target này xóa file log cũ ở đầu lần chạy và set:
@@ -123,6 +131,7 @@ Các target này xóa file log cũ ở đầu lần chạy và set:
 ```text
 LOGGING_FILE_NAME=../logs/tenant-demo.log
 LOGGING_FILE_NAME=../logs/audit-log-service.log
+LOGGING_FILE_NAME=../logs/file-service.log
 ```
 
 File `lab-code/logs/*.log` là generated local log, không commit. Logs không bị tự xóa khi dừng service để sau demo vẫn có thể inspect. Dọn thủ công bằng:
@@ -168,20 +177,21 @@ http://localhost:13001
 {service="kafka"}
 {service="tenant-demo"}
 {service="audit-log-service"}
+{service="file-service"}
 ```
 
 6. Tìm request id nếu log line có request id:
 
 ```logql
 {service="web-ui-demo"} |= "web-demo"
-{service=~"tenant-demo|audit-log-service|kong-gateway"} |= "requestId="
-{service=~"tenant-demo|audit-log-service|kong-gateway"} |= "UI-LOKI-E2E"
-{service=~"tenant-demo|audit-log-service|kong-gateway"} |= "LOKI-WATCH"
+{service=~"tenant-demo|audit-log-service|file-service|kong-gateway"} |= "requestId="
+{service=~"tenant-demo|audit-log-service|file-service|kong-gateway"} |= "UI-LOKI-E2E"
+{service=~"tenant-demo|audit-log-service|file-service|kong-gateway"} |= "LOKI-WATCH"
 {service="tenant-demo"} |= "409"
 {service=~"tenant-demo|kong-gateway"} |= "403"
 ```
 
-Với `tenant-demo` và `audit-log-service`, query chỉ có log nếu service được chạy bằng `make app-run-logs` / `make audit-log-run-logs`.
+Với Java host-run services, query chỉ có log nếu service được chạy bằng target file-log tương ứng: `make app-run-logs`, `make audit-log-run-logs`, hoặc `make file-run-logs`.
 
 Nếu muốn đọc log theo đúng cách demo backend engineer, xem:
 

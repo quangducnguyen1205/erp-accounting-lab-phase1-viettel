@@ -1,17 +1,24 @@
-package com.viettel.demo.storage;
+package com.viettel.files.file;
 
-import io.minio.*;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import io.minio.BucketExistsArgs;
+import io.minio.GetObjectArgs;
+import io.minio.GetObjectResponse;
+import io.minio.MakeBucketArgs;
+import io.minio.MinioClient;
+import io.minio.ObjectWriteResponse;
+import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
 import java.util.Map;
 
 @Component
-@ConditionalOnProperty(prefix = "app.file-storage", name = "enabled", havingValue = "true")
 public class MinioFileStorageGateway implements FileStorageGateway {
+
     private final MinioClient minioClient;
     private final FileStorageProperties properties;
+    private volatile boolean bucketReady;
 
     public MinioFileStorageGateway(MinioClient minioClient, FileStorageProperties properties) {
         this.minioClient = minioClient;
@@ -25,6 +32,7 @@ public class MinioFileStorageGateway implements FileStorageGateway {
             long sizeBytes,
             String contentType,
             Map<String, String> metadata) {
+        ensureBucketExists();
         PutObjectArgs args = PutObjectArgs.builder()
                 .bucket(properties.getBucket())
                 .object(objectKey)
@@ -53,29 +61,10 @@ public class MinioFileStorageGateway implements FileStorageGateway {
                 .object(objectKey)
                 .build();
         try {
-            return minioClient.getObject(args);
+            GetObjectResponse response = minioClient.getObject(args);
+            return response;
         } catch (Exception e) {
             throw new RuntimeException("Failed to get object from MinIO", e);
-        }
-    }
-
-    @Override
-    public StoredObjectInfo statObject(String objectKey) {
-        StatObjectArgs args = StatObjectArgs.builder()
-                .bucket(properties.getBucket())
-                .object(objectKey)
-                .build();
-        try {
-            StatObjectResponse stat = minioClient.statObject(args);
-            return new StoredObjectInfo(
-                    properties.getBucket(),
-                    objectKey,
-                    stat.etag(),
-                    stat.contentType(),
-                    stat.size()
-            );
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to stat object from MinIO", e);
         }
     }
 
@@ -89,6 +78,26 @@ public class MinioFileStorageGateway implements FileStorageGateway {
             minioClient.removeObject(args);
         } catch (Exception e) {
             throw new RuntimeException("Failed to remove object from MinIO", e);
+        }
+    }
+
+    private void ensureBucketExists() {
+        if (bucketReady) {
+            return;
+        }
+
+        try {
+            boolean exists = minioClient.bucketExists(BucketExistsArgs.builder()
+                    .bucket(properties.getBucket())
+                    .build());
+            if (!exists) {
+                minioClient.makeBucket(MakeBucketArgs.builder()
+                        .bucket(properties.getBucket())
+                        .build());
+            }
+            bucketReady = true;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to prepare MinIO bucket", e);
         }
     }
 }

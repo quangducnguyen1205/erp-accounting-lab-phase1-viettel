@@ -14,7 +14,7 @@ async function parseResponse(response) {
   return response.text();
 }
 
-export async function apiRequest(path, options = {}) {
+async function createRequestContext(path, apiBaseUrl) {
   if (!keycloak.authenticated) {
     throw new Error('Bạn cần login Keycloak trước khi gọi API.');
   }
@@ -26,18 +26,37 @@ export async function apiRequest(path, options = {}) {
   await refreshToken();
 
   const requestId = newRequestId();
-  const apiBaseUrl = options.apiBaseUrl ?? config.apiBaseUrl;
-  const endpoint = `${apiBaseUrl}${path}`;
+  const endpoint = `${apiBaseUrl ?? config.apiBaseUrl}${path}`;
   const headers = {
     Authorization: `Bearer ${keycloak.token}`,
-    'X-Request-Id': requestId,
-    ...(options.body ? { 'Content-Type': 'application/json' } : {})
+    'X-Request-Id': requestId
+  };
+
+  return { requestId, endpoint, headers };
+}
+
+function filenameFromDisposition(disposition) {
+  if (!disposition) {
+    return '';
+  }
+
+  const match = disposition.match(/filename="?([^"]+)"?/i);
+  return match?.[1] ?? '';
+}
+
+export async function apiRequest(path, options = {}) {
+  const { requestId, endpoint, headers } = await createRequestContext(path, options.apiBaseUrl);
+  const hasJsonBody = options.body !== undefined;
+  const formData = options.formData;
+  const requestHeaders = {
+    ...headers,
+    ...(hasJsonBody ? { 'Content-Type': 'application/json' } : {})
   };
 
   const response = await fetch(endpoint, {
     method: options.method ?? 'GET',
-    headers,
-    body: options.body ? JSON.stringify(options.body) : undefined
+    headers: requestHeaders,
+    body: formData ?? (hasJsonBody ? JSON.stringify(options.body) : undefined)
   });
   const data = await parseResponse(response);
 
@@ -90,4 +109,52 @@ export function deleteMasterData(id, apiBaseUrl) {
 
 export function loadAuditEvents(apiBaseUrl, limit = 20) {
   return apiRequest(`/api/audit-events?limit=${encodeURIComponent(limit)}`, { apiBaseUrl });
+}
+
+export function listFiles(apiBaseUrl) {
+  return apiRequest('/api/files', { apiBaseUrl });
+}
+
+export function uploadFile(file, apiBaseUrl) {
+  const formData = new FormData();
+  formData.append('file', file);
+  return apiRequest('/api/files', {
+    apiBaseUrl,
+    method: 'POST',
+    formData
+  });
+}
+
+export function deleteFile(fileId, apiBaseUrl) {
+  return apiRequest(`/api/files/${encodeURIComponent(fileId)}`, {
+    apiBaseUrl,
+    method: 'DELETE'
+  });
+}
+
+export async function downloadFile(fileId, apiBaseUrl) {
+  const path = `/api/files/${encodeURIComponent(fileId)}`;
+  const { requestId, endpoint, headers } = await createRequestContext(path, apiBaseUrl);
+  const response = await fetch(endpoint, { headers });
+  const data = response.ok
+    ? {
+        blob: await response.blob(),
+        filename: filenameFromDisposition(response.headers.get('content-disposition')) || fileId
+      }
+    : await parseResponse(response);
+
+  console.info('[web-ui-demo] API request complete', {
+    method: 'GET',
+    path,
+    status: response.status,
+    requestId
+  });
+
+  return {
+    ok: response.ok,
+    status: response.status,
+    requestId,
+    endpoint,
+    data
+  };
 }

@@ -35,6 +35,17 @@ services:
         protocols:
           - http
 
+  - name: file-service-api
+    url: http://host.docker.internal:8083
+    routes:
+      - name: file-service-files-api
+        paths:
+          - /api/files
+        strip_path: false
+        preserve_host: false
+        protocols:
+          - http
+
 plugins:
   - name: cors
     route: tenant-demo-master-data-api
@@ -71,5 +82,25 @@ plugins:
         - X-Request-Id
       exposed_headers:
         - X-Request-Id
+      credentials: false
+      max_age: 3600
+
+  - name: cors
+    route: file-service-files-api
+    config:
+      origins:
+        - http://localhost:5173
+      methods:
+        - GET
+        - POST
+        - DELETE
+        - OPTIONS
+      headers:
+        - Authorization
+        - Content-Type
+        - X-Request-Id
+      exposed_headers:
+        - X-Request-Id
+        - Content-Disposition
       credentials: false
       max_age: 3600

@@ -8,9 +8,11 @@ Nhóm này giải thích object storage, S3-compatible API, MinIO local lab và 
 
 1. [minio-object-storage.md](minio-object-storage.md) - foundation: bucket, object, key, metadata, private bucket.
 2. [minio-s3-api-shapes.md](minio-s3-api-shapes.md) - put/get/stat/delete/list/presigned request shapes.
-3. [minio-code-guide-spring-boot.md](minio-code-guide-spring-boot.md) - gateway/adapter + metadata repository + service/controller flow.
-4. [minio-admin-console-guide.md](minio-admin-console-guide.md) - local MinIO Console walkthrough.
-5. [minio-advanced-object-management.md](minio-advanced-object-management.md) - optional backlog: presigned URL expiry, lifecycle, versioning, object lock/retention.
+3. [file-service-split-plan.md](file-service-split-plan.md) - why file upload/download is now a separated service boundary.
+4. [file-service-code-walkthrough.md](file-service-code-walkthrough.md) - actual `lab-code/file-service` classes, config, flow and verification.
+5. [minio-code-guide-spring-boot.md](minio-code-guide-spring-boot.md) - gateway/adapter + metadata repository + service/controller flow.
+6. [minio-admin-console-guide.md](minio-admin-console-guide.md) - local MinIO Console walkthrough.
+7. [minio-advanced-object-management.md](minio-advanced-object-management.md) - optional backlog: presigned URL expiry, lifecycle, versioning, object lock/retention.
 
 ## Trạng Thái
 

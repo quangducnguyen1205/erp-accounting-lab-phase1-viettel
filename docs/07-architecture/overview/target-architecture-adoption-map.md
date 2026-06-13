@@ -79,7 +79,7 @@ Sau feedback mentor ngày 11/06/2026, Phase 1.5 sẽ đưa demo gần target hơ
 | `lab-code/keycloak-lab` | Authorization Server/OIDC mini-lab | Mini-labbed + persistent local setup | Keycloak issue token, `tenant_id` claim, issuer/JWKS; PostgreSQL volume + bootstrap script for demo reproducibility. |
 | `APP_AUTH_MODE=keycloak` | Resource Server validate Keycloak token | Verified | Keycloak token gọi API tenant-aware thành công. |
 | `com.viettel.demo.search` | Elasticsearch search projection | Verified | Reindex/search `master_data`, query luôn filter tenantId. |
-| `com.viettel.demo.storage` | Object storage + metadata source of truth | Verified | Upload/download qua backend, metadata PostgreSQL tenant-aware, object trong MinIO. |
+| `lab-code/file-service` / `com.viettel.files.file` | Object storage + metadata source of truth | Phase 1.5 split | Upload/download qua Kong -> file-service, metadata PostgreSQL tenant-aware, object trong MinIO. |
 | `com.viettel.demo.cache` | Redis cache-aside | Verified | Read-by-code miss -> DB -> TTL -> hit, key có tenantId. |
 | `com.viettel.demo.messaging` | Kafka async event propagation | Verified | Publish/consume `MasterDataChangedEvent`, event có tenantId và tenant-aware key. |
 | `com.viettel.demo.observability` + `lab-code/observability-lab` | Logging/metrics/local monitoring | Verified | RequestId/MDC, custom Micrometer metrics, Prometheus target UP, Grafana datasource/dashboard. |

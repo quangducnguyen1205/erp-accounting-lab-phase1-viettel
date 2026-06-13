@@ -23,6 +23,7 @@ REDIS_DIR      := redis-lab
 KAFKA_DIR      := kafka-lab
 KAFKA_UI_DIR   := kafka-ui-lab
 AUDIT_LOG_DIR  := audit-log-service
+FILE_SERVICE_DIR := file-service
 COMMON_SECURITY_DIR := common-security
 OBSERVABILITY_DIR := observability-lab
 LOKI_DIR       := loki-lab
@@ -216,6 +217,44 @@ audit-log-info: ## In hướng dẫn nhanh cho audit-log-service
 	@echo ""
 	@echo "Ghi chú: cần PostgreSQL, Keycloak và Kafka chạy trước khi demo đầy đủ."
 
+# --- File Service mini-lab -------------------------------------
+
+.PHONY: file-validate
+file-validate: common-security-install ## Validate file-service Maven project
+	mvn -f $(FILE_SERVICE_DIR)/pom.xml validate
+
+.PHONY: file-run
+file-run: common-security-install ## Chạy file-service bằng Maven ở port 8083
+	cd $(FILE_SERVICE_DIR) && if [ -f .env ]; then set -a; . ./.env; set +a; fi; mvn spring-boot:run
+
+.PHONY: file-run-logs
+file-run-logs: common-security-install logs-dir ## Chạy file-service bằng Maven và ghi file log để Loki/Alloy tail
+	@rm -f $(LOG_DIR)/file-service.log
+	cd $(FILE_SERVICE_DIR) && if [ -f .env ]; then set -a; . ./.env; set +a; fi; \
+	LOGGING_FILE_NAME=$${LOGGING_FILE_NAME:-../$(LOG_DIR)/file-service.log} \
+	mvn spring-boot:run
+
+.PHONY: file-status
+file-status: ## Kiểm tra file-service host health endpoint
+	curl -s http://localhost:8083/actuator/health
+
+.PHONY: file-info
+file-info: ## In hướng dẫn nhanh cho file-service
+	@echo ""
+	@echo "File Service nằm ở $(FILE_SERVICE_DIR)/"
+	@echo "Workflow chính là Maven/IntelliJ host-run."
+	@echo ""
+	@echo "Chạy:"
+	@echo "  make file-run"
+	@echo "  make file-run-logs   # ghi $(LOG_DIR)/file-service.log cho Loki"
+	@echo "  make file-status"
+	@echo ""
+	@echo "URLs:"
+	@echo "  Direct service: http://localhost:8083"
+	@echo "  Through Kong:   http://localhost:18000/api/files"
+	@echo ""
+	@echo "Ghi chú: cần PostgreSQL, Keycloak, MinIO và Kong chạy trước khi demo đầy đủ."
+
 # --- Observability mini-lab ------------------------------------
 
 .PHONY: observability-up
@@ -284,6 +323,7 @@ loki-info: ## In hướng dẫn nhanh cho Loki log aggregation lab
 	@echo ""
 	@echo "Ghi chú: Docker logs đi qua Docker collector; Java host Maven logs đi qua $(LOG_DIR)/*.log."
 	@echo "       Chạy tenant-demo bằng make app-run-logs và audit-log-service bằng make audit-log-run-logs để Loki thấy log file."
+	@echo "       Chạy file-service bằng make file-run-logs để Loki thấy file-service log."
 
 .PHONY: logs-up
 logs-up: loki-up ## Alias: khởi chạy Loki log aggregation lab

@@ -70,7 +70,6 @@ APP_CACHE_ENABLED=true \
 APP_MESSAGING_ENABLED=true \
 KAFKA_BOOTSTRAP_SERVERS=localhost:19092 \
 APP_SEARCH_ENABLED=false \
-APP_FILE_STORAGE_ENABLED=false \
 ./mvnw spring-boot:run
 ```
 
@@ -133,4 +132,3 @@ Prometheus/Grafana use Docker named volumes. Scraped history survives container 
 - Kubernetes.
 - Production auth/network hardening.
 - SLO/SLI design.
-

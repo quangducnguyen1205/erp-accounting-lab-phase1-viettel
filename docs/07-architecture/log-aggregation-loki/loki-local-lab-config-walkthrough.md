@@ -24,6 +24,12 @@ audit-log-service host Maven logs
 -> Grafana Alloy
 -> Loki
 -> Grafana Explore
+
+file-service host Maven logs
+-> lab-code/logs/file-service.log
+-> Grafana Alloy
+-> Loki
+-> Grafana Explore
 ```
 
 Ý nghĩa từng chặng:
@@ -38,9 +44,10 @@ audit-log-service host Maven logs
 Giới hạn quan trọng:
 
 - Lab này collect Docker container stdout logs.
-- Lab này cũng tail file `lab-code/logs/tenant-demo.log` và `lab-code/logs/audit-log-service.log` để demo Java service host-run logs trong Loki.
+- Lab này cũng tail file `lab-code/logs/tenant-demo.log`, `lab-code/logs/audit-log-service.log` và `lab-code/logs/file-service.log` để demo Java service host-run logs trong Loki.
 - `tenant-demo` chỉ ghi file đó khi chạy bằng `make app-run-logs`.
 - `audit-log-service` chỉ ghi file đó khi chạy bằng `make audit-log-run-logs`.
+- `file-service` chỉ ghi file đó khi chạy bằng `make file-run-logs`.
 - `gateway-demo` nếu chạy bằng `make gateway-run` thì log vẫn nằm ở host terminal; Kong container logs vẫn được collect qua Docker source.
 - `requestId` nên nằm trong log message để search text, không dùng làm Loki label.
 
@@ -53,7 +60,7 @@ Giới hạn quan trọng:
 | `lab-code/loki-lab/alloy/config.alloy` | Pipeline collect Docker logs, tail Java service file logs và forward sang Loki. | Khi đổi log source, label, collector pipeline. | Label high-cardinality như requestId/userId/tenantId/token. |
 | `lab-code/loki-lab/grafana/provisioning/datasources/loki.yml` | Tự add Loki datasource vào Grafana. | Khi đổi tên datasource hoặc URL Loki nội bộ. | Password/secret datasource thật. |
 | `lab-code/loki-lab/README.md` | Lệnh chạy, URL, query mẫu, cleanup. | Khi đổi workflow/port/Makefile target. | Lý thuyết quá dài hoặc log/token thật. |
-| `lab-code/Makefile` | Target `make loki-*`, `make app-run-logs`, `make audit-log-run-logs`, `make logs-clean`. | Khi thêm/sửa command chạy lab. | Lệnh destructive hoặc phụ thuộc tool local ngoài Docker. |
+| `lab-code/Makefile` | Target `make loki-*`, `make app-run-logs`, `make audit-log-run-logs`, `make file-run-logs`, `make logs-clean`. | Khi thêm/sửa command chạy lab. | Lệnh destructive hoặc phụ thuộc tool local ngoài Docker. |
 
 ## 3. `docker-compose.yml` Walkthrough
 
@@ -149,10 +156,11 @@ Mount file log directory:
 - ../logs:/var/log/viettel-lab:ro
 ```
 
-Vì `tenant-demo` và `audit-log-service` thường chạy bằng Maven/IntelliJ trên host, log không nằm trong Docker stdout. Mount này cho phép Alloy đọc:
+Vì `tenant-demo`, `audit-log-service` và `file-service` thường chạy bằng Maven/IntelliJ trên host, log không nằm trong Docker stdout. Mount này cho phép Alloy đọc:
 
 - `lab-code/logs/tenant-demo.log` trong container ở path `/var/log/viettel-lab/tenant-demo.log`;
-- `lab-code/logs/audit-log-service.log` trong container ở path `/var/log/viettel-lab/audit-log-service.log`.
+- `lab-code/logs/audit-log-service.log` trong container ở path `/var/log/viettel-lab/audit-log-service.log`;
+- `lab-code/logs/file-service.log` trong container ở path `/var/log/viettel-lab/file-service.log`.
 
 Điểm cần nhớ:
 
@@ -510,6 +518,13 @@ local.file_match "java_service_host_logs" {
       source      = "file",
       job         = "host-file",
     },
+    {
+      __path__    = "/var/log/viettel-lab/file-service.log",
+      service     = "file-service",
+      environment = "local",
+      source      = "file",
+      job         = "host-file",
+    },
   ]
   sync_period = "5s"
 }
@@ -525,7 +540,8 @@ Repo-specific mapping:
 
 - Host path `lab-code/logs/tenant-demo.log` được mount vào Alloy thành `/var/log/viettel-lab/tenant-demo.log`.
 - Host path `lab-code/logs/audit-log-service.log` được mount vào Alloy thành `/var/log/viettel-lab/audit-log-service.log`.
-- Service label là `tenant-demo` hoặc `audit-log-service` để query cùng tên với backend service.
+- Host path `lab-code/logs/file-service.log` được mount vào Alloy thành `/var/log/viettel-lab/file-service.log`.
+- Service label là `tenant-demo`, `audit-log-service` hoặc `file-service` để query cùng tên với backend service.
 - `source="file"` giúp phân biệt với Docker stdout logs.
 
 Không làm:
@@ -547,7 +563,7 @@ Vai trò:
 - Tail file targets từ `local.file_match`.
 - Forward từng log line sang `loki.write.local`.
 
-Nói cách khác, đây là đoạn biến file `tenant-demo.log` và `audit-log-service.log` thành Loki streams.
+Nói cách khác, đây là đoạn biến file `tenant-demo.log`, `audit-log-service.log` và `file-service.log` thành Loki streams.
 
 ### `loki.write "local"`
 
@@ -659,6 +675,7 @@ make loki-logs
 make loki-down
 make app-run-logs
 make audit-log-run-logs
+make file-run-logs
 make logs-list
 make logs-clean
 ```
@@ -672,6 +689,7 @@ make logs-clean
 - `loki-down`: dừng/xóa container lab, giữ named volumes.
 - `app-run-logs`: chạy `tenant-demo` host Maven với file logging `lab-code/logs/tenant-demo.log`, Keycloak mode và Kafka enabled mặc định.
 - `audit-log-run-logs`: chạy `audit-log-service` host Maven với file logging `lab-code/logs/audit-log-service.log`.
+- `file-run-logs`: chạy `file-service` host Maven với file logging `lab-code/logs/file-service.log`.
 - `logs-list`: xem file log local hiện có và kích thước.
 - `logs-clean`: xóa generated `*.log`, giữ `logs/.gitkeep`.
 
@@ -721,9 +739,10 @@ Query ví dụ:
 {service="loki"}
 {service="tenant-demo"}
 {service="audit-log-service"}
+{service="file-service"}
 {service="web-ui-demo"} |= "web-demo"
-{service=~"tenant-demo|audit-log-service|kong-gateway"} |= "requestId="
-{service=~"tenant-demo|audit-log-service|kong-gateway"} |= "UI-LOKI-E2E"
+{service=~"tenant-demo|audit-log-service|file-service|kong-gateway"} |= "requestId="
+{service=~"tenant-demo|audit-log-service|file-service|kong-gateway"} |= "UI-LOKI-E2E"
 ```
 
 Nếu muốn có log từ `web-ui-demo`:
@@ -754,12 +773,21 @@ cd lab-code
 make audit-log-run-logs
 ```
 
-Nếu query `tenant-demo`, `audit-log-service` hoặc `gateway-demo` chưa ra kết quả, kiểm tra cách chạy:
+Nếu muốn có log từ `file-service` host Maven:
+
+```bash
+cd lab-code
+make file-run-logs
+```
+
+Nếu query `tenant-demo`, `audit-log-service`, `file-service` hoặc `gateway-demo` chưa ra kết quả, kiểm tra cách chạy:
 
 - `tenant-demo` chạy bằng `make app-run`: log chỉ ở terminal, không chắc có file để tail.
 - `tenant-demo` chạy bằng `make app-run-logs`: log vào `lab-code/logs/tenant-demo.log` và được Alloy tail.
 - `audit-log-service` chạy bằng `make audit-log-run`: log chỉ ở terminal.
 - `audit-log-service` chạy bằng `make audit-log-run-logs`: log vào `lab-code/logs/audit-log-service.log` và được Alloy tail.
+- `file-service` chạy bằng `make file-run`: log chỉ ở terminal.
+- `file-service` chạy bằng `make file-run-logs`: log vào `lab-code/logs/file-service.log` và được Alloy tail.
 - Dockerized services: Alloy collect qua Docker stdout.
 - `gateway-demo` Maven host chưa có file-log collector riêng; dùng Kong container logs cho gateway platform demo.
 

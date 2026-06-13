@@ -177,7 +177,6 @@ cd lab-code/tenant-demo
 set -a; . ./.env; set +a
 APP_MESSAGING_ENABLED=true \
 APP_SEARCH_ENABLED=false \
-APP_FILE_STORAGE_ENABLED=false \
 APP_CACHE_ENABLED=false \
 ./mvnw spring-boot:run
 ```

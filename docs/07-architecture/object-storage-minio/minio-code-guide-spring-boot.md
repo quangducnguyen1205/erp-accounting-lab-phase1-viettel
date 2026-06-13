@@ -2,11 +2,15 @@
 
 ## Vai trò tài liệu
 
-Tài liệu này hướng dẫn hình dạng code Spring Boot cho mini-lab MinIO/file storage. Nó không thay thế concept doc:
+Tài liệu này hướng dẫn hình dạng code Spring Boot cho mini-lab MinIO/file storage. Trong Phase 1.5, runtime chính đã được tách sang `lab-code/file-service`; `tenant-demo` không còn sở hữu `/api/files`.
+
+Nó không thay thế concept doc:
 
 - `minio-object-storage.md`
 - `minio-s3-api-shapes.md`
 - `minio-advanced-object-management.md` - optional/later: presigned URL expiry, lifecycle, versioning, retention/object lock.
+- `file-service-split-plan.md`
+- `file-service-code-walkthrough.md`
 - `lab-code/minio-lab/README.md`
 
 Mục tiêu code:
@@ -75,7 +79,7 @@ Lý do:
 - vẫn giữ code Spring Boot sạch;
 - không cần full production file service.
 
-Implementation hiện tại đã dùng dependency `io.minio:minio`, `MinioClientConfig`
+Implementation hiện tại ở `lab-code/file-service` dùng dependency `io.minio:minio`, `MinioClientConfig`
 tạo `MinioClient`, còn `MinioFileStorageGateway` giữ toàn bộ chi tiết gọi SDK.
 
 ---
@@ -83,7 +87,7 @@ tạo `MinioClient`, còn `MinioFileStorageGateway` giữ toàn bộ chi tiết 
 ## 2. Package/class shape đề xuất
 
 ```text
-com.viettel.demo.storage
+com.viettel.files.file
 ├── FileStorageProperties
 ├── MinioClientConfig
 ├── FileStorageGateway
@@ -122,13 +126,12 @@ Phase 1 có thể giữ metadata model nhỏ. Không cần xây file service pro
 
 ## 4. Config properties
 
-`application.yml` nên có feature flag:
+`file-service` có runtime config riêng trong `lab-code/file-service/src/main/resources/application.yml`:
 
 ```yaml
 app:
   file-storage:
-    enabled: ${APP_FILE_STORAGE_ENABLED:false}
-    endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+    endpoint: ${MINIO_ENDPOINT:http://localhost:19000}
     access-key: ${MINIO_ACCESS_KEY:minioadmin}
     secret-key: ${MINIO_SECRET_KEY:minioadmin}
     bucket: ${MINIO_BUCKET:tenant-demo-files}
@@ -137,9 +140,9 @@ app:
 
 Rule:
 
-- `enabled=false` mặc định để app-test không phụ thuộc MinIO.
 - `.env.example` chỉ chứa dev defaults, không chứa secret thật.
 - Production phải dùng secret manager/vault hoặc env thật, không commit.
+- `tenant-demo` không còn phụ thuộc MinIO khi chạy `make app-test`; file upload/download chạy ở service riêng.
 
 ---
 
@@ -314,7 +317,8 @@ Rule:
 
 Automated test tối thiểu sau khi tự code:
 
-- `make app-test` vẫn pass khi `APP_FILE_STORAGE_ENABLED=false`.
+- `mvn -f lab-code/file-service/pom.xml validate` pass.
+- `make app-test` của `tenant-demo` vẫn pass vì master-data service không còn phụ thuộc MinIO.
 
 Manual HTTP cases:
 
@@ -324,7 +328,7 @@ Manual HTTP cases:
 - missing token -> `401`;
 - invalid token -> `401`;
 - user thiếu role nếu endpoint bị RBAC -> `403`;
-- MinIO down khi enabled -> lỗi rõ, không làm app baseline fail nếu disabled.
+- MinIO down -> `file-service` upload/download lỗi rõ, nhưng `tenant-demo` baseline vẫn chạy được.
 
 Advanced object management như presigned URL, lifecycle expiration,
 versioning và object lock/retention được ghi ở
@@ -343,7 +347,7 @@ mini-lab upload/download hiện tại.
 - Không xử lý object orphan khi DB save fail.
 - Không sanitize filename.
 - Load toàn bộ file lớn vào memory.
-- Bật file storage mặc định làm `make app-test` phụ thuộc MinIO.
+- Đưa file upload/download trở lại `tenant-demo` làm mờ service ownership.
 
 ---
 
@@ -351,13 +355,11 @@ mini-lab upload/download hiện tại.
 
 - Có MinIO local chạy được.
 - Có bucket private cho lab.
-- App config có `APP_FILE_STORAGE_ENABLED=false` default.
-- Có skeleton/code guide rõ.
-- Sau khi tự implement:
-  - upload/download đi qua backend;
-  - metadata tenant-aware;
-  - tenant 2 không đọc được file tenant 1;
-  - app-test baseline vẫn pass khi storage disabled.
+- `file-service` chạy được bằng Maven/IntelliJ host-run.
+- Upload/download đi qua Kong -> `file-service`, không gọi MinIO trực tiếp từ UI.
+- Metadata tenant-aware trong PostgreSQL schema riêng.
+- Tenant 2 không đọc được file tenant 1.
+- `tenant-demo` app-test baseline vẫn không phụ thuộc MinIO.
 
 ---
 

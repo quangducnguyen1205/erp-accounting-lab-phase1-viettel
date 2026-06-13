@@ -197,7 +197,6 @@ APP_CACHE_ENABLED=true \
 APP_MESSAGING_ENABLED=true \
 KAFKA_BOOTSTRAP_SERVERS=localhost:19092 \
 APP_SEARCH_ENABLED=false \
-APP_FILE_STORAGE_ENABLED=false \
 ./mvnw spring-boot:run
 ```
 
@@ -275,4 +274,3 @@ tests như `DataLeakageTest`.
 - [Micrometer Prometheus registry](https://docs.micrometer.io/micrometer/reference/implementations/prometheus.html)
 - [Prometheus overview](https://prometheus.io/docs/introduction/overview/)
 - [Grafana Prometheus data source](https://grafana.com/docs/grafana/latest/datasources/prometheus/)
-

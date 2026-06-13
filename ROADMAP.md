@@ -16,9 +16,9 @@
 | **Tiến độ** | Phase 1 core done, Phase 1.5 final UI realigned as product app |
 | **Tổng task** | 111 |
 | **Đã hoàn thành** | 110 / 111 |
-| **Focus hiện tại** | Phase 1.5 - hoàn thiện `Master Data Portal` theo hướng product app |
-| **Milestone tiếp theo** | Complete CRUD -> file upload/download -> search projection -> Keycloak theme |
-| **Demo hiện tại** | React Web UI -> Keycloak -> Gateway -> tenant-demo -> PostgreSQL/Redis/Kafka/Observability; UI direction is Master Data Portal; Elasticsearch/MinIO qua HTTP mini-lab |
+| **Focus hiện tại** | Phase 1.5 - hoàn thiện `Master Data Portal` theo hướng product app + service split có kiểm soát |
+| **Milestone tiếp theo** | Search projection service -> Keycloak theme -> final demo polish |
+| **Demo hiện tại** | React Web UI -> Keycloak -> Kong -> tenant-demo / audit-log-service / file-service -> PostgreSQL/Redis/Kafka/MinIO/Observability; Elasticsearch search projection là bước kế tiếp |
 
 Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; Milestone #14 đã chốt Redis cache-aside tenant-safe read path; Milestone #15 đã chốt Kafka/async messaging reference flow nhỏ; Milestone #16 đã chốt Observability baseline với Actuator, request logging, Micrometer metrics và Prometheus/Grafana local lab. Milestone #17 đã chốt API Gateway static route và React Web UI Docker-first để nhìn flow end-to-end. React Native/Expo không thuộc repo này.
 
@@ -342,7 +342,7 @@ Không overdo:
 Mục tiêu: học object storage/S3 API trong ngữ cảnh chứng từ/file attachment, không xây file service production.
 
 - [x] `[LÝ THUYẾT]` Tạo `docs/07-architecture/object-storage-minio/minio-object-storage.md`, `docs/07-architecture/object-storage-minio/minio-s3-api-shapes.md` và `docs/07-architecture/object-storage-minio/minio-code-guide-spring-boot.md` - object storage vs DB, S3 API, tenant/file metadata, presigned URL awareness.
-- [x] `[SKELETON]` Chuẩn bị `lab-code/minio-lab/`, config `APP_FILE_STORAGE_ENABLED=false`, package `com.viettel.demo.storage` với TODO comments.
+- [x] `[SKELETON]` Chuẩn bị `lab-code/minio-lab/` và code guide ban đầu. Phase 1.5 sau đó tách runtime upload/download sang `lab-code/file-service`.
 - [x] `[THỰC HÀNH]` Tự code upload/download nhỏ: file lưu MinIO, metadata tenant-aware lưu PostgreSQL hoặc in-memory nếu giữ scope nhỏ.
 - [x] `[REVIEW]` Nhờ Codex review: không commit file/secret, không bỏ auth/tenant check, không nhầm MinIO với database source of truth.
 - [x] `[MILESTONE]` Chốt Milestone #13 - MinIO mini-lab có upload/download evidence và giới hạn production.

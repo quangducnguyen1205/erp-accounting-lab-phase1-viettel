@@ -92,7 +92,7 @@ Optional existing labs
 | Option | Ý tưởng | Ưu điểm | Nhược điểm | Kết luận |
 |---|---|---|---|---|
 | `master-data-service` + `audit-log-service` | Service mới consume `MasterDataChangedEvent` và lưu/log audit. | Kafka thành cross-service thật, domain nhỏ, dễ demo, tận dụng event hiện có. | Audit service đơn giản. | Chọn trước. |
-| Split `file-service` | Tách MinIO upload/download ra service riêng. | File ownership rõ, MinIO service-owned. | Kéo thêm auth/upload/UI/security work. | Để sau nếu còn thời gian. |
+| Split `file-service` | Tách MinIO upload/download ra service riêng. | File ownership rõ, MinIO service-owned. | Kéo thêm auth/upload/UI/security work. | Đã chuyển sang Phase 1.5 evolution sau CRUD. |
 | Split `search-service` | Search projection consume event từ master data. | Rất realistic cho Elasticsearch. | Eventual consistency/reindex/search complexity dễ phình. | Later/backlog. |
 | Notification/reporting service | Consumer log/notification/report. | Dễ làm. | Có thể hơi artificial nếu chưa có use case. | Không ưu tiên. |
 

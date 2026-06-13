@@ -3,10 +3,14 @@ import { AppShell } from './components/AppShell';
 import { RequestStatus } from './components/RequestStatus';
 import {
   createMasterData,
+  deleteFile,
   deleteMasterData,
+  downloadFile,
+  listFiles,
   loadAuditEvents,
   loadMasterData,
   loadMasterDataByCode,
+  uploadFile,
   updateMasterData
 } from './api';
 import { config } from './config';
@@ -14,6 +18,7 @@ import { getAuthSnapshot, initKeycloak, keycloak, refreshToken } from './keycloa
 import { AccountScreen } from './screens/AccountScreen';
 import { ActivityLogScreen } from './screens/ActivityLogScreen';
 import { DashboardScreen } from './screens/DashboardScreen';
+import { FilesScreen } from './screens/FilesScreen';
 import { MasterDataScreen } from './screens/MasterDataScreen';
 import { WelcomeScreen } from './screens/WelcomeScreen';
 
@@ -90,6 +95,7 @@ export default function App() {
   const [apiBaseUrl, setApiBaseUrl] = useState(config.apiBaseUrl);
   const [rows, setRows] = useState([]);
   const [auditEvents, setAuditEvents] = useState([]);
+  const [files, setFiles] = useState([]);
   const [lookupCode, setLookupCode] = useState('LAPTOP-01');
   const [lookupResult, setLookupResult] = useState(null);
   const [form, setForm] = useState(defaultForm);
@@ -100,6 +106,8 @@ export default function App() {
   const [demoProgress, setDemoProgress] = useState({
     masterDataLoaded: false,
     createdMasterData: false,
+    filesLoaded: false,
+    uploadedFile: false,
     auditEventsLoaded: false,
     tenantIsolationChecked: false,
     viewerCreateForbidden: false
@@ -288,6 +296,65 @@ export default function App() {
     }
   }
 
+  async function handleLoadFiles() {
+    const result = await runRequest(() => listFiles(apiBaseUrl.trim()));
+    if (result?.ok && Array.isArray(result.data)) {
+      setFiles(result.data);
+      setDemoProgress((current) => ({ ...current, filesLoaded: true }));
+    }
+    return result;
+  }
+
+  async function handleUploadFile(file) {
+    const result = await runRequest(() => uploadFile(file, apiBaseUrl.trim()));
+    if (result?.ok && result.data) {
+      setFiles((current) => [
+        {
+          ...result.data,
+          tenantId: currentTenantId,
+          createdAt: new Date().toISOString()
+        },
+        ...current.filter((item) => item.fileId !== result.data.fileId)
+      ]);
+      setDemoProgress((current) => ({ ...current, uploadedFile: true, filesLoaded: true }));
+    }
+
+    if (result?.status === 403) {
+      setDemoProgress((current) => ({ ...current, viewerCreateForbidden: true }));
+    }
+    return result;
+  }
+
+  async function handleDownloadFile(row) {
+    const result = await runRequest(() => downloadFile(row.fileId, apiBaseUrl.trim()));
+    if (result?.ok && result.data?.blob) {
+      const url = URL.createObjectURL(result.data.blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = result.data.filename || row.originalFilename || row.fileId;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+    return result;
+  }
+
+  async function handleDeleteFile(row) {
+    const confirmed = window.confirm(`Xóa file ${row.originalFilename}?`);
+    if (!confirmed) {
+      return null;
+    }
+
+    const result = await runRequest(() => deleteFile(row.fileId, apiBaseUrl.trim()));
+    if (result?.ok) {
+      setFiles((current) => current.filter((item) => item.fileId !== row.fileId));
+    }
+
+    if (result?.status === 403) {
+      setDemoProgress((current) => ({ ...current, viewerCreateForbidden: true }));
+    }
+    return result;
+  }
+
   function handleGenerateCode() {
     setForm(defaultForm());
   }
@@ -341,6 +408,22 @@ export default function App() {
       );
     }
 
+    if (activeScreen === 'files') {
+      return (
+        <FilesScreen
+          files={files}
+          onLoad={handleLoadFiles}
+          onUpload={handleUploadFile}
+          onDownload={handleDownloadFile}
+          onDelete={handleDeleteFile}
+          loading={loading}
+          disabled={!authReady}
+          lastResult={lastResult}
+          userInfo={authState.userInfo}
+        />
+      );
+    }
+
     if (activeScreen === 'account') {
       return (
         <AccountScreen
@@ -360,8 +443,10 @@ export default function App() {
         authState={authState}
         rows={rows}
         auditEvents={auditEvents}
+        files={files}
         masterDataLoaded={demoProgress.masterDataLoaded}
         activityLoaded={demoProgress.auditEventsLoaded}
+        filesLoaded={demoProgress.filesLoaded}
         lastResult={lastResult}
         onNavigate={setActiveScreen}
       />

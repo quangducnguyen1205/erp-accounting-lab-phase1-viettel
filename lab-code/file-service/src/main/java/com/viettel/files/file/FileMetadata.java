@@ -1,4 +1,4 @@
-package com.viettel.demo.entity;
+package com.viettel.files.file;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,32 +10,19 @@ import jakarta.persistence.UniqueConstraint;
 
 import java.time.LocalDateTime;
 
-/*
- * ==============================================================
- * FileMetadata Entity — metadata tenant-aware cho file storage
- * ==============================================================
- *
- * [Mục tiêu]
- * Mapping với bảng file_metadata để lưu thông tin file upload.
- * Entity này kế thừa TenantAwareEntity → tự có tenant_id.
- *
- * [Mapping]
- * - file_id: id business dùng để truy cập file.
- * - object_key: key thực tế lưu trong MinIO.
- * - created_at: DEFAULT now() từ DB.
- *
- * ==============================================================
- */
 @Entity
 @Table(name = "file_metadata",
         uniqueConstraints = @UniqueConstraint(
-                name = "uq_file_metadata_tenant_file",
+                name = "uq_file_service_tenant_file",
                 columnNames = {"tenant_id", "file_id"}))
-public class FileMetadata extends TenantAwareEntity {
+public class FileMetadata {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "tenant_id", nullable = false)
+    private Long tenantId;
 
     @Column(name = "file_id", nullable = false, length = 64)
     private String fileId;
@@ -57,6 +44,14 @@ public class FileMetadata extends TenantAwareEntity {
 
     public Long getId() {
         return id;
+    }
+
+    public Long getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(Long tenantId) {
+        this.tenantId = tenantId;
     }
 
     public String getFileId() {
@@ -103,4 +98,3 @@ public class FileMetadata extends TenantAwareEntity {
         return createdAt;
     }
 }
-

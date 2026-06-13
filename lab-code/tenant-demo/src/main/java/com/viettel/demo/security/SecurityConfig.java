@@ -120,10 +120,6 @@ public class SecurityConfig {
                         .hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/search/master-data", "/api/search/master-data/**")
                         .hasAnyRole("ADMIN", "ACCOUNTANT", "VIEWER")
-                        .requestMatchers(HttpMethod.GET, "/api/files", "/api/files/**")
-                        .hasAnyRole("ADMIN", "ACCOUNTANT", "VIEWER")
-                        .requestMatchers("/api/files", "/api/files/**")
-                        .hasAnyRole("ADMIN", "ACCOUNTANT")
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->

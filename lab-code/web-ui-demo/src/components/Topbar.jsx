@@ -11,6 +11,7 @@ export function Topbar({ activeScreen, authState, apiBaseUrl, gatewayName, onLog
   const pageTitles = {
     dashboard: 'Tổng quan',
     'master-data': 'Danh mục',
+    files: 'Tệp tin',
     'activity-log': 'Lịch sử hoạt động',
     account: 'Tài khoản'
   };
