@@ -9,30 +9,30 @@ export function Topbar({ activeScreen, authState, apiBaseUrl, gatewayName, onLog
   const user = authState.userInfo;
   const role = primaryRole(user);
   const pageTitles = {
-    dashboard: 'Dashboard',
-    'master-data': 'Master Data',
-    'activity-log': 'Activity Log',
-    account: 'Account'
+    dashboard: 'Tổng quan',
+    'master-data': 'Danh mục',
+    'activity-log': 'Lịch sử hoạt động',
+    account: 'Tài khoản'
   };
 
   return (
     <header className="topbar">
       <div>
-        <p className="eyebrow">Master Data Portal</p>
-        <h1>{pageTitles[activeScreen] ?? 'Dashboard'}</h1>
+        <p className="eyebrow">Cổng quản lý danh mục</p>
+        <h1>{pageTitles[activeScreen] ?? 'Tổng quan'}</h1>
       </div>
 
       <div className="topbar-status">
         <Badge tone={gatewayName === 'Kong Gateway' ? 'blue' : 'neutral'}>{gatewayName}</Badge>
-        <span className="api-pill" title={apiBaseUrl}>API ready</span>
+        <span className="api-pill" title={apiBaseUrl}>API sẵn sàng</span>
         <Badge tone={role === 'ACCOUNTANT' ? 'success' : role === 'VIEWER' ? 'indigo' : 'neutral'}>{role}</Badge>
         <div className="user-summary">
-          <strong>{user?.username ?? 'Guest'}</strong>
+          <strong>{user?.username ?? 'Khách'}</strong>
           <span>tenant_id {user?.tenantId ?? '(none)'}</span>
-          <small>token {authState.hasToken ? 'available (hidden)' : 'missing'}</small>
+          <small>token {authState.hasToken ? 'có (ẩn)' : 'thiếu'}</small>
         </div>
-        <button type="button" className="button-secondary" onClick={onRefresh}>Refresh</button>
-        <button type="button" className="button-secondary" onClick={onLogout}>Logout</button>
+        <button type="button" className="button-secondary" onClick={onRefresh}>Làm mới</button>
+        <button type="button" className="button-secondary" onClick={onLogout}>Đăng xuất</button>
       </div>
     </header>
   );

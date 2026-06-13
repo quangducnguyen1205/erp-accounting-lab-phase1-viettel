@@ -2,8 +2,8 @@ export function RequestStatus({ lastResult, error }) {
   if (!lastResult && !error) {
     return (
       <section className="request-status request-status-idle">
-        <strong>No request yet</strong>
-        <span>Run an action, then use the requestId here if you need to inspect backend logs.</span>
+        <strong>Chưa có request</strong>
+        <span>Thực hiện một thao tác, sau đó dùng requestId ở đây nếu cần tra log backend.</span>
       </section>
     );
   }
@@ -11,7 +11,7 @@ export function RequestStatus({ lastResult, error }) {
   return (
     <section className={`request-status ${lastResult?.ok ? 'request-status-ok' : 'request-status-error'}`}>
       <div>
-        <strong>{lastResult ? `HTTP ${lastResult.status}` : 'Request failed'}</strong>
+        <strong>{lastResult ? `HTTP ${lastResult.status}` : 'Request thất bại'}</strong>
         {lastResult?.endpoint && <span>{lastResult.endpoint}</span>}
       </div>
       {lastResult?.requestId && <code>{lastResult.requestId}</code>}

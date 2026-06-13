@@ -12,8 +12,8 @@ function isActiveRecord(row) {
 }
 
 function formatActivity(event) {
-  const action = event.changeType ?? event.eventType ?? 'Changed';
-  const code = event.aggregateCode ?? event.code ?? event.aggregateId ?? '(unknown record)';
+  const action = event.changeType ?? event.eventType ?? 'Đã thay đổi';
+  const code = event.aggregateCode ?? event.code ?? event.aggregateId ?? '(không rõ bản ghi)';
   return `${action} ${code}`;
 }
 
@@ -25,36 +25,36 @@ export function DashboardScreen({ authState, rows, auditEvents, masterDataLoaded
   return (
     <div className="screen-grid">
       <section className="screen-heading">
-        <p className="eyebrow">Dashboard</p>
-        <h2>Business overview</h2>
-        <p>Track tenant-scoped reference records and recent activity for the current account.</p>
+        <p className="eyebrow">Tổng quan</p>
+        <h2>Tổng quan nghiệp vụ</h2>
+        <p>Theo dõi dữ liệu danh mục và hoạt động gần đây trong tenant hiện tại.</p>
       </section>
 
       <section className="stack-grid panel-span-3">
-        <StatusCard label="Records" title={masterDataLoaded ? rows.length : 'Not loaded'} badge="Total" tone="blue">
-          Total master data records loaded in this browser session.
+        <StatusCard label="Bản ghi" title={masterDataLoaded ? rows.length : 'Chưa tải'} badge="Tổng số" tone="blue">
+          Tổng số bản ghi danh mục đã tải trong phiên trình duyệt này.
         </StatusCard>
-        <StatusCard label="Active records" title={masterDataLoaded ? activeRecords : 'Not loaded'} badge="Active" tone="success">
-          Active records are computed from the loaded list.
+        <StatusCard label="Đang hoạt động" title={masterDataLoaded ? activeRecords : 'Chưa tải'} badge="Hoạt động" tone="success">
+          Số bản ghi đang hoạt động được tính từ danh sách đã tải.
         </StatusCard>
-        <StatusCard label="Recent changes" title={activityLoaded ? auditEvents.length : 'Not loaded'} badge="Activity" tone="teal">
-          Activity is loaded from the audit API when requested.
+        <StatusCard label="Thay đổi gần đây" title={activityLoaded ? auditEvents.length : 'Chưa tải'} badge="Lịch sử" tone="teal">
+          Lịch sử hoạt động được tải từ audit API khi người dùng yêu cầu.
         </StatusCard>
         <StatusCard label="Tenant" title={authState.userInfo?.tenantId ?? '(none)'} badge="Tenant" tone="indigo">
-          Tenant scope comes from the validated Keycloak token.
+          Phạm vi tenant lấy từ Keycloak token đã được backend kiểm tra.
         </StatusCard>
-        <StatusCard label="Role" title={role} badge="Access" tone={role === 'ACCOUNTANT' ? 'success' : 'indigo'}>
-          Role controls whether create actions are allowed by the backend.
+        <StatusCard label="Vai trò" title={role} badge="Quyền" tone={role === 'ACCOUNTANT' ? 'success' : 'indigo'}>
+          Vai trò quyết định backend có cho phép tạo bản ghi hay không.
         </StatusCard>
       </section>
 
       <section className="panel panel-span-2">
         <div className="panel-heading">
           <div>
-            <h3>Recent activity</h3>
-            <p>Latest activity loaded for the current tenant.</p>
+            <h3>Hoạt động gần đây</h3>
+            <p>Những hoạt động mới nhất đã tải cho tenant hiện tại.</p>
           </div>
-          <Badge tone={activityLoaded ? 'success' : 'neutral'}>{activityLoaded ? 'Loaded' : 'Not loaded'}</Badge>
+          <Badge tone={activityLoaded ? 'success' : 'neutral'}>{activityLoaded ? 'Đã tải' : 'Chưa tải'}</Badge>
         </div>
         {recentEvents.length > 0 ? (
           <ul className="activity-list">
@@ -62,15 +62,15 @@ export function DashboardScreen({ authState, rows, auditEvents, masterDataLoaded
               <li key={event.eventId ?? `${event.aggregateId}-${event.consumedAt}`}>
                 <div>
                   <strong>{formatActivity(event)}</strong>
-                  <span>{event.occurredAt ?? event.consumedAt ?? 'Time not returned'}</span>
+                  <span>{event.occurredAt ?? event.consumedAt ?? 'Chưa có thời gian'}</span>
                 </div>
-                <code>{event.eventId ?? '(no event id)'}</code>
+                <code>{event.eventId ?? '(không có eventId)'}</code>
               </li>
             ))}
           </ul>
         ) : (
-          <EmptyState title="Load activity to see recent changes">
-            Open Activity Log after creating or loading tenant activity.
+          <EmptyState title="Tải lịch sử để xem thay đổi gần đây">
+            Mở Lịch sử hoạt động sau khi tạo bản ghi hoặc tải hoạt động của tenant.
           </EmptyState>
         )}
       </section>
@@ -78,29 +78,29 @@ export function DashboardScreen({ authState, rows, auditEvents, masterDataLoaded
       <section className="panel">
         <div className="panel-heading">
           <div>
-            <h3>Getting started</h3>
-            <p>Run the normal business workflow.</p>
+            <h3>Bắt đầu</h3>
+            <p>Thực hiện luồng nghiệp vụ chính.</p>
           </div>
           <Badge tone="blue">Workflow</Badge>
         </div>
         <div className="action-list">
-          <button type="button" className="button-secondary" onClick={() => onNavigate('master-data')}>Load master data</button>
-          <button type="button" className="button-secondary" onClick={() => onNavigate('master-data')}>Create a record</button>
-          <button type="button" className="button-secondary" onClick={() => onNavigate('activity-log')}>Review activity</button>
+          <button type="button" className="button-secondary" onClick={() => onNavigate('master-data')}>Tải dữ liệu danh mục</button>
+          <button type="button" className="button-secondary" onClick={() => onNavigate('master-data')}>Tạo bản ghi</button>
+          <button type="button" className="button-secondary" onClick={() => onNavigate('activity-log')}>Xem lịch sử</button>
         </div>
-        <p className="hint">For the live architecture explanation, use the demo script to inspect Kafka UI and Grafana Loki outside the product flow.</p>
+        <p className="hint">Phần giải thích kiến trúc dùng demo script để mở Kafka UI và Grafana Loki bên ngoài luồng sản phẩm.</p>
       </section>
 
       <section className="panel panel-span-3">
         <div className="panel-heading">
           <div>
-            <h3>Last request</h3>
-            <p>Use this when a user action needs backend troubleshooting.</p>
+            <h3>Request gần nhất</h3>
+            <p>Dùng thông tin này khi cần tra cứu lỗi backend.</p>
           </div>
-          <Badge tone={lastResult?.ok ? 'success' : lastResult ? 'danger' : 'neutral'}>{lastResult ? `HTTP ${lastResult.status}` : 'No request yet'}</Badge>
+          <Badge tone={lastResult?.ok ? 'success' : lastResult ? 'danger' : 'neutral'}>{lastResult ? `HTTP ${lastResult.status}` : 'Chưa có request'}</Badge>
         </div>
         <dl className="facts">
-          <dt>Request ID</dt>
+          <dt>requestId</dt>
           <dd><code>{lastResult?.requestId ?? '(none yet)'}</code></dd>
           <dt>Endpoint</dt>
           <dd>{lastResult?.endpoint ?? '(none yet)'}</dd>

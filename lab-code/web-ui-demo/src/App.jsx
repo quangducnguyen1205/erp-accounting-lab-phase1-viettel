@@ -21,14 +21,13 @@ const initialAuthState = {
 };
 
 const gatewayPresets = [
-  { label: 'Kong Gateway', url: 'http://localhost:18000' },
-  { label: 'Spring Gateway legacy', url: 'http://localhost:8081' }
+  { label: 'Kong Gateway', url: 'http://localhost:18000' }
 ];
 
 function defaultForm() {
   return {
     code: `MDP-${Date.now()}`,
-    name: 'Portal Master Data',
+    name: 'Danh mục mẫu',
     category: 'BUSINESS_REFERENCE',
     isActive: true
   };
@@ -48,22 +47,22 @@ function describeApiFailure(result) {
   }
 
   if (result.status === 401) {
-    return '401 Unauthorized: missing, expired or invalid token. Sign in again.';
+    return '401 Unauthorized: token bị thiếu, hết hạn hoặc không hợp lệ. Hãy đăng nhập lại.';
   }
 
   if (result.status === 403) {
-    return '403 Forbidden: authenticated, but the current role is not allowed to perform this action.';
+    return '403 Forbidden: đã đăng nhập nhưng vai trò hiện tại không được phép thực hiện thao tác này.';
   }
 
   if (result.status === 409) {
-    return '409 Conflict: this master_data code already exists in the current tenant.';
+    return '409 Conflict: mã master_data này đã tồn tại trong tenant hiện tại.';
   }
 
   if (result.status >= 500) {
-    return 'Unexpected server error. Use the requestId to inspect backend logs in Grafana Loki.';
+    return 'Lỗi server ngoài dự kiến. Dùng requestId để tra log backend trong Grafana Loki.';
   }
 
-  return `Request failed with HTTP ${result.status}.`;
+  return `Request thất bại với HTTP ${result.status}.`;
 }
 
 function formatRoles(userInfo) {
@@ -75,7 +74,7 @@ function formatRoles(userInfo) {
 }
 
 function gatewayName(apiBaseUrl) {
-  return gatewayPresets.find((preset) => preset.url === apiBaseUrl.trim())?.label ?? 'Custom Gateway';
+  return gatewayPresets.find((preset) => preset.url === apiBaseUrl.trim())?.label ?? 'Gateway tùy chỉnh';
 }
 
 export default function App() {
@@ -154,15 +153,15 @@ export default function App() {
 
   const actionDisabledReason = useMemo(() => {
     if (authState.initializing) {
-      return 'Keycloak is initializing.';
+      return 'Keycloak đang khởi tạo.';
     }
 
     if (!authState.authenticated) {
-      return 'Sign in with Keycloak first.';
+      return 'Hãy đăng nhập bằng Keycloak trước.';
     }
 
     if (!authState.hasToken) {
-      return 'Login succeeded, but the access token is not ready.';
+      return 'Đăng nhập thành công nhưng access token chưa sẵn sàng.';
     }
 
     return '';
@@ -223,7 +222,7 @@ export default function App() {
           return [result.data, ...current.filter((row) => row.id !== result.data.id)];
         });
       }
-      setPostCreateHint('Record created. Wait a moment, then open Activity Log to confirm the change appears.');
+      setPostCreateHint('Đã tạo bản ghi. Chờ một chút rồi mở Lịch sử hoạt động để xác nhận thay đổi.');
       return;
     }
 

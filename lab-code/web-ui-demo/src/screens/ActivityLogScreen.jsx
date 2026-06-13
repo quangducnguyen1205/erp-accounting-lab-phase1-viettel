@@ -2,10 +2,10 @@ import { Badge } from '../components/Badge';
 import { DataTable } from '../components/DataTable';
 
 const columns = [
-  { key: 'occurredAt', label: 'Time', render: (event) => event.occurredAt ?? event.consumedAt ?? '(not returned)' },
-  { key: 'changeType', label: 'Action', render: (event) => <Badge tone={event.changeType === 'CREATED' ? 'success' : 'blue'}>{event.changeType ?? event.eventType ?? 'Changed'}</Badge> },
-  { key: 'aggregateCode', label: 'Record code', render: (event) => <code>{event.aggregateCode ?? event.code ?? event.aggregateId ?? '(missing)'}</code> },
-  { key: 'aggregateType', label: 'Type', render: (event) => event.aggregateType ?? 'Master data' },
+  { key: 'occurredAt', label: 'Thời gian', render: (event) => event.occurredAt ?? event.consumedAt ?? '(không trả về)' },
+  { key: 'changeType', label: 'Hành động', render: (event) => <Badge tone={event.changeType === 'CREATED' ? 'success' : 'blue'}>{event.changeType ?? event.eventType ?? 'Đã thay đổi'}</Badge> },
+  { key: 'aggregateCode', label: 'Mã bản ghi', render: (event) => <code>{event.aggregateCode ?? event.code ?? event.aggregateId ?? '(missing)'}</code> },
+  { key: 'aggregateType', label: 'Loại', render: (event) => event.aggregateType ?? 'Master data' },
   { key: 'eventId', label: 'Event ID', render: (event) => <small><code>{event.eventId}</code></small> }
 ];
 
@@ -13,27 +13,27 @@ export function ActivityLogScreen({ events, onLoad, loading, disabled, activityL
   return (
     <div className="screen-grid">
       <section className="screen-heading">
-        <p className="eyebrow">Activity Log</p>
-        <h2>Activity history</h2>
-        <p>Activity is generated when master data changes. Each account only sees activity for its own tenant.</p>
+        <p className="eyebrow">Lịch sử hoạt động</p>
+        <h2>Lịch sử hoạt động</h2>
+        <p>Lịch sử được sinh ra khi dữ liệu danh mục thay đổi. Mỗi tài khoản chỉ thấy dữ liệu trong tenant của mình.</p>
       </section>
 
       <section className="panel panel-span-3">
         <div className="panel-heading">
           <div>
-            <h3>Tenant activity</h3>
-            <p>Load the latest activity for the current account.</p>
+            <h3>Hoạt động trong tenant</h3>
+            <p>Tải hoạt động mới nhất của tài khoản hiện tại.</p>
           </div>
-          <button type="button" onClick={onLoad} disabled={disabled || loading}>{loading ? 'Loading...' : 'Load activity'}</button>
+          <button type="button" onClick={onLoad} disabled={disabled || loading}>{loading ? 'Đang tải...' : 'Tải lịch sử'}</button>
         </div>
 
         <DataTable
           columns={columns}
           rows={events}
-          emptyTitle={activityLoaded ? 'No activity for this tenant' : 'Activity not loaded yet'}
+          emptyTitle={activityLoaded ? 'Chưa có hoạt động nào trong tenant này' : 'Chưa tải lịch sử'}
           emptyMessage={activityLoaded
-            ? `No activity for tenant ${tenantId ?? '(unknown)'}. This also confirms tenant isolation for the current account.`
-            : 'Create a master data record as an Accountant, then load activity to see the change history.'}
+            ? `Không có hoạt động trong tenant ${tenantId ?? '(unknown)'}. HTTP 200 với danh sách rỗng cũng xác nhận tenant isolation cho tài khoản hiện tại.`
+            : 'Tạo một bản ghi với vai trò ACCOUNTANT, sau đó tải lịch sử để xem thay đổi.'}
         />
       </section>
     </div>

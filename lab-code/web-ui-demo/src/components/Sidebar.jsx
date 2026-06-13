@@ -1,8 +1,8 @@
 const navItems = [
-  { id: 'dashboard', label: 'Dashboard', eyebrow: 'Overview' },
-  { id: 'master-data', label: 'Master Data', eyebrow: 'Records' },
-  { id: 'activity-log', label: 'Activity Log', eyebrow: 'History' },
-  { id: 'account', label: 'Account', eyebrow: 'Settings' }
+  { id: 'dashboard', label: 'Tổng quan', eyebrow: 'Overview' },
+  { id: 'master-data', label: 'Danh mục', eyebrow: 'Bản ghi' },
+  { id: 'activity-log', label: 'Lịch sử hoạt động', eyebrow: 'Lịch sử' },
+  { id: 'account', label: 'Tài khoản', eyebrow: 'Thiết lập' }
 ];
 
 export function Sidebar({ activeScreen, onNavigate }) {
@@ -11,12 +11,12 @@ export function Sidebar({ activeScreen, onNavigate }) {
       <div className="brand-block">
         <span className="brand-mark">MD</span>
         <div>
-          <strong>Master Data</strong>
-          <span>Portal</span>
+          <strong>Quản lý</strong>
+          <span>Danh mục</span>
         </div>
       </div>
 
-      <nav className="sidebar-nav" aria-label="Application sections">
+      <nav className="sidebar-nav" aria-label="Các khu vực trong ứng dụng">
         {navItems.map((item) => (
           <button
             key={item.id}
@@ -31,8 +31,8 @@ export function Sidebar({ activeScreen, onNavigate }) {
       </nav>
 
       <div className="sidebar-note">
-        <strong>Local demo</strong>
-        <span>Tenant records and activity history</span>
+        <strong>Demo local</strong>
+        <span>Dữ liệu danh mục và lịch sử theo tenant</span>
       </div>
     </aside>
   );

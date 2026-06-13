@@ -52,9 +52,9 @@ export function getAuthSnapshot() {
   let warning = '';
 
   if (authenticated && !hasToken) {
-    warning = 'Login succeeded, but access token is missing.';
+    warning = 'Đăng nhập thành công nhưng access token đang thiếu.';
   } else if (authenticated && userInfo?.tenantId === '(missing)') {
-    warning = 'Token is valid, but tenant_id claim is missing.';
+    warning = 'Token hợp lệ nhưng thiếu claim tenant_id.';
   }
 
   return {
