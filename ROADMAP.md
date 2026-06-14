@@ -13,18 +13,18 @@
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | Phase 1 core done, Phase 1.5 final UI realigned as product app |
+| **Tiến độ** | Phase 1 core done, Phase 1.5 final demo assembled |
 | **Tổng task** | 111 |
-| **Đã hoàn thành** | 110 / 111 |
-| **Focus hiện tại** | Phase 1.5 - hoàn thiện `Master Data Portal` theo hướng product app + service split có kiểm soát |
-| **Milestone tiếp theo** | Final demo polish |
+| **Đã hoàn thành** | 111 / 111 |
+| **Focus hiện tại** | Phase 1.5 - final smoke dry-run và mentor rehearsal |
+| **Milestone tiếp theo** | Optional hardening sau demo: outbox, retry/DLT, schema registry hoặc service discovery nếu cần |
 | **Demo hiện tại** | React Web UI -> themed Keycloak -> Kong -> tenant-demo / audit-log-service / file-service / search-service -> PostgreSQL/Redis/Kafka/MinIO/Elasticsearch/Observability |
 
 Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; Milestone #14 đã chốt Redis cache-aside tenant-safe read path; Milestone #15 đã chốt Kafka/async messaging reference flow nhỏ; Milestone #16 đã chốt Observability baseline với Actuator, request logging, Micrometer metrics và Prometheus/Grafana local lab. Milestone #17 đã chốt API Gateway static route và React Web UI Docker-first để nhìn flow end-to-end. React Native/Expo không thuộc repo này.
 
 Ghi chú 11/06 sau khi báo cáo mentor Đạt: Phase 1 core learning coi như đủ nền. Phase 1.5 sẽ đi theo hướng demo production-like hơn: centralized logs bằng Loki/Grafana, Kafka UI, Kong Gateway, tách thêm `audit-log-service`, Kafka cross-service flow, rồi mới polish React Web UI cuối. Keycloak local đã được chuyển sang persistent DB + bootstrap script để demo không phụ thuộc thao tác tạo realm/client/user thủ công sau mỗi lần reset.
 
-Ghi chú security Phase 1.5: không tạo runtime `auth-service` tự viết. Keycloak đã là Auth Service/Identity Provider của demo; `tenant-demo` và `audit-log-service` là Resource Server tự validate JWT. Phần duplicated security plumbing được gom vào shared module `lab-code/common-security`.
+Ghi chú security Phase 1.5: không tạo runtime `auth-service` tự viết. Keycloak đã là Auth Service/Identity Provider của demo; `tenant-demo`, `audit-log-service`, `file-service` và `search-service` là Resource Server tự validate JWT. Phần duplicated security plumbing được gom vào shared module `lab-code/common-security`.
 
 ---
 
@@ -464,7 +464,7 @@ Lý do:
 
 Các split chưa chọn ngay:
 
-- `file-service`: hợp lý với MinIO nhưng kéo thêm upload/security/UI work.
+- `file-service`: đã được tách ở Phase 1.5 như service riêng cho MinIO upload/download tenant-aware.
 - `search-service`: đã được tách ở Phase 1.5 như projection service consume Kafka event và expose search API qua Kong.
 - notification/reporting service: dễ bị giả tạo nếu chưa có use case rõ.
 

@@ -8,8 +8,8 @@ Mục tiêu của repo không phải là lưu mọi nháp học tập, mà là l
 
 - Đã hoàn thành nền tảng SaaS, multi-tenant, SQL playground, migration/locking, ACID/isolation và tenant-aware backend API.
 - Đã có demo Spring Boot nhỏ trong `lab-code/tenant-demo` với PostgreSQL/Flyway, tenant-aware API, JWT tạm fallback, Keycloak AuthN/AuthZ mode và các mini-lab architecture.
-- Phase 1 hiện đã demo được flow end-to-end bằng React Web UI mỏng -> Keycloak -> Gateway -> `tenant-demo` -> PostgreSQL/Redis/Kafka/Observability. UI này là demo web, không phải React Native/Expo và không phải frontend production. Product direction mới cho UI là `Master Data Portal`: master data + activity log như một app nghiệp vụ nhỏ, không phải architecture console.
-- Sau buổi báo cáo mentor ngày 11/06/2026, Phase 1.5 bắt đầu bằng runtime tooling: Loki log aggregation, Kafka UI và Kong Gateway đã có local lab; `audit-log-service` đã được thêm làm service split đầu tiên để biến Kafka thành cross-service flow, rồi mới polish UI cuối.
+- Phase 1 hiện đã demo được flow end-to-end bằng React Web UI `Master Data Portal` -> Keycloak -> Kong Gateway -> `tenant-demo` / `audit-log-service` / `file-service` / `search-service` -> PostgreSQL/Redis/Kafka/MinIO/Elasticsearch/Observability. UI này là demo web, không phải React Native/Expo và không phải frontend production.
+- Sau buổi báo cáo mentor ngày 11/06/2026, Phase 1.5 đã bổ sung runtime tooling Loki log aggregation, Kafka UI, Kong Gateway và các service split có boundary rõ: audit log, file upload/download và search projection.
 
 ## Cấu trúc thư mục
 
@@ -27,13 +27,16 @@ Mục tiêu của repo không phải là lưu mọi nháp học tập, mà là l
 │   └── 99-tong-ket/
 ├── lab-code/
 │   ├── sql-playground/
+│   ├── common-security/
 │   ├── tenant-demo/
+│   ├── audit-log-service/
+│   ├── file-service/
+│   ├── search-service/
 │   ├── keycloak-lab/
 │   ├── elasticsearch-lab/
 │   ├── minio-lab/
 │   ├── redis-lab/
 │   ├── kafka-lab/
-│   ├── audit-log-service/
 │   ├── observability-lab/
 │   ├── loki-lab/
 │   ├── kafka-ui-lab/

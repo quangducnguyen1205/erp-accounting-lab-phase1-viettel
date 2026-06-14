@@ -33,7 +33,23 @@ cd lab-code
 make demo-up
 ```
 
-Target này bật Docker infra/tooling/web UI, rồi chạy `tenant-demo` và `audit-log-service` bằng Maven trên host ở background. PID nằm trong `lab-code/.pids/`, log nằm trong `lab-code/logs/*.log`.
+Target này bật Docker infra/tooling/web UI:
+
+```text
+PostgreSQL, Keycloak, Redis, Kafka, Kafka UI, MinIO, Elasticsearch,
+Kong, Loki/Grafana/Alloy, React Web UI
+```
+
+Sau đó target chạy bốn Java service bằng Maven trên host ở background:
+
+```text
+tenant-demo
+audit-log-service
+file-service
+search-service
+```
+
+PID nằm trong `lab-code/.pids/`, log nằm trong `lab-code/logs/*.log`.
 
 Kiểm tra:
 
@@ -79,7 +95,7 @@ APP_CACHE_ENABLED=true
 APP_MESSAGING_ENABLED=true
 ```
 
-File upload/download và search không còn là feature flag trong `tenant-demo`. Nếu demo tệp tin, chạy riêng `file-service`; nếu demo search, chạy riêng `search-service`.
+File upload/download và search không còn là feature flag trong `tenant-demo`. Full demo chạy riêng `file-service` cho tệp tin và `search-service` cho Elasticsearch search.
 
 Chạy bằng target file-log để Loki/Grafana đọc được log:
 
@@ -102,7 +118,7 @@ make audit-log-run-logs
 
 Target này ghi `lab-code/logs/audit-log-service.log` để Loki/Alloy tail sang Grafana Explore. Dừng bằng `Ctrl+C` trong terminal đó.
 
-Terminal 4 - `file-service` Java service host-run nếu demo upload/download:
+Terminal 4 - `file-service` Java service host-run:
 
 ```bash
 cd lab-code
@@ -111,7 +127,7 @@ make file-run-logs
 
 Target này ghi `lab-code/logs/file-service.log` để Loki/Alloy tail sang Grafana Explore. Dừng bằng `Ctrl+C` trong terminal đó.
 
-Terminal 5 - `search-service` Java service host-run nếu demo Elasticsearch search:
+Terminal 5 - `search-service` Java service host-run:
 
 ```bash
 cd lab-code
@@ -214,7 +230,7 @@ Nếu observability lab đang chạy:
 
 ### E. File upload/download với MinIO
 
-Nếu `file-service` và MinIO đang chạy:
+Với `file-service` và MinIO đang chạy:
 
 1. Vào màn `Tệp tin`.
 2. Login `tenant1-user/password`.
@@ -234,7 +250,7 @@ Nếu `file-service` và MinIO đang chạy:
 
 ### F. Search với Elasticsearch projection
 
-Nếu `search-service` và Elasticsearch đang chạy:
+Với `search-service` và Elasticsearch đang chạy:
 
 1. Vào màn `Danh mục`.
 2. Tạo hoặc sửa một bản ghi có code dễ nhận diện, ví dụ `SEARCH-DEMO-*`.
@@ -327,6 +343,9 @@ make kong-down
 make kafka-ui-down
 make loki-down
 make kafka-down
+make elastic-down
+make minio-down
+make redis-down
 make keycloak-down
 make db-down
 make observability-down

@@ -191,7 +191,16 @@ make demo-up
 make demo-status
 ```
 
-`demo-up` bật Docker infra/tooling/web UI, rồi chạy các Java service chính bằng Maven trên host ở background. PID local nằm trong `.pids/`; log Java service nằm trong `logs/`. Nếu đang phát triển file-service thủ công, có thể chạy `make file-run-logs` ở terminal riêng cho dễ debug.
+`demo-up` bật Docker infra/tooling/web UI gồm PostgreSQL, Keycloak, Redis, Kafka, Kafka UI, MinIO, Elasticsearch, Kong, Loki/Grafana/Alloy và React Web UI. Sau đó target chạy bốn Java service chính bằng Maven trên host ở background:
+
+```text
+tenant-demo
+audit-log-service
+file-service
+search-service
+```
+
+PID local nằm trong `.pids/`; log Java service nằm trong `logs/`. Nếu đang phát triển một service thủ công trong IntelliJ, có thể không dùng `demo-up` hoặc dừng process tương ứng rồi chạy `make app-run-logs`, `make audit-log-run-logs`, `make file-run-logs` hoặc `make search-run-logs` ở terminal riêng để debug rõ hơn.
 
 Dừng demo:
 

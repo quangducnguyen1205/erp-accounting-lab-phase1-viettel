@@ -8,14 +8,16 @@ Tài liệu này ghi lại hướng đi sau buổi báo cáo mentor Đạt ngày
 
 Hiện repo đã có:
 
-- React Web UI Docker-first login Keycloak và gọi Gateway.
-- Keycloak/OIDC/RBAC local lab, đã bổ sung PostgreSQL persistence và bootstrap script để demo dễ tái tạo.
+- React Web UI Docker-first `Master Data Portal`, login Keycloak và gọi Kong Gateway.
+- Keycloak/OIDC/RBAC local lab, đã bổ sung PostgreSQL persistence, bootstrap script và theme login `master-data-portal` để demo dễ tái tạo.
 - Spring Cloud Gateway static route lab để học route/filter concept, và Kong Gateway DB-less lab làm gateway chính cho Phase 1.5.
-- `tenant-demo` Spring Boot backend: tenant-aware `master_data`, PostgreSQL/Flyway, Redis cache-aside, Kafka producer/consumer, MinIO, Elasticsearch, Actuator/logging/Micrometer.
+- `tenant-demo` Spring Boot backend: tenant-aware `master_data`, PostgreSQL/Flyway, Redis cache-aside, Kafka producer, Actuator/logging/Micrometer.
 - `audit-log-service`: service split đầu tiên, consume Kafka event và expose read-only audit API theo tenant.
-- `common-security`: shared Maven module cho security plumbing dùng lại giữa `tenant-demo` và `audit-log-service`; không phải runtime auth-service.
+- `file-service`: service split cho tenant-aware upload/download/list/delete, lưu binary ở MinIO và metadata ở PostgreSQL.
+- `search-service`: service split cho Elasticsearch projection/search, consume `MasterDataChangedEvent` từ Kafka.
+- `common-security`: shared Maven module cho security plumbing dùng lại giữa các Resource Server; không phải runtime auth-service.
 - Prometheus/Grafana local lab cho metrics.
-- Docker-first workflow cho infra/tooling qua `lab-code/Makefile`; Java backend services (`tenant-demo`, `audit-log-service`) chạy Maven/IntelliJ trên host cho local development.
+- Docker-first workflow cho infra/tooling qua `lab-code/Makefile`; Java backend services (`tenant-demo`, `audit-log-service`, `file-service`, `search-service`) chạy Maven/IntelliJ trên host cho local development.
 
 Flow hiện tại:
 
@@ -25,6 +27,8 @@ React Web
 -> Kong Gateway
   -> tenant-demo
   -> audit-log-service
+  -> file-service
+  -> search-service
 -> PostgreSQL / Redis / Kafka / MinIO / Elasticsearch / Actuator metrics
 -> Prometheus/Grafana
 ```
@@ -62,7 +66,7 @@ Browser React Web UI
     -> master-data-service
     -> audit-log-service
 
-master-data-service
+master-data-service / tenant-demo
   -> PostgreSQL
   -> Redis
   -> Kafka publish MasterDataChangedEvent
@@ -70,6 +74,14 @@ master-data-service
 audit-log-service
   -> Kafka consume MasterDataChangedEvent
   -> PostgreSQL audit table hoặc log/projection nhỏ
+
+file-service
+  -> PostgreSQL file metadata
+  -> MinIO binary objects
+
+search-service
+  -> Kafka consume MasterDataChangedEvent
+  -> Elasticsearch projection/search API
 
 Observability
   -> Prometheus metrics
@@ -83,8 +95,7 @@ Shared code
   -> common-security module for JWT tenant context and role conversion
 
 Optional existing labs
-  -> MinIO file storage
-  -> Elasticsearch search
+  -> Prometheus/Grafana metrics
 
 Phase 1.5 evolution
   -> file-service owns MinIO flow
@@ -120,8 +131,10 @@ Lý do chính:
 3. **Kong Gateway lab**: đã có DB-less/declarative route `/api/master-data/**` và `/api/audit-events/**`.
 4. **Audit-log-service skeleton + implementation**: đã có service nhỏ consume Kafka event, có schema audit riêng, logs và read API.
 5. **Cross-service Kafka verification**: đã verify create master data -> event -> audit service consumed/stored/logged.
-6. **Final React Web polish**: UI gọi Kong, có section xem audit events qua audit API. Baseline đã được polish thành multi-screen ops console theo design-first plan ở `docs/06-frontend/final-web-ui-design-plan.md` và Figma handoff ở `docs/06-frontend/final-web-ui-figma-screen-handoff.md`; bước tiếp theo là visual review/full demo dry-run.
+6. **Final React Web polish**: UI gọi Kong, có các màn business cho danh mục, tệp tin, activity log, search và account. UI đã realign thành `Master Data Portal`, không phải architecture console.
 7. **Shared security module**: không tạo runtime `auth-service`; Keycloak là IAM/Auth Service, còn duplicated Resource Server plumbing được gom vào `lab-code/common-security`.
+8. **File/search service split**: MinIO flow đã tách sang `file-service`; Elasticsearch projection đã tách sang `search-service`.
+9. **Keycloak theme**: login page local dùng theme `master-data-portal`; auth logic và token claims không đổi.
 
 ## 8. Non-goals
 
@@ -134,6 +147,6 @@ Lý do chính:
 
 ## 9. Suggested next Codex task
 
-> Run a visual review and full demo dry-run of the new multi-screen React Web UI. Complete the pending Figma screen exports later when the Figma MCP limit allows it.
+> Run the final Master Data Portal smoke demo with `make demo-up`, then polish only bugs found in the run.
 
-Lý do: Loki/log aggregation, Kafka UI, Kong Gateway và `audit-log-service` đã có nền local. Cross-service Kafka flow đã verify: create `master_data` qua Kong -> tenant-demo publish Kafka event -> audit-log-service consume/store -> đọc audit event qua Kong theo tenant. UI hiện đã functional nhưng cần polish thành SaaS admin console trước demo mentor nghiêm túc.
+Lý do: Loki/log aggregation, Kafka UI, Kong Gateway, audit/file/search services và Keycloak theme đã có nền local. Flow cần kiểm lại theo một script duy nhất: CRUD -> file upload/download -> search projection -> activity log -> Kafka UI -> Loki.

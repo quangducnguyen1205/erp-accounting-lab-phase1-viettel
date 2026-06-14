@@ -490,11 +490,13 @@ demo-info: ## In hướng dẫn one-command local demo
 	@echo "  make logs-clean   # optional, only when you want to delete generated *.log files"
 	@echo ""
 	@echo "What runs through Docker:"
-	@echo "  PostgreSQL, Keycloak, Kafka, Kafka UI, Kong, Loki/Grafana/Alloy, React Web UI"
+	@echo "  PostgreSQL, Keycloak, Redis, Kafka, Kafka UI, MinIO, Elasticsearch, Kong, Loki/Grafana/Alloy, React Web UI"
 	@echo ""
 	@echo "What runs through Maven on host:"
 	@echo "  tenant-demo          -> $(LOG_DIR)/tenant-demo.log"
 	@echo "  audit-log-service    -> $(LOG_DIR)/audit-log-service.log"
+	@echo "  file-service         -> $(LOG_DIR)/file-service.log"
+	@echo "  search-service       -> $(LOG_DIR)/search-service.log"
 	@echo ""
 	@echo "URLs:"
 	@echo "  Web UI:        http://localhost:5173"
@@ -503,7 +505,7 @@ demo-info: ## In hướng dẫn one-command local demo
 	@echo "  Kafka UI:      http://localhost:18082"
 	@echo "  Grafana Loki:  http://localhost:13001"
 	@echo ""
-	@echo "For IntelliJ development, you can still run tenant-demo and audit-log-service manually."
+	@echo "For IntelliJ development, you can still run Java services manually instead of using this runner."
 
 .PHONY: demo-up
 demo-up: logs-dir pids-dir common-security-install ## Khởi chạy full local demo stack: Docker infra/tooling + Java Maven services background
@@ -511,18 +513,22 @@ demo-up: logs-dir pids-dir common-security-install ## Khởi chạy full local d
 	$(MAKE) db-up
 	$(MAKE) keycloak-up
 	$(MAKE) keycloak-setup
+	$(MAKE) redis-up
 	$(MAKE) kafka-up
+	$(MAKE) minio-up
+	$(MAKE) elastic-up
 	$(MAKE) kong-up
 	$(MAKE) kafka-ui-up
 	$(MAKE) loki-up
 	$(MAKE) web-ui-up
 	@echo "Starting Java services with file logging..."
-	@rm -f $(LOG_DIR)/tenant-demo.log $(LOG_DIR)/audit-log-service.log
+	@rm -f $(LOG_DIR)/tenant-demo.log $(LOG_DIR)/audit-log-service.log $(LOG_DIR)/file-service.log $(LOG_DIR)/search-service.log
 	@if [ -f $(PID_DIR)/tenant-demo.pid ] && kill -0 $$(cat $(PID_DIR)/tenant-demo.pid) 2>/dev/null; then \
 		echo "tenant-demo already running with PID $$(cat $(PID_DIR)/tenant-demo.pid)"; \
 	else \
 		nohup sh -c 'cd $(APP_DIR) && if [ -f .env ]; then set -a; . ./.env; set +a; fi; \
 			APP_AUTH_MODE=keycloak \
+			APP_CACHE_ENABLED=true \
 			APP_MESSAGING_ENABLED=true \
 			KAFKA_BOOTSTRAP_SERVERS=localhost:19092 \
 			LOGGING_FILE_NAME=../$(LOG_DIR)/tenant-demo.log \
@@ -538,6 +544,24 @@ demo-up: logs-dir pids-dir common-security-install ## Khởi chạy full local d
 			exec mvn spring-boot:run' > $(LOG_DIR)/audit-log-service-runner.log 2>&1 & \
 		echo $$! > $(PID_DIR)/audit-log-service.pid; \
 		echo "audit-log-service starting with PID $$(cat $(PID_DIR)/audit-log-service.pid). Logs: $(LOG_DIR)/audit-log-service.log"; \
+	fi
+	@if [ -f $(PID_DIR)/file-service.pid ] && kill -0 $$(cat $(PID_DIR)/file-service.pid) 2>/dev/null; then \
+		echo "file-service already running with PID $$(cat $(PID_DIR)/file-service.pid)"; \
+	else \
+		nohup sh -c 'cd $(FILE_SERVICE_DIR) && if [ -f .env ]; then set -a; . ./.env; set +a; fi; \
+			LOGGING_FILE_NAME=../$(LOG_DIR)/file-service.log \
+			exec mvn spring-boot:run' > $(LOG_DIR)/file-service-runner.log 2>&1 & \
+		echo $$! > $(PID_DIR)/file-service.pid; \
+		echo "file-service starting with PID $$(cat $(PID_DIR)/file-service.pid). Logs: $(LOG_DIR)/file-service.log"; \
+	fi
+	@if [ -f $(PID_DIR)/search-service.pid ] && kill -0 $$(cat $(PID_DIR)/search-service.pid) 2>/dev/null; then \
+		echo "search-service already running with PID $$(cat $(PID_DIR)/search-service.pid)"; \
+	else \
+		nohup sh -c 'cd $(SEARCH_SERVICE_DIR) && if [ -f .env ]; then set -a; . ./.env; set +a; fi; \
+			LOGGING_FILE_NAME=../$(LOG_DIR)/search-service.log \
+			exec mvn spring-boot:run' > $(LOG_DIR)/search-service-runner.log 2>&1 & \
+		echo $$! > $(PID_DIR)/search-service.pid; \
+		echo "search-service starting with PID $$(cat $(PID_DIR)/search-service.pid). Logs: $(LOG_DIR)/search-service.log"; \
 	fi
 	@echo ""
 	@echo "Demo stack is starting. Give Java services a moment, then open http://localhost:5173"
@@ -557,9 +581,19 @@ demo-status: ## Kiểm tra trạng thái full local demo stack
 	else \
 		echo "  audit-log-service: not running"; \
 	fi
+	@if [ -f $(PID_DIR)/file-service.pid ] && kill -0 $$(cat $(PID_DIR)/file-service.pid) 2>/dev/null; then \
+		echo "  file-service: running PID $$(cat $(PID_DIR)/file-service.pid)"; \
+	else \
+		echo "  file-service: not running"; \
+	fi
+	@if [ -f $(PID_DIR)/search-service.pid ] && kill -0 $$(cat $(PID_DIR)/search-service.pid) 2>/dev/null; then \
+		echo "  search-service: running PID $$(cat $(PID_DIR)/search-service.pid)"; \
+	else \
+		echo "  search-service: not running"; \
+	fi
 	@echo ""
 	@echo "Docker services:"
-	@docker ps --filter "name=erp-postgres" --filter "name=viettel-keycloak" --filter "name=viettel-kafka" --filter "name=viettel-kafka-ui" --filter "name=viettel-kong" --filter "name=viettel-loki" --filter "name=viettel-alloy" --filter "name=viettel-loki-grafana" --filter "name=viettel-web-ui-demo" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+	@docker ps --filter "name=erp-postgres" --filter "name=viettel-keycloak" --filter "name=viettel-redis" --filter "name=viettel-kafka" --filter "name=viettel-kafka-ui" --filter "name=viettel-minio" --filter "name=viettel-elasticsearch" --filter "name=viettel-kong" --filter "name=viettel-loki" --filter "name=viettel-alloy" --filter "name=viettel-loki-grafana" --filter "name=viettel-web-ui-demo" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 	@echo ""
 	@$(MAKE) logs-list
 
@@ -580,12 +614,29 @@ demo-down: ## Dừng full local demo stack, giữ volumes và logs
 		echo "audit-log-service was not running"; \
 	fi
 	@rm -f $(PID_DIR)/audit-log-service.pid
+	@if [ -f $(PID_DIR)/file-service.pid ] && kill -0 $$(cat $(PID_DIR)/file-service.pid) 2>/dev/null; then \
+		kill $$(cat $(PID_DIR)/file-service.pid); \
+		echo "Stopped file-service PID $$(cat $(PID_DIR)/file-service.pid)"; \
+	else \
+		echo "file-service was not running"; \
+	fi
+	@rm -f $(PID_DIR)/file-service.pid
+	@if [ -f $(PID_DIR)/search-service.pid ] && kill -0 $$(cat $(PID_DIR)/search-service.pid) 2>/dev/null; then \
+		kill $$(cat $(PID_DIR)/search-service.pid); \
+		echo "Stopped search-service PID $$(cat $(PID_DIR)/search-service.pid)"; \
+	else \
+		echo "search-service was not running"; \
+	fi
+	@rm -f $(PID_DIR)/search-service.pid
 	@echo "Stopping Docker infra/tooling..."
 	-$(MAKE) web-ui-down
 	-$(MAKE) kong-down
 	-$(MAKE) kafka-ui-down
 	-$(MAKE) loki-down
 	-$(MAKE) kafka-down
+	-$(MAKE) elastic-down
+	-$(MAKE) minio-down
+	-$(MAKE) redis-down
 	-$(MAKE) keycloak-down
 	-$(MAKE) db-down
 	@echo ""
@@ -602,6 +653,8 @@ demo-down: ## Dừng full local demo stack, giữ volumes và logs
 # - kafka-up cho async messaging mini-lab
 # - kafka-ui-up cho Kafka topic/message/consumer inspection
 # - audit-log-run / audit-log-run-logs cho service split đầu tiên và Kafka cross-service flow
+# - file-run / file-run-logs cho MinIO upload/download service
+# - search-run / search-run-logs cho Elasticsearch projection service
 # - observability-up cho Prometheus/Grafana mini-lab
 # - loki-up cho Loki/Grafana log aggregation mini-lab
 # - gateway-run cho API Gateway static route mini-lab
@@ -617,7 +670,8 @@ demo-down: ## Dừng full local demo stack, giữ volumes và logs
 # Kafka UI là inspect tool optional, chạy riêng bằng `make kafka-ui-up` để
 # full infra mặc định không quá nặng.
 # Kong Gateway là Phase 1.5 platform lab, chạy riêng bằng `make kong-up`.
-# audit-log-service chạy riêng bằng Maven/IntelliJ, dùng `make audit-log-run-logs` khi muốn Loki tail file log.
+# Java services chạy Maven/IntelliJ-first; dùng các target `*-run-logs`
+# khi muốn Loki tail file log của tenant-demo, audit, file và search.
 
 .PHONY: infra-up
 infra-up: db-up keycloak-up elastic-up minio-up redis-up kafka-up ## Khởi chạy PostgreSQL + KeyCloak + Elasticsearch + MinIO + Redis + Kafka
