@@ -25,6 +25,9 @@ server:
   port: ${SERVER_PORT:8080}
 
 spring:
+  application:
+    name: tenant-demo
+
   datasource:
     # Các giá trị mặc định dưới đây khớp với `lab-code/docker/docker-compose.yml`.
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:erpdb}

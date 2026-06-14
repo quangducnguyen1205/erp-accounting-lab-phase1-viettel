@@ -63,8 +63,10 @@ ensure_realm() {
 }
 
 configure_login_theme() {
-  log "Configuring login theme: $LOGIN_THEME"
-  run_kcadm update "realms/$REALM" -s "loginTheme=$LOGIN_THEME"
+  log "Configuring login theme and local HTTP realm setting: $LOGIN_THEME"
+  run_kcadm update "realms/$REALM" \
+    -s "loginTheme=$LOGIN_THEME" \
+    -s "sslRequired=none"
 }
 
 ensure_realm_role() {
