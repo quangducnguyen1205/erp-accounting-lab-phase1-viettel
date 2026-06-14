@@ -8,7 +8,7 @@ Khi hệ thống có Gateway, business service, Kafka consumer và frontend cont
 
 ## 2. Local logging model in this repo
 
-`tenant-demo` và `audit-log-service` thường chạy bằng Maven/IntelliJ trên host:
+`tenant-demo`, `audit-log-service`, `file-service` và `search-service` thường chạy bằng Maven/IntelliJ trên host:
 
 ```text
 tenant-demo runs on host Maven/IntelliJ
@@ -19,6 +19,16 @@ tenant-demo runs on host Maven/IntelliJ
 
 audit-log-service runs on host Maven/IntelliJ
   -> writes lab-code/logs/audit-log-service.log
+  -> Alloy file source
+  -> Loki
+
+file-service runs on host Maven/IntelliJ
+  -> writes lab-code/logs/file-service.log
+  -> Alloy file source
+  -> Loki
+
+search-service runs on host Maven/IntelliJ
+  -> writes lab-code/logs/search-service.log
   -> Alloy file source
   -> Loki
   -> Grafana Explore
@@ -69,7 +79,7 @@ Local lab dùng `admin / admin`. Đây là credential demo local, không dùng c
 
 ![Grafana label selector service](./images/03-label-selector-service.png)
 
-Bạn không cần nhớ hết label. Trong Builder mode, mở label selector rồi gõ/chọn `service`. Grafana gợi ý label có thật trong Loki. Sau đó chọn value như `tenant-demo`, `audit-log-service`, `kong-gateway`, hoặc `web-ui-demo`.
+Bạn không cần nhớ hết label. Trong Builder mode, mở label selector rồi gõ/chọn `service`. Grafana gợi ý label có thật trong Loki. Sau đó chọn value như `tenant-demo`, `audit-log-service`, `file-service`, `search-service`, `kong-gateway`, hoặc `web-ui-demo`.
 
 ### Step 4 - Query all main services
 
@@ -172,7 +182,7 @@ LogQL:
 {source=~"file|docker"}
 ```
 
-`source="file"` cho host-run Java services như `tenant-demo`, `audit-log-service` và `file-service`; `source="docker"` cho Docker services như Kong, web-ui-demo và infra tools.
+`source="file"` cho host-run Java services như `tenant-demo`, `audit-log-service`, `file-service` và `search-service`; `source="docker"` cho Docker services như Kong, web-ui-demo và infra tools.
 
 ## 5. Step-by-step UI flow
 
@@ -182,7 +192,7 @@ LogQL:
 4. Select datasource `Loki`.
 5. In Builder mode, open `Label filters`.
 6. Choose label `service`.
-7. Pick value `tenant-demo`, `audit-log-service`, `kong-gateway`, or `web-ui-demo`.
+7. Pick value `tenant-demo`, `audit-log-service`, `file-service`, `search-service`, `kong-gateway`, or `web-ui-demo`.
 8. Click `Run query`.
 9. Switch to Code mode when you want to add text filters.
 10. Add `|= "LOKI-UI-GUIDE"` or `|= "requestId="`.
@@ -285,10 +295,11 @@ These values are high-cardinality or sensitive. Keep them in log message and sea
 1. Start from `kong-gateway`: did the request reach the gateway, and what status did it return?
 2. Check `tenant-demo`: did backend validate JWT, resolve tenant, run DB operation, publish Kafka event?
 3. Check `audit-log-service`: did async consumer receive and store the event?
-4. Search by business code/eventId for async flow.
-5. Search by requestId for one HTTP request.
-6. Search `409`, `403`, `500`, `ERROR` for status/error debugging.
-7. Keep time range tight: last 5-15 minutes.
+4. Check `search-service`: did async consumer update the Elasticsearch projection?
+5. Search by business code/eventId for async flow.
+6. Search by requestId for one HTTP request.
+7. Search `409`, `403`, `500`, `ERROR` for status/error debugging.
+8. Keep time range tight: last 5-15 minutes.
 
 ## 9. Common mistakes
 
@@ -296,6 +307,8 @@ These values are high-cardinality or sensitive. Keep them in log message and sea
 - Searching an old time range and thinking logs are missing.
 - Forgetting to run `tenant-demo` with `make app-run-logs`.
 - Forgetting to run `audit-log-service` with `make audit-log-run-logs`.
+- Forgetting to run `file-service` with `make file-run-logs`.
+- Forgetting to run `search-service` with `make search-run-logs`.
 - Expecting `requestId` to appear as a label.
 - Starting with a too broad query and getting lost.
 - Confusing Kafka UI with Loki: Kafka UI shows messages/consumer groups; Loki shows service logs.

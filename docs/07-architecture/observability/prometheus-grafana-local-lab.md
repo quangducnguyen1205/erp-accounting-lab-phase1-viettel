@@ -196,7 +196,6 @@ JWT_DEV_TOKEN_ENABLED=true \
 APP_CACHE_ENABLED=true \
 APP_MESSAGING_ENABLED=true \
 KAFKA_BOOTSTRAP_SERVERS=localhost:19092 \
-APP_SEARCH_ENABLED=false \
 ./mvnw spring-boot:run
 ```
 

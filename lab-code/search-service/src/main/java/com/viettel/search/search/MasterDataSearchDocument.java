@@ -1,6 +1,7 @@
-package com.viettel.demo.search;
+package com.viettel.search.search;
 
-import com.viettel.demo.entity.MasterData;
+import com.viettel.search.event.MasterDataChangedEvent;
+import java.time.Instant;
 
 /*
  * ==============================================================
@@ -30,17 +31,26 @@ public record MasterDataSearchDocument(
         String code,
         String name,
         String category,
-        Boolean active
+        Boolean active,
+        Instant updatedAt
 ) {
 
-    public static MasterDataSearchDocument fromEntity(MasterData data) {
+    public static MasterDataSearchDocument fromEvent(MasterDataChangedEvent event) {
         return new MasterDataSearchDocument(
-                data.getId(),
-                data.getTenantId(),
-                data.getCode(),
-                data.getName(),
-                data.getCategory(),
-                data.getIsActive()
+                event.aggregateId(),
+                event.tenantId(),
+                event.code(),
+                event.name(),
+                event.category(),
+                resolveActive(event),
+                event.occurredAt()
         );
+    }
+
+    private static Boolean resolveActive(MasterDataChangedEvent event) {
+        if ("DELETED".equalsIgnoreCase(event.changeType()) || "DEACTIVATED".equalsIgnoreCase(event.changeType())) {
+            return false;
+        }
+        return event.active() == null || event.active();
     }
 }

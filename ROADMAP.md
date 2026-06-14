@@ -161,7 +161,7 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 | Shared security module | Phase 1.5 refactor | `docs/07-architecture/security/keycloak-vs-auth-service.md`, `docs/07-architecture/security/common-security-code-walkthrough.md` | `lab-code/common-security/`, tenant-demo/audit-log-service dependency | Maven validate/test, behavior giữ nguyên 401/403/tenant isolation | #24 | Đã thêm |
 | React Web frontend | Thin demo Docker-first | `docs/06-frontend/react-web-keycloak-gateway-demo.md` | `lab-code/web-ui-demo/` gọi Kong bằng Keycloak token | Login Keycloak, ACCOUNTANT load/create/load audit events, VIEWER load nhưng create `403`, requestId nối log | #17/#23 | Đã update Phase 1.5 demo |
 | API Gateway/service discovery/load balancer | Mini-lab static route + awareness | `docs/07-architecture/api-gateway-service-discovery/api-gateway-foundation.md`, `docs/07-architecture/api-gateway-service-discovery/service-discovery-load-balancing-awareness.md` | `lab-code/gateway-demo/` route `/api/**` tới `tenant-demo` | Gateway forward Authorization + X-Request-Id, backend vẫn validate token/tenant | #17 | Đã đóng |
-| Elasticsearch / Elastic Stack | Mini-lab đã verify | `docs/07-architecture/search-elasticsearch/elasticsearch-search-service.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-request-response-shapes.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-code-guide-spring-boot.md` | `lab-code/elasticsearch-lab/` + `com.viettel.demo.search` | Search tenant 1/2, no leakage | #11 | Đã đóng |
+| Elasticsearch / Elastic Stack | Mini-lab đã verify + Phase 1.5 service split | `docs/07-architecture/search-elasticsearch/elasticsearch-search-service.md`, `docs/07-architecture/search-elasticsearch/search-service-split-plan.md`, `docs/07-architecture/search-elasticsearch/cross-service-search-projection.md` | `lab-code/elasticsearch-lab/` + `lab-code/search-service/` | Search tenant 1/2, no leakage, projection consume Kafka event | #11/#25 | Đã nâng cấp |
 | MinIO / S3 object storage | Mini-lab đã verify | `docs/07-architecture/object-storage-minio/minio-object-storage.md`, `docs/07-architecture/object-storage-minio/minio-s3-api-shapes.md`, `docs/07-architecture/object-storage-minio/minio-code-guide-spring-boot.md` | upload/download mini-lab | HTTP upload/download + tenant metadata | #13 | Đã đóng |
 | MinIO advanced object management | Optional/later backlog | `docs/07-architecture/object-storage-minio/minio-advanced-object-management.md` | Presigned URL expiry, lifecycle, versioning, object lock/retention nếu cần | Mini-lab riêng sau core milestones | Optional later | Backlog |
 | Redis cache strategy | Mini-lab đã verify | `docs/07-architecture/cache-redis/redis-cache-strategy.md`, `docs/07-architecture/cache-redis/redis-code-guide-spring-boot.md`, `docs/07-architecture/cache-redis/redis-mini-lab-plan.md` | tenant-safe cache-aside path cho `master_data` by code | Hit/miss + tenant-safe cache key + TTL | #14 | Đã đóng |
@@ -315,7 +315,7 @@ Mục tiêu: ghi rõ Keycloak demo/report đã đủ, chuyển roadmap sang họ
 Mục tiêu: nối từ PostgreSQL `LIKE`/index query-pattern sang search engine, chỉ trên lát cắt `master_data`.
 
 - [x] `[LÝ THUYẾT]` Tạo/read `docs/07-architecture/search-elasticsearch/elasticsearch-search-service.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-request-response-shapes.md` và `docs/07-architecture/search-elasticsearch/elasticsearch-mini-lab-plan.md` - foundation + API shape + plan mini-lab.
-- [x] `[SKELETON]` Tạo/read `docs/07-architecture/search-elasticsearch/elasticsearch-code-guide-spring-boot.md`; chuẩn bị `lab-code/elasticsearch-lab/`, config `APP_SEARCH_ENABLED=false`, package `com.viettel.demo.search`, HTTP Client skeleton.
+- [x] `[SKELETON]` Tạo/read `docs/07-architecture/search-elasticsearch/elasticsearch-code-guide-spring-boot.md`; chuẩn bị `lab-code/elasticsearch-lab/`, config `APP_SEARCH_ENABLED=false`, package `com.viettel.demo.search`, HTTP Client skeleton cho Phase 1 mini-lab.
 - [x] `[THỰC HÀNH]` Tự code search mini-lab: reindex `master_data`, search keyword tenant 1/tenant 2, verify tenant filter và eventual consistency caveat.
 - [x] `[REVIEW]` Nhờ Codex review implementation: không biến Elasticsearch thành source of truth, không leak tenant, app-test vẫn pass khi search disabled.
 - [x] `[MILESTONE]` Chốt Milestone #11 - Elasticsearch/search mini-lab có command, HTTP evidence và summary ngắn.
@@ -447,7 +447,8 @@ Phase 1.5 bắt đầu sau buổi báo cáo mentor Đạt ngày 11/06/2026. Mụ
 | 3 | Kong Gateway | Practice gateway platform gần target architecture | `docs/07-architecture/kong-gateway/`, `lab-code/kong-gateway-lab/` | Route `/api/master-data/**` và `/api/audit-events/**`, giữ auth/requestId | Implemented local lab |
 | 4 | Audit Log Service split | Tạo service thứ hai có trách nhiệm rõ | `docs/07-architecture/microservice-boundaries/`, `lab-code/audit-log-service/` | `master-data-service` publish event, `audit-log-service` consume và lưu/log audit | Verified |
 | 5 | Cross-service Kafka flow | Biến Kafka thành event giữa services | `MasterDataChangedEvent` từ service A sang service B | Kafka UI thấy event, audit service log/store được, không dùng Kafka như database | Verified |
-| 6 | Final React Web polish | UI demo sau khi backend boundaries ổn | `lab-code/web-ui-demo/`, `docs/06-frontend/final-web-ui-design-plan.md`, `docs/06-frontend/final-web-ui-figma-screen-handoff.md` | UI gọi Kong, load/create master data, xem audit events qua Kong; design plan chốt hướng SaaS admin console | Implemented, visual review next |
+| 6 | Final React Web polish | UI demo sau khi backend boundaries ổn | `lab-code/web-ui-demo/`, `docs/06-frontend/final-web-ui-design-plan.md`, `docs/06-frontend/final-web-ui-figma-screen-handoff.md` | UI gọi Kong, CRUD master data, file flow, search, xem activity events qua Kong | Implemented |
+| 7 | Search service split | Biến Elasticsearch thành projection service riêng | `lab-code/search-service/`, `docs/07-architecture/search-elasticsearch/` | `search-service` consume `MasterDataChangedEvent`, update Elasticsearch, expose `/api/search/master-data` qua Kong | Implemented |
 
 ### Service split được chọn
 
@@ -464,7 +465,7 @@ Lý do:
 Các split chưa chọn ngay:
 
 - `file-service`: hợp lý với MinIO nhưng kéo thêm upload/security/UI work.
-- `search-service`: thực tế hơn cho projection nhưng Elasticsearch + reindex + eventual consistency dễ phình scope.
+- `search-service`: đã được tách ở Phase 1.5 như projection service consume Kafka event và expose search API qua Kong.
 - notification/reporting service: dễ bị giả tạo nếu chưa có use case rõ.
 
 ---
@@ -486,7 +487,7 @@ Các split chưa chọn ngay:
 | React Web UI notes | `docs/06-frontend/react-web-keycloak-gateway-demo.md` |
 | Architecture awareness notes | `docs/07-architecture/` - tạo khi tới Sprint 7 |
 | Target architecture adoption map | `docs/07-architecture/overview/target-architecture-adoption-map.md` |
-| Elasticsearch/search mini-lab | `docs/07-architecture/search-elasticsearch/elasticsearch-search-service.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-request-response-shapes.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-code-guide-spring-boot.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-design-patterns-spring-boot.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-mini-lab-plan.md`, `lab-code/elasticsearch-lab/`, `lab-code/tenant-demo/src/main/java/com/viettel/demo/search/` |
+| Elasticsearch/search mini-lab + service split | `docs/07-architecture/search-elasticsearch/elasticsearch-search-service.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-request-response-shapes.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-code-guide-spring-boot.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-design-patterns-spring-boot.md`, `docs/07-architecture/search-elasticsearch/elasticsearch-mini-lab-plan.md`, `docs/07-architecture/search-elasticsearch/search-service-split-plan.md`, `docs/07-architecture/search-elasticsearch/cross-service-search-projection.md`, `lab-code/elasticsearch-lab/`, `lab-code/search-service/` |
 | MinIO/file storage mini-lab | `docs/07-architecture/object-storage-minio/minio-object-storage.md`, `docs/07-architecture/object-storage-minio/minio-code-guide-spring-boot.md`, `lab-code/minio-lab/` |
 | Redis/cache mini-lab | `docs/07-architecture/cache-redis/redis-cache-strategy.md`, `docs/07-architecture/cache-redis/redis-code-guide-spring-boot.md`, `docs/07-architecture/cache-redis/redis-mini-lab-plan.md`, `lab-code/redis-lab/` |
 | Kafka/async mini-lab | `docs/07-architecture/messaging-kafka/kafka-async-messaging.md`, `docs/07-architecture/messaging-kafka/kafka-event-shapes.md`, `docs/07-architecture/messaging-kafka/kafka-code-guide-spring-boot.md`, `docs/07-architecture/messaging-kafka/kafka-mini-lab-plan.md`, `lab-code/kafka-lab/` |

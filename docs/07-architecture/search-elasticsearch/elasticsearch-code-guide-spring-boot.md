@@ -1,5 +1,7 @@
 # Elasticsearch code guide cho Spring Boot tenant-demo
 
+> Ghi chú Phase 1.5: file này mô tả mini-lab cũ nhúng search vào `tenant-demo`. Runtime hiện tại của product demo đã chuyển sang `lab-code/search-service`; đọc [search-service-split-plan.md](./search-service-split-plan.md) và [cross-service-search-projection.md](./cross-service-search-projection.md) cho đường chạy hiện hành.
+
 ## Vai trò của file này
 
 File này là **code guide** cho mini-lab Elasticsearch. Nó không giải thích lại toàn bộ lý thuyết search engine hay toàn bộ REST API shape. Nếu cần phần foundation và input/output, đọc trước:

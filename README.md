@@ -107,7 +107,11 @@ Repository này vẫn được ưu tiên làm kho kiến thức Phase 1, nhưng 
 - `lab-code/keycloak-lab/`: Keycloak/OIDC mini-lab local.
 - `lab-code/gateway-demo/`: Spring Cloud Gateway static route tới `tenant-demo`.
 - `lab-code/audit-log-service/`: service split đầu tiên, consume `MasterDataChangedEvent` và expose audit API tenant-aware.
+- `lab-code/file-service/`: service split cho upload/download file tenant-aware qua MinIO.
+- `lab-code/search-service/`: service split cho Elasticsearch projection/search tenant-aware qua Kafka event.
 - `lab-code/web-ui-demo/`: React Web/Vite thin client chạy Docker-first, gọi Gateway sau khi login Keycloak. Đây là demo trực quan cuối Phase 1, không phải React Native/Expo.
+
+Java backend services hiện ưu tiên chạy Maven/IntelliJ trên host (`tenant-demo`, `audit-log-service`, `file-service`, `search-service`). Docker vẫn dùng cho infra/tooling như PostgreSQL, Keycloak, Kafka, MinIO, Elasticsearch, Kong, Loki/Grafana/Alloy và Web UI.
 
 Nếu demo phát triển thành một project thật sự lớn, nên tách sang repository riêng để repo kiến thức này vẫn gọn, rõ và dễ đọc. Trong Phase 1, lab code vẫn được giữ nhỏ và bám sát mục tiêu học.
 

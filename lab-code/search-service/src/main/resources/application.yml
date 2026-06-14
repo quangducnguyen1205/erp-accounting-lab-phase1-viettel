@@ -1,0 +1,44 @@
+server:
+  port: ${SERVER_PORT:8084}
+
+spring:
+  application:
+    name: search-service
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [requestId=%X{requestId:-no-request}] %logger{36} - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: search-service
+    phase: phase-1-5-production-like-demo
+    description: Tenant-aware Elasticsearch search projection
+
+app:
+  security:
+    issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:18080/realms/viettel-lab}
+    jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:}
+    client-id: ${KEYCLOAK_CLIENT_ID:tenant-demo-api-client}
+
+  kafka:
+    enabled: ${APP_KAFKA_ENABLED:true}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
+    master-data-topic: ${KAFKA_MASTER_DATA_TOPIC:master-data-events}
+    consumer-group-id: ${KAFKA_SEARCH_CONSUMER_GROUP_ID:search-service}
+
+  search:
+    elasticsearch-uris: ${ELASTICSEARCH_URIS:http://localhost:9200}
+    master-data-index: ${ELASTICSEARCH_MASTER_DATA_INDEX:master_data_search}

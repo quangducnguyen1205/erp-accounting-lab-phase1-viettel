@@ -39,21 +39,20 @@ Chỉ xóa volume khi chắc chắn không cần dữ liệu lab nữa.
 
 `xpack.security.enabled=false` chỉ để giảm độ phức tạp local learning. Production phải có authentication, authorization, TLS/network boundary và quản lý user/role rõ ràng.
 
-## Liên hệ với tenant-demo
+## Liên hệ với Phase 1.5 search-service
 
-`tenant-demo` mặc định không phụ thuộc Elasticsearch:
-
-```text
-APP_SEARCH_ENABLED=false
-```
-
-Khi tự code mini-lab, bật:
+Phase 1 mini-lab từng đặt search code trong `tenant-demo` sau một feature flag. Runtime demo hiện tại đã tách search sang service riêng:
 
 ```text
-APP_SEARCH_ENABLED=true
-ELASTICSEARCH_URIS=http://localhost:9200
-ELASTICSEARCH_MASTER_DATA_INDEX=master_data_search
+lab-code/search-service
 ```
 
-Search endpoint phải luôn lấy `tenantId` từ `TenantContext`, không lấy từ request body.
+Chạy Elasticsearch local rồi chạy search-service:
 
+```bash
+cd lab-code
+make elastic-up
+make search-run-logs
+```
+
+Search endpoint vẫn phải luôn lấy `tenantId` từ JWT/TenantContext, không lấy từ request body. `tenant-demo` chỉ publish `MasterDataChangedEvent`; `search-service` consume event và update Elasticsearch projection.

@@ -45,15 +45,7 @@ Authorization: Bearer {{noRoleToken}}
 GET {{baseUrl}}/api/master-data/{{tenant2RecordId}}
 Authorization: Bearer {{accountantTenant1Token}}
 
-### Optional search read nếu APP_SEARCH_ENABLED=true
-# Expected: kết quả scoped theo tenant từ token.
+### Optional search read through search-service nếu service đang chạy
+# Expected: kết quả scoped theo tenant từ token. Endpoint này đi qua Kong tới search-service.
 GET {{baseUrl}}/api/search/master-data?keyword={{keyword}}
 Authorization: Bearer {{accountantTenant1Token}}
-
-### Optional reindex admin endpoint
-# Expected sau RBAC:
-# - ADMIN token -> 200 nếu search enabled.
-# - VIEWER/no-role token -> 403.
-POST {{baseUrl}}/api/search/master-data/reindex
-Authorization: Bearer {{viewerTenant2Token}}
-

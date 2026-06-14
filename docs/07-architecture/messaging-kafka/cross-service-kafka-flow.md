@@ -31,11 +31,11 @@ Khác với same-app demo:
 | Event | `MasterDataChangedEvent` |
 | Topic | `master-data-events` |
 | Kafka key | `tenant:{tenantId}:master-data:{aggregateId}` |
-| Consumer service | `audit-log-service` |
-| Consumer group | `audit-log-service` |
-| Consumer code | `com.viettel.audit.event.MasterDataChangedEventConsumer` |
-| Projection/table | `audit_log.audit_events` |
-| Read API | `/api/audit-events` |
+| Consumer service | `audit-log-service` and `search-service` |
+| Consumer group | `audit-log-service`, `search-service` |
+| Consumer code | `com.viettel.audit.event.MasterDataChangedEventConsumer`, `com.viettel.search.event.MasterDataChangedEventConsumer` |
+| Projection/table | `audit_log.audit_events`, Elasticsearch index `master_data_search` |
+| Read API | `/api/audit-events`, `/api/search/master-data` |
 
 ## 3. Runtime Flow
 
@@ -47,7 +47,10 @@ POST /api/master-data
   -> Kafka stores message in topic master-data-events
   -> audit-log-service polls message
   -> audit-log-service stores audit row
+  -> search-service polls same message
+  -> search-service updates Elasticsearch projection
   -> GET /api/audit-events reads audit rows by tenant
+  -> GET /api/search/master-data searches projection by tenant
 ```
 
 ## 4. What Kafka UI Should Show
@@ -64,6 +67,7 @@ Inspect:
 - message key starts with `tenant:`;
 - value contains `eventId`, `tenantId`, `aggregateId`, `changeType`;
 - consumer group `audit-log-service`;
+- consumer group `search-service` if search service is running;
 - lag should go back near 0 after consumer handles messages.
 
 ## 5. Tenant Safety
@@ -99,6 +103,14 @@ cd lab-code
 make audit-log-run-logs
 ```
 
+Mở terminal riêng cho search service Maven host-run nếu demo Elasticsearch projection:
+
+```bash
+cd lab-code
+make elastic-up
+make search-run-logs
+```
+
 Then create/update `master_data` through Kong or HTTP file:
 
 ```text
@@ -119,6 +131,8 @@ Kết quả đã verify ở local:
 - topic `master-data-events` có message `MasterDataChangedEvent`;
 - Kafka key dạng `tenant:1:master-data:<id>`;
 - consumer group `audit-log-service` có lag `0`;
+- consumer group `search-service` có lag `0` nếu search service đang chạy;
 - audit service lưu event vào `audit_log.audit_events`;
+- search service index/update document trong Elasticsearch;
 - tenant 1 đọc được audit event qua Kong;
 - tenant 2 không thấy event tenant 1.

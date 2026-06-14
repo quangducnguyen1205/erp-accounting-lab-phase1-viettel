@@ -84,7 +84,6 @@ public class SecurityConfig {
                             .requestMatchers(HttpMethod.GET, "/actuator/prometheus", "/actuator/prometheus/**").permitAll()
                             .requestMatchers("/api/dev/tokens/**").permitAll()
                             .requestMatchers("/api/master-data", "/api/master-data/**").authenticated()
-                            .requestMatchers("/api/search/master-data", "/api/search/master-data/**").authenticated()
                             .anyRequest().authenticated()
                     )
                     .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
@@ -116,10 +115,6 @@ public class SecurityConfig {
                         .hasAnyRole("ADMIN", "ACCOUNTANT", "VIEWER")
                         .requestMatchers("/api/master-data", "/api/master-data/**")
                         .hasAnyRole("ADMIN", "ACCOUNTANT")
-                        .requestMatchers(HttpMethod.POST, "/api/search/master-data/reindex")
-                        .hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/search/master-data", "/api/search/master-data/**")
-                        .hasAnyRole("ADMIN", "ACCOUNTANT", "VIEWER")
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->

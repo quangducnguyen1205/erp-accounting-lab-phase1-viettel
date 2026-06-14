@@ -6,8 +6,8 @@ Mini-lab này là React Web frontend để nhìn được flow Phase 1.5:
 React Web UI
 -> Keycloak login
 -> Kong Gateway :18000
--> tenant-demo :8080 / audit-log-service :8082 / file-service :8083
--> PostgreSQL / Redis / Kafka / Observability
+-> tenant-demo :8080 / audit-log-service :8082 / file-service :8083 / search-service :8084
+-> PostgreSQL / Redis / Kafka / MinIO / Elasticsearch / Observability
 ```
 
 Đây không phải frontend production. UI là thin client gọi backend qua Gateway, nhưng product direction mới là một business app nhỏ:
@@ -48,7 +48,7 @@ VITE_KEYCLOAK_CLIENT_ID=tenant-demo-web
 VITE_REQUEST_ID_PREFIX=web-demo
 ```
 
-`VITE_API_BASE_URL` trỏ tới Gateway, không trỏ trực tiếp tới `tenant-demo`, `audit-log-service` hoặc `file-service`.
+`VITE_API_BASE_URL` trỏ tới Gateway, không trỏ trực tiếp tới `tenant-demo`, `audit-log-service`, `file-service` hoặc `search-service`.
 
 Mặc định Phase 1.5 dùng Kong Gateway ở `http://localhost:18000`. Spring Cloud Gateway lab cũ vẫn tồn tại trong repo để học route/filter concept, nhưng không còn là lựa chọn chính trong UI sản phẩm. Nếu cần so sánh lab cũ, có thể đổi env thủ công:
 
@@ -193,6 +193,14 @@ Build output `dist/` chỉ nằm trong Docker image/layer; không commit `dist/`
    make file-run-logs
    ```
 
+   Nếu demo tìm kiếm nâng cao, start thêm Elasticsearch và search-service:
+
+   ```bash
+   cd lab-code
+   make elastic-up
+   make search-run-logs
+   ```
+
 4. Start UI:
 
    ```bash
@@ -208,6 +216,7 @@ Build output `dist/` chỉ nằm trong Docker image/layer; không commit `dist/`
    - Master Data: bấm `Load by code` với một code có thật như `LAPTOP-01`.
    - Master Data: tạo record với code `UI-DEMO-*`.
    - Master Data: sửa tên/loại/mã khi cần và thử tạm ngưng bản ghi. Tạm ngưng là soft delete/deactivate: bản ghi không còn hiện trong list/lookup thường, nhưng code cũ vẫn được giữ để tránh tái sử dụng nhầm trong cùng tenant.
+   - Master Data: dùng `Tìm kiếm nâng cao` để gọi search-service qua Kong. Kết quả có thể trễ vài giây sau create/update/deactivate vì search là Elasticsearch projection từ Kafka event.
    - Tệp tin: upload file nhỏ, tải danh sách, tải xuống, thử viewer `403` nếu cần.
    - Activity Log: đợi một chút rồi bấm `Load activity`.
    - Demo docs: mở Grafana Loki/Kafka UI từ URL trong demo script nếu cần giải thích backend flow.
@@ -220,6 +229,7 @@ Build output `dist/` chỉ nằm trong Docker image/layer; không commit `dist/`
 - Redis: nếu cache enabled, dùng `Load by code` trên UI hoặc HTTP file cache để gọi cùng code hai lần và quan sát hit/miss bằng log/metric backend. UI không tự đoán cache status.
 - Kafka: create/update/deactivate `master_data` phát `MasterDataChangedEvent` nếu messaging enabled.
 - Tệp tin: bấm `Tải lên`/`Tải danh sách` để gọi file-service qua Kong; UI không gọi MinIO trực tiếp.
+- Search: dùng `Tìm kiếm nâng cao` để gọi search-service qua Kong; UI không gọi Elasticsearch trực tiếp.
 - Activity Log: bấm `Load activity` để đọc activity records qua Kong; tenant 2 không thấy activity tenant 1.
 - Observability: Prometheus/Grafana quan sát metric từ `tenant-demo`, không phải UI gọi trực tiếp Prometheus/Grafana.
 
@@ -246,7 +256,7 @@ UI không kết luận Kafka/audit thành công sau POST. Chỉ khi `GET /api/au
 |---|---|
 | Welcome | Login Keycloak, account hint local, không hiển thị token. |
 | Dashboard | Business overview: total records, active records, recent changes, current tenant/role. |
-| Master Data | Load/list, load by code, create, edit/update, soft delete/tạm ngưng, `401`/`403`/`404`/`409`/unavailable states. |
+| Master Data | Load/list, load by code, create, edit/update, soft delete/tạm ngưng, backend search qua search-service, `401`/`403`/`404`/`409`/unavailable states. |
 | Files / Tệp tin | Upload, list metadata, download, delete qua `/api/files`; binary lưu ở MinIO, metadata ở file-service DB schema. |
 | Activity Log | Activity table/timeline, tenant2 empty success state. Current API path remains `/api/audit-events`. |
 | Account | Username, tenant_id, roles, token status hidden, API gateway preset, logout and secondary demo tool links. |

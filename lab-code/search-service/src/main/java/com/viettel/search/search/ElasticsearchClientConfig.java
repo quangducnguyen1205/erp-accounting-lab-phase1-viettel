@@ -1,4 +1,4 @@
-package com.viettel.demo.search;
+package com.viettel.search.search;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
@@ -6,7 +6,6 @@ import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,8 +17,7 @@ public class ElasticsearchClientConfig {
      * Elasticsearch Java API Client config
      * ==============================================================
      *
-     * Bean này chỉ được tạo khi APP_SEARCH_ENABLED=true.
-     * Nhờ vậy app/test mặc định không phụ thuộc Elasticsearch local.
+     * Bean này thuộc search-service, nên service này cần Elasticsearch khi chạy.
      *
      * Official Java API Client vẫn dùng REST transport ở bên dưới, nhưng
      * code nghiệp vụ dùng request/response typed thay vì tự ghép JSON raw.
@@ -30,13 +28,11 @@ public class ElasticsearchClientConfig {
      * ==============================================================
      */
     @Bean
-    @ConditionalOnProperty(prefix = "app.search", name = "enabled", havingValue = "true")
     RestClient elasticsearchLowLevelRestClient(SearchProperties properties) {
         return RestClient.builder(HttpHost.create(properties.getElasticsearchUris())).build();
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "app.search", name = "enabled", havingValue = "true")
     ElasticsearchClient elasticsearchClient(RestClient elasticsearchLowLevelRestClient) {
         ElasticsearchTransport elasticsearchTransport = new RestClientTransport(
                 elasticsearchLowLevelRestClient,

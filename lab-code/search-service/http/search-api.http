@@ -1,0 +1,22 @@
+@baseUrl = http://localhost:18000
+@keyword = Laptop
+@invalidToken = invalid.jwt.token
+
+### Search tenant-scoped master data through Kong
+GET {{baseUrl}}/api/search/master-data?keyword={{keyword}}
+Authorization: Bearer {{access_token}}
+X-Request-Id: search-demo-001
+
+### Missing token should return 401
+GET {{baseUrl}}/api/search/master-data?keyword={{keyword}}
+X-Request-Id: search-demo-missing-token
+
+### Invalid token should return 401
+GET {{baseUrl}}/api/search/master-data?keyword={{keyword}}
+Authorization: Bearer {{invalidToken}}
+X-Request-Id: search-demo-invalid-token
+
+### Blank keyword should return 400 after authentication
+GET {{baseUrl}}/api/search/master-data?keyword=
+Authorization: Bearer {{access_token}}
+X-Request-Id: search-demo-blank-keyword

@@ -72,6 +72,13 @@ local.file_match "java_service_host_logs" {
       source      = "file",
       job         = "host-file",
     },
+    {
+      __path__    = "/var/log/viettel-lab/search-service.log",
+      service     = "search-service",
+      environment = "local",
+      source      = "file",
+      job         = "host-file",
+    },
   ]
   sync_period = "5s"
 }

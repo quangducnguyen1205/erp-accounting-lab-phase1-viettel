@@ -1,5 +1,7 @@
 # Elasticsearch mini-lab plan cho `master_data`
 
+> Ghi chú Phase 1.5: plan này là lịch sử mini-lab cũ. Product demo hiện dùng `lab-code/search-service` làm Elasticsearch projection service consume Kafka event.
+
 ## Mục tiêu
 
 Mini-lab này giúp hiểu khi nào cần search engine sau khi đã học PostgreSQL `LIKE`, B-tree, `pg_trgm` và query pattern.

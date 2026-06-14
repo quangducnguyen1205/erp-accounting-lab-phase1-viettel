@@ -24,6 +24,7 @@ KAFKA_DIR      := kafka-lab
 KAFKA_UI_DIR   := kafka-ui-lab
 AUDIT_LOG_DIR  := audit-log-service
 FILE_SERVICE_DIR := file-service
+SEARCH_SERVICE_DIR := search-service
 COMMON_SECURITY_DIR := common-security
 OBSERVABILITY_DIR := observability-lab
 LOKI_DIR       := loki-lab
@@ -255,6 +256,44 @@ file-info: ## In hướng dẫn nhanh cho file-service
 	@echo ""
 	@echo "Ghi chú: cần PostgreSQL, Keycloak, MinIO và Kong chạy trước khi demo đầy đủ."
 
+# --- Search Service mini-lab -----------------------------------
+
+.PHONY: search-validate
+search-validate: common-security-install ## Validate search-service Maven project
+	mvn -f $(SEARCH_SERVICE_DIR)/pom.xml validate
+
+.PHONY: search-run
+search-run: common-security-install ## Chạy search-service bằng Maven ở port 8084
+	cd $(SEARCH_SERVICE_DIR) && if [ -f .env ]; then set -a; . ./.env; set +a; fi; mvn spring-boot:run
+
+.PHONY: search-run-logs
+search-run-logs: common-security-install logs-dir ## Chạy search-service bằng Maven và ghi file log để Loki/Alloy tail
+	@rm -f $(LOG_DIR)/search-service.log
+	cd $(SEARCH_SERVICE_DIR) && if [ -f .env ]; then set -a; . ./.env; set +a; fi; \
+	LOGGING_FILE_NAME=$${LOGGING_FILE_NAME:-../$(LOG_DIR)/search-service.log} \
+	mvn spring-boot:run
+
+.PHONY: search-status
+search-status: ## Kiểm tra search-service host health endpoint
+	curl -s http://localhost:8084/actuator/health
+
+.PHONY: search-info
+search-info: ## In hướng dẫn nhanh cho search-service
+	@echo ""
+	@echo "Search Service nằm ở $(SEARCH_SERVICE_DIR)/"
+	@echo "Workflow chính là Maven/IntelliJ host-run."
+	@echo ""
+	@echo "Chạy:"
+	@echo "  make search-run"
+	@echo "  make search-run-logs   # ghi $(LOG_DIR)/search-service.log cho Loki"
+	@echo "  make search-status"
+	@echo ""
+	@echo "URLs:"
+	@echo "  Direct service: http://localhost:8084"
+	@echo "  Through Kong:   http://localhost:18000/api/search/master-data?keyword=..."
+	@echo ""
+	@echo "Ghi chú: cần Keycloak, Kafka, Elasticsearch và Kong chạy trước khi demo đầy đủ."
+
 # --- Observability mini-lab ------------------------------------
 
 .PHONY: observability-up
@@ -324,6 +363,7 @@ loki-info: ## In hướng dẫn nhanh cho Loki log aggregation lab
 	@echo "Ghi chú: Docker logs đi qua Docker collector; Java host Maven logs đi qua $(LOG_DIR)/*.log."
 	@echo "       Chạy tenant-demo bằng make app-run-logs và audit-log-service bằng make audit-log-run-logs để Loki thấy log file."
 	@echo "       Chạy file-service bằng make file-run-logs để Loki thấy file-service log."
+	@echo "       Chạy search-service bằng make search-run-logs để Loki thấy search-service log."
 
 .PHONY: logs-up
 logs-up: loki-up ## Alias: khởi chạy Loki log aggregation lab

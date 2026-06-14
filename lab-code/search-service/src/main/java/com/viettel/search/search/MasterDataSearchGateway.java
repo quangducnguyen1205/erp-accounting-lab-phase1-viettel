@@ -1,4 +1,4 @@
-package com.viettel.demo.search;
+package com.viettel.search.search;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
@@ -6,7 +6,6 @@ import co.elastic.clients.elasticsearch.core.BulkResponse;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.transport.endpoints.BooleanResponse;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
@@ -32,7 +31,6 @@ import java.util.Objects;
  * ==============================================================
  */
 @Component
-@ConditionalOnProperty(prefix = "app.search", name = "enabled", havingValue = "true")
 public class MasterDataSearchGateway {
 
     private final ElasticsearchClient client;

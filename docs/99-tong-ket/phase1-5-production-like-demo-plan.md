@@ -85,6 +85,10 @@ Shared code
 Optional existing labs
   -> MinIO file storage
   -> Elasticsearch search
+
+Phase 1.5 evolution
+  -> file-service owns MinIO flow
+  -> search-service owns Elasticsearch projection
 ```
 
 ## 5. Service split options
@@ -93,7 +97,7 @@ Optional existing labs
 |---|---|---|---|---|
 | `master-data-service` + `audit-log-service` | Service mới consume `MasterDataChangedEvent` và lưu/log audit. | Kafka thành cross-service thật, domain nhỏ, dễ demo, tận dụng event hiện có. | Audit service đơn giản. | Chọn trước. |
 | Split `file-service` | Tách MinIO upload/download ra service riêng. | File ownership rõ, MinIO service-owned. | Kéo thêm auth/upload/UI/security work. | Đã chuyển sang Phase 1.5 evolution sau CRUD. |
-| Split `search-service` | Search projection consume event từ master data. | Rất realistic cho Elasticsearch. | Eventual consistency/reindex/search complexity dễ phình. | Later/backlog. |
+| Split `search-service` | Search projection consume event từ master data. | Rất realistic cho Elasticsearch. | Eventual consistency/reindex/search complexity dễ phình. | Implemented sau file-service. |
 | Notification/reporting service | Consumer log/notification/report. | Dễ làm. | Có thể hơi artificial nếu chưa có use case. | Không ưu tiên. |
 
 ## 6. Recommended option

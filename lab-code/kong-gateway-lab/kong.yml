@@ -46,6 +46,17 @@ services:
         protocols:
           - http
 
+  - name: search-service-api
+    url: http://host.docker.internal:8084
+    routes:
+      - name: search-service-master-data-api
+        paths:
+          - /api/search/master-data
+        strip_path: false
+        preserve_host: false
+        protocols:
+          - http
+
 plugins:
   - name: cors
     route: tenant-demo-master-data-api
@@ -102,5 +113,22 @@ plugins:
       exposed_headers:
         - X-Request-Id
         - Content-Disposition
+      credentials: false
+      max_age: 3600
+
+  - name: cors
+    route: search-service-master-data-api
+    config:
+      origins:
+        - http://localhost:5173
+      methods:
+        - GET
+        - OPTIONS
+      headers:
+        - Authorization
+        - Content-Type
+        - X-Request-Id
+      exposed_headers:
+        - X-Request-Id
       credentials: false
       max_age: 3600

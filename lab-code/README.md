@@ -10,11 +10,11 @@ Phase 1 hiện có đường demo end-to-end:
 React Web UI / Master Data Portal
 -> Keycloak login
 -> Kong Gateway
--> tenant-demo backend + audit-log-service + file-service
--> PostgreSQL / Redis / Kafka / Observability
+-> tenant-demo backend + audit-log-service + file-service + search-service
+-> PostgreSQL / Redis / Kafka / MinIO / Elasticsearch / Observability
 ```
 
-Spring Cloud Gateway vẫn được giữ như lab gateway concept cũ; Phase 1.5 final demo mặc định dùng Kong. Elasticsearch vẫn là HTTP mini-lab/search backlog; file upload/download đã được tách sang `file-service` và UI gọi qua Kong. UI không gọi trực tiếp PostgreSQL, Redis, Kafka, MinIO, Prometheus hoặc Grafana trong business flow.
+Spring Cloud Gateway vẫn được giữ như lab gateway concept cũ; Phase 1.5 final demo mặc định dùng Kong. File upload/download đã được tách sang `file-service`; Elasticsearch search đã được tách sang `search-service`. UI không gọi trực tiếp PostgreSQL, Redis, Kafka, MinIO, Elasticsearch, Prometheus hoặc Grafana trong business flow.
 
 Phase 1.5 đã bắt đầu chuyển một số stub thành runtime lab:
 
@@ -23,9 +23,10 @@ Phase 1.5 đã bắt đầu chuyển một số stub thành runtime lab:
 - `kong-gateway-lab/`: Kong DB-less/declarative gateway lab.
 - `audit-log-service/`: service split đầu tiên, consume Kafka event và expose audit API.
 - `file-service/`: service split cho upload/download file tenant-aware qua MinIO.
+- `search-service/`: service split cho Elasticsearch projection/search tenant-aware.
 - `common-security/`: shared Maven module cho tenant context, JWT tenant filter và Keycloak role converter dùng chung.
 
-`loki-lab/`, `kafka-ui-lab/` và `kong-gateway-lab/` đã có Docker Compose và Makefile targets riêng. `audit-log-service/` và `file-service/` là Java service độc lập nhưng chạy Maven/IntelliJ trên host giống `tenant-demo`. Cross-service Kafka flow đã verify; React Web UI đang được realign thành `Master Data Portal`, một business UI nhỏ cho master data, file và activity log thay vì architecture console.
+`loki-lab/`, `kafka-ui-lab/` và `kong-gateway-lab/` đã có Docker Compose và Makefile targets riêng. `audit-log-service/`, `file-service/` và `search-service/` là Java service độc lập nhưng chạy Maven/IntelliJ trên host giống `tenant-demo`. Cross-service Kafka flow đã verify; React Web UI là `Master Data Portal`, một business UI nhỏ cho master data, file, search và activity log thay vì architecture console.
 
 ## Nguyên tắc tối thượng
 
@@ -120,6 +121,8 @@ make audit-log-run  # Audit service Maven host-run, consume Kafka event, expose 
 make audit-log-run-logs # Audit service host-run + ghi lab-code/logs/audit-log-service.log cho Loki
 make file-run       # File service Maven host-run, expose /api/files
 make file-run-logs  # File service host-run + ghi lab-code/logs/file-service.log cho Loki
+make search-run     # Search service Maven host-run, expose /api/search/master-data
+make search-run-logs # Search service host-run + ghi lab-code/logs/search-service.log cho Loki
 make observability-up # Prometheus + Grafana cho observability mini-lab
 make loki-up        # Loki + Alloy + Grafana cho centralized logs
 make gateway-run    # Spring Cloud Gateway static route mini-lab
@@ -133,7 +136,7 @@ make infra-up
 make infra-status
 ```
 
-`infra-up` bật PostgreSQL + Keycloak + Elasticsearch + MinIO + Redis + Kafka. Prometheus/Grafana metrics chạy riêng bằng `make observability-up`, Loki/Grafana logs chạy riêng bằng `make loki-up`, Kafka UI chạy riêng bằng `make kafka-ui-up`, audit/file services chạy riêng bằng Maven/IntelliJ qua `make audit-log-run`, `make file-run` hoặc các target `*-run-logs`, gateway chạy riêng bằng `make gateway-run` hoặc `make kong-up`, React Web UI chạy riêng bằng `make web-ui-up` để full infra mặc định không quá nặng. Khi chỉ học một lab nhỏ, vẫn nên dùng target riêng như `make kafka-up`, `make kafka-ui-up`, `make audit-log-run`, `make file-run`, `make redis-up`, `make observability-up`, `make loki-up`, `make gateway-run` hoặc `make web-ui-up` để máy nhẹ hơn và dễ debug hơn.
+`infra-up` bật PostgreSQL + Keycloak + Elasticsearch + MinIO + Redis + Kafka. Prometheus/Grafana metrics chạy riêng bằng `make observability-up`, Loki/Grafana logs chạy riêng bằng `make loki-up`, Kafka UI chạy riêng bằng `make kafka-ui-up`, audit/file/search services chạy riêng bằng Maven/IntelliJ qua `make audit-log-run`, `make file-run`, `make search-run` hoặc các target `*-run-logs`, gateway chạy riêng bằng `make gateway-run` hoặc `make kong-up`, React Web UI chạy riêng bằng `make web-ui-up` để full infra mặc định không quá nặng. Khi chỉ học một lab nhỏ, vẫn nên dùng target riêng như `make kafka-up`, `make kafka-ui-up`, `make audit-log-run`, `make file-run`, `make search-run`, `make redis-up`, `make observability-up`, `make loki-up`, `make gateway-run` hoặc `make web-ui-up` để máy nhẹ hơn và dễ debug hơn.
 
 Spring Boot app vẫn chạy riêng bằng:
 
@@ -163,6 +166,14 @@ make file-run-logs
 
 Target này ghi `lab-code/logs/file-service.log`.
 
+Với search service, dùng:
+
+```bash
+make search-run-logs
+```
+
+Target này ghi `lab-code/logs/search-service.log`.
+
 ```bash
 make logs-list
 make logs-clean
@@ -191,4 +202,4 @@ make logs-clean   # optional, chỉ khi muốn xóa generated *.log
 
 React Web UI demo nằm ở `web-ui-demo/`. UI chạy bằng Docker, mặc định gọi Kong Gateway, và không gọi trực tiếp PostgreSQL/Redis/Kafka/MinIO/Prometheus/Grafana trong business flow. Product direction mới là `Master Data Portal`.
 
-`common-security/` không phải runtime service. Keycloak vẫn là Auth Service/Identity Provider; `tenant-demo`, `audit-log-service` và `file-service` tự validate JWT như Resource Server, rồi dùng shared module để tránh duplicate `TenantContext`, tenant claim filter và role converter. Khi chạy Maven service riêng từ local, Makefile sẽ install module này trước qua `make common-security-install`.
+`common-security/` không phải runtime service. Keycloak vẫn là Auth Service/Identity Provider; `tenant-demo`, `audit-log-service`, `file-service` và `search-service` tự validate JWT như Resource Server, rồi dùng shared module để tránh duplicate `TenantContext`, tenant claim filter và role converter. Khi chạy Maven service riêng từ local, Makefile sẽ install module này trước qua `make common-security-install`.

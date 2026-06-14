@@ -10,6 +10,7 @@ import {
   loadAuditEvents,
   loadMasterData,
   loadMasterDataByCode,
+  searchMasterData,
   uploadFile,
   updateMasterData
 } from './api';
@@ -98,6 +99,9 @@ export default function App() {
   const [files, setFiles] = useState([]);
   const [lookupCode, setLookupCode] = useState('LAPTOP-01');
   const [lookupResult, setLookupResult] = useState(null);
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoaded, setSearchLoaded] = useState(false);
   const [form, setForm] = useState(defaultForm);
   const [lastResult, setLastResult] = useState(null);
   const [postCreateHint, setPostCreateHint] = useState('');
@@ -108,6 +112,7 @@ export default function App() {
     createdMasterData: false,
     filesLoaded: false,
     uploadedFile: false,
+    searchLoaded: false,
     auditEventsLoaded: false,
     tenantIsolationChecked: false,
     viewerCreateForbidden: false
@@ -218,6 +223,21 @@ export default function App() {
     const result = await runRequest(() => loadMasterDataByCode(code, apiBaseUrl.trim()));
     if (result?.ok) {
       setLookupResult(result.data);
+    }
+  }
+
+  async function handleSearchMasterData(event) {
+    event.preventDefault();
+    const keyword = searchKeyword.trim();
+    if (!keyword) {
+      return;
+    }
+
+    const result = await runRequest(() => searchMasterData(keyword, apiBaseUrl.trim()));
+    if (result?.ok && Array.isArray(result.data)) {
+      setSearchResults(result.data);
+      setSearchLoaded(true);
+      setDemoProgress((current) => ({ ...current, searchLoaded: true }));
     }
   }
 
@@ -382,6 +402,11 @@ export default function App() {
           setLookupCode={setLookupCode}
           lookupResult={lookupResult}
           onLookup={handleLookupByCode}
+          searchKeyword={searchKeyword}
+          setSearchKeyword={setSearchKeyword}
+          searchResults={searchResults}
+          searchLoaded={searchLoaded}
+          onBackendSearch={handleSearchMasterData}
           form={form}
           setForm={setForm}
           onCreate={handleCreate}

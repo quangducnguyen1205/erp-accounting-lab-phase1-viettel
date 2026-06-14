@@ -16,6 +16,9 @@ public record MasterDataChangedEvent(
         String aggregateType,
         Long aggregateId,
         String code,
+        String name,
+        String category,
+        Boolean active,
         String changeType,
         String source
 ) {

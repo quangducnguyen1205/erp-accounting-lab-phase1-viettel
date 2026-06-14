@@ -43,15 +43,16 @@ http://localhost:13001
 Vào `Explore`, chọn datasource `Loki`, query ví dụ:
 
 ```logql
-{service=~"tenant-demo|audit-log-service|file-service|kong-gateway|web-ui-demo"}
+{service=~"tenant-demo|audit-log-service|file-service|search-service|kong-gateway|web-ui-demo"}
 {service="tenant-demo"}
 {service="file-service"}
-{service=~"tenant-demo|audit-log-service|file-service|kong-gateway"} |= "requestId="
+{service="search-service"}
+{service=~"tenant-demo|audit-log-service|file-service|search-service|kong-gateway"} |= "requestId="
 ```
 
 Xem thêm guide thực hành: [how-to-read-logs-in-grafana.md](how-to-read-logs-in-grafana.md).
 
-Lưu ý: lab dùng mô hình hybrid. Docker services được collect từ stdout; `tenant-demo`, `audit-log-service` và `file-service` host Maven được collect qua `lab-code/logs/*.log` khi chạy `make app-run-logs`, `make audit-log-run-logs` hoặc `make file-run-logs`.
+Lưu ý: lab dùng mô hình hybrid. Docker services được collect từ stdout; `tenant-demo`, `audit-log-service`, `file-service` và `search-service` host Maven được collect qua `lab-code/logs/*.log` khi chạy `make app-run-logs`, `make audit-log-run-logs`, `make file-run-logs` hoặc `make search-run-logs`.
 
 ## Caveat
 

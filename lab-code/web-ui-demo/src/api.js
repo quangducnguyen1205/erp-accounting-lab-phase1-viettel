@@ -111,6 +111,10 @@ export function loadAuditEvents(apiBaseUrl, limit = 20) {
   return apiRequest(`/api/audit-events?limit=${encodeURIComponent(limit)}`, { apiBaseUrl });
 }
 
+export function searchMasterData(keyword, apiBaseUrl) {
+  return apiRequest(`/api/search/master-data?keyword=${encodeURIComponent(keyword)}`, { apiBaseUrl });
+}
+
 export function listFiles(apiBaseUrl) {
   return apiRequest('/api/files', { apiBaseUrl });
 }

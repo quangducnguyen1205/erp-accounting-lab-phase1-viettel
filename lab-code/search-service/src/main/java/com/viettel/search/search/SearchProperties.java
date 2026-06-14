@@ -1,4 +1,4 @@
-package com.viettel.demo.search;
+package com.viettel.search.search;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -12,8 +12,7 @@ import org.springframework.stereotype.Component;
  * Gom các config liên quan đến Elasticsearch/search vào một nơi.
  *
  * [Lưu ý]
- * - Search tắt mặc định để app/test hiện tại không phụ thuộc Elasticsearch.
- * - Elasticsearch Java API Client chỉ được tạo khi APP_SEARCH_ENABLED=true.
+ * - search-service là runtime projection riêng, nên cần Elasticsearch khi chạy.
  * - Đọc config này để biết index name và URI.
  *
  * ==============================================================
@@ -22,19 +21,9 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "app.search")
 public class SearchProperties {
 
-    private boolean enabled = false;
-
     private String elasticsearchUris = "http://localhost:9200";
 
     private String masterDataIndex = "master_data_search";
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
 
     public String getElasticsearchUris() {
         return elasticsearchUris;

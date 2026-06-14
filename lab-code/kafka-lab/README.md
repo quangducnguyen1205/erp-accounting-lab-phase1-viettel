@@ -176,7 +176,6 @@ Khi chỉ muốn chạy Kafka mini-lab, nên tắt các lab khác để app khô
 cd lab-code/tenant-demo
 set -a; . ./.env; set +a
 APP_MESSAGING_ENABLED=true \
-APP_SEARCH_ENABLED=false \
 APP_CACHE_ENABLED=false \
 ./mvnw spring-boot:run
 ```

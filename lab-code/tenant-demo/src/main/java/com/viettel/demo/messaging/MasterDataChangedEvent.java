@@ -28,6 +28,9 @@ public record MasterDataChangedEvent(
         String aggregateType,
         Long aggregateId,
         String code,
+        String name,
+        String category,
+        Boolean active,
         String changeType,
         String source
 ) {
@@ -41,6 +44,9 @@ public record MasterDataChangedEvent(
                 "MASTER_DATA",
                 data.getId(),
                 data.getCode(),
+                data.getName(),
+                data.getCategory(),
+                data.getIsActive(),
                 changeType,
                 "tenant-demo"
         );

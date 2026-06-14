@@ -94,6 +94,12 @@ audit-log-service host Maven/IntelliJ
 -> Loki
 -> Grafana Explore
 
+file-service / search-service host Maven/IntelliJ
+-> lab-code/logs/file-service.log / lab-code/logs/search-service.log
+-> Grafana Alloy file source
+-> Loki
+-> Grafana Explore
+
 Docker infra/tools
 -> Docker stdout logs
 -> Grafana Alloy Docker source
@@ -107,7 +113,7 @@ Request logging hiện đã có `X-Request-Id`/MDC. Khi log vào Loki, demo có 
 2. copy requestId từ UI;
 3. vào Grafana Explore;
 4. tìm requestId để thấy log backend;
-5. thấy `tenant-demo`, `audit-log-service`, Kong và web UI logs trong cùng Grafana Explore nếu Java services chạy bằng `make app-run-logs` / `make audit-log-run-logs`.
+5. thấy `tenant-demo`, `audit-log-service`, `file-service`, `search-service`, Kong và web UI logs trong cùng Grafana Explore nếu Java services chạy bằng các target `*-run-logs`.
 
 ## 7. Local lab direction
 

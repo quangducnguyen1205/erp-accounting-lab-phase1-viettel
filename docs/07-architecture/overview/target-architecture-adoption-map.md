@@ -38,7 +38,7 @@ Spring Boot tenant-demo
 -> React Web UI demo Docker-first
 ```
 
-Sau feedback mentor ngày 11/06/2026, Phase 1.5 sẽ đưa demo gần target hơn bằng Loki log aggregation, Kafka UI, Kong Gateway và một service split nhỏ (`audit-log-service`).
+Sau feedback mentor ngày 11/06/2026, Phase 1.5 đưa demo gần target hơn bằng Loki log aggregation, Kafka UI, Kong Gateway và các service split nhỏ (`audit-log-service`, `file-service`, `search-service`).
 
 ## Adoption map theo công nghệ
 
@@ -51,14 +51,14 @@ Sau feedback mentor ngày 11/06/2026, Phase 1.5 sẽ đưa demo gần target hơ
 | Spring Boot backend services | Business APIs, Resource Server, tenant-aware service/repository. | Core demo hiện tại. | Thêm service khi có domain slice mới. | `tenant-demo` đã có API nhỏ. | Biến demo thành ERP thật quá sớm. |
 | PostgreSQL shared-table | Lưu business data nhiều tenant trong shared table có `tenant_id`. | Core nền tảng. | Query plan, leakage, transaction, migration. | Đã học SQL/Flyway/ACID/index pattern. | Chỉ thêm index mà không hiểu query pattern/locking. |
 | PostgreSQL service databases | Mỗi service có DB/schema riêng trong target. | Khi học service boundary hoặc DDD. | So sánh shared table demo với service DB concept. | Awareness. | Tách DB thật khi chưa có nhiều service sẽ phức tạp. |
-| Elasticsearch/search | Search text, indexing, query search service. | Đã học sau PostgreSQL query-pattern. | Index `master_data`, search keyword, tenant filter trong query. | Mini-lab verified. | Làm Elastic thành production search platform quá sớm. |
+| Elasticsearch/search | Search text, indexing, query search service. | Đã học sau PostgreSQL query-pattern, nay dùng trong Phase 1.5 product search. | `search-service` consume `MasterDataChangedEvent`, update Elasticsearch, expose tenant-aware search qua Kong. | Search-service projection implemented. | Làm Elastic thành production search platform quá sớm. |
 | MinIO object storage | Lưu file qua S3 API: hóa đơn, chứng từ, attachment. | Đã học storage slice sau search. | Upload/download file, store metadata tenant-aware. | Mini-lab verified; advanced object management optional later. | File security/ACL/presigned URL phức tạp nếu làm sâu. |
 | Redis cache | Cache dữ liệu/config/feature flags, giảm load DB. | Đã học sau MinIO. | Tenant-safe cache key: `tenant:{id}:...`, cache-aside by code. | Mini-lab verified. | Cache leakage nếu key thiếu tenant; cache trước khi có bottleneck. |
 | Kafka async messaging | Event/message giữa services, decouple async workflow. | Đã học sau cache/storage. | Publish `MasterDataChangedEvent`, consumer log. | Mini-lab verified. | Chạy Kafka chỉ để “có Kafka” rất nặng. |
 | Kafka UI | Inspect topic/message/consumer group/lag. | Phase 1.5, trước khi tách service để debug Kafka rõ hơn. | Mở topic `master-data-events`, xem key/value và consumer group. | Local lab implemented. | Nhầm Kafka UI với monitoring/alerting production. |
 | Loki/log aggregation | Centralized logs cho nhiều service. | Phase 1.5, trước khi có nhiều service/log terminal. | Tìm log theo service/container/requestId text trong Grafana Explore. | Local lab implemented với Loki + Grafana + Alloy. | Dùng high-cardinality labels hoặc log token/body. |
 | Kong Gateway | Gateway platform gần target architecture hơn Spring Cloud Gateway lab. | Phase 1.5 sau khi đã hiểu gateway concept. | DB-less route `/api/master-data/**` và `/api/audit-events/**`. | Local lab implemented. | Đưa business logic hoặc expose Admin API public. |
-| Microservice boundary split | Tách responsibility/service ownership rõ ràng. | Phase 1.5 khi cần Kafka cross-service và nhiều service logs. | Thêm `audit-log-service` consume `MasterDataChangedEvent`. | First split verified with cross-service E2E. | Split artificial hoặc tạo domain mới quá phức tạp. |
+| Microservice boundary split | Tách responsibility/service ownership rõ ràng. | Phase 1.5 khi cần Kafka cross-service và nhiều service logs. | Thêm `audit-log-service`, `file-service`, `search-service` với API/log/runtime riêng. | Split services implemented incrementally. | Split artificial hoặc tạo domain mới quá phức tạp. |
 | Debezium CDC | Đồng bộ thay đổi DB sang Kafka/search/reporting. | Sau khi hiểu Kafka và search. | Awareness diagram hoặc read-only CDC note. | Later awareness. | Setup CDC phức tạp, dễ lệch Phase 1. |
 | gRPC internal communication | Giao tiếp service-to-service typed/efficient. | Khi so sánh REST vs internal RPC. | Chỉ note/diagram, chưa cần code. | Awareness. | Thêm IDL/protobuf khi chỉ có một service. |
 | Realtime: SignalR/WebSocket/SSE/long polling | Notification/live updates tới frontend. | Khi có notification/progress update feature. | Compare SSE vs WebSocket ở mức note. | Chưa làm. | Realtime infra dễ phình scope. |
@@ -78,7 +78,7 @@ Sau feedback mentor ngày 11/06/2026, Phase 1.5 sẽ đưa demo gần target hơ
 | `DataLeakageTest` | Regression guard chống leakage | Implemented | `make app-test` pass với tenant isolation cases. |
 | `lab-code/keycloak-lab` | Authorization Server/OIDC mini-lab | Mini-labbed + persistent local setup | Keycloak issue token, `tenant_id` claim, issuer/JWKS; PostgreSQL volume + bootstrap script for demo reproducibility. |
 | `APP_AUTH_MODE=keycloak` | Resource Server validate Keycloak token | Verified | Keycloak token gọi API tenant-aware thành công. |
-| `com.viettel.demo.search` | Elasticsearch search projection | Verified | Reindex/search `master_data`, query luôn filter tenantId. |
+| `lab-code/search-service` | Elasticsearch search projection service | Phase 1.5 split | Consume `MasterDataChangedEvent`, update `master_data_search`, expose `/api/search/master-data` tenant-aware through Kong. |
 | `lab-code/file-service` / `com.viettel.files.file` | Object storage + metadata source of truth | Phase 1.5 split | Upload/download qua Kong -> file-service, metadata PostgreSQL tenant-aware, object trong MinIO. |
 | `com.viettel.demo.cache` | Redis cache-aside | Verified | Read-by-code miss -> DB -> TTL -> hit, key có tenantId. |
 | `com.viettel.demo.messaging` | Kafka async event propagation | Verified | Publish/consume `MasterDataChangedEvent`, event có tenantId và tenant-aware key. |

@@ -28,7 +28,7 @@ Demo script cuối Phase 1: [../99-tong-ket/phase1-final-demo-script.md](../99-t
 | Nhóm | Trạng thái | Doc bắt đầu |
 |---|---|---|
 | Overview | Done | [overview/target-architecture-adoption-map.md](overview/target-architecture-adoption-map.md) |
-| Elasticsearch/search | Done | [search-elasticsearch/elasticsearch-search-service.md](search-elasticsearch/elasticsearch-search-service.md) |
+| Elasticsearch/search | Phase 1.5 search-service projection implemented | [search-elasticsearch/search-service-split-plan.md](search-elasticsearch/search-service-split-plan.md), [search-elasticsearch/cross-service-search-projection.md](search-elasticsearch/cross-service-search-projection.md) |
 | MinIO/object storage | Phase 1.5 file-service split implemented; advanced lifecycle/versioning optional later | [object-storage-minio/minio-object-storage.md](object-storage-minio/minio-object-storage.md), [object-storage-minio/file-service-code-walkthrough.md](object-storage-minio/file-service-code-walkthrough.md) |
 | Redis/cache | Done | [cache-redis/redis-cache-strategy.md](cache-redis/redis-cache-strategy.md) |
 | Kafka/messaging | Done | [messaging-kafka/kafka-async-messaging.md](messaging-kafka/kafka-async-messaging.md) |
@@ -39,7 +39,7 @@ Demo script cuối Phase 1: [../99-tong-ket/phase1-final-demo-script.md](../99-t
 | Kafka UI | Phase 1.5 local lab implemented | [kafka-ui/kafka-ui-foundation.md](kafka-ui/kafka-ui-foundation.md), [kafka-ui/kafka-ui-local-lab-config-walkthrough.md](kafka-ui/kafka-ui-local-lab-config-walkthrough.md) |
 | Kong Gateway | Phase 1.5 local lab implemented | [kong-gateway/kong-gateway-foundation.md](kong-gateway/kong-gateway-foundation.md), [kong-gateway/kong-local-lab-config-walkthrough.md](kong-gateway/kong-local-lab-config-walkthrough.md) |
 | Security shared module | Phase 1.5 refactor: Keycloak remains Auth Service, duplicated resource-server plumbing extracted | [security/keycloak-vs-auth-service.md](security/keycloak-vs-auth-service.md), [security/common-security-code-walkthrough.md](security/common-security-code-walkthrough.md) |
-| Microservice boundaries | Phase 1.5 split services implemented for audit log and file upload/download | [microservice-boundaries/audit-log-service-split-plan.md](microservice-boundaries/audit-log-service-split-plan.md), [object-storage-minio/file-service-split-plan.md](object-storage-minio/file-service-split-plan.md) |
+| Microservice boundaries | Phase 1.5 split services implemented for audit log, file upload/download and search projection | [microservice-boundaries/audit-log-service-split-plan.md](microservice-boundaries/audit-log-service-split-plan.md), [object-storage-minio/file-service-split-plan.md](object-storage-minio/file-service-split-plan.md), [search-elasticsearch/search-service-split-plan.md](search-elasticsearch/search-service-split-plan.md) |
 | Awareness/later | Planned | [awareness/README.md](awareness/README.md) |
 
 ## Source-of-truth Pattern Cho Mỗi Công Nghệ

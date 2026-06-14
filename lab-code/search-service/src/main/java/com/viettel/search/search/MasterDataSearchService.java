@@ -1,7 +1,6 @@
-package com.viettel.demo.search;
+package com.viettel.search.search;
 
 import com.viettel.common.security.TenantContext;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -31,7 +30,6 @@ import java.util.List;
  * ==============================================================
  */
 @Service
-@ConditionalOnProperty(prefix = "app.search", name = "enabled", havingValue = "true")
 public class MasterDataSearchService {
 
     private final MasterDataSearchGateway gateway;

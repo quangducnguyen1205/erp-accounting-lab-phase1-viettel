@@ -1,5 +1,7 @@
 # Elasticsearch design patterns trong Spring Boot mini-lab
 
+> Ghi chú Phase 1.5: các pattern này được học ban đầu trong `tenant-demo`. Runtime hiện tại đã tách projection sang `lab-code/search-service`; xem [search-service-split-plan.md](./search-service-split-plan.md) cho service boundary đang dùng.
+
 ## Vai trò của file này
 
 File này giải thích **vì sao code search được tách thành nhiều class** thay vì gọi Elasticsearch trực tiếp từ controller/service.

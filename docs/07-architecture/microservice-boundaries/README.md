@@ -9,12 +9,15 @@ Nhóm này chuẩn bị quyết định service split cho Phase 1.5. Mục tiêu
 1. [phase1-service-split-options.md](phase1-service-split-options.md) - phân tích các option split và khuyến nghị `audit-log-service`.
 2. [audit-log-service-split-plan.md](audit-log-service-split-plan.md) - boundary, ownership, tenant isolation và done criteria cho service split đầu tiên.
 3. [audit-log-service-code-walkthrough.md](audit-log-service-code-walkthrough.md) - giải thích code/config/runtime flow của `lab-code/audit-log-service`.
+4. [../object-storage-minio/file-service-split-plan.md](../object-storage-minio/file-service-split-plan.md) - boundary cho file upload/download qua MinIO.
+5. [../search-elasticsearch/search-service-split-plan.md](../search-elasticsearch/search-service-split-plan.md) - boundary cho Elasticsearch projection service.
 
 ## Trạng thái
 
 - `audit-log-service` đã được thêm làm service split đầu tiên.
 - Service consume `MasterDataChangedEvent`, lưu audit vào schema riêng và expose read-only API tenant-aware.
-- Hướng tiếp theo: verify cross-service Kafka flow end-to-end rồi polish React Web UI.
+- `file-service` đã tách upload/download file tenant-aware khỏi `tenant-demo`.
+- `search-service` đã tách Elasticsearch projection khỏi `tenant-demo`.
 
 ## Caveat
 

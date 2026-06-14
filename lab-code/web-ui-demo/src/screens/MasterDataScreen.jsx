@@ -13,6 +13,11 @@ export function MasterDataScreen({
   setLookupCode,
   lookupResult,
   onLookup,
+  searchKeyword,
+  setSearchKeyword,
+  searchResults,
+  searchLoaded,
+  onBackendSearch,
   form,
   setForm,
   onCreate,
@@ -87,7 +92,14 @@ export function MasterDataScreen({
     { key: 'code', label: 'Mã', render: (row) => <code>{row.code}</code> },
     { key: 'name', label: 'Tên' },
     { key: 'category', label: 'Loại', render: (row) => row.category ?? row.type ?? '(không trả về)' },
-    { key: 'isActive', label: 'Trạng thái', render: (row) => <Badge tone={row.isActive ? 'success' : 'warning'}>{row.isActive ? 'Đang hoạt động' : 'Tạm ngưng'}</Badge> },
+    {
+      key: 'isActive',
+      label: 'Trạng thái',
+      render: (row) => {
+        const active = row.isActive ?? row.active ?? false;
+        return <Badge tone={active ? 'success' : 'warning'}>{active ? 'Đang hoạt động' : 'Tạm ngưng'}</Badge>;
+      }
+    },
     { key: 'updatedAt', label: 'Cập nhật', render: (row) => row.updatedAt ?? row.createdAt ?? '(không trả về)' },
     {
       key: 'actions',
@@ -195,6 +207,35 @@ export function MasterDataScreen({
           </dl>
         ) : (
           <EmptyState title="Chưa tìm kiếm">Cache behavior được kiểm chứng qua log/metric backend, không hiển thị bằng badge giả trong UI.</EmptyState>
+        )}
+      </section>
+
+      <section className="panel panel-span-2">
+        <div className="panel-heading">
+          <div>
+            <h3>Tìm kiếm nâng cao</h3>
+            <p>Tìm qua search-service và Elasticsearch projection. Kết quả có thể trễ vài giây sau khi tạo/sửa bản ghi.</p>
+          </div>
+          <Badge tone="teal">Search</Badge>
+        </div>
+        <form className="inline-form" onSubmit={onBackendSearch}>
+          <label>
+            Từ khóa
+            <input value={searchKeyword} onChange={(event) => setSearchKeyword(event.target.value)} placeholder="Nhập mã, tên hoặc loại" required />
+          </label>
+          <button type="submit" disabled={disabled || loading}>{loading ? 'Đang tìm...' : 'Tìm kiếm'}</button>
+        </form>
+        {searchLoaded ? (
+          <DataTable
+            columns={columns.filter((column) => column.key !== 'actions')}
+            rows={searchResults}
+            emptyTitle="Không có kết quả"
+            emptyMessage="Nếu vừa tạo/sửa bản ghi, chờ Kafka và search-service index xong rồi thử lại."
+          />
+        ) : (
+          <EmptyState title="Chưa tìm kiếm bằng backend">
+            Tìm kiếm này đi qua Kong tới search-service; UI không gọi Elasticsearch trực tiếp.
+          </EmptyState>
         )}
       </section>
 
