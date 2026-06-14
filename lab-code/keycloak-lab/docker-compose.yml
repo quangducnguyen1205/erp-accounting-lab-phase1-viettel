@@ -32,6 +32,8 @@ services:
       KC_METRICS_ENABLED: "true"
     ports:
       - "18080:8080"
+    volumes:
+      - ./themes/master-data-portal:/opt/keycloak/themes/master-data-portal:ro
     depends_on:
       keycloak-postgres:
         condition: service_healthy

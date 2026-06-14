@@ -17,8 +17,8 @@
 | **Tổng task** | 111 |
 | **Đã hoàn thành** | 110 / 111 |
 | **Focus hiện tại** | Phase 1.5 - hoàn thiện `Master Data Portal` theo hướng product app + service split có kiểm soát |
-| **Milestone tiếp theo** | Search projection service -> Keycloak theme -> final demo polish |
-| **Demo hiện tại** | React Web UI -> Keycloak -> Kong -> tenant-demo / audit-log-service / file-service -> PostgreSQL/Redis/Kafka/MinIO/Observability; Elasticsearch search projection là bước kế tiếp |
+| **Milestone tiếp theo** | Final demo polish |
+| **Demo hiện tại** | React Web UI -> themed Keycloak -> Kong -> tenant-demo / audit-log-service / file-service / search-service -> PostgreSQL/Redis/Kafka/MinIO/Elasticsearch/Observability |
 
 Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; Milestone #14 đã chốt Redis cache-aside tenant-safe read path; Milestone #15 đã chốt Kafka/async messaging reference flow nhỏ; Milestone #16 đã chốt Observability baseline với Actuator, request logging, Micrometer metrics và Prometheus/Grafana local lab. Milestone #17 đã chốt API Gateway static route và React Web UI Docker-first để nhìn flow end-to-end. React Native/Expo không thuộc repo này.
 

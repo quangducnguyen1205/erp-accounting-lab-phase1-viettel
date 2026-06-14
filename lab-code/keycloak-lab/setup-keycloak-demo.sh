@@ -11,6 +11,7 @@ API_CLIENT="${KEYCLOAK_API_CLIENT_ID:-tenant-demo-api-client}"
 WEB_CLIENT="${KEYCLOAK_WEB_CLIENT_ID:-tenant-demo-web}"
 WEB_REDIRECT_URI="${KEYCLOAK_WEB_REDIRECT_URI:-http://localhost:5173/*}"
 WEB_ORIGIN="${KEYCLOAK_WEB_ORIGIN:-http://localhost:5173}"
+LOGIN_THEME="${KEYCLOAK_LOGIN_THEME:-master-data-portal}"
 
 KC="/opt/keycloak/bin/kcadm.sh"
 
@@ -59,6 +60,11 @@ ensure_realm() {
     log "Creating realm: $REALM"
     run_kcadm create realms -s "realm=$REALM" -s enabled=true
   fi
+}
+
+configure_login_theme() {
+  log "Configuring login theme: $LOGIN_THEME"
+  run_kcadm update "realms/$REALM" -s "loginTheme=$LOGIN_THEME"
 }
 
 ensure_realm_role() {
@@ -271,6 +277,7 @@ JSON
 main() {
   wait_for_keycloak
   ensure_realm
+  configure_login_theme
   configure_user_profile
 
   local api_client_uuid
@@ -294,6 +301,7 @@ main() {
   echo "Realm: $REALM"
   echo "API client: $API_CLIENT"
   echo "Web client: $WEB_CLIENT"
+  echo "Login theme: $LOGIN_THEME"
   echo "Users: tenant1-user/password, tenant2-user/password"
 }
 

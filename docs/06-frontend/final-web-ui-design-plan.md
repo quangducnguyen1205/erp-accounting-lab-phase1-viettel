@@ -232,7 +232,7 @@ The API base URL belongs here rather than on the business dashboard.
 
 ## Keycloak Login Theme Concept
 
-The Keycloak login page is separate from the React UI and remains future work.
+The Keycloak login page is separate from the React UI. It is now implemented as the local Keycloak theme `master-data-portal`.
 
 Brand:
 

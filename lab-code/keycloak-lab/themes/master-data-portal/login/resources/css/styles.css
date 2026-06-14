@@ -1,0 +1,259 @@
+:root {
+  --mdp-ink: #0f172a;
+  --mdp-muted: #64748b;
+  --mdp-canvas: #f5f7fb;
+  --mdp-surface: #ffffff;
+  --mdp-border: #d8e0e8;
+  --mdp-primary: #2563eb;
+  --mdp-indigo: #4f46e5;
+  --mdp-teal: #0891b2;
+  --mdp-danger: #dc2626;
+  --mdp-radius: 12px;
+}
+
+body {
+  background: var(--mdp-canvas);
+  color: var(--mdp-ink);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+#kc-header,
+#kc-header-wrapper {
+  display: none;
+}
+
+.login-pf-page {
+  background: var(--mdp-canvas);
+  min-height: 100vh;
+  padding: 40px;
+}
+
+.card-pf {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  max-width: 1100px;
+  width: 100%;
+}
+
+.mdp-login-shell {
+  background: var(--mdp-surface);
+  border: 1px solid var(--mdp-border);
+  border-radius: 18px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+  display: grid;
+  grid-template-columns: minmax(320px, 0.95fr) minmax(360px, 1.05fr);
+  min-height: 620px;
+  overflow: hidden;
+}
+
+.mdp-brand-panel {
+  background: linear-gradient(145deg, #0f172a 0%, #1d4ed8 55%, #0891b2 100%);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 56px;
+}
+
+.mdp-brand-mark {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 800;
+  height: 48px;
+  justify-content: center;
+  letter-spacing: 0.04em;
+  margin-bottom: 28px;
+  width: 48px;
+}
+
+.mdp-brand-panel h1 {
+  color: #ffffff;
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 1.08;
+  margin: 0 0 16px;
+}
+
+.mdp-subtitle {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 18px;
+  line-height: 1.55;
+  margin: 0 0 32px;
+}
+
+.mdp-flow {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 32px;
+}
+
+.mdp-flow span {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  color: #ffffff;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 13px;
+  width: fit-content;
+}
+
+.mdp-note {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 360px;
+}
+
+.mdp-form-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 56px;
+}
+
+.mdp-form-heading {
+  margin-bottom: 28px;
+}
+
+.mdp-eyebrow {
+  color: var(--mdp-teal);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin: 0 0 10px;
+  text-transform: uppercase;
+}
+
+.mdp-form-heading h2 {
+  color: var(--mdp-ink);
+  font-size: 30px;
+  font-weight: 800;
+  margin: 0 0 8px;
+}
+
+.mdp-form-heading p {
+  color: var(--mdp-muted);
+  font-size: 15px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.mdp-field {
+  margin-bottom: 18px;
+}
+
+.mdp-field label,
+.mdp-field .control-label {
+  color: var(--mdp-ink);
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.mdp-field input,
+.mdp-field .form-control {
+  border: 1px solid var(--mdp-border);
+  border-radius: 10px;
+  box-shadow: none;
+  color: var(--mdp-ink);
+  font-size: 15px;
+  min-height: 44px;
+  padding: 10px 12px;
+}
+
+.mdp-field input:focus,
+.mdp-field .form-control:focus {
+  border-color: var(--mdp-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.mdp-submit,
+#kc-login {
+  background: var(--mdp-primary);
+  border: 0;
+  border-radius: 10px;
+  font-weight: 800;
+  min-height: 46px;
+}
+
+.mdp-submit:hover,
+#kc-login:hover {
+  background: var(--mdp-indigo);
+}
+
+.mdp-alert,
+.mdp-field-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  color: var(--mdp-danger);
+  font-size: 14px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+}
+
+.mdp-demo-accounts {
+  background: #f8fafc;
+  border: 1px solid var(--mdp-border);
+  border-radius: var(--mdp-radius);
+  margin-top: 28px;
+  padding: 16px;
+}
+
+.mdp-demo-accounts div {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 7px 0;
+}
+
+.mdp-demo-accounts strong {
+  color: var(--mdp-ink);
+  font-size: 13px;
+}
+
+.mdp-demo-accounts span {
+  background: #dbeafe;
+  border-radius: 999px;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 9px;
+}
+
+.mdp-demo-accounts p {
+  border-top: 1px solid var(--mdp-border);
+  color: var(--mdp-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 10px 0 0;
+  padding-top: 12px;
+}
+
+@media (max-width: 860px) {
+  .login-pf-page {
+    padding: 18px;
+  }
+
+  .mdp-login-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .mdp-brand-panel,
+  .mdp-form-panel {
+    padding: 32px;
+  }
+
+  .mdp-brand-panel h1 {
+    font-size: 32px;
+  }
+}

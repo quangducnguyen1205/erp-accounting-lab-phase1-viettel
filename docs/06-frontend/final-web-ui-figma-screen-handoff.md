@@ -201,7 +201,7 @@ The demo script can explain:
 
 ### Keycloak Theme Is Separate From React UI
 
-Future theme path:
+Implemented theme path:
 
 ```text
 lab-code/keycloak-lab/themes/master-data-portal/login/theme.properties
@@ -209,7 +209,7 @@ lab-code/keycloak-lab/themes/master-data-portal/login/login.ftl
 lab-code/keycloak-lab/themes/master-data-portal/login/resources/css/styles.css
 ```
 
-Do not change auth logic when implementing the theme.
+The implemented theme changes presentation only; it does not change auth logic.
 
 ## Implementation Mapping
 
@@ -266,7 +266,7 @@ The React coding pass now implements the product redesign:
 4. Gateway/API settings moved into Account.
 5. requestId/status/error handling remains.
 6. Kong remains the default API path.
-7. Keycloak theme remains future work.
+7. Keycloak theme is implemented separately under `lab-code/keycloak-lab/themes/master-data-portal/`.
 
 ## Future Work
 

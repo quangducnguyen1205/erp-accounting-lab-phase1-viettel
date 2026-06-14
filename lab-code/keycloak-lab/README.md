@@ -81,15 +81,25 @@ tạo/cập nhật:
   - `tenant1-user / password`, `tenant_id=1`, role `ACCOUNTANT`;
   - `tenant2-user / password`, `tenant_id=2`, role `VIEWER`;
 - User Profile attribute `tenant_id` cho Keycloak 26.x;
-- protocol mapper `tenant_id` cho access token.
+- protocol mapper `tenant_id` cho access token;
+- realm login theme `master-data-portal`.
 
 Script dùng `kcadm.sh` bên trong container Keycloak. Re-run được ở mức local lab, không phải production config migration tool.
+
+Theme local nằm ở:
+
+```text
+lab-code/keycloak-lab/themes/master-data-portal/
+```
+
+Docker Compose mount theme này vào container Keycloak. Theme chỉ đổi giao diện login, không đổi auth logic, client, redirect URI, roles hoặc token claims.
 
 Doc chi tiết:
 
 ```text
 docs/07-architecture/overview/keycloak-local-persistence-and-bootstrap.md
 docs/07-architecture/overview/keycloak-lab-config-walkthrough.md
+docs/07-architecture/security/keycloak-custom-login-theme-walkthrough.md
 ```
 
 ## Thiết lập thủ công trong Admin Console nếu cần hiểu UI
