@@ -17,7 +17,7 @@ Nếu chưa biết repo, đọc theo thứ tự:
 1. [tong-quan-phase-1.md](tong-quan-phase-1.md)
 2. [../README.md](../README.md)
 3. [../../README.md](../../README.md)
-4. [../99-tong-ket/phase1-final-demo-script.md](../99-tong-ket/phase1-final-demo-script.md)
+4. [../99-tong-ket/final-production-like-demo-script.md](../99-tong-ket/final-production-like-demo-script.md)
 
 Sau đó mới đi vào từng nhóm công nghệ bên dưới.
 
@@ -133,10 +133,13 @@ Sau đó mới đi vào từng nhóm công nghệ bên dưới.
 ## Đọc gì trước khi chạy demo?
 
 1. File này.
-2. [../99-tong-ket/phase1-final-demo-script.md](../99-tong-ket/phase1-final-demo-script.md)
-3. [../../lab-code/README.md](../../lab-code/README.md)
-4. [../../lab-code/README-http-client.md](../../lab-code/README-http-client.md)
-5. [../07-architecture/log-aggregation-loki/how-to-read-logs-in-grafana.md](../07-architecture/log-aggregation-loki/how-to-read-logs-in-grafana.md)
+2. [../99-tong-ket/final-production-like-demo-script.md](../99-tong-ket/final-production-like-demo-script.md)
+3. [../99-tong-ket/final-demo-evidence-checklist.md](../99-tong-ket/final-demo-evidence-checklist.md)
+4. [../99-tong-ket/final-demo-operational-qna.md](../99-tong-ket/final-demo-operational-qna.md)
+5. [../99-tong-ket/final-demo-rehearsal-transcript.md](../99-tong-ket/final-demo-rehearsal-transcript.md)
+6. [../../lab-code/README.md](../../lab-code/README.md)
+7. [../../lab-code/README-http-client.md](../../lab-code/README-http-client.md)
+8. [../07-architecture/log-aggregation-loki/how-to-read-logs-in-grafana.md](../07-architecture/log-aggregation-loki/how-to-read-logs-in-grafana.md)
 
 ## Legacy learning labs
 

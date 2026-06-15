@@ -767,7 +767,10 @@ Trạng thái: đã đóng ở mức Phase 1. Mini-lab dùng Spring Cloud Gatewa
 - `lab-code/gateway-demo/`: Spring Cloud Gateway app nhỏ chạy ở `8081`, route `/api/**` sang `tenant-demo` ở `8080`.
 - `docs/06-frontend/react-web-keycloak-gateway-demo.md`: hướng React Web UI mỏng, không dùng React Native/Expo.
 - `lab-code/web-ui-demo/`: Vite React app nhỏ chạy Docker-first, dùng `keycloak-js`, gọi Gateway bằng Bearer token và `X-Request-Id`.
-- `docs/99-tong-ket/phase1-final-demo-script.md`: script demo cuối Phase 1.
+- `docs/99-tong-ket/final-production-like-demo-script.md`: script demo canonical cuối Phase 1 / Phase 1.5.
+- `docs/99-tong-ket/final-demo-evidence-checklist.md`: checklist bằng chứng khi chạy demo.
+- `docs/99-tong-ket/final-demo-operational-qna.md`: Q&A vận hành cho câu hỏi latency, concurrency, lag, search, cache, file.
+- `docs/99-tong-ket/final-demo-rehearsal-transcript.md`: transcript rehearsal để tập nói trước buổi demo.
 
 ### Ý chính cần nhớ
 

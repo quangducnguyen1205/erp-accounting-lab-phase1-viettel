@@ -142,7 +142,10 @@ Nếu demo phát triển thành một project thật sự lớn, nên tách sang
 - `docs/README.md`: index tài liệu.
 - `docs/00-gioi-thieu/lo-trinh-doc-cuoi-phase-1.md`: tuyến đọc cuối từ foundation đến final demo.
 - `ROADMAP.md`: tiến độ và kế hoạch học.
-- `docs/99-tong-ket/phase1-final-demo-script.md`: demo script cuối Phase 1 cho UI/Gateway/backend/integrations.
+- `docs/99-tong-ket/final-production-like-demo-script.md`: kịch bản demo canonical cuối Phase 1 / Phase 1.5.
+- `docs/99-tong-ket/final-demo-evidence-checklist.md`: checklist bằng chứng khi chạy demo.
+- `docs/99-tong-ket/final-demo-operational-qna.md`: ghi chú Q&A vận hành, latency, concurrency, Kafka lag, cache, search và file.
+- `docs/99-tong-ket/final-demo-rehearsal-transcript.md`: transcript rehearsal để tập nói trước buổi demo.
 - `docs/99-tong-ket/phase1-5-production-like-demo-plan.md`: kế hoạch Phase 1.5 sau feedback mentor 11/06.
 - `presentation-notes/demo-script-keycloak-tenant-flow.md`: demo script backend Keycloak cũ, vẫn hữu ích nếu chỉ muốn trình bày auth flow.
 

@@ -155,6 +155,15 @@ Xem:
 
 Không commit local IntelliJ env thật hoặc token thật.
 
+## Tài liệu demo liên quan
+
+Khi cần rehearsal hoặc demo trước mentor, đọc:
+
+- [../docs/99-tong-ket/final-production-like-demo-script.md](../docs/99-tong-ket/final-production-like-demo-script.md)
+- [../docs/99-tong-ket/final-demo-evidence-checklist.md](../docs/99-tong-ket/final-demo-evidence-checklist.md)
+- [../docs/99-tong-ket/final-demo-operational-qna.md](../docs/99-tong-ket/final-demo-operational-qna.md)
+- [../docs/99-tong-ket/final-demo-rehearsal-transcript.md](../docs/99-tong-ket/final-demo-rehearsal-transcript.md)
+
 ## Nguyên tắc học code
 
 1. Tự đọc docs và tự chạy lab trước.

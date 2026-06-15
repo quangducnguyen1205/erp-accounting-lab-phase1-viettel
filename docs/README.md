@@ -18,7 +18,7 @@ Nếu chỉ có thời gian đọc một đường duy nhất, bắt đầu từ
 6. [05-security/](05-security/) - JWT, Spring Security Resource Server, Keycloak/OIDC/RBAC.
 7. [07-architecture/](07-architecture/) - gateway, service boundary, Kafka, MinIO, Elasticsearch, Redis, observability.
 8. [06-frontend/](06-frontend/) - React Web UI demo `Master Data Portal`.
-9. [99-tong-ket/](99-tong-ket/) - summary, final demo script, production-like caveat.
+9. [99-tong-ket/](99-tong-ket/) - tổng kết, demo script cuối và giới hạn production-like.
 
 ## Nội dung cốt lõi và nội dung mở rộng
 
@@ -50,7 +50,13 @@ Chuẩn viết theory doc chi tiết:
 [99-tong-ket/theory-doc-writing-standard.md](99-tong-ket/theory-doc-writing-standard.md).
 
 Demo script cuối Phase 1.5:
-[99-tong-ket/phase1-final-demo-script.md](99-tong-ket/phase1-final-demo-script.md).
+[99-tong-ket/final-production-like-demo-script.md](99-tong-ket/final-production-like-demo-script.md).
+
+Tài liệu rehearsal và Q&A:
+
+- [99-tong-ket/final-demo-evidence-checklist.md](99-tong-ket/final-demo-evidence-checklist.md)
+- [99-tong-ket/final-demo-operational-qna.md](99-tong-ket/final-demo-operational-qna.md)
+- [99-tong-ket/final-demo-rehearsal-transcript.md](99-tong-ket/final-demo-rehearsal-transcript.md)
 
 Plan Phase 1.5:
 [99-tong-ket/phase1-5-production-like-demo-plan.md](99-tong-ket/phase1-5-production-like-demo-plan.md).

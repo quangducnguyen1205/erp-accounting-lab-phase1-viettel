@@ -22,7 +22,7 @@ Thư mục này nối các mini-lab trong repo với target architecture rộng 
 14. [awareness/](awareness/) - các chủ đề target architecture chưa implement trong Phase 1.
 
 Demo script cuối Phase 1.5:
-[../99-tong-ket/phase1-final-demo-script.md](../99-tong-ket/phase1-final-demo-script.md).
+[../99-tong-ket/final-production-like-demo-script.md](../99-tong-ket/final-production-like-demo-script.md).
 
 ## Trạng thái Phase 1.5
 
