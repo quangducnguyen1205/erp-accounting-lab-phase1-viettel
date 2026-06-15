@@ -221,7 +221,7 @@ Automated test có thể để sau vì Elasticsearch container làm test nặng 
 - Đánh giá search consistency như PostgreSQL transaction.
 - Thêm Kafka/Debezium/analyzer phức tạp trước khi search flow cơ bản chạy.
 
-## Done criteria cho code mini-lab
+## Tiêu chí hoàn thành cho code mini-lab
 
 - App vẫn chạy/test bình thường khi `APP_SEARCH_ENABLED=false`.
 - Elasticsearch local chạy được bằng `make -f Makefile.legacy elastic-up`.

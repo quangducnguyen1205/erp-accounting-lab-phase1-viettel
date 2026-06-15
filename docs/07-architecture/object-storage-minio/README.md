@@ -1,10 +1,10 @@
 # MinIO / S3 Object Storage
 
-## Folder này chứa gì?
+## Thư mục này chứa gì?
 
 Nhóm này giải thích object storage, S3-compatible API, MinIO local lab và cách backend lưu binary object riêng với metadata tenant-aware trong PostgreSQL.
 
-## Reading Order
+## Thứ tự đọc đề xuất
 
 1. [minio-object-storage.md](minio-object-storage.md) - foundation: bucket, object, key, metadata, private bucket.
 2. [minio-s3-api-shapes.md](minio-s3-api-shapes.md) - put/get/stat/delete/list/presigned request shapes.
@@ -19,6 +19,6 @@ Nhóm này giải thích object storage, S3-compatible API, MinIO local lab và 
 - Basic upload/download mini-lab đã đóng.
 - Advanced object management là optional/later, không chặn Redis/Kafka/Observability.
 
-## Caveat
+## Giới hạn hiện tại
 
 Client không được tự quyết object key. Backend phải authorize upload/download và metadata lookup phải tenant-aware.

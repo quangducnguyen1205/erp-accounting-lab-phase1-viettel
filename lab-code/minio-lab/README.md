@@ -2,7 +2,7 @@
 
 ## Mục tiêu
 
-Folder này chạy MinIO local để học object storage/S3-compatible API. Đây là lab cho Phase 1, không phải production deployment.
+Thư mục này chạy MinIO local để học object storage/S3-compatible API. Đây là lab cho Phase 1, không phải production deployment.
 
 Đọc trước:
 
@@ -33,7 +33,7 @@ Từ `lab-code/`:
 
 ```bash
 make -f Makefile.legacy minio-up
-make minio-status
+make -f Makefile.legacy minio-status
 make -f Makefile.legacy minio-down
 ```
 

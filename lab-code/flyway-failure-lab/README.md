@@ -22,7 +22,7 @@ Chạy PostgreSQL local:
 ```bash
 cd lab-code
 make -f Makefile.legacy db-up
-make db-status
+make -f Makefile.legacy db-status
 ```
 
 Lab này giả định database local theo Docker Compose hiện tại:
@@ -309,7 +309,7 @@ Kết luận đã verify:
 - Nếu đây là bảng shared-table nhiều tenant, migration fail có thể làm deploy/app startup fail và ảnh hưởng tất cả tenant dùng chung bảng.
 - Rollback plan tối thiểu cần có: backup/restore path, backward-compatible schema, cleanup/forward-fix plan, test trên local/staging và hiểu rõ lock/transaction behavior.
 
-## Done criteria
+## Tiêu chí hoàn thành
 
 Hoàn thành lab khi mình có thể giải thích ngắn:
 

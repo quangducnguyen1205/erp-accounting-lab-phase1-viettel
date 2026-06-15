@@ -1,54 +1,67 @@
-# Architecture Notes Index
+# Mục lục ghi chú kiến trúc
 
 ## Thư mục này chứa gì?
 
-Thư mục này nối các mini-lab trong repo với target architecture rộng hơn. Mỗi nhóm công nghệ có folder riêng để tránh việc `docs/07-architecture` bị phẳng quá nhiều file ngang hàng.
+Thư mục này nối các mini-lab trong repo với target architecture rộng hơn. Mỗi nhóm công nghệ có folder riêng để người đọc thấy rõ boundary: gateway, security, service split, messaging, object storage, search, cache và observability.
 
-## Reading Order Tổng Quan
+## Thứ tự đọc tổng quan
 
-1. [overview/](overview/) - bản đồ target architecture và cách Keycloak/OIDC map vào kiến trúc.
-2. [search-elasticsearch/](search-elasticsearch/) - Elasticsearch/search projection mini-lab.
-3. [object-storage-minio/](object-storage-minio/) - MinIO/S3 object storage mini-lab.
-4. [cache-redis/](cache-redis/) - Redis tenant-safe cache-aside mini-lab.
-5. [messaging-kafka/](messaging-kafka/) - Kafka/async messaging mini-lab.
-6. [observability/](observability/) - Actuator, request logging, Micrometer metrics, Prometheus/Grafana local lab.
-7. [api-gateway-service-discovery/](api-gateway-service-discovery/) - API Gateway static route mini-lab + service discovery/load balancing awareness.
-8. [log-aggregation-loki/](log-aggregation-loki/) - Phase 1.5 centralized logs bằng Loki/Grafana.
-9. [kafka-ui/](kafka-ui/) - Phase 1.5 Kafka topic/message/consumer inspection.
-10. [kong-gateway/](kong-gateway/) - Phase 1.5 Kong Gateway platform lab.
-11. [security/](security/) - Keycloak vs auth-service và shared `common-security` module.
-12. [microservice-boundaries/](microservice-boundaries/) - Phase 1.5 service split decision.
-13. [../06-frontend/](../06-frontend/) - React Web UI demo mỏng để trình bày end-to-end.
+1. [overview/](overview/) - bản đồ target architecture và cách các phần trong repo map vào kiến trúc.
+2. [security/](security/) - Keycloak là Auth Service/Identity Provider; `common-security` là shared code module.
+3. [kong-gateway/](kong-gateway/) - Kong Gateway DB-less trong final demo.
+4. [api-gateway-service-discovery/](api-gateway-service-discovery/) - Spring Cloud Gateway và service discovery là legacy/awareness lab.
+5. [microservice-boundaries/](microservice-boundaries/) - quyết định tách service trong Phase 1.5.
+6. [messaging-kafka/](messaging-kafka/) - Kafka event flow: `tenant-demo` produce, `audit-log-service` và `search-service` consume.
+7. [object-storage-minio/](object-storage-minio/) - `file-service`, MinIO object storage và PostgreSQL metadata.
+8. [search-elasticsearch/](search-elasticsearch/) - `search-service`, Elasticsearch projection và admin reindex.
+9. [cache-redis/](cache-redis/) - Redis cache-aside tenant-safe.
+10. [observability/](observability/) - Actuator, metrics, Prometheus/Grafana metrics lab.
+11. [log-aggregation-loki/](log-aggregation-loki/) - Loki/Grafana/Alloy centralized logs.
+12. [kafka-ui/](kafka-ui/) - inspect topic/message/consumer group.
+13. [../06-frontend/](../06-frontend/) - React Web UI `Master Data Portal`.
 14. [awareness/](awareness/) - các chủ đề target architecture chưa implement trong Phase 1.
 
-Demo script cuối Phase 1: [../99-tong-ket/phase1-final-demo-script.md](../99-tong-ket/phase1-final-demo-script.md).
+Demo script cuối Phase 1.5:
+[../99-tong-ket/phase1-final-demo-script.md](../99-tong-ket/phase1-final-demo-script.md).
 
-## Trạng Thái Phase 1
+## Trạng thái Phase 1.5
 
 | Nhóm | Trạng thái | Doc bắt đầu |
 |---|---|---|
-| Overview | Done | [overview/target-architecture-adoption-map.md](overview/target-architecture-adoption-map.md) |
-| Elasticsearch/search | Phase 1.5 search-service projection implemented | [search-elasticsearch/search-service-split-plan.md](search-elasticsearch/search-service-split-plan.md), [search-elasticsearch/cross-service-search-projection.md](search-elasticsearch/cross-service-search-projection.md) |
-| MinIO/object storage | Phase 1.5 file-service split implemented; advanced lifecycle/versioning optional later | [object-storage-minio/minio-object-storage.md](object-storage-minio/minio-object-storage.md), [object-storage-minio/file-service-code-walkthrough.md](object-storage-minio/file-service-code-walkthrough.md) |
-| Redis/cache | Done | [cache-redis/redis-cache-strategy.md](cache-redis/redis-cache-strategy.md) |
-| Kafka/messaging | Done | [messaging-kafka/kafka-async-messaging.md](messaging-kafka/kafka-async-messaging.md) |
-| Observability | Done at Phase 1 level | [observability/observability-foundation.md](observability/observability-foundation.md) |
-| API Gateway/service discovery | Done at Phase 1 level: static route verified, service discovery awareness only | [api-gateway-service-discovery/api-gateway-foundation.md](api-gateway-service-discovery/api-gateway-foundation.md) |
-| React Web UI | Done as thin final demo: Docker-first Keycloak/Gateway UI | [../06-frontend/react-web-keycloak-gateway-demo.md](../06-frontend/react-web-keycloak-gateway-demo.md) |
-| Loki/log aggregation | Phase 1.5 local lab implemented | [log-aggregation-loki/loki-foundation.md](log-aggregation-loki/loki-foundation.md), [log-aggregation-loki/loki-local-lab-config-walkthrough.md](log-aggregation-loki/loki-local-lab-config-walkthrough.md) |
-| Kafka UI | Phase 1.5 local lab implemented | [kafka-ui/kafka-ui-foundation.md](kafka-ui/kafka-ui-foundation.md), [kafka-ui/kafka-ui-local-lab-config-walkthrough.md](kafka-ui/kafka-ui-local-lab-config-walkthrough.md) |
-| Kong Gateway | Phase 1.5 local lab implemented | [kong-gateway/kong-gateway-foundation.md](kong-gateway/kong-gateway-foundation.md), [kong-gateway/kong-local-lab-config-walkthrough.md](kong-gateway/kong-local-lab-config-walkthrough.md) |
-| Security shared module | Phase 1.5 refactor: Keycloak remains Auth Service, duplicated resource-server plumbing extracted | [security/keycloak-vs-auth-service.md](security/keycloak-vs-auth-service.md), [security/common-security-code-walkthrough.md](security/common-security-code-walkthrough.md) |
-| Microservice boundaries | Phase 1.5 split services implemented for audit log, file upload/download and search projection | [microservice-boundaries/audit-log-service-split-plan.md](microservice-boundaries/audit-log-service-split-plan.md), [object-storage-minio/file-service-split-plan.md](object-storage-minio/file-service-split-plan.md), [search-elasticsearch/search-service-split-plan.md](search-elasticsearch/search-service-split-plan.md) |
-| Awareness/later | Planned | [awareness/README.md](awareness/README.md) |
+| Overview | Đã có bản đồ adoption | [overview/target-architecture-adoption-map.md](overview/target-architecture-adoption-map.md) |
+| Security shared module | Đã tách `common-security`; không tạo runtime auth-service tự viết | [security/keycloak-vs-auth-service.md](security/keycloak-vs-auth-service.md) |
+| Kong Gateway | Final demo dùng Kong DB-less | [kong-gateway/kong-gateway-foundation.md](kong-gateway/kong-gateway-foundation.md) |
+| Spring Cloud Gateway | Giữ làm legacy learning lab | [api-gateway-service-discovery/api-gateway-foundation.md](api-gateway-service-discovery/api-gateway-foundation.md) |
+| Microservice boundaries | Đã tách `audit-log-service`, `file-service`, `search-service` | [microservice-boundaries/README.md](microservice-boundaries/README.md) |
+| Kafka/messaging | `tenant-demo` là producer; audit/search là consumers | [messaging-kafka/cross-service-kafka-flow.md](messaging-kafka/cross-service-kafka-flow.md) |
+| MinIO/object storage | `file-service` upload/download tenant-aware | [object-storage-minio/file-service-code-walkthrough.md](object-storage-minio/file-service-code-walkthrough.md) |
+| Elasticsearch/search | `search-service` projection + admin reindex tenant-scoped | [search-elasticsearch/cross-service-search-projection.md](search-elasticsearch/cross-service-search-projection.md) |
+| Redis/cache | Cache-aside tenant-safe cho read path | [cache-redis/redis-cache-strategy.md](cache-redis/redis-cache-strategy.md) |
+| Observability metrics | Local metrics lab, không phải production monitoring | [observability/observability-foundation.md](observability/observability-foundation.md) |
+| Loki log aggregation | Alloy collect Docker stdout + host Java file logs | [log-aggregation-loki/loki-local-lab-config-walkthrough.md](log-aggregation-loki/loki-local-lab-config-walkthrough.md) |
+| Kafka UI | Inspect `master-data-events`, `audit-log-service`, `search-service` lag | [kafka-ui/kafka-ui-local-lab-config-walkthrough.md](kafka-ui/kafka-ui-local-lab-config-walkthrough.md) |
+| React Web UI | Business UI `Master Data Portal`, không phải architecture console | [../06-frontend/react-web-keycloak-gateway-demo.md](../06-frontend/react-web-keycloak-gateway-demo.md) |
+| Awareness/later | Debezium, gRPC, realtime, LLM/external integrations | [awareness/README.md](awareness/README.md) |
 
-## Source-of-truth Pattern Cho Mỗi Công Nghệ
+## Mẫu source of truth cho mỗi công nghệ
 
 - Concept/foundation doc: giải thích "là gì, vì sao dùng, khi nào không dùng".
 - Shape/config/API doc: giải thích request/response/config/error shape nếu công nghệ có protocol/API riêng.
-- Code guide doc: giải thích Spring Boot/package/config/service/test shape.
+- Code guide doc: giải thích Spring Boot package/config/service/test shape.
 - Config/code walkthrough doc: giải thích từng file config/code mới và runtime flow thực tế.
 - Lab README: chỉ giữ lệnh chạy local và cleanup.
 - Summary/report: ghi lại kết quả sau khi đã tự code/verify.
 
-Chuẩn chi tiết: [../99-tong-ket/theory-doc-writing-standard.md](../99-tong-ket/theory-doc-writing-standard.md).
+Chuẩn chi tiết:
+[../99-tong-ket/theory-doc-writing-standard.md](../99-tong-ket/theory-doc-writing-standard.md).
+
+## Giới hạn hiện tại
+
+Repo này là production-like local lab, chưa phải production platform:
+
+- chưa có outbox;
+- chưa có retry/DLT hoàn chỉnh;
+- chưa có schema registry;
+- chưa có Kubernetes/service discovery production;
+- chưa có HA/secrets/TLS production;
+- chưa có production file lifecycle/versioning.

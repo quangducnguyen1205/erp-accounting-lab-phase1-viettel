@@ -1,12 +1,12 @@
 # Elasticsearch / Search
 
-## Folder này chứa gì?
+## Thư mục này chứa gì?
 
 Nhóm này giải thích khi nào cần search engine thay vì chỉ dùng PostgreSQL query/index, rồi áp dụng vào tenant-aware search cho `Master Data Portal`.
 
 Phase 1 có embedded mini-lab trong `tenant-demo` để học Elasticsearch nhanh. Phase 1.5 đã chuyển runtime chính sang service riêng: `lab-code/search-service`.
 
-## Reading Order
+## Thứ tự đọc đề xuất
 
 1. [elasticsearch-search-service.md](elasticsearch-search-service.md) - foundation: index, document, mapping, analyzer, inverted index, Query DSL.
 2. [elasticsearch-request-response-shapes.md](elasticsearch-request-response-shapes.md) - REST URI, request/response/error shape.
@@ -25,7 +25,7 @@ Phase 1 có embedded mini-lab trong `tenant-demo` để học Elasticsearch nhan
 - React UI gọi `GET /api/search/master-data?keyword=...` qua Kong; UI không gọi Elasticsearch trực tiếp.
 - Admin local `platform-admin` có thể gọi `POST /api/search/master-data/reindex` để rebuild search projection cho tenant hiện tại. Endpoint này chỉ dùng manual/HTTP Client, không có trong React UI.
 
-## Caveat
+## Giới hạn hiện tại
 
 Search query luôn phải filter `tenantId`. Không filter sau khi đã lấy raw results về app.
 

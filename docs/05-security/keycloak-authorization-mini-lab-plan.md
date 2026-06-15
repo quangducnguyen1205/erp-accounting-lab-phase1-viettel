@@ -145,7 +145,7 @@ Nếu sau này CI có Keycloak container ổn định, có thể tách integrati
 
 ---
 
-## 7. Done criteria
+## 7. Tiêu chí hoàn thành
 
 - [ ] Token Keycloak có role claim rõ.
 - [ ] Backend map role thành `GrantedAuthority`.

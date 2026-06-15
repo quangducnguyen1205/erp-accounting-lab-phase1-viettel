@@ -19,7 +19,7 @@ The important design rule is: PostgreSQL remains the source of truth; Elasticsea
 
 ## 2. Repo-Specific Mapping
 
-Current Phase 1.5 mapping:
+Mapping Phase 1.5 hiện tại:
 
 | Concept | Repo implementation |
 |---|---|
@@ -129,7 +129,7 @@ Check:
 - `platform-admin` can call reindex, while `tenant1-user` and `tenant2-user` get `403`;
 - Loki query `{service="search-service"}` shows service logs.
 
-## 7. Caveats
+## 7. Giới hạn hiện tại
 
 - No outbox yet, so DB write and Kafka publish are not atomic.
 - No retry/DLT yet for failed indexing.

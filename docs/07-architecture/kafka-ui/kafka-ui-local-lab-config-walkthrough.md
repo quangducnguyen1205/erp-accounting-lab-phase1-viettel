@@ -90,17 +90,17 @@ Từ `lab-code/`:
 
 ```bash
 make -f Makefile.legacy kafka-ui-up       # start Kafka broker nếu cần, rồi start Kafka UI
-make kafka-ui-status   # xem container Kafka UI
+make -f Makefile.legacy kafka-ui-status   # xem container Kafka UI
 make kafka-ui-logs     # xem log Kafka UI
 make -f Makefile.legacy kafka-ui-down     # dừng Kafka UI, không dừng Kafka broker
-make kafka-ui-info     # in URL và ghi chú nhanh
+make -f Makefile.legacy kafka-ui-info     # in URL và ghi chú nhanh
 ```
 
 Kafka broker vẫn có target riêng:
 
 ```bash
 make -f Makefile.legacy kafka-up
-make kafka-status
+make -f Makefile.legacy kafka-status
 make -f Makefile.legacy kafka-down
 ```
 
@@ -146,7 +146,7 @@ Sau này khi có `audit-log-service`, Kafka UI sẽ càng hữu ích vì có th�
 - Nhầm Kafka UI với Kafka broker. UI chỉ là công cụ xem/quản trị local.
 - Đưa dữ liệu nhạy cảm vào event rồi quên rằng Kafka UI có thể xem payload.
 
-## Production Caveats
+## Giới hạn production
 
 - Kafka UI chỉ là local/dev inspection tool trong repo này.
 - Không expose Kafka UI public nếu chưa có auth/network control.

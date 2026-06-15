@@ -14,7 +14,7 @@ Chạy từ `lab-code/`:
 
 ```bash
 make -f Makefile.legacy kafka-up
-make kafka-status
+make -f Makefile.legacy kafka-status
 make -f Makefile.legacy kafka-down
 ```
 

@@ -4,7 +4,7 @@ Ngày cập nhật: 11/06/2026.
 
 Tài liệu này ghi lại hướng đi sau buổi báo cáo mentor Đạt ngày 11/06. Phase 1 core learning đã đủ nền để đọc/hiểu code do AI hỗ trợ tạo ra, review runtime flow và dùng Codex chủ động hơn cho implementation. Phase 1.5 không biến repo thành production ERP, mà làm demo gần kiến trúc target hơn.
 
-## 1. Current architecture summary
+## 1. Tóm tắt kiến trúc hiện tại
 
 Hiện repo đã có:
 

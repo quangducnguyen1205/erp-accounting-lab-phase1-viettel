@@ -67,7 +67,7 @@ Tenant ID always comes from validated JWT through `common-security`. The client 
 
 ## 4. API Boundary
 
-Current API:
+API hiện tại:
 
 ```text
 GET    /api/files
@@ -101,7 +101,7 @@ React Web UI -> Kong -> backend service
 
 The UI does not call MinIO directly.
 
-## 6. Caveats
+## 6. Giới hạn hiện tại
 
 - No file versioning yet.
 - No presigned URL flow yet.

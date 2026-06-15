@@ -36,7 +36,7 @@ Từ `lab-code/`:
 
 ```bash
 make -f Makefile.legacy audit-log-run
-make audit-log-status
+make -f Makefile.legacy audit-log-status
 ```
 
 Khi muốn Grafana Loki đọc được log của service, chạy target file-log:
@@ -102,7 +102,7 @@ E2E đã verify ở local:
 - `tenant2-user` có role `VIEWER` không thấy event tenant 1.
 - `tenant2-user` create `master_data` trả `403`, nên không tạo audit event cho action fail.
 
-## Caveat
+## Giới hạn hiện tại
 
 - Chưa có outbox pattern, nên DB write trong `tenant-demo` và Kafka publish chưa atomic.
 - Chưa có retry topic/DLT.

@@ -79,7 +79,7 @@ Tenant appears in two places:
 
 The consumer stores event tenant. The read API still filters by JWT tenant. Do not trust client-provided tenant id.
 
-## 6. Caveats
+## 6. Giới hạn hiện tại
 
 - No outbox pattern yet.
 - DB save and Kafka publish are not atomic.

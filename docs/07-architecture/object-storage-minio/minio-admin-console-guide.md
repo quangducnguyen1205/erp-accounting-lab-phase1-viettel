@@ -9,7 +9,7 @@ Guide này giúp làm quen MinIO Console ở mức đủ dùng cho Phase 1. Đâ
 ```bash
 cd lab-code
 make -f Makefile.legacy minio-up
-make minio-status
+make -f Makefile.legacy minio-status
 ```
 
 Console local:
@@ -37,7 +37,7 @@ Truy cập:
 http://localhost:19001
 ```
 
-![MinIO Console login](../assets/minio/01-minio-login.png)
+![MinIO Console login](../../assets/minio/01-minio-login.png)
 
 Kết quả mong đợi:
 
@@ -51,7 +51,7 @@ Kết quả mong đợi:
 
 Sau khi login, vào Object Browser/Buckets.
 
-![MinIO bucket list](../assets/minio/02-minio-bucket-list.png)
+![MinIO bucket list](../../assets/minio/02-minio-bucket-list.png)
 
 Kết quả mong đợi:
 
@@ -72,7 +72,7 @@ Buckets/Object Browser
 -> Create
 ```
 
-![MinIO create bucket](../assets/minio/03-minio-create-bucket.png)
+![MinIO create bucket](../../assets/minio/03-minio-create-bucket.png)
 
 Kết quả mong đợi:
 
@@ -86,7 +86,7 @@ Kết quả mong đợi:
 
 Click vào bucket `tenant-demo-files`.
 
-![MinIO bucket details](../assets/minio/04-minio-bucket-details.png)
+![MinIO bucket details](../../assets/minio/04-minio-bucket-details.png)
 
 Kết quả mong đợi:
 
@@ -100,7 +100,7 @@ Kết quả mong đợi:
 
 Có thể upload một file nhỏ thủ công trong Console để hiểu object/key/metadata. File này chỉ phục vụ quan sát UI, không phải flow backend chính.
 
-![MinIO upload object](../assets/minio/05-minio-upload-object.png)
+![MinIO upload object](../../assets/minio/05-minio-upload-object.png)
 
 Kết quả mong đợi:
 
@@ -114,7 +114,7 @@ Kết quả mong đợi:
 
 Click vào object đã upload.
 
-![MinIO object details](../assets/minio/06-minio-object-details.png)
+![MinIO object details](../../assets/minio/06-minio-object-details.png)
 
 Kết quả mong đợi:
 

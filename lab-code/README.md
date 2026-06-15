@@ -1,112 +1,10 @@
-# Lab Code — Thực hành Phase 1
+# Lab Code — Master Data Portal local demo
 
-Thư mục này là không gian thực hành code, song song với lý thuyết Phase 1.
+Thư mục này chứa code và Docker lab phục vụ Phase 1 / Phase 1.5. Mục tiêu là học backend architecture bằng hệ thống nhỏ chạy được thật, không phải dựng production platform hoàn chỉnh.
 
-## Trạng thái final demo
+## Final demo workflow
 
-Phase 1 hiện có đường demo end-to-end:
-
-```text
-React Web UI / Master Data Portal
--> Keycloak login
--> Kong Gateway
--> tenant-demo backend + audit-log-service + file-service + search-service
--> PostgreSQL / Redis / Kafka / MinIO / Elasticsearch / Observability
-```
-
-Spring Cloud Gateway vẫn được giữ như lab gateway concept cũ; Phase 1.5 final demo mặc định dùng Kong. File upload/download đã được tách sang `file-service`; Elasticsearch search đã được tách sang `search-service`. UI không gọi trực tiếp PostgreSQL, Redis, Kafka, MinIO, Elasticsearch, Prometheus hoặc Grafana trong business flow.
-
-Phase 1.5 đã bắt đầu chuyển một số stub thành runtime lab:
-
-- `loki-lab/`: centralized logs bằng Loki + Grafana + Grafana Alloy.
-- `kafka-ui-lab/`: inspect topic/message/consumer group.
-- `kong-gateway-lab/`: Kong DB-less/declarative gateway lab.
-- `audit-log-service/`: service split đầu tiên, consume Kafka event và expose audit API.
-- `file-service/`: service split cho upload/download file tenant-aware qua MinIO.
-- `search-service/`: service split cho Elasticsearch projection/search tenant-aware.
-- `common-security/`: shared Maven module cho tenant context, JWT tenant filter và Keycloak role converter dùng chung.
-
-`loki-lab/`, `kafka-ui-lab/` và `kong-gateway-lab/` đã có Docker Compose và Makefile targets riêng. `audit-log-service/`, `file-service/` và `search-service/` là Java service độc lập nhưng chạy Maven/IntelliJ trên host giống `tenant-demo`. Cross-service Kafka flow đã verify; React Web UI là `Master Data Portal`, một business UI nhỏ cho master data, file, search và activity log thay vì architecture console.
-
-## Nguyên tắc tối thượng
-
-1. **TỰ VIẾT CODE TRƯỚC.** Không copy solution.
-2. Mỗi file có TODO task hướng dẫn. Đọc task → tự research → tự implement.
-3. Sau khi tự viết xong → nhờ Agent review, tìm lỗi, đề xuất sửa.
-4. Code phải chạy được thật, không chỉ pseudo-code.
-5. Mỗi bước nhỏ, commit riêng, message rõ ràng.
-
-## Cấu trúc
-
-```text
-lab-code/
-├── README.md                          ← File này
-├── common-security/                   ← Shared security plumbing cho các Resource Server
-│   └── src/main/java/com/viettel/common/security/
-│       ├── TenantContext.java                 ← ThreadLocal tenant context dùng chung
-│       ├── JwtTenantContextFilter.java        ← Đọc tenant_id từ JWT đã validate
-│       └── KeycloakRoleConverter.java         ← Map Keycloak roles sang ROLE_*
-├── tenant-demo/                       ← PoC chính: Spring Boot + PostgreSQL
-│   ├── src/main/java/com/viettel/demo/
-│   │   ├── TenantDemoApplication.java         ← Entry point
-│   │   ├── security/
-│   │   │   └── SecurityConfig.java            ← Resource Server + endpoint rules
-│   │   ├── entity/
-│   │   │   ├── TenantAwareEntity.java         ← TODO: Base entity
-│   │   │   └── MasterData.java                ← TODO: Business entity
-│   │   ├── repository/
-│   │   │   ├── TenantAwareRepository.java     ← TODO: Base repo
-│   │   │   └── MasterDataRepository.java      ← TODO: Repo cụ thể
-│   │   ├── service/
-│   │   │   └── MasterDataService.java         ← TODO: Business logic
-│   │   └── controller/
-│   │       └── MasterDataController.java      ← TODO: REST API
-│   ├── src/main/resources/
-│   │   ├── application.yml                    ← TODO: Cấu hình DB
-│   │   └── db/migration/
-│   │       ├── V1__create_tenants.sql         ← TODO: Migration
-│   │       ├── V2__create_master_data.sql     ← TODO: Migration
-│   │       └── V3__create_indexes.sql         ← TODO: Index strategy
-│   ├── src/test/java/com/viettel/demo/
-│   │   └── DataLeakageTest.java               ← TODO: Integration test
-│   └── pom.xml                                ← TODO: Dependencies
-├── sql-playground/
-│   ├── 01-setup-tables.sql                    ← TODO: Tạo bảng
-│   ├── 02-insert-sample-data.sql              ← TODO: Data mẫu
-│   ├── 03-query-with-explain.sql              ← TODO: EXPLAIN
-│   ├── 04-index-comparison.sql                ← TODO: So sánh index
-│   └── 05-data-leakage-test.sql               ← TODO: Test leakage
-└── docker/
-    └── docker-compose.yml                     ← TODO: PostgreSQL local
-```
-
-## Lộ trình thực hành
-
-| Bước | Task | Liên hệ lý thuyết | Files liên quan |
-|:---:|------|-------------------|----------------|
-| 1 | Setup PostgreSQL local | `docs/03-backend-database-mo-rong/postgres-va-bai-toan-multi-tenant.md` | `docker/`, `sql-playground/01-02` |
-| 2 | Tạo Spring Boot project + cấu hình DB | Spring Initializr docs | `pom.xml`, `application.yml`, `TenantDemoApplication.java` |
-| 3 | Implement TenantContext + TenantFilter | `docs/02-multi-tenant/tong-quan-multi-tenant.md` (tenant-aware everything) | `context/`, `config/` |
-| 4 | Implement Base Entity + Base Repository | `docs/02-multi-tenant/tinh-huong-va-trade-off.md` (data leakage) | `entity/TenantAwareEntity`, `repository/TenantAwareRepository` |
-| 5 | Implement MasterData CRUD + Flyway | `docs/03-backend-database-mo-rong/migration-lock-rollback.md` | `entity/`, `repository/`, `service/`, `controller/`, `db/migration/` |
-| 6 | Viết Integration Test chống data leakage | `docs/02-multi-tenant/tinh-huong-va-trade-off.md` (câu 8) | `DataLeakageTest.java` |
-| 7 | Chạy EXPLAIN ANALYZE trên query thật | `docs/03-backend-database-mo-rong/index-va-query-tenant-aware.md` | `sql-playground/03-04` |
-
-## Workflow mỗi bước
-
-```
-1. Đọc TODO task trong file skeleton
-2. Đọc tài liệu lý thuyết liên quan
-3. Tự research keyword được gợi ý
-4. Tự viết code
-5. Test thử
-6. Commit
-7. Nhờ Agent review nếu cần
-```
-
-## Makefile workflow hiện tại
-
-Main workflow hiện ưu tiên final demo, không liệt kê toàn bộ mini-lab cũ trong `make help`.
+Workflow chính nằm trong `lab-code/Makefile` và cố tình ngắn:
 
 ```bash
 cd lab-code
@@ -118,38 +16,94 @@ make down
 make clean-logs
 ```
 
-`make up` bật Docker infra/tooling/web UI gồm PostgreSQL, Keycloak, Redis, Kafka, Kafka UI, MinIO, Elasticsearch, Kong, Loki/Grafana/Alloy và React Web UI. Sau đó target chạy bốn Java service chính bằng Maven trên host ở background:
+`make up` bật Docker infra/tooling/web UI, sau đó chạy bốn Java backend service bằng Maven trên host ở background.
+
+## Runtime hiện tại
 
 ```text
-tenant-demo
-audit-log-service
-file-service
-search-service
+React Web UI / Master Data Portal
+-> Keycloak login
+-> Kong Gateway
+-> tenant-demo
+-> audit-log-service
+-> file-service
+-> search-service
+-> PostgreSQL / Redis / Kafka / MinIO / Elasticsearch / Loki/Grafana/Alloy
 ```
 
-PID local nằm trong `.pids/`; log Java service nằm trong `logs/`. Nếu đang phát triển một service thủ công trong IntelliJ, có thể không dùng `make up` hoặc dừng process tương ứng rồi chạy target legacy ở terminal riêng để debug rõ hơn:
+## Chạy bằng Maven/IntelliJ hay Docker?
 
-```bash
-make -f Makefile.legacy app-run-logs
-make -f Makefile.legacy audit-log-run-logs
-make -f Makefile.legacy file-run-logs
-make -f Makefile.legacy search-run-logs
+### Maven/IntelliJ-first
+
+Các Java backend service chạy trên host qua Maven/IntelliJ:
+
+- `tenant-demo`
+- `audit-log-service`
+- `file-service`
+- `search-service`
+
+Khi chạy bằng `make up`, các service này ghi log file vào:
+
+```text
+lab-code/logs/tenant-demo.log
+lab-code/logs/audit-log-service.log
+lab-code/logs/file-service.log
+lab-code/logs/search-service.log
 ```
 
-Dừng demo:
+Alloy tail các file log đó để gửi vào Loki. Logs không tự xóa khi stop demo để còn inspect sau khi chạy; dọn thủ công bằng `make clean-logs`.
 
-```bash
-make down
-make clean-logs   # optional, chỉ khi muốn xóa generated *.log
-```
+### Docker-first
 
-Các target mini-lab lịch sử vẫn được giữ trong:
+Docker vẫn dùng cho infra/tooling/web UI:
+
+- PostgreSQL
+- Keycloak
+- Redis
+- Kafka
+- Kafka UI
+- MinIO
+- Elasticsearch
+- Kong
+- Loki/Grafana/Alloy
+- React Web UI container
+
+## Thư mục runtime chính
+
+| Thư mục | Vai trò |
+|---|---|
+| `common-security/` | Shared Maven module cho `TenantContext`, JWT tenant filter và Keycloak role converter. Đây không phải runtime service. |
+| `tenant-demo/` | Master Data service: CRUD danh mục, tenant-aware PostgreSQL/Flyway/JPA, Redis read path, Kafka producer. |
+| `audit-log-service/` | Kafka consumer lưu activity/audit event tenant-aware và expose `/api/audit-events`. |
+| `file-service/` | Upload/download/list/delete file tenant-aware; metadata ở PostgreSQL, binary object ở MinIO. |
+| `search-service/` | Kafka consumer cập nhật Elasticsearch projection; expose `/api/search/master-data` và admin-only reindex. |
+| `web-ui-demo/` | React Web UI `Master Data Portal`, gọi API qua Kong sau Keycloak login. |
+| `keycloak-lab/` | Keycloak local, bootstrap realm/client/users/roles/theme. |
+| `kong-gateway-lab/` | Kong DB-less declarative config cho final API routes. |
+| `loki-lab/` | Loki/Grafana/Alloy log aggregation local. |
+
+## Infra/tooling và legacy learning labs
+
+| Thư mục | Phân loại | Ghi chú |
+|---|---|---|
+| `docker/` | Final runtime dependency | PostgreSQL compose dùng bởi `make up`. |
+| `redis-lab/` | Final runtime dependency + learning lab | Redis cache-aside local. |
+| `kafka-lab/` | Final runtime dependency + learning lab | Kafka broker local. |
+| `kafka-ui-lab/` | Final runtime tooling | Inspect topic/message/consumer group. |
+| `minio-lab/` | Final runtime dependency + learning lab | MinIO object storage local. |
+| `elasticsearch-lab/` | Final runtime dependency + learning lab | Elasticsearch local cho `search-service`. |
+| `observability-lab/` | Legacy/current metrics lab | Prometheus/Grafana metrics khác với Loki log aggregation. |
+| `flyway-failure-lab/` | Legacy learning lab | Học Flyway failure/repair/rollback behavior. |
+| `gateway-demo/` | Legacy learning lab | Spring Cloud Gateway concept; final demo dùng Kong. |
+| `sql-playground/` | Legacy/current foundation lab | SQL scripts học PostgreSQL multi-tenant, index, locking, isolation. |
+
+Các target mini-lab lịch sử được giữ trong:
 
 ```text
 lab-code/Makefile.legacy
 ```
 
-Ví dụ khi chỉ muốn học một lab nhỏ:
+Ví dụ:
 
 ```bash
 make -f Makefile.legacy kafka-up
@@ -159,8 +113,70 @@ make -f Makefile.legacy search-run-logs
 make -f Makefile.legacy help
 ```
 
-File `lab-code/logs/*.log` và `.pids/` là local artifact, không commit.
+## Makefile workflow
 
-React Web UI demo nằm ở `web-ui-demo/`. UI chạy bằng Docker, mặc định gọi Kong Gateway, và không gọi trực tiếp PostgreSQL/Redis/Kafka/MinIO/Prometheus/Grafana trong business flow. Product direction mới là `Master Data Portal`.
+Main workflow:
 
-`common-security/` không phải runtime service. Keycloak vẫn là Auth Service/Identity Provider; `tenant-demo`, `audit-log-service`, `file-service` và `search-service` tự validate JWT như Resource Server, rồi dùng shared module để tránh duplicate `TenantContext`, tenant claim filter và role converter. Khi chạy Maven service riêng từ local, Makefile sẽ install module này trước qua `make common-security-install`.
+```bash
+make up          # start full local demo
+make status      # show Docker services, Java PIDs and logs
+make down        # stop demo, keep volumes and logs
+make clean-logs  # delete generated logs/*.log, keep logs/.gitkeep
+make info        # print URLs and runtime model
+```
+
+Backward-compatible aliases vẫn tồn tại:
+
+```bash
+make demo-up
+make demo-status
+make demo-down
+make logs-clean
+```
+
+Nhưng tài liệu final nên ưu tiên `make up/status/down/clean-logs`.
+
+## HTTP Client workflow
+
+Các `.http` public dùng biến chung như:
+
+```text
+kong_base_url
+tenant1_token
+tenant2_token
+admin_token
+```
+
+Xem:
+
+- [README-http-client.md](README-http-client.md)
+- [http-client.env.example.json](http-client.env.example.json)
+- `keycloak-lab/http/keycloak-token-flow.http`
+
+Không commit local IntelliJ env thật hoặc token thật.
+
+## Nguyên tắc học code
+
+1. Tự đọc docs và tự chạy lab trước.
+2. Dùng `.http`, logs, Kafka UI, Loki/Grafana để hiểu request/event/log flow.
+3. Khi sửa code, verify bằng Maven/build/HTTP smoke trước khi commit.
+4. Không biến repo này thành production platform: chưa có outbox, retry/DLT, schema registry, Kubernetes/service discovery production, HA/secrets/TLS production.
+
+## Local artifacts không commit
+
+Các file/thư mục sau là generated/local-only:
+
+- `logs/*.log`
+- `.pids/`
+- `target/`
+- `dist/`
+- `node_modules/`
+- `.env`
+- `http-client.env.json`
+- `http-client.private.env.json`
+
+Nếu cần dọn log:
+
+```bash
+make clean-logs
+```

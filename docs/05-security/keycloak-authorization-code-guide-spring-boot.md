@@ -367,7 +367,7 @@ Manual cases:
 
 ---
 
-## 14. Done criteria
+## 14. Tiêu chí hoàn thành
 
 - Keycloak token có role claim rõ ràng.
 - Spring Boot map role claim thành `GrantedAuthority`.

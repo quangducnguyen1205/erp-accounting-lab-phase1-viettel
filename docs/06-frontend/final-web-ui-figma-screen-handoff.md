@@ -1,12 +1,12 @@
 # Final Web UI Figma Screen Handoff
 
-## Status
+## Trạng thái
 
 Existing Figma file, currently with the old file title:
 
 [Phase 1.5 UI design file](https://www.figma.com/design/kyPvlljW1KhQhoUvqLcjco)
 
-Current status on 2026-06-13:
+Trạng thái ngày 2026-06-13:
 
 - The previous Figma design-system page exists, but it still reflects the old architecture-console direction.
 - The product direction has changed to `Master Data Portal`.
@@ -180,7 +180,7 @@ The UI may display:
 
 Backend services remain responsible for JWT validation, role checks and tenant isolation.
 
-### RequestId And Status Visibility
+### Hiển thị requestId và trạng thái
 
 Every API action should show:
 
@@ -245,7 +245,7 @@ Recommended rename/mapping:
 | Architecture dashboard | Business dashboard |
 | AI Knowledge Workspace | Master Data Portal |
 
-Current API helpers remain usable:
+Các API helper hiện tại vẫn dùng được:
 
 | UI screen | Existing helper |
 |---|---|

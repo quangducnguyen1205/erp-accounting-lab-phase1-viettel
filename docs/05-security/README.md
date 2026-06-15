@@ -1,10 +1,10 @@
-# Security notes index
+# Mục lục security
 
 ## Thư mục này chứa gì?
 
 Ghi chú về Spring Security, JWT tạm và Keycloak/OIDC cho tenant-aware backend demo.
 
-## Reading order
+## Thứ tự đọc đề xuất
 
 1. `oauth2-jwt-resource-server-concepts.md` - thuật ngữ OAuth2/JWT nền.
 2. `spring-security-core-concepts.md` - filter chain, SecurityContext, stateless API.
@@ -38,7 +38,7 @@ Ghi chú về Spring Security, JWT tạm và Keycloak/OIDC cho tenant-aware back
 
 Nếu cần chỉnh docs, ưu tiên cập nhật đúng file theo vai trò trên rồi link sang file khác, tránh copy lại cùng một flow dài ở nhiều nơi.
 
-## Core
+## Nội dung cốt lõi
 
 - JWT tạm và Spring Security Resource Server.
 - `JwtTenantContextFilter` đọc `tenant_id` từ token đã validate.
@@ -46,7 +46,7 @@ Nếu cần chỉnh docs, ưu tiên cập nhật đúng file theo vai trò trên
 - Keycloak Authorization/RBAC mini-lab tiếp theo: role/scope/authority, 401 vs 403, tenant-scope.
 - Không tin `tenant_id` từ request body.
 
-## Optional / later
+## Mở rộng sau
 
 - Full RBAC role matrix / Keycloak Authorization Services / UMA.
 - React Authorization Code + PKCE.

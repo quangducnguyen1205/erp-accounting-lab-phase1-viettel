@@ -35,7 +35,7 @@ Từ `lab-code/`:
 
 ```bash
 make -f Makefile.legacy observability-up
-make observability-status
+make -f Makefile.legacy observability-status
 make -f Makefile.legacy observability-down
 ```
 
@@ -83,7 +83,7 @@ curl http://localhost:8080/actuator/prometheus
 ```bash
 cd lab-code
 make -f Makefile.legacy observability-up
-make observability-status
+make -f Makefile.legacy observability-status
 ```
 
 5. Open Prometheus:

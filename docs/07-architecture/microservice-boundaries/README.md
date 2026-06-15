@@ -1,10 +1,10 @@
 # Microservice Boundaries
 
-## Folder này chứa gì?
+## Thư mục này chứa gì?
 
 Nhóm này chuẩn bị quyết định service split cho Phase 1.5. Mục tiêu không phải tách monolith cho vui, mà tạo thêm một service có trách nhiệm rõ để học gateway routing, centralized logs và Kafka cross-service flow.
 
-## Reading Order
+## Thứ tự đọc đề xuất
 
 1. [phase1-service-split-options.md](phase1-service-split-options.md) - phân tích các option split và khuyến nghị `audit-log-service`.
 2. [audit-log-service-split-plan.md](audit-log-service-split-plan.md) - boundary, ownership, tenant isolation và done criteria cho service split đầu tiên.
@@ -19,6 +19,6 @@ Nhóm này chuẩn bị quyết định service split cho Phase 1.5. Mục tiêu
 - `file-service` đã tách upload/download file tenant-aware khỏi `tenant-demo`.
 - `search-service` đã tách Elasticsearch projection khỏi `tenant-demo`.
 
-## Caveat
+## Giới hạn hiện tại
 
 Microservice không chỉ là di chuyển file. Cần nghĩ ownership, database/schema, API contract, event contract, deploy/log/test riêng.

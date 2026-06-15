@@ -215,7 +215,7 @@ curl http://localhost:8080/actuator/prometheus
 ```bash
 cd lab-code
 make -f Makefile.legacy observability-up
-make observability-status
+make -f Makefile.legacy observability-status
 ```
 
 6. Open Prometheus:

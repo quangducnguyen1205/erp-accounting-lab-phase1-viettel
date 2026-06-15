@@ -160,7 +160,7 @@ Có thể trình bày theo thứ tự:
 
 ---
 
-## 6. Done criteria
+## 6. Tiêu chí hoàn thành
 
 Milestone #16 đóng khi:
 

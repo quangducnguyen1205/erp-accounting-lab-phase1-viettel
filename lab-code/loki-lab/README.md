@@ -61,8 +61,8 @@ Từ `lab-code/`:
 
 ```bash
 make -f Makefile.legacy loki-up
-make loki-status
-make loki-info
+make -f Makefile.legacy loki-status
+make -f Makefile.legacy loki-info
 make -f Makefile.legacy loki-down
 ```
 
@@ -166,7 +166,7 @@ make -f Makefile.legacy kafka-up
 
 ```bash
 make -f Makefile.legacy loki-up
-make loki-status
+make -f Makefile.legacy loki-status
 curl -f http://localhost:3100/ready
 ```
 

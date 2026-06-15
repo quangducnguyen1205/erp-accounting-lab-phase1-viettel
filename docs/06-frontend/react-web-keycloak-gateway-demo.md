@@ -221,7 +221,7 @@ Checklist debug:
 
 Trong UI demo, `keycloak.init(...)` được gọi qua helper idempotent để React Strict Mode không làm adapter bị init hai lần.
 
-## Caveats
+## Giới hạn hiện tại
 
 - Đây là local learning UI, không phải production SPA.
 - Không display full access token trong UI.

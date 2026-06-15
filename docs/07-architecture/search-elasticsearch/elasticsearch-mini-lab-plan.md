@@ -80,7 +80,7 @@ PostgreSQL:
 ```bash
 cd lab-code
 make -f Makefile.legacy db-up
-make db-status
+make -f Makefile.legacy db-status
 ```
 
 Elasticsearch nếu có docker compose riêng:

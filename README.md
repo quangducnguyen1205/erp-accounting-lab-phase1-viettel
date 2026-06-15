@@ -2,13 +2,25 @@
 
 Repository này là nơi lưu trữ kiến thức đã được tổng hợp trong Phase 1 của quá trình học backend cho bài toán ERP/kế toán SaaS đa tenant.
 
-Mục tiêu của repo không phải là lưu mọi nháp học tập, mà là làm nguồn sự thật công khai cho các phần kiến thức đã được học, rà soát và chuẩn hóa. Các câu hỏi tự học, câu trả lời nháp, review, ghi chú mentor, prompt và scratch notes được giữ ở local để không làm nhiễu lịch sử GitHub.
+Mục tiêu của repo không phải là lưu mọi nháp học tập, mà là làm nguồn sự thật công khai cho các phần kiến thức đã được học, rà soát và chuẩn hóa.
+
+Các câu hỏi tự học, câu trả lời nháp, review, ghi chú mentor, prompt và scratch notes được giữ ở local để không làm nhiễu lịch sử GitHub.
 
 ## Trạng thái học hiện tại
 
 - Đã hoàn thành nền tảng SaaS, multi-tenant, SQL playground, migration/locking, ACID/isolation và tenant-aware backend API.
 - Đã có demo Spring Boot nhỏ trong `lab-code/tenant-demo` với PostgreSQL/Flyway, tenant-aware API, JWT tạm fallback, Keycloak AuthN/AuthZ mode và các mini-lab architecture.
-- Phase 1 hiện đã demo được flow end-to-end bằng React Web UI `Master Data Portal` -> Keycloak -> Kong Gateway -> `tenant-demo` / `audit-log-service` / `file-service` / `search-service` -> PostgreSQL/Redis/Kafka/MinIO/Elasticsearch/Observability. UI này là demo web, không phải React Native/Expo và không phải frontend production.
+- Phase 1 hiện đã demo được flow end-to-end:
+
+  ```text
+  React Web UI / Master Data Portal
+  -> Keycloak
+  -> Kong Gateway
+  -> tenant-demo / audit-log-service / file-service / search-service
+  -> PostgreSQL / Redis / Kafka / MinIO / Elasticsearch / Observability
+  ```
+
+  UI này là demo web, không phải React Native/Expo và không phải frontend production.
 - Sau buổi báo cáo mentor ngày 11/06/2026, Phase 1.5 đã bổ sung runtime tooling Loki log aggregation, Kafka UI, Kong Gateway và các service split có boundary rõ: audit log, file upload/download và search projection.
 
 ## Cấu trúc thư mục
@@ -114,13 +126,21 @@ Repository này vẫn được ưu tiên làm kho kiến thức Phase 1, nhưng 
 - `lab-code/search-service/`: service split cho Elasticsearch projection/search tenant-aware qua Kafka event.
 - `lab-code/web-ui-demo/`: React Web/Vite thin client chạy Docker-first, gọi Gateway sau khi login Keycloak. Đây là demo trực quan cuối Phase 1, không phải React Native/Expo.
 
-Java backend services hiện ưu tiên chạy Maven/IntelliJ trên host (`tenant-demo`, `audit-log-service`, `file-service`, `search-service`). Docker vẫn dùng cho infra/tooling như PostgreSQL, Keycloak, Kafka, MinIO, Elasticsearch, Kong, Loki/Grafana/Alloy và Web UI.
+Java backend services hiện ưu tiên chạy Maven/IntelliJ trên host:
+
+- `tenant-demo`
+- `audit-log-service`
+- `file-service`
+- `search-service`
+
+Docker vẫn dùng cho infra/tooling như PostgreSQL, Keycloak, Kafka, MinIO, Elasticsearch, Kong, Loki/Grafana/Alloy và Web UI.
 
 Nếu demo phát triển thành một project thật sự lớn, nên tách sang repository riêng để repo kiến thức này vẫn gọn, rõ và dễ đọc. Trong Phase 1, lab code vẫn được giữ nhỏ và bám sát mục tiêu học.
 
 Điểm điều hướng chính:
 
 - `docs/README.md`: index tài liệu.
+- `docs/00-gioi-thieu/lo-trinh-doc-cuoi-phase-1.md`: tuyến đọc cuối từ foundation đến final demo.
 - `ROADMAP.md`: tiến độ và kế hoạch học.
 - `docs/99-tong-ket/phase1-final-demo-script.md`: demo script cuối Phase 1 cho UI/Gateway/backend/integrations.
 - `docs/99-tong-ket/phase1-5-production-like-demo-plan.md`: kế hoạch Phase 1.5 sau feedback mentor 11/06.
@@ -139,7 +159,14 @@ make down
 make clean-logs   # optional, chỉ khi muốn xóa generated logs/*.log
 ```
 
-`make up` bật Docker infra/tooling/web UI và chạy bốn Java service chính bằng Maven ở background: `tenant-demo`, `audit-log-service`, `file-service`, `search-service`. Các target mini-lab lịch sử vẫn còn trong `lab-code/Makefile.legacy` để học từng công nghệ riêng, ví dụ `make -f Makefile.legacy kafka-up`.
+`make up` bật Docker infra/tooling/web UI và chạy bốn Java service chính bằng Maven ở background:
+
+- `tenant-demo`
+- `audit-log-service`
+- `file-service`
+- `search-service`
+
+Các target mini-lab lịch sử vẫn còn trong `lab-code/Makefile.legacy` để học từng công nghệ riêng, ví dụ `make -f Makefile.legacy kafka-up`.
 
 Workflow học code dự kiến:
 

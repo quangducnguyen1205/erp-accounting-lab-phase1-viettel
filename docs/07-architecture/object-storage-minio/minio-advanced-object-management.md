@@ -123,7 +123,7 @@ Khi quay lại advanced object management, nên đi theo thứ tự:
 5. Object Lock/retention/legal hold cho compliance document.
 6. Tương tác giữa lifecycle, versioning và retention.
 
-Done criteria khi học sau:
+Tiêu chí hoàn thành khi học sau:
 
 - có mini-lab riêng, không làm hỏng flow upload/download hiện tại;
 - có HTTP/curl hoặc Console evidence;

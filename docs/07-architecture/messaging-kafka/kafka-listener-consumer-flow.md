@@ -114,14 +114,18 @@ flowchart TB
     P0["Partition 0"]
     O0["offset 0\nCREATED id=7"]
     O1["offset 1\nUPDATED id=7"]
-    Group["Consumer group:\ntenant-demo-master-data"]
-    Listener["MasterDataChangedEventConsumer"]
+    GroupAudit["Consumer group:\naudit-log-service"]
+    GroupSearch["Consumer group:\nsearch-service"]
+    ListenerAudit["Audit consumer"]
+    ListenerSearch["Search projection consumer"]
 
     Topic --> P0
     P0 --> O0
     P0 --> O1
-    Group --> Listener
-    Listener -->|"polls partition 0"| P0
+    GroupAudit --> ListenerAudit
+    GroupSearch --> ListenerSearch
+    ListenerAudit -->|"polls partition 0"| P0
+    ListenerSearch -->|"polls partition 0"| P0
 ```
 
 | Concept | Trong repo |
@@ -129,8 +133,8 @@ flowchart TB
 | Topic | `master-data-events` |
 | Partition | Local auto-created topic thường có partition mặc định. Manual có thể tạo 1 partition. |
 | Offset | Vị trí record trong partition. Log producer có offset `0`, `1` khi verify. |
-| Consumer group | `tenant-demo-master-data` |
-| Listener | `MasterDataChangedEventConsumer.handle(...)` |
+| Consumer group | `audit-log-service`, `search-service` |
+| Listener | `audit-log-service` lưu audit event; `search-service` cập nhật Elasticsearch projection |
 
 Kafka giữ order trong **một partition**, không đảm bảo global order trên mọi partition.
 
@@ -138,7 +142,7 @@ Kafka giữ order trong **một partition**, không đảm bảo global order tr
 
 ## 5. Group id có tác dụng gì?
 
-`groupId = tenant-demo-master-data` nghĩa là các consumer instance cùng group sẽ chia nhau partitions.
+`groupId = audit-log-service` nghĩa là các consumer instance của audit service cùng group sẽ chia nhau partitions. `search-service` dùng group riêng nên cũng đọc được cùng topic độc lập.
 
 Ví dụ nếu topic có 3 partitions và có 3 app instances cùng group:
 

@@ -2,7 +2,7 @@
 
 ## Mục tiêu
 
-Folder này chạy Elasticsearch local để học search service ở mức nhỏ, nối tiếp bài PostgreSQL index/query-pattern.
+Thư mục này chạy Elasticsearch local để học search service ở mức nhỏ, nối tiếp bài PostgreSQL index/query-pattern.
 
 Không dùng setup này cho production.
 

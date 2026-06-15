@@ -153,7 +153,7 @@ environment="local"
 
 Search request text như `requestId`, code hoặc keyword nên search bằng LogQL `|=`, không thêm thành Loki label.
 
-## Caveat
+## Giới hạn hiện tại
 
 - Chưa có outbox, nên DB write và Kafka publish chưa atomic.
 - Chưa có retry/DLT cho failed indexing.

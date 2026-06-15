@@ -270,7 +270,7 @@ Docker source:
 
 ## 7. Label strategy
 
-Current useful labels:
+Các label hữu ích hiện tại:
 
 - `service`: most important beginner label; start here.
 - `source`: explains `file` vs `docker`.

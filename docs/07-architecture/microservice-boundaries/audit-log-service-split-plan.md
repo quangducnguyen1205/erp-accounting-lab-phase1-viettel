@@ -96,7 +96,7 @@ Nếu duplicate:
 - skip;
 - không crash app.
 
-## 7. Caveats
+## 7. Giới hạn hiện tại
 
 - Chưa có outbox pattern: DB write trong `tenant-demo` và Kafka publish chưa atomic.
 - Chưa có retry topic/DLT.
@@ -104,7 +104,7 @@ Nếu duplicate:
 - Chưa có audit compliance đầy đủ.
 - Service split này để học boundary, không phải production audit platform.
 
-## 8. Done Criteria
+## 8. Tiêu chí hoàn thành
 
 - `audit-log-service` chạy riêng ở port `8082`.
 - Consume topic `master-data-events` bằng group `audit-log-service`.

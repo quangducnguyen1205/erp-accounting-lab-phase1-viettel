@@ -139,7 +139,7 @@ Kiểm tra:
 - Quên User Profile attribute `tenant_id`, làm Admin REST/Console không lưu custom attribute trong Keycloak 26.x.
 - Nghĩ Keycloak role thay thế tenant-aware repository query. Role chỉ trả lời "được làm gì", còn tenant filter vẫn nằm ở backend query/service.
 
-## Production Caveats
+## Giới hạn production
 
 - Không dùng `start-dev`, `admin/admin`, `password/password` ở production.
 - DB Keycloak cần backup/restore và monitoring riêng.

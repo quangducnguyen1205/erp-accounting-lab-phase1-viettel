@@ -245,7 +245,7 @@ Nếu login xong nhưng nút vẫn disabled:
 
 Code UI đã làm `keycloak.init(...)` idempotent để React Strict Mode trong Vite dev không init cùng một Keycloak adapter hai lần.
 
-## Caveats
+## Giới hạn hiện tại
 
 - Browser token handling trong lab này chỉ để học local. Production SPA cần kiểm soát redirect URI, PKCE, CORS, token lifetime và logout kỹ hơn.
 - Gateway đang dùng static route tới `tenant-demo`; service discovery/load balancing chỉ ở mức awareness.

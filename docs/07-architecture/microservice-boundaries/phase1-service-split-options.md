@@ -145,7 +145,7 @@ Kafka UI
 -> topic/message/consumer group/lag
 ```
 
-## 9. Done criteria cho split đầu tiên
+## 9. Tiêu chí hoàn thành cho split đầu tiên
 
 - `audit-log-service` chạy riêng.
 - `master-data-service` publish event sau create/update.

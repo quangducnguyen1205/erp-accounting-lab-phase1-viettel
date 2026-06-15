@@ -1,10 +1,10 @@
 # Redis / Cache
 
-## Folder này chứa gì?
+## Thư mục này chứa gì?
 
 Nhóm này giải thích Redis và cache-aside pattern, rồi áp dụng vào read-by-code path của `master_data`.
 
-## Reading Order
+## Thứ tự đọc đề xuất
 
 1. [redis-cache-strategy.md](redis-cache-strategy.md) - foundation: Redis, in-memory cache, TTL, invalidation, tenant-safe key.
 2. [redis-code-guide-spring-boot.md](redis-code-guide-spring-boot.md) - RedisTemplate + manual cache-aside design.
@@ -16,6 +16,6 @@ Nhóm này giải thích Redis và cache-aside pattern, rồi áp dụng vào re
 - Cache key có tenant scope.
 - Cache disabled mode giữ app/test không phụ thuộc Redis.
 
-## Caveat
+## Giới hạn hiện tại
 
 Redis là cache, không phải source of truth. Update/delete eviction chưa phải production-grade, stale cache có thể tồn tại tới TTL.

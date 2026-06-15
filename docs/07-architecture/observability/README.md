@@ -1,10 +1,10 @@
 # Observability
 
-## Folder này chứa gì?
+## Thư mục này chứa gì?
 
 Nhóm này giải thích logging, metrics, health check, Actuator, Micrometer và local Prometheus/Grafana lab cho `tenant-demo`.
 
-## Reading Order
+## Thứ tự đọc đề xuất
 
 1. [observability-foundation.md](observability-foundation.md) - foundation: logs, metrics, tracing, health, alert.
 2. [logging-metrics-tracing.md](logging-metrics-tracing.md) - shape/cách đọc log, metric, trace, health.
@@ -18,6 +18,6 @@ Nhóm này giải thích logging, metrics, health check, Actuator, Micrometer v�
 - Milestone #16 đã đóng ở Phase 1 level.
 - Actuator baseline, request logging, custom metrics và Prometheus/Grafana local lab đã verify.
 
-## Caveat
+## Giới hạn hiện tại
 
 Chưa có tracing, Loki/ELK log aggregation, Alertmanager, production retention, production access hardening hoặc SLO/SLI/alert rules.

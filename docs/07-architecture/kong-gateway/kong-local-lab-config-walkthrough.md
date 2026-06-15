@@ -127,7 +127,7 @@ make -f Makefile.legacy kong-status
 make kong-logs
 make kong-config
 make -f Makefile.legacy kong-down
-make kong-info
+make -f Makefile.legacy kong-info
 ```
 
 Kong không được thêm vào `infra-up` mặc định để full infra không quá nặng.
@@ -323,7 +323,7 @@ Stop:
 make -f Makefile.legacy kong-down
 ```
 
-## 10. Production Caveats
+## 10. Giới hạn production
 
 - Admin API cần network isolation/auth nghiêm túc.
 - Production nên có TLS, rate limit, auth plugin policy rõ ràng, log/masking.

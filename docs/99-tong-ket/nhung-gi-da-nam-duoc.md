@@ -69,7 +69,7 @@ Các điểm đã nắm chắc hơn:
 
 ## Milestone #1: SQL playground tenant-aware
 
-Milestone #1 đã đóng phần thực hành SQL nền tảng cho mô hình shared-table multi-tenant. Các lệnh verify đã chạy lại trên database local sạch: `make -f Makefile.legacy db-up`, `make db-status`, `make sql-reset`, `make sql-all`, `make sql-3`, `make sql-4`, `make sql-5`.
+Milestone #1 đã đóng phần thực hành SQL nền tảng cho mô hình shared-table multi-tenant. Các lệnh verify đã chạy lại trên database local sạch: `make -f Makefile.legacy db-up`, `make -f Makefile.legacy db-status`, `make -f Makefile.legacy sql-reset`, `make -f Makefile.legacy sql-all`, `make -f Makefile.legacy sql-3`, `make -f Makefile.legacy sql-4`, `make -f Makefile.legacy sql-5`.
 
 ### Schema baseline
 
@@ -641,7 +641,7 @@ Trạng thái: đã đóng mini-lab cơ bản.
 - Không lấy tenantId từ request body/query param để build cache key.
 - Không cache data nhạy cảm/token/security context.
 - Redis chỉ là cache, không phải database chính.
-- Caveat hiện tại: update/delete chưa wire eviction. Nếu dữ liệu đã cache rồi bị sửa/xóa, cache có thể stale đến khi TTL hết hạn. Khi mở rộng write endpoint phức tạp hơn, phải thiết kế invalidation rõ ràng; TTL không thay thế invalidation.
+- Giới hạn hiện tại: update/delete chưa wire eviction. Nếu dữ liệu đã cache rồi bị sửa/xóa, cache có thể stale đến khi TTL hết hạn. Khi mở rộng write endpoint phức tạp hơn, phải thiết kế invalidation rõ ràng; TTL không thay thế invalidation.
 
 ## Milestone #15: Kafka/async messaging mini-lab
 
@@ -655,10 +655,10 @@ Trạng thái: đã đóng mini-lab cơ bản.
 - `docs/07-architecture/messaging-kafka/kafka-mini-lab-plan.md`: checklist mini-lab nhỏ quanh `MasterDataChangedEvent`.
 - `lab-code/kafka-lab/`: Docker Compose + hướng dẫn local Kafka lab.
 - Config placeholder `APP_MESSAGING_ENABLED=false`, `KAFKA_BOOTSTRAP_SERVERS`, topic và consumer group.
-- Package `com.viettel.demo.messaging`: `MessagingProperties`, `MasterDataChangedEvent`, `MasterDataEventPublisher`, NoOp publisher, Kafka producer, Kafka consumer.
+- Package `com.viettel.demo.messaging`: `MessagingProperties`, `MasterDataChangedEvent`, `MasterDataEventPublisher`, NoOp publisher, Kafka producer.
 - `MasterDataService.create/update` publish `MasterDataChangedEvent` sau khi `repository.save(...)` thành công.
 - Producer dùng Kafka key tenant-aware từ `event.kafkaKey()`.
-- Consumer hiện log event để học producer -> topic -> consumer flow.
+- Phase 1 mini-lab ban đầu từng dùng consumer trong `tenant-demo` để học producer -> topic -> consumer flow. Phase 1.5 final model đã bỏ consumer học tập này; consumer thật hiện là `audit-log-service` và `search-service`.
 
 ### Case đã verify
 
@@ -668,7 +668,7 @@ Trạng thái: đã đóng mini-lab cơ bản.
 - Create `master_data` trả `201` và publish `changeType=CREATED`.
 - Update `master_data` trả `200` và publish `changeType=UPDATED`.
 - Producer log hiện `Published Kafka event`, có topic, partition, offset và key `tenant:1:master-data:<id>`.
-- Consumer log hiện `Consumed Kafka event`, nhận đúng event, có `tenantId`, `aggregateId`, `code`, `changeType`.
+- Final verification hiện xem consumer logs ở `audit-log-service` và `search-service`, nhận đúng event, có `tenantId`, `aggregateId`, `code`, `changeType`.
 - Tenant 2 không đọc được record tenant 1 sau event: `404`.
 - Missing/invalid token vẫn `401`.
 
@@ -677,8 +677,8 @@ Trạng thái: đã đóng mini-lab cơ bản.
 - Verify event có `tenantId`, không chứa secret/binary payload lớn.
 - Giữ PostgreSQL là source of truth; Kafka không thay thế database.
 - `APP_MESSAGING_ENABLED=false` vẫn là default để test không phụ thuộc Kafka.
-- Caveat: chưa có outbox, DB write và Kafka publish không atomic.
-- Caveat: consumer chưa idempotent, chưa có retry/DLT/schema versioning.
+- Giới hạn: chưa có outbox, DB write và Kafka publish không atomic.
+- Giới hạn: consumer chưa idempotent, chưa có retry/DLT/schema versioning.
 
 ## Milestone #16: Observability/logging/metrics mini-lab
 
@@ -736,7 +736,7 @@ Trạng thái: đã đóng ở Phase 1 learning level. Actuator baseline, reques
   - `tenant_demo.master_data.cache.requests` -> `tenant_demo_master_data_cache_requests_total`.
   - `tenant_demo.kafka.publish.requests` -> `tenant_demo_kafka_publish_requests_total`.
   - timer `tenant_demo.master_data.get_by_code.duration` có `_seconds_count`, `_seconds_sum`.
-- Caveat: đây là local monitoring lab, chưa có alerting, tracing, log aggregation, long-term retention hoặc production access control.
+- Giới hạn: đây là local monitoring lab, chưa có alerting, tracing, log aggregation, long-term retention hoặc production access control.
 
 ### Kết quả verify cuối
 
@@ -790,7 +790,7 @@ Trạng thái: đã đóng ở mức Phase 1. Mini-lab dùng Spring Cloud Gatewa
 - Gọi thiếu token qua Gateway -> `401` từ backend.
 - Log `tenant-demo` có cùng `X-Request-Id` do UI sinh.
 
-### Caveat
+### Giới hạn hiện tại
 
 - Gateway hiện dùng static route, chưa có service discovery/load balancing thật.
 - UI là React Web demo mỏng, không phải production frontend và không dùng React Native/Expo.
@@ -833,7 +833,7 @@ Trạng thái: đã có local Docker lab ở `lab-code/loki-lab/` dùng Loki + G
 - `requestId` nên nằm trong log line để search text, không dùng làm Loki label;
 - không dùng Promtail làm default vì Promtail đã EOL, Alloy là hướng mới hơn trong Grafana ecosystem.
 
-Caveat:
+Giới hạn:
 
 - `tenant-demo` và `gateway-demo` hiện thường chạy bằng Maven trên host nên log của chúng vẫn nằm ở terminal host nếu chưa Dockerize hoặc chưa thêm file-log collector;
 - chưa có tracing, alerting, production retention, masking PII/secrets hoặc multi-tenant log isolation;
@@ -850,7 +850,7 @@ Trạng thái: Keycloak local đã chuyển từ setup dễ mất sang demo infr
 - script `setup-keycloak-demo.sh` tạo/cập nhật realm `viettel-lab`, API client, Web client, roles, users và mapper `tenant_id`;
 - target `make keycloak-setup` để tái tạo cấu hình sau khi reset volume.
 
-Caveat:
+Giới hạn:
 
 - vẫn là Keycloak `start-dev` local, không phải production IAM;
 - `keycloak-reset` là lệnh destructive, phải chạy lại bootstrap sau reset.
@@ -866,7 +866,7 @@ Trạng thái: đã có Docker-first Kafka UI lab ở `lab-code/kafka-ui-lab/`.
 - UI giúp xem broker, topic, partition, offset, key/value, consumer group và lag;
 - dùng để inspect `MasterDataChangedEvent` trước khi tách `audit-log-service`.
 
-Caveat:
+Giới hạn:
 
 - Kafka UI là local/dev inspection tool, không expose public nếu chưa có auth/network control;
 - message payload có thể nhạy cảm, nên event không được chứa secret/token.
@@ -886,7 +886,7 @@ Trạng thái: đã có Docker-first Kong Gateway lab ở `lab-code/kong-gateway
 - route `/tenant-demo/actuator/health` dùng để verify nhanh;
 - Kong preserve `Authorization` và `X-Request-Id`, backend vẫn validate token/RBAC/tenant query.
 
-Caveat:
+Giới hạn:
 
 - Kong lab chưa bật JWT/OIDC plugin, rate limit, consumer model hoặc mTLS;
 - Admin API không được expose public trong production;
@@ -922,7 +922,7 @@ Trạng thái: đã thêm và verify service split đầu tiên ở `lab-code/au
 - role behavior đã verify: `tenant2-user` VIEWER create `master_data` bị `403`, nên không tạo audit event cho action fail.
 - React Web UI đã có section `Audit Events` để gọi `GET /api/audit-events` qua Kong trong final demo.
 
-Caveat:
+Giới hạn:
 
 - chưa có outbox pattern, retry/DLT, schema registry hoặc production audit compliance;
 - PostgreSQL local vẫn dùng chung container/database nhưng tách schema `audit_log` để giữ demo nhẹ.
@@ -939,7 +939,7 @@ Trạng thái: đã gom phần security plumbing bị duplicate giữa `tenant-d
 - `common-security` chỉ là shared Maven library cho `TenantContext`, `JwtTenantContextFilter`, tenant claim resolver và Keycloak role converter;
 - endpoint-specific authorization rules vẫn nằm trong từng service.
 
-Caveat:
+Giới hạn:
 
 - shared module tạo coupling ở code level, phù hợp với learning monorepo;
 - không đưa business logic, JPA entity/repository, Kafka DTO hoặc gateway route vào `common-security`.

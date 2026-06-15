@@ -88,7 +88,6 @@ app:
     enabled: ${APP_MESSAGING_ENABLED:false}
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
     master-data-topic: ${KAFKA_MASTER_DATA_TOPIC:master-data-events}
-    consumer-group-id: ${KAFKA_CONSUMER_GROUP_ID:tenant-demo-master-data}
 ```
 
 Rule:
@@ -96,6 +95,7 @@ Rule:
 - `APP_MESSAGING_ENABLED=false` mặc định để `make app-test` không cần Kafka.
 - Không bật Kafka trong test hiện tại nếu chưa có test profile riêng.
 - Không hardcode secret/token trong event hoặc config.
+- `tenant-demo` hiện là producer-only. Consumer group thật trong final demo nằm ở `audit-log-service` và `search-service`.
 
 ---
 
@@ -108,8 +108,7 @@ com.viettel.demo.messaging
 ├── MasterDataEventPublisher
 ├── NoOpMasterDataEventPublisher
 ├── KafkaMessagingConfig
-├── KafkaMasterDataEventPublisher
-└── MasterDataChangedEventConsumer
+└── KafkaMasterDataEventPublisher
 ```
 
 Không cần tạo generic event framework trong Phase 1.
@@ -120,13 +119,12 @@ Không cần tạo generic event framework trong Phase 1.
 
 | Class | Trách nhiệm | Không nên làm |
 |---|---|---|
-| `MessagingProperties` | Bind feature flag, bootstrap servers, topic/group config. | Không chứa business logic. |
+| `MessagingProperties` | Bind feature flag, bootstrap servers và topic config. | Không chứa business logic. |
 | `MasterDataChangedEvent` | Event DTO nhỏ, có `tenantId`, `eventId`, `aggregateId`. | Không chứa JPA entity/raw payload lớn. |
 | `MasterDataEventPublisher` | Boundary/interface để service gọi publish event. | Không query DB, không tự lấy tenant từ request body. |
 | `NoOpMasterDataEventPublisher` | Giữ app behavior cũ khi messaging disabled. | Không giả vờ gửi event. |
-| `KafkaMessagingConfig` | ProducerFactory, KafkaTemplate, ConsumerFactory, listener factory. | Không chứa business logic. |
+| `KafkaMessagingConfig` | ProducerFactory và KafkaTemplate cho `tenant-demo`. | Không chứa business logic. |
 | `KafkaMasterDataEventPublisher` | Build topic/key, gọi `KafkaTemplate.send(...)`, log metadata. | Không thay PostgreSQL source of truth. |
-| `MasterDataChangedEventConsumer` | Log event nhận được từ Kafka. | Không giả định event chỉ xử lý đúng một lần. |
 
 ---
 
@@ -150,14 +148,22 @@ Lưu ý consistency:
 
 ---
 
-## 6. Consumer flow đề xuất
+## 6. Consumer flow trong final demo
 
-Consumer ban đầu chỉ nên làm việc nhỏ:
+Trong mini-lab rất sớm, consumer có thể chỉ log event để học `@KafkaListener`. Trong final demo hiện tại, `tenant-demo` không còn tự consume event của chính nó.
+
+Consumer thật là:
+
+- `audit-log-service`: lưu audit/activity event tenant-aware;
+- `search-service`: cập nhật Elasticsearch projection.
+
+Flow consumer:
 
 ```text
 @KafkaListener(...)
 -> nhận MasterDataChangedEvent
--> log tenantId/eventId/aggregateId/changeType
+-> kiểm tra eventId/idempotency nếu service cần
+-> lưu audit hoặc update projection
 ```
 
 Sau đó mới cân nhắc:
@@ -202,7 +208,7 @@ Manual Kafka verification sau khi tự code:
 ```bash
 cd lab-code
 make -f Makefile.legacy kafka-up
-make kafka-status
+make -f Makefile.legacy kafka-status
 ```
 
 Sau đó:

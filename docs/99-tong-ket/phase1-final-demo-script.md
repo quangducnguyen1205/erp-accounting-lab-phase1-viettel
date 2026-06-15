@@ -357,7 +357,7 @@ make clean-logs
 
 Nếu đang chạy `make -f Makefile.legacy gateway-run` foreground, dừng bằng `Ctrl+C` trong terminal tương ứng.
 
-## 7. Caveat cần nói rõ
+## 7. Giới hạn hiện tại cần nói rõ
 
 - Đây là Phase 1 learning lab, không phải production ERP.
 - Gateway dùng static route, chưa có service discovery/load balancing thật.

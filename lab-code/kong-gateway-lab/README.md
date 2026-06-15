@@ -82,7 +82,7 @@ make -f Makefile.legacy kong-down
 - `docs/07-architecture/kong-gateway/kong-gateway-foundation.md`
 - `docs/07-architecture/kong-gateway/kong-local-lab-config-walkthrough.md`
 
-## Caveats
+## Giới hạn hiện tại
 
 - Đây là local lab, không phải production API management.
 - Kong Admin API không được public trong production.

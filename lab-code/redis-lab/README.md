@@ -2,7 +2,7 @@
 
 ## Mục tiêu
 
-Folder này chạy Redis local để học cache-aside và tenant-safe cache key. Đây là lab nhỏ cho Phase 1, không phải production Redis deployment.
+Thư mục này chạy Redis local để học cache-aside và tenant-safe cache key. Đây là lab nhỏ cho Phase 1, không phải production Redis deployment.
 
 Đọc trước:
 
@@ -24,7 +24,7 @@ Từ `lab-code/`:
 
 ```bash
 make -f Makefile.legacy redis-up
-make redis-status
+make -f Makefile.legacy redis-status
 make -f Makefile.legacy redis-down
 ```
 

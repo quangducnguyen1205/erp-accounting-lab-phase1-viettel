@@ -80,7 +80,7 @@ Giữ nguyên nguyên tắc:
 ```bash
 cd lab-code
 make -f Makefile.legacy kafka-up
-make kafka-status
+make -f Makefile.legacy kafka-status
 ```
 
 Nếu cần kiểm tra topic bằng CLI trong container, xem `lab-code/kafka-lab/README.md`.
@@ -153,7 +153,7 @@ POST/PUT /api/master-data
 
 ---
 
-## 7. Caveat cần nói khi demo
+## 7. Giới hạn hiện tại cần nói khi demo
 
 - Chưa có outbox pattern: DB write và Kafka publish không atomic.
 - Nếu DB save thành công nhưng Kafka publish fail, mini-lab sẽ fail request rõ ràng nhưng DB có thể đã ghi.
@@ -164,7 +164,7 @@ POST/PUT /api/master-data
 
 ---
 
-## 8. Done criteria
+## 8. Tiêu chí hoàn thành
 
 Milestone #15 đã đóng vì có đủ:
 

@@ -67,7 +67,7 @@ Sau feedback mentor ngày 11/06/2026, Phase 1.5 đưa demo gần target hơn b�
 | External integrations | e-contract, eCommerce, CRM, HR, documents, digital signing. | Khi cần hiểu boundary ERP/SME ecosystem. | Draw integration boundary + failure/retry awareness. | Awareness từ sơ đồ target. | Mock quá nhiều hệ ngoài, mất trọng tâm. |
 | DDD/domain boundaries | Thiết kế domain/service boundary, aggregate, module. | Sau khi demo backend chạy ổn và cần review design. | Awareness note + refactor discussion, không bắt buộc code. | Later. | Refactor DDD khi domain demo còn quá nhỏ. |
 
-## Current lab mapping
+## Mapping lab hiện tại
 
 | Current artifact | Architecture concept | Status | Evidence |
 |---|---|---|---|
@@ -94,7 +94,7 @@ Sau feedback mentor ngày 11/06/2026, Phase 1.5 đưa demo gần target hơn b�
 | SQL playground `01-09` | PostgreSQL learning lab | Implemented | Schema, EXPLAIN, index pattern, migration, ACID/isolation. |
 | `docs/07-architecture/overview/keycloak-in-target-architecture.md` | Security architecture mapping | Done | Map Keycloak/OIDC vào target architecture. |
 
-## Core vs optional trong Phase 1
+## Nội dung cốt lõi và mở rộng trong Phase 1
 
 ### Core đã đủ để demo
 

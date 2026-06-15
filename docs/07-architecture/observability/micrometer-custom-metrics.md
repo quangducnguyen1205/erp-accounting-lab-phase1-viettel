@@ -174,7 +174,7 @@ Counter thường có suffix `_total`. Timer thường có nhiều series như `
 
 ---
 
-## 9. Caveat Phase 1
+## 9. Giới hạn hiện tại Phase 1
 
 - Metric trong app vẫn reset khi app restart.
 - Prometheus/Grafana hiện chỉ là local lab, chưa phải production monitoring stack.

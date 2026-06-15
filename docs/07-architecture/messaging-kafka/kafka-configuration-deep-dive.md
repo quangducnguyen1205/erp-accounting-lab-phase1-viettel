@@ -69,7 +69,7 @@ services:
 Ý nghĩa:
 
 - `apache/kafka:3.7.0`: image Kafka official dùng cho local mini-lab.
-- `container_name: viettel-kafka`: tên container để `make kafka-status` và `docker exec` dễ nhớ.
+- `container_name: viettel-kafka`: tên container để `make -f Makefile.legacy kafka-status` và `docker exec` dễ nhớ.
 - `19092:19092`: expose port 19092 của container ra host. Spring Boot trên host gọi `localhost:19092`.
 
 Không expose `9092` ra host vì `9092` là listener internal cho Docker network.
@@ -206,17 +206,17 @@ app:
     enabled: ${APP_MESSAGING_ENABLED:false}
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
     master-data-topic: ${KAFKA_MASTER_DATA_TOPIC:master-data-events}
-    consumer-group-id: ${KAFKA_CONSUMER_GROUP_ID:tenant-demo-master-data}
 ```
 
 Map sang code:
 
 | YAML field | Java class/method | Dùng ở đâu |
 |---|---|---|
-| `app.messaging.enabled` | `MessagingProperties.isEnabled()` và `@ConditionalOnProperty` | Bật/tắt Kafka producer/consumer beans. |
-| `bootstrap-servers` | `properties.getBootstrapServers()` | ProducerFactory và ConsumerFactory kết nối Kafka. |
-| `master-data-topic` | `properties.getMasterDataTopic()` và `@KafkaListener(topics = ...)` | Topic publish/consume. |
-| `consumer-group-id` | `properties.getConsumerGroupId()` và `@KafkaListener(groupId = ...)` | Consumer group của listener. |
+| `app.messaging.enabled` | `MessagingProperties.isEnabled()` và `@ConditionalOnProperty` | Bật/tắt Kafka producer beans trong `tenant-demo`. |
+| `bootstrap-servers` | `properties.getBootstrapServers()` | ProducerFactory kết nối Kafka. |
+| `master-data-topic` | `properties.getMasterDataTopic()` | Topic publish `MasterDataChangedEvent`. |
+
+Ghi chú: `tenant-demo` hiện là producer-only. Consumer group thật nằm trong `audit-log-service` và `search-service`.
 
 Khi `APP_MESSAGING_ENABLED=false`:
 

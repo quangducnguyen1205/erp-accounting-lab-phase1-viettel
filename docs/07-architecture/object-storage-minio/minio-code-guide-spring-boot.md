@@ -351,7 +351,7 @@ mini-lab upload/download hiện tại.
 
 ---
 
-## 14. Done criteria cho mini-lab
+## 14. Tiêu chí hoàn thành cho mini-lab
 
 - Có MinIO local chạy được.
 - Có bucket private cho lab.

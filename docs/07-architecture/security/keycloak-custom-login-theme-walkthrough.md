@@ -113,7 +113,7 @@ Expected:
 - `tenant2-user/password` can log in;
 - backend token claims and roles are unchanged.
 
-## 7. Production Caveats
+## 7. Giới hạn production
 
 - Real production Keycloak theme should go through accessibility, browser and security review.
 - Demo account hints must not be shown in production.

@@ -10,7 +10,7 @@ Từ `lab-code/`:
 
 ```bash
 make -f Makefile.legacy kafka-ui-up
-make kafka-ui-status
+make -f Makefile.legacy kafka-ui-status
 ```
 
 Mở:
@@ -63,7 +63,7 @@ Sau này khi có `audit-log-service`, Kafka UI sẽ dùng để xem consumer gro
 - `docs/07-architecture/kafka-ui/kafka-ui-foundation.md`
 - `docs/07-architecture/kafka-ui/kafka-ui-local-lab-config-walkthrough.md`
 
-## Caveats
+## Giới hạn hiện tại
 
 - Kafka UI là local/dev tool.
 - Không expose public nếu chưa có auth/network control.

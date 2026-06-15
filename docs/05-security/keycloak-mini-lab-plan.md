@@ -27,7 +27,7 @@ Nếu còn lẫn lộn realm/client/user/JWKS/issuer hoặc JWT tạm vs Keycloa
 
 - `docs/05-security/keycloak-oidc-mental-model.md`
 
-## Done criteria
+## Tiêu chí hoàn thành
 
 - [x] Chạy được Keycloak local ở `http://localhost:18080`.
 - [x] Tạo realm `viettel-lab`.

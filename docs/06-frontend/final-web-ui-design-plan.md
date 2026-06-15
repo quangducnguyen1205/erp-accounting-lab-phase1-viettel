@@ -64,7 +64,7 @@ Existing Figma file, currently with the old file title:
 
 [Phase 1.5 UI design file](https://www.figma.com/design/kyPvlljW1KhQhoUvqLcjco)
 
-Current limitation:
+Giới hạn hiện tại:
 
 - The file name and early design-system page still reflect the old architecture-console direction.
 - Figma Starter MCP tool-call limits currently block automated rename/screen generation.

@@ -2,7 +2,7 @@
 
 ## Mục tiêu
 
-Folder này chạy Keycloak local tách biệt với `tenant-demo`. Mục tiêu là lấy token OIDC thật từ Keycloak và hiểu issuer/JWKS/claims trước khi thay đổi code Spring Boot.
+Thư mục này chạy Keycloak local tách biệt với `tenant-demo`. Mục tiêu là lấy token OIDC thật từ Keycloak và hiểu issuer/JWKS/claims trước khi thay đổi code Spring Boot.
 
 Không dùng lab này như production IAM setup.
 
@@ -266,7 +266,7 @@ VIEWER
 
 Ghi chú Keycloak 26.x: nếu custom user attribute như `tenant_id` không lưu hoặc không xuất hiện trong token, kiểm tra `Realm settings -> User profile`, mapper `tenant_id`, và lấy token mới sau khi đổi attribute.
 
-## Done criteria
+## Tiêu chí hoàn thành
 
 - [x] Keycloak chạy ở `localhost:18080`.
 - [x] Realm `viettel-lab` tồn tại.

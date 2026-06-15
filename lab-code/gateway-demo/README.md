@@ -2,7 +2,7 @@
 
 ## Mục tiêu
 
-Folder này chạy một Spring Cloud Gateway nhỏ để học API Gateway ở mức Phase 1. Gateway chỉ route request đến `tenant-demo`; không thay thế auth, authorization hoặc tenant-aware query của backend.
+Thư mục này chạy một Spring Cloud Gateway nhỏ để học API Gateway ở mức Phase 1. Gateway chỉ route request đến `tenant-demo`; không thay thế auth, authorization hoặc tenant-aware query của backend.
 
 Đọc trước:
 
@@ -62,7 +62,7 @@ WEB_UI_ORIGIN=http://localhost:5173
 
 Điều này chỉ để browser demo gọi `http://localhost:8081/api/**` từ Vite container/dev server. Backend `tenant-demo` vẫn validate JWT và enforce tenant-aware query.
 
-## Caveat
+## Giới hạn hiện tại
 
 - Không có service discovery thật.
 - Không có load balancing nhiều backend instances.

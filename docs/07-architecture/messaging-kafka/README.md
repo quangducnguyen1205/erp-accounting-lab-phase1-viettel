@@ -1,10 +1,10 @@
 # Kafka / Async Messaging
 
-## Folder này chứa gì?
+## Thư mục này chứa gì?
 
 Nhóm này giải thích async messaging, Kafka concepts và Spring Kafka mini-lab quanh `MasterDataChangedEvent`.
 
-## Reading Order
+## Thứ tự đọc đề xuất
 
 1. [kafka-async-messaging.md](kafka-async-messaging.md) - foundation: topic, partition, offset, producer, consumer, consumer group.
 2. [kafka-configuration-deep-dive.md](kafka-configuration-deep-dive.md) - Docker Compose, listeners, advertised listeners, ports.
@@ -22,6 +22,6 @@ Nhóm này giải thích async messaging, Kafka concepts và Spring Kafka mini-l
 - Consumer nhận event bằng `@KafkaListener`.
 - Phase 1.5 đã thêm `audit-log-service` để Kafka trở thành cross-service flow.
 
-## Caveat
+## Giới hạn hiện tại
 
 Chưa có outbox, retry/DLT, idempotency storage hoặc schema evolution production. PostgreSQL vẫn là source of truth.

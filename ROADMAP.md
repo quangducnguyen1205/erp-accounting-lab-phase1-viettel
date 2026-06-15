@@ -9,18 +9,20 @@
 
 ---
 
-## Quick Stats
+## Thống kê nhanh
 
 | Chỉ số | Giá trị |
 |--------|:-------:|
-| **Tiến độ** | Phase 1 core done, Phase 1.5 final demo assembled |
+| **Tiến độ** | Phase 1 core đã xong, Phase 1.5 final demo đã ráp xong |
 | **Tổng task** | 111 |
 | **Đã hoàn thành** | 111 / 111 |
-| **Focus hiện tại** | Phase 1.5 - final smoke dry-run và mentor rehearsal |
+| **Focus hiện tại** | Final reading review, demo script và mentor rehearsal |
 | **Milestone tiếp theo** | Optional hardening sau demo: outbox, retry/DLT, schema registry hoặc service discovery nếu cần |
-| **Demo hiện tại** | React Web UI -> themed Keycloak -> Kong -> tenant-demo / audit-log-service / file-service / search-service -> PostgreSQL/Redis/Kafka/MinIO/Elasticsearch/Observability |
+| **Demo hiện tại** | Master Data Portal -> Keycloak -> Kong -> tenant-demo / audit-log-service / file-service / search-service -> PostgreSQL/Redis/Kafka/MinIO/Elasticsearch/Observability |
 
-Ghi chú: từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; Milestone #14 đã chốt Redis cache-aside tenant-safe read path; Milestone #15 đã chốt Kafka/async messaging reference flow nhỏ; Milestone #16 đã chốt Observability baseline với Actuator, request logging, Micrometer metrics và Prometheus/Grafana local lab. Milestone #17 đã chốt API Gateway static route và React Web UI Docker-first để nhìn flow end-to-end. React Native/Expo không thuộc repo này.
+Ghi chú: `ROADMAP.md` là progress log lịch sử. Tuyến đọc cuối hiện nằm ở `docs/00-gioi-thieu/lo-trinh-doc-cuoi-phase-1.md`.
+
+Từ 22/05, demo tới Keycloak đã đủ để báo cáo khi cần. Sau feedback mentor Đạt ngày 25/05, Milestone #12 đã bổ sung Keycloak Authorization/RBAC/tenant-scope để hiểu phần "được phép làm gì" sau khi đã hiểu login/token. Milestone #13 đã chốt MinIO/file storage upload/download tenant-aware; Milestone #14 đã chốt Redis cache-aside tenant-safe read path; Milestone #15 đã chốt Kafka/async messaging reference flow nhỏ; Milestone #16 đã chốt Observability baseline với Actuator, request logging, Micrometer metrics và Prometheus/Grafana local lab. Milestone #17 đã chốt API Gateway static route và React Web UI Docker-first để nhìn flow end-to-end. React Native/Expo không thuộc repo này.
 
 Ghi chú 11/06 sau khi báo cáo mentor Đạt: Phase 1 core learning coi như đủ nền. Phase 1.5 sẽ đi theo hướng demo production-like hơn: centralized logs bằng Loki/Grafana, Kafka UI, Kong Gateway, tách thêm `audit-log-service`, Kafka cross-service flow, rồi mới polish React Web UI cuối. Keycloak local đã được chuyển sang persistent DB + bootstrap script để demo không phụ thuộc thao tác tạo realm/client/user thủ công sau mỗi lần reset.
 
@@ -117,7 +119,7 @@ Sơ đồ target có React frontend, API Gateway/service discovery/load balancer
 
 ---
 
-## Current state on 22/05/2026
+## Trạng thái ngày 22/05/2026
 
 ### Đã coi là xong để báo cáo
 
@@ -440,7 +442,7 @@ Phase 1.5 bắt đầu sau buổi báo cáo mentor Đạt ngày 11/06/2026. Mụ
 
 ### Thứ tự thực hiện đề xuất
 
-| Thứ tự | Milestone | Mục tiêu | Artifact chính | Done criteria | Trạng thái |
+| Thứ tự | Milestone | Mục tiêu | Artifact chính | Tiêu chí hoàn thành | Trạng thái |
 |---:|---|---|---|---|---|
 | 1 | Loki/log aggregation | Gom Docker container logs vào Grafana Explore | `docs/07-architecture/log-aggregation-loki/`, `lab-code/loki-lab/` | Loki ready, Grafana datasource provisioned, query logs theo service/container/requestId text | Implemented local lab |
 | 2 | Kafka UI | Nhìn topic/message/consumer group/lag thay vì chỉ đọc log | `docs/07-architecture/kafka-ui/`, `lab-code/kafka-ui-lab/` | Mở UI thấy broker/topic/message/consumer group; sẵn sàng inspect `MasterDataChangedEvent` | Implemented local lab |

@@ -684,8 +684,8 @@ Các target chính:
 
 ```bash
 make -f Makefile.legacy loki-up
-make loki-status
-make loki-info
+make -f Makefile.legacy loki-status
+make -f Makefile.legacy loki-info
 make -f Makefile.legacy loki-logs
 make -f Makefile.legacy loki-down
 make -f Makefile.legacy app-run-logs
@@ -725,7 +725,7 @@ Từ repo:
 ```bash
 cd lab-code
 make -f Makefile.legacy loki-up
-make loki-status
+make -f Makefile.legacy loki-status
 curl -f http://localhost:3100/ready
 ```
 
@@ -838,7 +838,7 @@ make -f Makefile.legacy web-ui-down
 - Dùng `localhost:3100` bên trong container Alloy/Grafana thay vì `http://loki:3100`.
 - Quên rằng Prometheus/Grafana metrics lab và Loki/Grafana logs lab là hai lab khác nhau.
 
-## 11. Production Caveats
+## 11. Giới hạn production
 
 Local lab chưa giải quyết:
 

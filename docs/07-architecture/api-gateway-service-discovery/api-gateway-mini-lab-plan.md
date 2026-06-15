@@ -82,7 +82,7 @@ Cases chính:
 - Header `X-Request-Id` đi qua Gateway đến backend.
 - Nếu backend reject token, response qua Gateway vẫn là `401`.
 
-## 6. Done criteria
+## 6. Tiêu chí hoàn thành
 
 - Gateway app compile được.
 - `tenant-demo` tests vẫn pass.
@@ -91,7 +91,7 @@ Cases chính:
 - `X-Request-Id` truyền qua được đến log backend.
 - Docs nói rõ service discovery/load balancing chỉ là awareness.
 
-## 7. Caveat
+## 7. Giới hạn hiện tại
 
 Chưa làm:
 
