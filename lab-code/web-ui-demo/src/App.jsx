@@ -33,10 +33,6 @@ const initialAuthState = {
   error: ''
 };
 
-const gatewayPresets = [
-  { label: 'Kong Gateway', url: 'http://localhost:18000' }
-];
-
 function defaultForm() {
   return {
     code: `MDP-${Date.now()}`,
@@ -80,10 +76,6 @@ function formatRoles(userInfo) {
   }
 
   return [...userInfo.realmRoles, ...userInfo.clientRoles].join(', ') || '(none)';
-}
-
-function gatewayName(apiBaseUrl) {
-  return gatewayPresets.find((preset) => preset.url === apiBaseUrl.trim())?.label ?? 'Gateway tùy chỉnh';
 }
 
 export default function App() {
@@ -164,7 +156,6 @@ export default function App() {
   }, []);
 
   const authReady = authState.authenticated && authState.hasToken;
-  const currentGatewayName = gatewayName(apiBaseUrl);
   const currentTenantId = authState.userInfo?.tenantId;
 
   const actionDisabledReason = useMemo(() => {
@@ -451,10 +442,6 @@ export default function App() {
       return (
         <AccountScreen
           authState={authState}
-          apiBaseUrl={apiBaseUrl}
-          setApiBaseUrl={setApiBaseUrl}
-          gatewayPresets={gatewayPresets}
-          gatewayName={currentGatewayName}
           onLogout={() => keycloak.logout({ redirectUri: window.location.origin })}
           onRefresh={handleRefreshToken}
         />
@@ -470,7 +457,6 @@ export default function App() {
         masterDataLoaded={demoProgress.masterDataLoaded}
         activityLoaded={demoProgress.auditEventsLoaded}
         filesLoaded={demoProgress.filesLoaded}
-        lastResult={lastResult}
         onNavigate={setActiveScreen}
       />
     );
@@ -494,7 +480,6 @@ export default function App() {
       onNavigate={setActiveScreen}
       authState={authState}
       apiBaseUrl={apiBaseUrl}
-      gatewayName={currentGatewayName}
       onLogout={() => keycloak.logout({ redirectUri: window.location.origin })}
       onRefresh={handleRefreshToken}
     >

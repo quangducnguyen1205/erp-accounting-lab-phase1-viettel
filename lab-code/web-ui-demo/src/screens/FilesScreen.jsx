@@ -28,7 +28,6 @@ export function FilesScreen({
   onDelete,
   loading,
   disabled,
-  lastResult,
   userInfo
 }) {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -130,23 +129,6 @@ export function FilesScreen({
         )}
       </section>
 
-      <section className="panel panel-span-3">
-        <div className="panel-heading">
-          <div>
-            <h3>Trạng thái thường gặp</h3>
-            <p>Các thông báo phổ biến khi quản lý tệp tin.</p>
-          </div>
-          <Badge tone={lastResult?.ok ? 'success' : lastResult ? 'danger' : 'neutral'}>
-            {lastResult ? (lastResult.ok ? 'Thành công' : 'Cần kiểm tra') : 'Chưa chạy'}
-          </Badge>
-        </div>
-        <div className="state-grid">
-          <Alert tone="info" title="Tải lên thành công">File mới sẽ xuất hiện trong danh sách sau khi tải lại.</Alert>
-          <Alert tone="warning" title="Không đủ quyền">Viewer không được upload hoặc xóa file.</Alert>
-          <Alert tone="danger" title="Không tìm thấy">File không tồn tại hoặc bạn không có quyền truy cập.</Alert>
-          <Alert tone="info" title="Hệ thống chưa sẵn sàng">Chờ một chút rồi thử lại sau.</Alert>
-        </div>
-      </section>
     </div>
   );
 }

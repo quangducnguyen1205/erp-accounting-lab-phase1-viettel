@@ -80,6 +80,7 @@ tạo/cập nhật:
 - users:
   - `tenant1-user / password`, `tenant_id=1`, role `ACCOUNTANT`;
   - `tenant2-user / password`, `tenant_id=2`, role `VIEWER`;
+  - `tenant2-accountant / password`, `tenant_id=2`, role `ACCOUNTANT`;
   - `platform-admin / password`, `tenant_id=1`, role `ADMIN`;
 - User Profile attribute `tenant_id` cho Keycloak 26.x;
 - protocol mapper `tenant_id` cho access token;
@@ -142,6 +143,7 @@ Password grant/direct access grants chỉ để học local nhanh. Production/fr
 ```text
 tenant1-user / password
 tenant2-user / password
+tenant2-accountant / password
 platform-admin / password
 ```
 
@@ -151,6 +153,7 @@ Gợi ý điền field để tránh quên khi dùng Keycloak 26.x:
 |---|---|---|---|---|
 | `tenant1-user` | `tenant1-user@example.local` | `Tenant 1` | `User` | `On` nếu UI/policy yêu cầu |
 | `tenant2-user` | `tenant2-user@example.local` | `Tenant 2` | `User` | `On` nếu UI/policy yêu cầu |
+| `tenant2-accountant` | `tenant2-accountant@example.local` | `tenant2` | `User` | `On` nếu UI/policy yêu cầu |
 | `platform-admin` | `platform-admin@example.local` | `platform` | `User` | `On` nếu UI/policy yêu cầu |
 
 Trong một số cấu hình Keycloak 26.x, User Profile có thể yêu cầu thêm field hoặc quản lý custom attributes chặt hơn. Nếu không lưu được user/attribute, kiểm tra `Realm settings -> User profile` trước khi nghi ngờ Spring Boot.
@@ -160,6 +163,7 @@ User attributes:
 ```text
 tenant1-user: tenant_id = 1
 tenant2-user: tenant_id = 2
+tenant2-accountant: tenant_id = 2
 platform-admin: tenant_id = 1
 ```
 

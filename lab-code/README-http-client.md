@@ -29,6 +29,7 @@ cp http-client.env.example.json http-client.env.json
 | `search_service_base_url` | Direct URL của `search-service`, mặc định `http://localhost:8084`. |
 | `tenant1_token` | Access token của `tenant1-user` role `ACCOUNTANT`. |
 | `tenant2_token` | Access token của `tenant2-user` role `VIEWER`. |
+| `tenant2_accountant_token` | Access token của `tenant2-accountant` role `ACCOUNTANT`, dùng khi cần tạo dữ liệu tenant 2 trước khi demo VIEWER read-only. |
 | `admin_token` | Access token của `platform-admin` role `ADMIN`. |
 
 ## Lấy token
@@ -43,6 +44,7 @@ File đó có request lấy token cho:
 
 - `tenant1-user / password`;
 - `tenant2-user / password`;
+- `tenant2-accountant / password`;
 - `platform-admin / password`.
 
 Sau khi lấy token, copy `access_token` vào env local tương ứng. Không paste token thật vào file `.http` đã commit.

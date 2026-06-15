@@ -235,11 +235,13 @@ Action:
 - List metadata.
 - Download file.
 - Login tenant2, thử xem/download file tenant1.
+- Nếu cần file tenant2, login `tenant2-accountant` upload trước rồi quay lại `tenant2-user` để test read-only.
 
 Expected result:
 
 - Tenant 1 upload/download được.
 - Tenant 2 không thấy hoặc không tải được file tenant 1.
+- Tenant 2 viewer đọc được file thuộc tenant 2 nếu đã có dữ liệu, nhưng không upload/delete được.
 
 Audience may ask:
 

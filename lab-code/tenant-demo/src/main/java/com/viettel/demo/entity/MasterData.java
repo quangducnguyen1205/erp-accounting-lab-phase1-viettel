@@ -6,7 +6,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 
 import java.time.LocalDateTime;
 
@@ -25,23 +24,22 @@ import java.time.LocalDateTime;
  * 2. Đánh dấu là JPA @Entity, mapping với bảng master_data.
  * 3. Khai báo các field: id (PK), code, name, category,
  *    isActive, createdAt.
- * 4. Tạo unique constraint tenant-aware: (tenant_id, code).
+ * 4. Tính duy nhất của code được quản lý bằng Flyway partial unique index:
+ *    active records unique theo (tenant_id, code), còn record đã tạm ngưng
+ *    không chặn tạo lại code mới.
  *
  * [Kiến thức cần tự research]
  * - @Entity, @Table (JPA)
  * - @Id, @GeneratedValue (strategy)
  * - @Column
- * - @Table(uniqueConstraints = ...) — UniqueConstraint trên nhiều cột
+ * - Partial unique index trong PostgreSQL
  * - Đọc lại: docs/03-backend-database-mo-rong/postgres-va-bai-toan-multi-tenant.md
  *   (phần "Unique constraint tenant-aware")
  *
  * ==============================================================
  */
 @Entity
-@Table(name = "master_data",
-        uniqueConstraints = @UniqueConstraint(
-                name = "unique_tenant_code",
-                columnNames = {"tenant_id", "code"}))
+@Table(name = "master_data")
 public class MasterData extends TenantAwareEntity{
 
     @Id

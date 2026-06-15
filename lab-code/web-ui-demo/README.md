@@ -106,7 +106,8 @@ Nếu cấu hình tay trong Admin Console, checklist tối thiểu:
 6. Đặt `Web origins = http://localhost:5173`.
 7. Gán `tenant1-user` attribute `tenant_id=1` và role `ACCOUNTANT`.
 8. Gán `tenant2-user` attribute `tenant_id=2` và role `VIEWER`.
-9. Login lại hoặc bấm `Refresh token` để token mới chứa claim/role mới.
+9. Gán `tenant2-accountant` attribute `tenant_id=2` và role `ACCOUNTANT` nếu cần chuẩn bị dữ liệu tenant 2 cho demo file read-only.
+10. Login lại hoặc bấm `Refresh token` để token mới chứa claim/role mới.
 
 Hai lỗi setup dễ gặp:
 
@@ -119,6 +120,7 @@ User demo kỳ vọng trong lab hiện tại:
 |---|---|---:|---|
 | `tenant1-user` | `password` | `1` | `ACCOUNTANT` |
 | `tenant2-user` | `password` | `2` | `VIEWER` |
+| `tenant2-accountant` | `password` | `2` | `ACCOUNTANT` |
 
 Nếu thấy ghi nhầm `tenant1-user` cho cả hai tenant thì đó là typo; user tenant 2 đúng là `tenant2-user`.
 
@@ -166,11 +168,11 @@ Build output `dist/` chỉ nằm trong Docker image/layer; không commit `dist/`
 2. Trên UI:
 
    - Login bằng Keycloak.
-   - Dashboard/Account: kiểm API base URL đang là Kong và user/tenant/role đúng.
+   - Dashboard/Account: kiểm user/tenant/role đúng; API vẫn dùng Kong theo cấu hình runtime.
    - Master Data: bấm `Load master data`.
    - Master Data: bấm `Load by code` với một code có thật như `LAPTOP-01`.
    - Master Data: tạo record với code `UI-DEMO-*`.
-   - Master Data: sửa tên/loại/mã khi cần và thử tạm ngưng bản ghi. Tạm ngưng là soft delete/deactivate: bản ghi không còn hiện trong list/lookup thường, nhưng code cũ vẫn được giữ để tránh tái sử dụng nhầm trong cùng tenant.
+   - Master Data: sửa tên/loại/mã khi cần và thử tạm ngưng bản ghi. Tạm ngưng là soft delete/deactivate: bản ghi không còn hiện trong list/lookup thường; code của bản ghi đã tạm ngưng có thể được dùng lại cho bản ghi active mới.
    - Master Data: dùng `Tìm kiếm nâng cao` để gọi search-service qua Kong. Kết quả có thể trễ vài giây sau create/update/deactivate vì search là Elasticsearch projection từ Kafka event.
    - Tệp tin: upload file nhỏ, tải danh sách, tải xuống, thử viewer `403` nếu cần.
    - Activity Log: đợi một chút rồi bấm `Load activity`.
@@ -194,7 +196,7 @@ make clean-logs   # optional
 - Tệp tin: bấm `Tải lên`/`Tải danh sách` để gọi file-service qua Kong; UI không gọi MinIO trực tiếp.
 - Search: dùng `Tìm kiếm nâng cao` để gọi search-service qua Kong; UI không gọi Elasticsearch trực tiếp.
 - Activity Log: bấm `Load activity` để đọc activity records qua Kong; tenant 2 không thấy activity tenant 1.
-- Observability: Prometheus/Grafana quan sát metric từ `tenant-demo`, không phải UI gọi trực tiếp Prometheus/Grafana.
+- Observability: xem log/metric bằng các tool ngoài UI theo demo script; business UI không gọi trực tiếp các tool quan sát.
 
 ## Activity Log demo
 
@@ -210,6 +212,7 @@ Expected behavior:
 |---|---|
 | `tenant1-user/password` | Load/create master data được; load activity tenant 1 được. |
 | `tenant2-user/password` | Load master data được; create trả `403`; không thấy activity tenant 1. |
+| `tenant2-accountant/password` | Tạo dữ liệu/file tenant 2 trước khi demo tenant2 viewer read-only. |
 
 UI không kết luận Kafka/audit thành công sau POST. Chỉ khi `GET /api/audit-events` trả event thật thì mới coi audit đã lưu.
 

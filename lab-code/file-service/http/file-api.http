@@ -50,3 +50,22 @@ Content-Type: text/plain
 
 Viewer should not upload this file.
 --BoundaryViewer--
+
+### Upload file as tenant2 accountant through Kong
+# Dùng request này để chuẩn bị dữ liệu cho tenant2 VIEWER download/read-only demo.
+POST {{kong_base_url}}/api/files
+Authorization: Bearer {{tenant2_accountant_token}}
+X-Request-Id: file-tenant2-accountant-upload-001
+Content-Type: multipart/form-data; boundary=BoundaryTenant2Accountant
+
+--BoundaryTenant2Accountant
+Content-Disposition: form-data; name="file"; filename="tenant2-sample.txt"
+Content-Type: text/plain
+
+Hello from tenant 2 accountant file setup.
+--BoundaryTenant2Accountant--
+
+### List files as tenant2 viewer through Kong
+GET {{kong_base_url}}/api/files
+Authorization: Bearer {{tenant2_token}}
+X-Request-Id: file-tenant2-viewer-list-001

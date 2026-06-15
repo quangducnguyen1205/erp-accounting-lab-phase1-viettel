@@ -25,7 +25,6 @@ export function MasterDataScreen({
   onDeactivate,
   onGenerateCode,
   postCreateHint,
-  lastResult,
   userInfo
 }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -278,23 +277,6 @@ export function MasterDataScreen({
         {postCreateHint && <Alert tone="success" title="Thao tác thành công">{postCreateHint}</Alert>}
       </section>
 
-      <section className="panel panel-span-2">
-        <div className="panel-heading">
-          <div>
-            <h3>Trạng thái thường gặp</h3>
-            <p>Các thông báo phổ biến khi thao tác dữ liệu.</p>
-          </div>
-          <Badge tone={lastResult?.ok ? 'success' : 'neutral'}>
-            {lastResult ? (lastResult.ok ? 'Thành công' : 'Cần kiểm tra') : 'Chưa chạy'}
-          </Badge>
-        </div>
-        <div className="state-grid">
-          <Alert tone="danger" title="Phiên đăng nhập hết hạn">Đăng nhập lại để tiếp tục thao tác.</Alert>
-          <Alert tone="warning" title="Không đủ quyền">Vai trò hiện tại không được phép tạo, sửa hoặc tạm ngưng bản ghi.</Alert>
-          <Alert tone="danger" title="Mã bị trùng">Mã dữ liệu đã tồn tại trong tenant hiện tại.</Alert>
-          <Alert tone="info" title="Hệ thống chưa sẵn sàng">Chờ một chút rồi thử lại sau.</Alert>
-        </div>
-      </section>
     </div>
   );
 }

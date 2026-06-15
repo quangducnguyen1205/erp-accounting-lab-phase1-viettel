@@ -17,6 +17,7 @@ Checklist này dùng trong lúc live demo. Mục tiêu là biết nên mở gì,
 
 - [ ] UI login `tenant1-user/password`
 - [ ] UI login `tenant2-user/password`
+- [ ] Nếu cần dữ liệu file tenant 2: lấy token `tenant2-accountant/password`
 - [ ] Token không hiển thị full value trong UI
 - [ ] No-token API trả `401`
 - [ ] Viewer write action trả `403`
@@ -27,6 +28,7 @@ Checklist này dùng trong lúc live demo. Mục tiêu là biết nên mở gì,
 - [ ] Tenant 1 tạo master data thành công
 - [ ] Tenant 2 không thấy master data của tenant 1
 - [ ] Tenant 1 file không visible/download được bởi tenant 2
+- [ ] Tenant 2 viewer download được file thuộc tenant 2 nếu file được tạo trước bằng `tenant2-accountant`
 - [ ] Tenant 1 audit/activity không visible bởi tenant 2
 - [ ] Tenant 1 search result không visible bởi tenant 2
 
@@ -37,6 +39,7 @@ Checklist này dùng trong lúc live demo. Mục tiêu là biết nên mở gì,
 - [ ] Update record
 - [ ] Duplicate code trả `409`
 - [ ] Deactivate/delete record
+- [ ] Tạo lại cùng code sau deactivate thành công
 - [ ] Load by code trước khi deactivate
 - [ ] UI hiển thị lỗi thân thiện, không lộ token
 

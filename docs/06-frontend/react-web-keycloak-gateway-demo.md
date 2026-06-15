@@ -134,6 +134,7 @@ Nếu làm thủ công, checklist ngắn:
 6. Web origins: `http://localhost:5173`.
 7. User `tenant1-user`: password local `password`, `tenant_id=1`, role `ACCOUNTANT`.
 8. User `tenant2-user`: password local `password`, `tenant_id=2`, role `VIEWER`.
+9. User `tenant2-accountant`: password local `password`, `tenant_id=2`, role `ACCOUNTANT`, dùng khi cần chuẩn bị dữ liệu tenant 2.
 
 Lưu ý quan trọng về role:
 
@@ -148,6 +149,7 @@ User demo kỳ vọng:
 |---|---:|---|
 | `tenant1-user` | `1` | `ACCOUNTANT` |
 | `tenant2-user` | `2` | `VIEWER` |
+| `tenant2-accountant` | `2` | `ACCOUNTANT` |
 
 Nếu ghi nhầm user thứ hai là `tenant1-user` thì coi đó là typo. Case tenant 2 nên dùng `tenant2-user`.
 

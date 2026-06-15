@@ -216,7 +216,7 @@ public class MasterDataService {
     }
 
     private void rejectDuplicateCode(Long tenantId, String code, Long currentId) {
-        repository.findByTenantIdAndCode(tenantId, code)
+        repository.findByTenantIdAndCodeAndIsActiveTrue(tenantId, code)
                 .filter(existing -> !existing.getId().equals(currentId))
                 .ifPresent(existing -> {
                     throw new MasterDataCodeConflictException(code);
@@ -226,7 +226,8 @@ public class MasterDataService {
     private RuntimeException mapMasterDataCodeConflict(DataIntegrityViolationException exception, String code) {
         Throwable cause = exception.getMostSpecificCause();
         String message = String.valueOf(cause.getMessage());
-        if (message.contains("unique_tenant_code")) {
+        if (message.contains("unique_tenant_code")
+                || message.contains("ux_master_data_tenant_code_active")) {
             return new MasterDataCodeConflictException(code);
         }
         return exception;

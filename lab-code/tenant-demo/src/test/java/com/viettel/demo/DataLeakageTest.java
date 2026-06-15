@@ -319,6 +319,52 @@ public class DataLeakageTest {
                 .andExpect(status().isNotFound());
     }
 
+    @Test
+    void soft_deactivated_code_should_be_reusable_for_new_active_record() throws Exception {
+        String payload = """
+                {
+                  "code": "RECREATE-CODE",
+                  "name": "Recreate Code",
+                  "category": "TEST",
+                  "isActive": true
+                }
+                """;
+
+        mockMvc.perform(post("/api/master-data")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantOneToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.tenantId", is(1)))
+                .andExpect(jsonPath("$.code", is("RECREATE-CODE")));
+
+        Long firstId = jdbcTemplate.queryForObject(
+                "SELECT id FROM master_data WHERE tenant_id = ? AND code = ? AND is_active = true",
+                Long.class,
+                1L,
+                "RECREATE-CODE"
+        );
+
+        mockMvc.perform(delete("/api/master-data/" + firstId)
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantOneToken)))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(post("/api/master-data")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantOneToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.tenantId", is(1)))
+                .andExpect(jsonPath("$.code", is("RECREATE-CODE")));
+
+        mockMvc.perform(post("/api/master-data")
+                        .header(HttpHeaders.AUTHORIZATION, bearer(tenantOneToken))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status", is(409)));
+    }
+
     /*
      * Spring Security phải chặn request thiếu Bearer token trước khi vào controller.
      */

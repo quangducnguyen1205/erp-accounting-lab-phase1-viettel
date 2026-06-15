@@ -1,7 +1,7 @@
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 
-export function AppShell({ activeScreen, onNavigate, authState, apiBaseUrl, gatewayName, onLogout, onRefresh, children }) {
+export function AppShell({ activeScreen, onNavigate, authState, onLogout, onRefresh, children }) {
   return (
     <div className="console-shell">
       <Sidebar activeScreen={activeScreen} onNavigate={onNavigate} />
@@ -9,8 +9,6 @@ export function AppShell({ activeScreen, onNavigate, authState, apiBaseUrl, gate
         <Topbar
           activeScreen={activeScreen}
           authState={authState}
-          apiBaseUrl={apiBaseUrl}
-          gatewayName={gatewayName}
           onLogout={onLogout}
           onRefresh={onRefresh}
         />

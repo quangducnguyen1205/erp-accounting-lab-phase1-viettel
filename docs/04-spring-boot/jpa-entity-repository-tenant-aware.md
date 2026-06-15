@@ -69,9 +69,9 @@ Vì `application.yml` đang dùng `spring.jpa.hibernate.ddl-auto: validate`, Hib
 | `tenant_id` | field `tenantId`, `@Column(name = "tenant_id")` |
 | `is_active` | field `isActive`, `@Column(name = "is_active")` |
 | `created_at` | field `createdAt`, `@Column(name = "created_at")` |
-| `UNIQUE (tenant_id, code)` | nên được hiểu và có thể mô tả lại bằng `@Table(uniqueConstraints = ...)` |
+| Partial unique index `(tenant_id, code) WHERE is_active = true` | nằm trong Flyway migration; JPA entity chỉ map table/column |
 
-Trong lab này, Flyway vẫn là source chính tạo schema. Annotation unique trong entity giúp code đọc dễ hiểu hơn, nhưng không thay thế migration SQL đã chạy trong database.
+Trong lab này, Flyway vẫn là source chính tạo schema. Với partial unique index, không nên cố mô tả bằng `@Table(uniqueConstraints = ...)` vì annotation JPA không diễn đạt được điều kiện `WHERE is_active = true`.
 
 ## Repository làm gì?
 
@@ -146,7 +146,7 @@ Database constraint như `UNIQUE (tenant_id, code)` bảo vệ tính đúng khi 
 - [ ] Có `id`, `code`, `name`, `category`, `isActive`, `createdAt`.
 - [ ] Map `is_active` và `created_at` đúng tên column.
 - [ ] Đối chiếu type Java với type PostgreSQL trong Flyway migration.
-- [ ] Nhớ ý nghĩa tenant-aware unique constraint `(tenant_id, code)`.
+- [ ] Nhớ ý nghĩa tenant-aware partial unique index: active code duy nhất theo tenant, record đã tạm ngưng không chặn tạo lại code mới.
 
 ## Checklist cho `MasterDataRepository`
 

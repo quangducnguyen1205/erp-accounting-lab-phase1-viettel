@@ -6,9 +6,10 @@
 # - Không commit access token thật.
 #
 # Sau khi chạy từng request token, copy `access_token` vào env local:
-# - tenant1-user      -> {{tenant1_token}}
-# - tenant2-user      -> {{tenant2_token}}
-# - platform-admin    -> {{admin_token}}
+# - tenant1-user        -> {{tenant1_token}}
+# - tenant2-user        -> {{tenant2_token}}
+# - tenant2-accountant  -> {{tenant2_accountant_token}}
+# - platform-admin      -> {{admin_token}}
 
 @keycloak_base_url = http://localhost:18080
 @keycloak_realm = viettel-lab
@@ -32,6 +33,12 @@ POST {{keycloak_base_url}}/realms/{{keycloak_realm}}/protocol/openid-connect/tok
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=password&client_id={{keycloak_client_id}}&username=tenant2-user&password={{demo_password}}
+
+### Token tenant 2 - ACCOUNTANT, tenant_id=2
+POST {{keycloak_base_url}}/realms/{{keycloak_realm}}/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id={{keycloak_client_id}}&username=tenant2-accountant&password={{demo_password}}
 
 ### Token platform admin - ADMIN, tenant_id=1
 POST {{keycloak_base_url}}/realms/{{keycloak_realm}}/protocol/openid-connect/token

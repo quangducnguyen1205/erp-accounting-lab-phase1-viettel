@@ -60,6 +60,7 @@ Kong là đường vào API chính
 |---|---|---:|---|---|
 | `tenant1-user` | `password` | `1` | `ACCOUNTANT` | CRUD danh mục, upload/download file, xem activity, search |
 | `tenant2-user` | `password` | `2` | `VIEWER` | đọc dữ liệu tenant 2, chứng minh không thấy dữ liệu tenant 1, write bị `403` |
+| `tenant2-accountant` | `password` | `2` | `ACCOUNTANT` | chuẩn bị dữ liệu tenant 2 nếu cần demo viewer download/read-only |
 | `platform-admin` | `password` | `1` | `ADMIN` | gọi admin-only reindex bằng IntelliJ `.http`, không dùng trong React UI |
 
 Credential này chỉ dùng cho local demo.
@@ -74,8 +75,9 @@ Credential này chỉ dùng cho local demo.
 | Kafka UI | `http://localhost:18082` |
 | Grafana Loki | `http://localhost:13001` |
 | Loki ready endpoint | `http://localhost:3100/ready` |
-| Prometheus metrics lab | `http://localhost:19090` nếu bật |
-| Grafana metrics lab | `http://localhost:13000` nếu bật |
+
+Trong final demo, Grafana chính thức là `http://localhost:13001` để đọc log qua Loki.
+Prometheus/Grafana metrics lab cũ vẫn là learning lab riêng sau `Makefile.legacy`, nhưng không nằm trong luồng `make up` chính để tránh nhầm hai Grafana.
 
 Các Java service host-run:
 
@@ -127,7 +129,7 @@ Thứ tự khuyến nghị:
 8. File upload/download với MinIO.
 9. Search service với Elasticsearch.
 10. Admin-only reindex bằng `.http`.
-11. Observability bằng `make status`, log files, Loki/Grafana, Kafka UI.
+11. Observability bằng `make status`, log files, Grafana Loki và Kafka UI.
 12. Kết thúc bằng production caveats.
 
 ## 8. Kịch bản từng bước
@@ -215,6 +217,7 @@ Action với tenant 1:
 3. Sửa tên hoặc loại.
 4. Thử tạo/sửa trùng code để thấy `409`.
 5. Tạm ngưng/deactivate record.
+6. Tạo lại một record mới với cùng code vừa tạm ngưng để chứng minh unique chỉ áp dụng cho bản ghi active.
 
 Action với tenant 2:
 
@@ -258,7 +261,7 @@ Expected:
 Evidence:
 
 - `tenant-demo.log`.
-- Optional metrics nếu Prometheus/Grafana metrics lab đang chạy.
+- Metrics lab Prometheus/Grafana là nội dung legacy/optional, không phải entry point chính của final demo.
 
 ### Scene F - Kafka event flow
 
@@ -314,12 +317,14 @@ Action:
 3. Load danh sách file.
 4. Download file.
 5. Login tenant 2 và thử xem/download file tenant 1.
+6. Nếu cần demo tenant 2 có file riêng, dùng `tenant2-accountant` upload trước, rồi quay lại `tenant2-user` để chứng minh VIEWER chỉ đọc/download.
 
 Expected:
 
 - Tenant 1 upload/download được.
 - Tenant 2 không thấy hoặc không tải được file tenant 1.
-- VIEWER write/delete bị từ chối nếu role không cho phép.
+- Tenant 2 VIEWER đọc/download được file thuộc tenant 2 nếu dữ liệu đã được chuẩn bị.
+- VIEWER upload/delete bị từ chối.
 
 Điểm cần nói:
 

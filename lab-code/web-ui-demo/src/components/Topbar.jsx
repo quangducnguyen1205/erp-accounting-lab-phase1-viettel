@@ -5,7 +5,7 @@ function primaryRole(userInfo) {
   return roles.find((role) => ['ADMIN', 'ACCOUNTANT', 'VIEWER'].includes(role)) ?? roles[0] ?? 'NO_ROLE';
 }
 
-export function Topbar({ activeScreen, authState, apiBaseUrl, onLogout, onRefresh }) {
+export function Topbar({ activeScreen, authState, onLogout, onRefresh }) {
   const user = authState.userInfo;
   const role = primaryRole(user);
   const pageTitles = {
@@ -24,8 +24,7 @@ export function Topbar({ activeScreen, authState, apiBaseUrl, onLogout, onRefres
       </div>
 
       <div className="topbar-status">
-        <Badge tone="blue">API sẵn sàng</Badge>
-        <span className="api-pill" title={apiBaseUrl}>Kết nối local</span>
+        <Badge tone="blue">Phiên đang hoạt động</Badge>
         <Badge tone={role === 'ACCOUNTANT' ? 'success' : role === 'VIEWER' ? 'indigo' : 'neutral'}>{role}</Badge>
         <div className="user-summary">
           <strong>{user?.username ?? 'Khách'}</strong>

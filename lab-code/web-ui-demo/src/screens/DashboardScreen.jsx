@@ -17,7 +17,7 @@ function formatActivity(event) {
   return `${action} ${code}`;
 }
 
-export function DashboardScreen({ authState, rows, auditEvents, files, masterDataLoaded, activityLoaded, filesLoaded, lastResult, onNavigate }) {
+export function DashboardScreen({ authState, rows, auditEvents, files, masterDataLoaded, activityLoaded, filesLoaded, onNavigate }) {
   const activeRecords = rows.filter(isActiveRecord).length;
   const role = primaryRole(authState.userInfo);
   const recentEvents = auditEvents.slice(0, 4);
@@ -92,32 +92,7 @@ export function DashboardScreen({ authState, rows, auditEvents, files, masterDat
           <button type="button" className="button-secondary" onClick={() => onNavigate('files')}>Quản lý tệp tin</button>
           <button type="button" className="button-secondary" onClick={() => onNavigate('activity-log')}>Xem lịch sử</button>
         </div>
-        <p className="hint">Phần giải thích kỹ thuật nằm trong demo script, không phải thao tác chính của người dùng.</p>
-      </section>
-
-      <section className="panel panel-span-3">
-        <div className="panel-heading">
-          <div>
-            <h3>Thao tác gần nhất</h3>
-            <p>Hiển thị kết quả thao tác mới nhất trong phiên làm việc.</p>
-          </div>
-          <Badge tone={lastResult?.ok ? 'success' : lastResult ? 'danger' : 'neutral'}>
-            {lastResult ? (lastResult.ok ? 'Thành công' : 'Cần kiểm tra') : 'Chưa có'}
-          </Badge>
-        </div>
-        {lastResult ? (
-          <details className="technical-details">
-            <summary>Chi tiết kỹ thuật</summary>
-            <dl className="facts">
-              <dt>HTTP status</dt>
-              <dd>{lastResult.status}</dd>
-              <dt>requestId</dt>
-              <dd><code>{lastResult.requestId}</code></dd>
-            </dl>
-          </details>
-        ) : (
-          <EmptyState title="Chưa có thao tác">Tải dữ liệu hoặc tạo bản ghi để xem trạng thái gần nhất.</EmptyState>
-        )}
+        <p className="hint">Bắt đầu bằng cách tải danh mục, tạo bản ghi mới, sau đó kiểm tra lịch sử hoạt động.</p>
       </section>
     </div>
   );
