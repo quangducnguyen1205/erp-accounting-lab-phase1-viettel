@@ -1,8 +1,8 @@
 # HTTP Client requests cho Kafka/async messaging mini-lab
 #
 # Điều kiện:
-# - PostgreSQL đang chạy: cd lab-code && make db-up
-# - Kafka đang chạy: cd lab-code && make kafka-up
+# - PostgreSQL đang chạy: cd lab-code && make -f Makefile.legacy db-up
+# - Kafka đang chạy: cd lab-code && make -f Makefile.legacy kafka-up
 # - tenant-demo chạy với APP_MESSAGING_ENABLED=true
 # - Token lấy từ auth-token-api.http hoặc shared environment.
 # - Nếu dùng local-jwt, chạy hai request đầu trong jwt-api.http để lấy token dev.
@@ -16,9 +16,10 @@
 ### Create master data -> expected 201 + Kafka CREATED event
 # Expected logs:
 # - Published Kafka event ... changeType=CREATED ... key=tenant:1:master-data:<id>
-# - Consumed Kafka event ... tenantId=1 ... changeType=CREATED
-POST {{baseUrl}}/api/master-data
-Authorization: Bearer {{accountantTenant1Token}}
+# - audit-log-service: Stored audit event ...
+# - search-service: Updated search projection ...
+POST {{tenant_demo_base_url}}/api/master-data
+Authorization: Bearer {{tenant1_token}}
 Content-Type: application/json
 
 {
@@ -30,8 +31,8 @@ Content-Type: application/json
 
 ### Update master data -> expected 200 + Kafka UPDATED event
 # TODO: copy id từ response create vào @createdMasterDataId.
-PUT {{baseUrl}}/api/master-data/{{createdMasterDataId}}
-Authorization: Bearer {{accountantTenant1Token}}
+PUT {{tenant_demo_base_url}}/api/master-data/{{createdMasterDataId}}
+Authorization: Bearer {{tenant1_token}}
 Content-Type: application/json
 
 {
@@ -42,16 +43,16 @@ Content-Type: application/json
 }
 
 ### Verify source of truth remains PostgreSQL
-GET {{baseUrl}}/api/master-data/code/{{newCode}}
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/api/master-data/code/{{newCode}}
+Authorization: Bearer {{tenant1_token}}
 
 ### Tenant 2 should not see tenant 1 code
 # Expected: 404, even if Kafka event existed for tenant 1.
-GET {{baseUrl}}/api/master-data/code/{{newCode}}
-Authorization: Bearer {{viewerTenant2Token}}
+GET {{tenant_demo_base_url}}/api/master-data/code/{{newCode}}
+Authorization: Bearer {{tenant2_token}}
 
 ### Missing token -> expected 401
-POST {{baseUrl}}/api/master-data
+POST {{tenant_demo_base_url}}/api/master-data
 Content-Type: application/json
 
 {
@@ -62,7 +63,7 @@ Content-Type: application/json
 }
 
 ### Invalid token -> expected 401
-POST {{baseUrl}}/api/master-data
+POST {{tenant_demo_base_url}}/api/master-data
 Authorization: Bearer invalid.jwt.token
 Content-Type: application/json
 

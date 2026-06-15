@@ -51,8 +51,8 @@ Chạy Elasticsearch local rồi chạy search-service:
 
 ```bash
 cd lab-code
-make elastic-up
-make search-run-logs
+make -f Makefile.legacy elastic-up
+make -f Makefile.legacy search-run-logs
 ```
 
 Search endpoint vẫn phải luôn lấy `tenantId` từ JWT/TenantContext, không lấy từ request body. `tenant-demo` chỉ publish `MasterDataChangedEvent`; `search-service` consume event và update Elasticsearch projection.

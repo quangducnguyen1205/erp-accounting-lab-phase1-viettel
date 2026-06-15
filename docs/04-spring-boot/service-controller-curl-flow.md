@@ -113,8 +113,8 @@ Chạy app:
 
 ```bash
 cd lab-code
-make db-up
-make app-run
+make -f Makefile.legacy db-up
+make -f Makefile.legacy app-run
 ```
 
 Terminal khác, sau khi có controller:

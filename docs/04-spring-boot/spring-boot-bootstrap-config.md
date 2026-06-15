@@ -36,7 +36,7 @@ Trong repo học này:
 
 - `./mvnw validate` kiểm tra project Maven ở mức nhẹ;
 - `./mvnw spring-boot:run` sẽ dùng để chạy app khi cấu hình và code đã đủ;
-- Makefile đang gọi `./mvnw`, nên wrapper giúp lệnh `make app-run` ổn định hơn.
+- Makefile đang gọi `./mvnw`, nên wrapper giúp lệnh `make -f Makefile.legacy app-run` ổn định hơn.
 
 ## `application.yml` là gì?
 
@@ -91,6 +91,6 @@ Trước khi implement tenant flow, cần tự trả lời được:
 - Schema do Flyway tạo hay Hibernate tự tạo?
 - Vì sao migration SQL phải dựa trên SQL playground đã hoàn thành?
 - Vì sao secret thật không nằm trong Git?
-- Khi `make app-run` lỗi, lỗi nằm ở Maven dependency, config datasource, Flyway migration hay Java code?
+- Khi `make -f Makefile.legacy app-run` lỗi, lỗi nằm ở Maven dependency, config datasource, Flyway migration hay Java code?
 
 Khi trả lời được các câu này, bước tiếp theo mới nên là tự code `TenantContext`, `TenantFilter` và endpoint tenant-aware.

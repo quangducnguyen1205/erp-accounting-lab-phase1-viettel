@@ -91,24 +91,24 @@ The consumer stores event tenant. The read API still filters by JWT tenant. Do n
 
 ```bash
 cd lab-code
-make kafka-up
-make kafka-ui-up
-make kong-up
+make -f Makefile.legacy kafka-up
+make -f Makefile.legacy kafka-ui-up
+make -f Makefile.legacy kong-up
 ```
 
 Mở terminal riêng cho audit service Maven host-run:
 
 ```bash
 cd lab-code
-make audit-log-run-logs
+make -f Makefile.legacy audit-log-run-logs
 ```
 
 Mở terminal riêng cho search service Maven host-run nếu demo Elasticsearch projection:
 
 ```bash
 cd lab-code
-make elastic-up
-make search-run-logs
+make -f Makefile.legacy elastic-up
+make -f Makefile.legacy search-run-logs
 ```
 
 Then create/update `master_data` through Kong or HTTP file:

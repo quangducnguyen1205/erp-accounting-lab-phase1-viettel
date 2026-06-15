@@ -18,25 +18,25 @@ Start Docker infra first:
 
 ```bash
 cd lab-code
-make db-up
+make -f Makefile.legacy db-up
 make keycloak-up
 make keycloak-setup
-make minio-up
-make kong-up
+make -f Makefile.legacy minio-up
+make -f Makefile.legacy kong-up
 ```
 
 Run the service:
 
 ```bash
 cd lab-code
-make file-run
+make -f Makefile.legacy file-run
 ```
 
 Run with Loki-friendly file logging:
 
 ```bash
 cd lab-code
-make file-run-logs
+make -f Makefile.legacy file-run-logs
 ```
 
 The log file is:

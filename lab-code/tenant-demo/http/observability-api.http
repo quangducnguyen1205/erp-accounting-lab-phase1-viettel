@@ -13,66 +13,66 @@
 # - /actuator/metrics dùng để inspect metric qua JSON.
 # - /actuator/prometheus dùng để Prometheus scrape theo text format.
 
-@tenantDemoUrl = http://localhost:8080
-#@accountantTenant1Token = <paste-local-jwt-or-keycloak-accountant-token-here>
+@tenant_demo_base_url = http://localhost:8080
+#@tenant1_token = <paste-local-jwt-or-keycloak-accountant-token-here>
 
 ### Health public - filter đang skip để tránh log health-check quá ồn
-GET {{tenantDemoUrl}}/actuator/health
+GET {{tenant_demo_base_url}}/actuator/health
 
 ### Business API với request id tự truyền
 # Expected: 200 nếu token hợp lệ.
 # Expected log có requestId=demo-request-001.
-GET {{tenantDemoUrl}}/api/master-data
+GET {{tenant_demo_base_url}}/api/master-data
 X-Request-Id: demo-request-001
-Authorization: Bearer {{accountantTenant1Token}}
+Authorization: Bearer {{tenant1_token}}
 
 ### Business API không truyền request id
 # Expected: 200 nếu token hợp lệ.
 # Expected log có requestId dạng UUID do app tự sinh.
-GET {{tenantDemoUrl}}/api/master-data
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/api/master-data
+Authorization: Bearer {{tenant1_token}}
 
 ### Business API thiếu token
 # Expected: 401; vẫn có request log với requestId demo-missing-token-001.
-GET {{tenantDemoUrl}}/api/master-data
+GET {{tenant_demo_base_url}}/api/master-data
 X-Request-Id: demo-missing-token-001
 
 ### Metrics list - cần token
 # Expected: 200, có thể thấy metric built-in và custom metric sau khi đã phát sinh.
-GET {{tenantDemoUrl}}/actuator/metrics
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/actuator/metrics
+Authorization: Bearer {{tenant1_token}}
 
 ### Prometheus scrape endpoint - public trong local mini-lab
 # Expected: 200, text format. Production phải restrict bằng private network/auth proxy/mTLS/gateway policy.
-GET {{tenantDemoUrl}}/actuator/prometheus
+GET {{tenant_demo_base_url}}/actuator/prometheus
 
 ### Custom metric - Redis cache hit/miss
 # Cần APP_CACHE_ENABLED=true, Redis đang chạy và đã gọi /api/master-data/code/{code}.
 # Expected tags: result=hit|miss. Không có tenantId/code/requestId.
-GET {{tenantDemoUrl}}/actuator/metrics/tenant_demo.master_data.cache.requests
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/actuator/metrics/tenant_demo.master_data.cache.requests
+Authorization: Bearer {{tenant1_token}}
 
 ### Custom metric - Redis cache puts
 # Cần cache miss rồi set Redis thành công.
-GET {{tenantDemoUrl}}/actuator/metrics/tenant_demo.master_data.cache.puts
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/actuator/metrics/tenant_demo.master_data.cache.puts
+Authorization: Bearer {{tenant1_token}}
 
 ### Custom metric - Redis cache errors
 # Chỉ xuất hiện nếu có lỗi read/write/serialize cache.
-GET {{tenantDemoUrl}}/actuator/metrics/tenant_demo.master_data.cache.errors
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/actuator/metrics/tenant_demo.master_data.cache.errors
+Authorization: Bearer {{tenant1_token}}
 
 ### Custom timer - master_data getByCode duration
 # Có thể verify cả khi APP_CACHE_ENABLED=false; tags: cache=enabled|disabled, result=found|not_found|error.
-GET {{tenantDemoUrl}}/actuator/metrics/tenant_demo.master_data.get_by_code.duration
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/actuator/metrics/tenant_demo.master_data.get_by_code.duration
+Authorization: Bearer {{tenant1_token}}
 
 ### Custom metric - Kafka publish success/failure
 # Cần APP_MESSAGING_ENABLED=true, Kafka đang chạy và đã create/update master_data.
 # Expected tags: event=master_data_changed, result=success|failure.
-GET {{tenantDemoUrl}}/actuator/metrics/tenant_demo.kafka.publish.requests
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/actuator/metrics/tenant_demo.kafka.publish.requests
+Authorization: Bearer {{tenant1_token}}
 
 ### Custom timer - Kafka publish duration
-GET {{tenantDemoUrl}}/actuator/metrics/tenant_demo.kafka.publish.duration
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/actuator/metrics/tenant_demo.kafka.publish.duration
+Authorization: Bearer {{tenant1_token}}

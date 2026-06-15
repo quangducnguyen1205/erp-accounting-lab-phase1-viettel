@@ -24,6 +24,10 @@ scratch/
 # IntelliJ HTTP Client private variables/tokens
 http-client.private.env.json
 **/http-client.private.env.json
+http-client.env.json
+**/http-client.env.json
+!http-client.env.example.json
+!**/http-client.env.example.json
 
 # File build sinh bởi Maven/Gradle
 target/

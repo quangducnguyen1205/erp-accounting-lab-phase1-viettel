@@ -79,7 +79,7 @@ Giữ nguyên nguyên tắc:
 
 ```bash
 cd lab-code
-make kafka-up
+make -f Makefile.legacy kafka-up
 make kafka-status
 ```
 
@@ -141,7 +141,7 @@ POST/PUT /api/master-data
 ## 6. Verification checklist
 
 - [x] `make app-test` pass khi `APP_MESSAGING_ENABLED=false`.
-- [x] `make kafka-up` chạy Kafka local.
+- [x] `make -f Makefile.legacy kafka-up` chạy Kafka local.
 - [x] App chạy với `APP_MESSAGING_ENABLED=true`.
 - [x] Tạo/update master data thành công.
 - [x] Producer log cho thấy event đã publish: `Published Kafka event`.

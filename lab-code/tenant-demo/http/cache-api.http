@@ -1,16 +1,16 @@
 # HTTP Client requests cho Redis/cache mini-lab
 #
 # Điều kiện:
-# - Redis chạy bằng `cd lab-code && make redis-up`.
+# - Redis chạy bằng `cd lab-code && make -f Makefile.legacy redis-up`.
 # - tenant-demo chạy với APP_CACHE_ENABLED=true.
 # - Token lấy từ local JWT dev endpoint hoặc Keycloak, tùy APP_AUTH_MODE.
 #
 # Không paste token thật vào Git.
 
 # Dùng shared environment "development" trong http-client.private.env.json.
-# accountantTenant1Token và viewerTenant2Token có thể được set bằng auth-token-api.http
+# tenant1_token và tenant2_token có thể được set bằng auth-token-api.http
 # hoặc jwt-api.http.
-@invalidToken = invalid.jwt.token
+@invalid_token = invalid.jwt.token
 @code = LAPTOP-01
 
 ### Redis direct check - dùng terminal
@@ -23,31 +23,31 @@
 # - 200 nếu record tồn tại;
 # - log backend: "cache miss";
 # - Redis có key tenant:1:master-data:code:LAPTOP-01.
-GET {{baseUrl}}/api/master-data/code/{{code}}
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/api/master-data/code/{{code}}
+Authorization: Bearer {{tenant1_token}}
 
 ### Tenant 1 - same lookup again
 # Expected khi cache enabled:
 # - 200;
 # - log backend: "cache hit";
 # - response vẫn thuộc tenantId = 1.
-GET {{baseUrl}}/api/master-data/code/{{code}}
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/api/master-data/code/{{code}}
+Authorization: Bearer {{tenant1_token}}
 
 ### Tenant 2 - same code, different tenant-safe key
 # Expected khi cache enabled:
 # - 200 nếu tenant 2 cũng có code này;
 # - không dùng cache key tenant 1;
 # - Redis key riêng: tenant:2:master-data:code:LAPTOP-01.
-GET {{baseUrl}}/api/master-data/code/{{code}}
-Authorization: Bearer {{viewerTenant2Token}}
+GET {{tenant_demo_base_url}}/api/master-data/code/{{code}}
+Authorization: Bearer {{tenant2_token}}
 
 ### Missing token -> expected 401
-GET {{baseUrl}}/api/master-data/code/{{code}}
+GET {{tenant_demo_base_url}}/api/master-data/code/{{code}}
 
 ### Invalid token -> expected 401
-GET {{baseUrl}}/api/master-data/code/{{code}}
-Authorization: Bearer {{invalidToken}}
+GET {{tenant_demo_base_url}}/api/master-data/code/{{code}}
+Authorization: Bearer {{invalid_token}}
 
 ### Redis CLI checks
 # Chạy trong terminal:

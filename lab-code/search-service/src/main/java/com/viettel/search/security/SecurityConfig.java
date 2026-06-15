@@ -33,6 +33,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/actuator/prometheus", "/actuator/prometheus/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/search/master-data/reindex")
+                        .hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/search/master-data", "/api/search/master-data/**")
                         .hasAnyRole("ADMIN", "ACCOUNTANT", "VIEWER")
                         .anyRequest().authenticated()

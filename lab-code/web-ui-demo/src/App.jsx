@@ -51,31 +51,27 @@ function describeApiFailure(result) {
     return '';
   }
 
-  if (typeof result.data === 'string' && result.data.trim()) {
-    return result.data;
-  }
-
-  if (result.data && typeof result.data === 'object' && Object.keys(result.data).length > 0) {
-    return JSON.stringify(result.data);
-  }
-
   if (result.status === 401) {
-    return '401 Unauthorized: token bị thiếu, hết hạn hoặc không hợp lệ. Hãy đăng nhập lại.';
+    return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
   }
 
   if (result.status === 403) {
-    return '403 Forbidden: đã đăng nhập nhưng vai trò hiện tại không được phép thực hiện thao tác này.';
+    return 'Bạn không có quyền thực hiện thao tác này.';
+  }
+
+  if (result.status === 404) {
+    return 'Không tìm thấy dữ liệu hoặc bạn không có quyền truy cập.';
   }
 
   if (result.status === 409) {
-    return '409 Conflict: mã master_data này đã tồn tại trong tenant hiện tại.';
+    return 'Mã dữ liệu đã tồn tại. Vui lòng chọn mã khác.';
   }
 
   if (result.status >= 500) {
-    return 'Lỗi server ngoài dự kiến. Dùng requestId để tra log backend trong Grafana Loki.';
+    return 'Hệ thống tạm thời chưa sẵn sàng. Vui lòng thử lại sau.';
   }
 
-  return `Request thất bại với HTTP ${result.status}.`;
+  return 'Thao tác chưa thành công. Vui lòng kiểm tra lại và thử sau.';
 }
 
 function formatRoles(userInfo) {
@@ -198,7 +194,9 @@ export default function App() {
       }
       return result;
     } catch (err) {
-      setError(err.message ?? String(err));
+      setError(err.message?.includes('fetch')
+        ? 'Không thể kết nối tới hệ thống. Vui lòng kiểm tra lại và thử sau.'
+        : err.message ?? String(err));
       return null;
     } finally {
       setLoading(false);

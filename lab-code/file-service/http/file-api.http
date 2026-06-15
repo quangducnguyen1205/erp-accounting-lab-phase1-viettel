@@ -1,15 +1,19 @@
-### Health
-GET http://localhost:8083/actuator/health
+@kong_base_url = http://localhost:18000
+@file_service_base_url = http://localhost:8083
+@file_id = REPLACE_WITH_FILE_ID
 
-### List files through Kong
-GET http://localhost:18000/api/files
-Authorization: Bearer {{access_token}}
-X-Request-Id: file-demo-list-001
+### Health - direct service
+GET {{file_service_base_url}}/actuator/health
 
-### Upload file through Kong
-POST http://localhost:18000/api/files
-Authorization: Bearer {{access_token}}
-X-Request-Id: file-demo-upload-001
+### List files as tenant1 through Kong
+GET {{kong_base_url}}/api/files
+Authorization: Bearer {{tenant1_token}}
+X-Request-Id: file-tenant1-list-001
+
+### Upload file as tenant1 through Kong
+POST {{kong_base_url}}/api/files
+Authorization: Bearer {{tenant1_token}}
+X-Request-Id: file-tenant1-upload-001
 Content-Type: multipart/form-data; boundary=Boundary
 
 --Boundary
@@ -19,12 +23,30 @@ Content-Type: text/plain
 Hello from Master Data Portal file demo.
 --Boundary--
 
-### Download file through Kong
-GET http://localhost:18000/api/files/{{file_id}}
-Authorization: Bearer {{access_token}}
-X-Request-Id: file-demo-download-001
+### Download file as tenant1 through Kong
+GET {{kong_base_url}}/api/files/{{file_id}}
+Authorization: Bearer {{tenant1_token}}
+X-Request-Id: file-tenant1-download-001
 
-### Delete file through Kong
-DELETE http://localhost:18000/api/files/{{file_id}}
-Authorization: Bearer {{access_token}}
-X-Request-Id: file-demo-delete-001
+### Tenant2 tries to download tenant1 file - expected 404/403, no file data leak
+GET {{kong_base_url}}/api/files/{{file_id}}
+Authorization: Bearer {{tenant2_token}}
+X-Request-Id: file-tenant2-cross-download-001
+
+### Delete file as tenant1 through Kong
+DELETE {{kong_base_url}}/api/files/{{file_id}}
+Authorization: Bearer {{tenant1_token}}
+X-Request-Id: file-tenant1-delete-001
+
+### Viewer tries upload - expected 403
+POST {{kong_base_url}}/api/files
+Authorization: Bearer {{tenant2_token}}
+X-Request-Id: file-tenant2-upload-403
+Content-Type: multipart/form-data; boundary=BoundaryViewer
+
+--BoundaryViewer
+Content-Disposition: form-data; name="file"; filename="viewer.txt"
+Content-Type: text/plain
+
+Viewer should not upload this file.
+--BoundaryViewer--

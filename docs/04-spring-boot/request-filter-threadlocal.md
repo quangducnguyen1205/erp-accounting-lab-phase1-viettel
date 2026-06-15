@@ -198,8 +198,8 @@ Sau khi tự code xong, có thể verify theo hướng:
 
 ```bash
 cd lab-code
-make db-up
-make app-run
+make -f Makefile.legacy db-up
+make -f Makefile.legacy app-run
 ```
 
 Ở terminal khác:

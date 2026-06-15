@@ -1,20 +1,5 @@
 import { Badge } from '../components/Badge';
 
-const demoTools = [
-  ['Grafana Loki', 'http://localhost:13001', 'Xem log backend trong lúc demo.'],
-  ['Kafka UI', 'http://localhost:18082', 'Xem topic event và consumer group.'],
-  ['Kong proxy', 'http://localhost:18000', 'Gateway base URL cho business API.'],
-  ['Keycloak', 'http://localhost:18080', 'Identity provider và user demo local.']
-];
-
-const recipes = [
-  '{service="tenant-demo"}',
-  '{service="audit-log-service"}',
-  '{service=~"tenant-demo|audit-log-service|kong-gateway"} |= "requestId="',
-  '{service=~"tenant-demo|kong-gateway"} |= "409"',
-  '{service=~"tenant-demo|kong-gateway"} |= "403"'
-];
-
 export function AccountScreen({
   authState,
   apiBaseUrl,
@@ -30,14 +15,14 @@ export function AccountScreen({
       <section className="screen-heading">
         <p className="eyebrow">Tài khoản</p>
         <h2>Thông tin tài khoản</h2>
-        <p>Xem ngữ cảnh đăng nhập, vai trò và API base URL đang dùng cho demo.</p>
+        <p>Xem ngữ cảnh đăng nhập, vai trò và kết nối API của phiên hiện tại.</p>
       </section>
 
       <section className="panel panel-span-2">
         <div className="panel-heading">
           <div>
             <h3>Tài khoản đã đăng nhập</h3>
-            <p>Chi tiết token được ẩn; backend service tự validate token trong mỗi API request.</p>
+            <p>Chi tiết token được ẩn. Hệ thống tự kiểm tra quyền trong mỗi thao tác.</p>
           </div>
           <Badge tone="success">Đã đăng nhập</Badge>
         </div>
@@ -62,8 +47,8 @@ export function AccountScreen({
       <section className="panel">
         <div className="panel-heading">
           <div>
-            <h3>API qua Kong Gateway</h3>
-            <p>Business API call của UI đi qua Kong Gateway.</p>
+            <h3>Kết nối API</h3>
+            <p>Đường dẫn API local dùng cho phiên demo hiện tại.</p>
           </div>
           <Badge tone={gatewayName === 'Kong Gateway' ? 'blue' : 'warning'}>{gatewayName}</Badge>
         </div>
@@ -73,7 +58,7 @@ export function AccountScreen({
         </label>
         <div className="preset-row account-presets">
           <button type="button" className="button-secondary" onClick={() => setApiBaseUrl('http://localhost:18000')}>
-            Dùng Kong Gateway
+            Dùng cấu hình mặc định
           </button>
         </div>
       </section>
@@ -81,33 +66,16 @@ export function AccountScreen({
       <section className="panel panel-span-2">
         <div className="panel-heading">
           <div>
-            <h3>Công cụ demo</h3>
-            <p>Link phụ để giải thích backend flow. Product UI không gọi API của các công cụ này.</p>
+            <h3>Ghi chú bảo mật</h3>
+            <p>Thông tin kỹ thuật nhạy cảm không hiển thị trực tiếp trong giao diện.</p>
           </div>
-          <Badge tone="neutral">Chỉ local</Badge>
+          <Badge tone="neutral">Demo local</Badge>
         </div>
-        <div className="tool-link-grid">
-          {demoTools.map(([title, url, body]) => (
-            <a className="tool-link" href={url} target="_blank" rel="noreferrer" key={title}>
-              <strong>{title}</strong>
-              <span>{body}</span>
-              <code>{url}</code>
-            </a>
-          ))}
-        </div>
-      </section>
-
-      <section className="panel">
-        <div className="panel-heading">
-          <div>
-            <h3>Câu lệnh LogQL</h3>
-            <p>Dùng bên ngoài luồng sản phẩm khi giải thích kỹ thuật.</p>
-          </div>
-          <Badge tone="teal">Tùy chọn</Badge>
-        </div>
-        <div className="code-list">
-          {recipes.map((recipe) => <code key={recipe}>{recipe}</code>)}
-        </div>
+        <ul className="plain-list">
+          <li>Access token chỉ hiển thị trạng thái, không hiển thị nội dung.</li>
+          <li>tenant_id được lấy từ token đã xác thực, không lấy từ form.</li>
+          <li>Vai trò quyết định thao tác nào được phép thực hiện.</li>
+        </ul>
       </section>
     </div>
   );

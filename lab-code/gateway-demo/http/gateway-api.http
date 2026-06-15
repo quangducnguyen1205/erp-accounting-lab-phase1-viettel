@@ -7,37 +7,37 @@
 #
 # Không paste token thật vào Git.
 
-@gatewayUrl = http://localhost:8081
-@invalidToken = invalid.jwt.token
+@gateway_demo_base_url = http://localhost:8081
+@invalid_token = invalid.jwt.token
 
 ### Gateway -> tenant-demo health route
 # Expected: 200 nếu tenant-demo đang chạy.
-GET {{gatewayUrl}}/tenant-demo/actuator/health
+GET {{gateway_demo_base_url}}/tenant-demo/actuator/health
 
 ### Gateway route: list master data with token
 # Expected: 200 nếu token hợp lệ.
 # Expected tenant-demo log có requestId=gateway-demo-001.
-GET {{gatewayUrl}}/api/master-data
+GET {{gateway_demo_base_url}}/api/master-data
 X-Request-Id: gateway-demo-001
-Authorization: Bearer {{accountantTenant1Token}}
+Authorization: Bearer {{tenant1_token}}
 
 ### Gateway route: missing token
 # Expected: 401 từ tenant-demo, không phải business logic trong gateway.
-GET {{gatewayUrl}}/api/master-data
+GET {{gateway_demo_base_url}}/api/master-data
 X-Request-Id: gateway-missing-token-001
 
 ### Gateway route: invalid token
 # Expected: 401 từ tenant-demo.
-GET {{gatewayUrl}}/api/master-data
+GET {{gateway_demo_base_url}}/api/master-data
 X-Request-Id: gateway-invalid-token-001
-Authorization: Bearer {{invalidToken}}
+Authorization: Bearer {{invalid_token}}
 
 ### Query by code through gateway
 # Expected: vẫn scoped theo tenant từ token.
-GET {{gatewayUrl}}/api/master-data/code/LAPTOP-01
+GET {{gateway_demo_base_url}}/api/master-data/code/LAPTOP-01
 X-Request-Id: gateway-code-001
-Authorization: Bearer {{accountantTenant1Token}}
+Authorization: Bearer {{tenant1_token}}
 
 ### Gateway app own health
 # Expected: 200 nếu gateway-demo đang chạy.
-GET {{gatewayUrl}}/actuator/health
+GET {{gateway_demo_base_url}}/actuator/health

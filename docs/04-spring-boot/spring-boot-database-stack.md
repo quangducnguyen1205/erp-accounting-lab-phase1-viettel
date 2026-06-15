@@ -207,7 +207,7 @@ Trong lab này, nó hướng dẫn cấu hình:
 - `spring.flyway.enabled`;
 - logging phục vụ học local.
 
-File hiện tại là skeleton có TODO để bạn tự bật cấu hình. Khi gặp lỗi `make app-run`, cần phân biệt lỗi do:
+File hiện tại là skeleton có TODO để bạn tự bật cấu hình. Khi gặp lỗi `make -f Makefile.legacy app-run`, cần phân biệt lỗi do:
 
 - thiếu dependency trong `pom.xml`;
 - sai datasource URL/user/password;
@@ -300,7 +300,7 @@ Phạm vi Sprint 2:
 
 ## Checklist trước khi chạy app
 
-Trước khi chạy `make app-run`, kiểm tra:
+Trước khi chạy `make -f Makefile.legacy app-run`, kiểm tra:
 
 - [ ] `pom.xml` có Web, Data JPA, PostgreSQL driver, Flyway, Test.
 - [ ] PostgreSQL Docker Compose đang chạy.
@@ -310,7 +310,7 @@ Trước khi chạy `make app-run`, kiểm tra:
 - [ ] Flyway được bật.
 - [ ] Migration files nằm trong `src/main/resources/db/migration`.
 - [ ] `TenantDemoApplication` có entrypoint Spring Boot.
-- [ ] `make app-run` dùng Maven wrapper nhất quán.
+- [ ] `make -f Makefile.legacy app-run` dùng Maven wrapper nhất quán.
 
 ## Lỗi thường gặp
 
@@ -330,4 +330,4 @@ Trước khi chạy `make app-run`, kiểm tra:
 4. Tự viết Flyway `V1`, `V2`, `V3`.
 5. Implement `TenantDemoApplication`.
 6. Chạy `./mvnw validate`.
-7. Chạy `make app-run` sau khi config, migrations và entrypoint đã sẵn sàng.
+7. Chạy `make -f Makefile.legacy app-run` sau khi config, migrations và entrypoint đã sẵn sàng.

@@ -24,7 +24,7 @@ docs/05-security/keycloak-oidc-mental-model.md
 cd lab-code
 make keycloak-up
 make keycloak-setup
-make keycloak-status
+make -f Makefile.legacy keycloak-status
 ```
 
 Admin console:
@@ -50,13 +50,13 @@ make keycloak-down
 Xem log:
 
 ```bash
-make keycloak-logs
+make -f Makefile.legacy keycloak-logs
 ```
 
 Reset phá dữ liệu có chủ đích:
 
 ```bash
-make keycloak-reset
+make -f Makefile.legacy keycloak-reset
 make keycloak-up
 make keycloak-setup
 ```
@@ -80,9 +80,11 @@ tạo/cập nhật:
 - users:
   - `tenant1-user / password`, `tenant_id=1`, role `ACCOUNTANT`;
   - `tenant2-user / password`, `tenant_id=2`, role `VIEWER`;
+  - `platform-admin / password`, `tenant_id=1`, role `ADMIN`;
 - User Profile attribute `tenant_id` cho Keycloak 26.x;
 - protocol mapper `tenant_id` cho access token;
 - realm login theme `master-data-portal`.
+- `sslRequired=none` cho realm local để Resource Server đọc OIDC metadata qua HTTP localhost.
 
 Script dùng `kcadm.sh` bên trong container Keycloak. Re-run được ở mức local lab, không phải production config migration tool.
 
@@ -140,6 +142,7 @@ Password grant/direct access grants chỉ để học local nhanh. Production/fr
 ```text
 tenant1-user / password
 tenant2-user / password
+platform-admin / password
 ```
 
 Gợi ý điền field để tránh quên khi dùng Keycloak 26.x:
@@ -148,6 +151,7 @@ Gợi ý điền field để tránh quên khi dùng Keycloak 26.x:
 |---|---|---|---|---|
 | `tenant1-user` | `tenant1-user@example.local` | `Tenant 1` | `User` | `On` nếu UI/policy yêu cầu |
 | `tenant2-user` | `tenant2-user@example.local` | `Tenant 2` | `User` | `On` nếu UI/policy yêu cầu |
+| `platform-admin` | `platform-admin@example.local` | `platform` | `User` | `On` nếu UI/policy yêu cầu |
 
 Trong một số cấu hình Keycloak 26.x, User Profile có thể yêu cầu thêm field hoặc quản lý custom attributes chặt hơn. Nếu không lưu được user/attribute, kiểm tra `Realm settings -> User profile` trước khi nghi ngờ Spring Boot.
 
@@ -156,6 +160,7 @@ User attributes:
 ```text
 tenant1-user: tenant_id = 1
 tenant2-user: tenant_id = 2
+platform-admin: tenant_id = 1
 ```
 
 ### 4. Đưa `tenant_id` vào access token
@@ -220,13 +225,23 @@ Khi dùng issuer-uri, Spring Security Resource Server có thể discovery metada
 
 Local JWT mode vẫn được giữ làm fallback cho `make app-test`. Không xóa fallback này cho tới khi có test Keycloak tách riêng hoặc môi trường CI có Keycloak ổn định.
 
-Sau khi lấy token từ Keycloak, gọi tenant-demo bằng file:
+Sau khi lấy token từ Keycloak, dùng các HTTP helper đã chuẩn hóa:
 
 ```text
-lab-code/tenant-demo/http/keycloak-api.http
+lab-code/keycloak-lab/http/keycloak-token-flow.http
+lab-code/tenant-demo/http/auth-token-api.http
 ```
 
-Không paste token thật vào repo.
+Copy token vào IntelliJ HTTP private environment local, không paste token thật vào repo.
+
+`platform-admin` là account admin local demo. Dùng token này cho thao tác vận hành thủ công, ví dụ reindex search projection:
+
+```text
+POST http://localhost:18000/api/search/master-data/reindex
+Authorization: Bearer <platform-admin token>
+```
+
+Endpoint này không có nút trong React UI và không phải production admin workflow.
 
 ## RBAC/Authorization mini-lab tiếp theo
 
@@ -269,4 +284,4 @@ Ghi chú Keycloak 26.x: nếu custom user attribute như `tenant_id` không lưu
 - Realm/client/user được bootstrap bằng script local, chưa phải realm import/export/IaC production.
 - Password grant/direct access grants chỉ dùng để học local nhanh.
 - Chưa làm HTTPS, key rotation, RBAC role matrix, production Keycloak cluster/hardening.
-- `keycloak-reset` sẽ xóa volume và cần chạy lại `make keycloak-setup`.
+- `make -f Makefile.legacy keycloak-reset` sẽ xóa volume và cần chạy lại `make keycloak-setup`.

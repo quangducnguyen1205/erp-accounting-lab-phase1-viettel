@@ -130,7 +130,7 @@ Nếu client không gửi `X-Request-Id`, Gateway sinh một UUID rồi forward.
 Từ `lab-code/`:
 
 ```bash
-make gateway-run
+make -f Makefile.legacy gateway-run
 ```
 
 Gateway chạy ở:

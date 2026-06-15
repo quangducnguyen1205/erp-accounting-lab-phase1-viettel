@@ -32,7 +32,7 @@ export function ActivityLogScreen({ events, onLoad, loading, disabled, activityL
           rows={events}
           emptyTitle={activityLoaded ? 'Chưa có hoạt động nào trong tenant này' : 'Chưa tải lịch sử'}
           emptyMessage={activityLoaded
-            ? `Không có hoạt động trong tenant ${tenantId ?? '(unknown)'}. HTTP 200 với danh sách rỗng cũng xác nhận tenant isolation cho tài khoản hiện tại.`
+            ? `Không có hoạt động trong tenant ${tenantId ?? '(unknown)'}. Điều này cũng xác nhận tài khoản hiện tại không nhìn thấy lịch sử của tenant khác.`
             : 'Tạo một bản ghi với vai trò ACCOUNTANT, sau đó tải lịch sử để xem thay đổi.'}
         />
       </section>

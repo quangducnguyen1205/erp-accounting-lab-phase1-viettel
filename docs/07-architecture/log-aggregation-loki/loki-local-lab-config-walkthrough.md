@@ -51,11 +51,11 @@ Giới hạn quan trọng:
 
 - Lab này collect Docker container stdout logs.
 - Lab này cũng tail file `lab-code/logs/tenant-demo.log`, `lab-code/logs/audit-log-service.log`, `lab-code/logs/file-service.log` và `lab-code/logs/search-service.log` để demo Java service host-run logs trong Loki.
-- `tenant-demo` chỉ ghi file đó khi chạy bằng `make app-run-logs`.
-- `audit-log-service` chỉ ghi file đó khi chạy bằng `make audit-log-run-logs`.
-- `file-service` chỉ ghi file đó khi chạy bằng `make file-run-logs`.
-- `search-service` chỉ ghi file đó khi chạy bằng `make search-run-logs`.
-- `gateway-demo` nếu chạy bằng `make gateway-run` thì log vẫn nằm ở host terminal; Kong container logs vẫn được collect qua Docker source.
+- `tenant-demo` chỉ ghi file đó khi chạy bằng `make -f Makefile.legacy app-run-logs`.
+- `audit-log-service` chỉ ghi file đó khi chạy bằng `make -f Makefile.legacy audit-log-run-logs`.
+- `file-service` chỉ ghi file đó khi chạy bằng `make -f Makefile.legacy file-run-logs`.
+- `search-service` chỉ ghi file đó khi chạy bằng `make -f Makefile.legacy search-run-logs`.
+- `gateway-demo` nếu chạy bằng `make -f Makefile.legacy gateway-run` thì log vẫn nằm ở host terminal; Kong container logs vẫn được collect qua Docker source.
 - `requestId` nên nằm trong log message để search text, không dùng làm Loki label.
 
 ## 2. File Map
@@ -67,7 +67,7 @@ Giới hạn quan trọng:
 | `lab-code/loki-lab/alloy/config.alloy` | Pipeline collect Docker logs, tail Java service file logs và forward sang Loki. | Khi đổi log source, label, collector pipeline. | Label high-cardinality như requestId/userId/tenantId/token. |
 | `lab-code/loki-lab/grafana/provisioning/datasources/loki.yml` | Tự add Loki datasource vào Grafana. | Khi đổi tên datasource hoặc URL Loki nội bộ. | Password/secret datasource thật. |
 | `lab-code/loki-lab/README.md` | Lệnh chạy, URL, query mẫu, cleanup. | Khi đổi workflow/port/Makefile target. | Lý thuyết quá dài hoặc log/token thật. |
-| `lab-code/Makefile` | Target `make loki-*`, `make app-run-logs`, `make audit-log-run-logs`, `make file-run-logs`, `make search-run-logs`, `make logs-clean`. | Khi thêm/sửa command chạy lab. | Lệnh destructive hoặc phụ thuộc tool local ngoài Docker. |
+| `lab-code/Makefile` | Workflow chính `make up/status/down/clean-logs`; target mini-lab như `make -f Makefile.legacy loki-*`, `app-run-logs`, `audit-log-run-logs`, `file-run-logs`, `search-run-logs`. | Khi thêm/sửa command chạy lab. | Lệnh destructive hoặc phụ thuộc tool local ngoài Docker. |
 
 ## 3. `docker-compose.yml` Walkthrough
 
@@ -639,8 +639,8 @@ Trong repo này:
 {service="tenant-demo"} |= "requestId=demo-001"
 ```
 
-Query này dùng được khi chạy `tenant-demo` bằng `make app-run-logs`.
-Với `audit-log-service`, dùng `make audit-log-run-logs` rồi query tương tự theo `service="audit-log-service"`.
+Query này dùng được khi chạy `tenant-demo` bằng `make -f Makefile.legacy app-run-logs`.
+Với `audit-log-service`, dùng `make -f Makefile.legacy audit-log-run-logs` rồi query tương tự theo `service="audit-log-service"`.
 
 ## 7. Grafana Datasource Provisioning
 
@@ -683,16 +683,16 @@ File: `lab-code/Makefile`
 Các target chính:
 
 ```bash
-make loki-up
+make -f Makefile.legacy loki-up
 make loki-status
 make loki-info
-make loki-logs
-make loki-down
-make app-run-logs
-make audit-log-run-logs
-make file-run-logs
+make -f Makefile.legacy loki-logs
+make -f Makefile.legacy loki-down
+make -f Makefile.legacy app-run-logs
+make -f Makefile.legacy audit-log-run-logs
+make -f Makefile.legacy file-run-logs
 make logs-list
-make logs-clean
+make clean-logs
 ```
 
 Ý nghĩa:
@@ -724,7 +724,7 @@ Từ repo:
 
 ```bash
 cd lab-code
-make loki-up
+make -f Makefile.legacy loki-up
 make loki-status
 curl -f http://localhost:3100/ready
 ```
@@ -766,7 +766,7 @@ Nếu muốn có log từ `web-ui-demo`:
 
 ```bash
 cd lab-code
-make web-ui-up
+make -f Makefile.legacy web-ui-up
 curl -I http://localhost:5173
 ```
 
@@ -780,40 +780,40 @@ Nếu muốn có log từ `tenant-demo` host Maven:
 
 ```bash
 cd lab-code
-make app-run-logs
+make -f Makefile.legacy app-run-logs
 ```
 
 Nếu muốn có log từ `audit-log-service` host Maven:
 
 ```bash
 cd lab-code
-make audit-log-run-logs
+make -f Makefile.legacy audit-log-run-logs
 ```
 
 Nếu muốn có log từ `file-service` host Maven:
 
 ```bash
 cd lab-code
-make file-run-logs
+make -f Makefile.legacy file-run-logs
 ```
 
 Nếu muốn có log từ `search-service` host Maven:
 
 ```bash
 cd lab-code
-make search-run-logs
+make -f Makefile.legacy search-run-logs
 ```
 
 Nếu query `tenant-demo`, `audit-log-service`, `file-service`, `search-service` hoặc `gateway-demo` chưa ra kết quả, kiểm tra cách chạy:
 
-- `tenant-demo` chạy bằng `make app-run`: log chỉ ở terminal, không chắc có file để tail.
-- `tenant-demo` chạy bằng `make app-run-logs`: log vào `lab-code/logs/tenant-demo.log` và được Alloy tail.
-- `audit-log-service` chạy bằng `make audit-log-run`: log chỉ ở terminal.
-- `audit-log-service` chạy bằng `make audit-log-run-logs`: log vào `lab-code/logs/audit-log-service.log` và được Alloy tail.
-- `file-service` chạy bằng `make file-run`: log chỉ ở terminal.
-- `file-service` chạy bằng `make file-run-logs`: log vào `lab-code/logs/file-service.log` và được Alloy tail.
-- `search-service` chạy bằng `make search-run`: log chỉ ở terminal.
-- `search-service` chạy bằng `make search-run-logs`: log vào `lab-code/logs/search-service.log` và được Alloy tail.
+- `tenant-demo` chạy bằng `make -f Makefile.legacy app-run`: log chỉ ở terminal, không chắc có file để tail.
+- `tenant-demo` chạy bằng `make -f Makefile.legacy app-run-logs`: log vào `lab-code/logs/tenant-demo.log` và được Alloy tail.
+- `audit-log-service` chạy bằng `make -f Makefile.legacy audit-log-run`: log chỉ ở terminal.
+- `audit-log-service` chạy bằng `make -f Makefile.legacy audit-log-run-logs`: log vào `lab-code/logs/audit-log-service.log` và được Alloy tail.
+- `file-service` chạy bằng `make -f Makefile.legacy file-run`: log chỉ ở terminal.
+- `file-service` chạy bằng `make -f Makefile.legacy file-run-logs`: log vào `lab-code/logs/file-service.log` và được Alloy tail.
+- `search-service` chạy bằng `make -f Makefile.legacy search-run`: log chỉ ở terminal.
+- `search-service` chạy bằng `make -f Makefile.legacy search-run-logs`: log vào `lab-code/logs/search-service.log` và được Alloy tail.
 - Dockerized services: Alloy collect qua Docker stdout.
 - `gateway-demo` Maven host chưa có file-log collector riêng; dùng Kong container logs cho gateway platform demo.
 
@@ -821,14 +821,14 @@ Cleanup:
 
 ```bash
 cd lab-code
-make loki-down
-make web-ui-down
+make -f Makefile.legacy loki-down
+make -f Makefile.legacy web-ui-down
 ```
 
 ## 10. Common Mistakes
 
-- Mong đợi Maven host logs tự xuất hiện trong Loki khi không chạy `make app-run-logs`.
-- Mong đợi audit service host logs tự xuất hiện trong Loki khi không chạy `make audit-log-run-logs`.
+- Mong đợi Maven host logs tự xuất hiện trong Loki khi không chạy `make -f Makefile.legacy app-run-logs`.
+- Mong đợi audit service host logs tự xuất hiện trong Loki khi không chạy `make -f Makefile.legacy audit-log-run-logs`.
 - Nhầm `/actuator/metrics` với logs. Actuator/Micrometer là metrics, Loki là logs.
 - Tưởng Grafana collect logs. Grafana chỉ query datasource; Alloy mới collect logs.
 - Dùng Loki như database nghiệp vụ.

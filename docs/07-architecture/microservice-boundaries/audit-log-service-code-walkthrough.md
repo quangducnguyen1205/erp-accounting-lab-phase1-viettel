@@ -101,20 +101,20 @@ Các nhóm config quan trọng:
 | DB | `DB_HOST=localhost`, `DB_PORT=5432`, `DB_NAME=erpdb`, `DB_SCHEMA=audit_log` | Service chạy trên host, PostgreSQL chạy Docker expose ra host port. |
 | Keycloak | `KEYCLOAK_ISSUER_URI=http://localhost:18080/realms/viettel-lab` | Service validate JWT bằng issuer/JWKS từ Keycloak local. |
 | Kafka | `KAFKA_BOOTSTRAP_SERVERS=localhost:19092` | Service chạy trên host nên dùng Kafka external listener. |
-| File log | `LOGGING_FILE_NAME=../logs/audit-log-service.log` khi chạy `make audit-log-run-logs` | Alloy tail file này để đưa log vào Loki. |
+| File log | `LOGGING_FILE_NAME=../logs/audit-log-service.log` khi chạy `make -f Makefile.legacy audit-log-run-logs` | Alloy tail file này để đưa log vào Loki. |
 
 Hai cách chạy:
 
 ```bash
 cd lab-code
-make audit-log-run
+make -f Makefile.legacy audit-log-run
 ```
 
 Chạy service bằng Maven và log ra console.
 
 ```bash
 cd lab-code
-make audit-log-run-logs
+make -f Makefile.legacy audit-log-run-logs
 ```
 
 Chạy service bằng Maven, xóa file log cũ ở đầu lần chạy, rồi ghi thêm `lab-code/logs/audit-log-service.log` để Loki/Alloy tail. File log không được commit.
@@ -127,7 +127,7 @@ Chạy service bằng Maven, xóa file log cũ ở đầu lần chạy, rồi gh
 - Quên unique `event_id`, tạo duplicate audit rows.
 - Dùng `kafka:9092` khi service đang chạy trên host Maven. Host-run service phải dùng `localhost:19092`.
 - Quên chạy Keycloak/Kafka/PostgreSQL trước khi start service.
-- Quên dùng `make audit-log-run-logs` nên Loki không thấy host-run audit service logs.
+- Quên dùng `make -f Makefile.legacy audit-log-run-logs` nên Loki không thấy host-run audit service logs.
 - Nghĩ audit service làm cho Kafka publish atomic với DB commit.
 - Log full token/payload nhạy cảm.
 
@@ -143,12 +143,12 @@ Run:
 
 ```bash
 cd lab-code
-make db-up
+make -f Makefile.legacy db-up
 make keycloak-up
 make keycloak-setup
-make kafka-up
-make audit-log-run-logs
-make kong-up
+make -f Makefile.legacy kafka-up
+make -f Makefile.legacy audit-log-run-logs
+make -f Makefile.legacy kong-up
 ```
 
 Verify:

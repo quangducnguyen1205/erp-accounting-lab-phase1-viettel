@@ -47,6 +47,18 @@ public record MasterDataSearchDocument(
         );
     }
 
+    public static MasterDataSearchDocument fromSourceRecord(Long tenantId, MasterDataSourceRecord record, Instant indexedAt) {
+        return new MasterDataSearchDocument(
+                record.id(),
+                tenantId,
+                record.code(),
+                record.name(),
+                record.category(),
+                record.isActive() == null || record.isActive(),
+                indexedAt
+        );
+    }
+
     private static Boolean resolveActive(MasterDataChangedEvent event) {
         if ("DELETED".equalsIgnoreCase(event.changeType()) || "DEACTIVATED".equalsIgnoreCase(event.changeType())) {
             return false;

@@ -62,7 +62,7 @@ Business service:
 {service="tenant-demo"}
 ```
 
-Trong repo này, `tenant-demo` thường chạy bằng Maven/IntelliJ trên host. Khi chạy `make app-run-logs`, app ghi vào `lab-code/logs/tenant-demo.log`; Alloy tail file đó vào Loki với `source="file"`. Đây là nơi xem auth/RBAC, tenant context, DB operation, Redis cache, Kafka publish.
+Trong repo này, `tenant-demo` thường chạy bằng Maven/IntelliJ trên host. Khi chạy `make -f Makefile.legacy app-run-logs`, app ghi vào `lab-code/logs/tenant-demo.log`; Alloy tail file đó vào Loki với `source="file"`. Đây là nơi xem auth/RBAC, tenant context, DB operation, Redis cache, Kafka publish.
 
 Async consumer service:
 
@@ -72,7 +72,7 @@ Async consumer service:
 
 Dùng query này để xem event Kafka đã được consume/store chưa, hoặc audit API có trả theo tenant đúng không.
 
-`audit-log-service` cũng là Java service host-run. Khi chạy `make audit-log-run-logs`, service ghi vào `lab-code/logs/audit-log-service.log`; Alloy tail file đó vào Loki với `source="file"`.
+`audit-log-service` cũng là Java service host-run. Khi chạy `make -f Makefile.legacy audit-log-run-logs`, service ghi vào `lab-code/logs/audit-log-service.log`; Alloy tail file đó vào Loki với `source="file"`.
 
 File service:
 
@@ -80,7 +80,7 @@ File service:
 {service="file-service"}
 ```
 
-Dùng query này để debug upload/download/list/delete file tenant-aware. `file-service` cũng chạy Maven/IntelliJ trên host; khi chạy `make file-run-logs`, service ghi vào `lab-code/logs/file-service.log` và Alloy tail vào Loki với `source="file"`.
+Dùng query này để debug upload/download/list/delete file tenant-aware. `file-service` cũng chạy Maven/IntelliJ trên host; khi chạy `make -f Makefile.legacy file-run-logs`, service ghi vào `lab-code/logs/file-service.log` và Alloy tail vào Loki với `source="file"`.
 
 Search service:
 
@@ -88,7 +88,7 @@ Search service:
 {service="search-service"}
 ```
 
-Dùng query này để debug Kafka consume và Elasticsearch indexing. `search-service` chạy Maven/IntelliJ trên host; khi chạy `make search-run-logs`, service ghi vào `lab-code/logs/search-service.log` và Alloy tail vào Loki với `source="file"`.
+Dùng query này để debug Kafka consume và Elasticsearch indexing. `search-service` chạy Maven/IntelliJ trên host; khi chạy `make -f Makefile.legacy search-run-logs`, service ghi vào `lab-code/logs/search-service.log` và Alloy tail vào Loki với `source="file"`.
 
 Frontend container:
 
@@ -164,7 +164,7 @@ Host file logs:
 {source="file"}
 ```
 
-Hiện gồm `tenant-demo` khi chạy `make app-run-logs`, `audit-log-service` khi chạy `make audit-log-run-logs`, `file-service` khi chạy `make file-run-logs`, và `search-service` khi chạy `make search-run-logs`.
+Hiện gồm `tenant-demo` khi chạy `make -f Makefile.legacy app-run-logs`, `audit-log-service` khi chạy `make -f Makefile.legacy audit-log-run-logs`, `file-service` khi chạy `make -f Makefile.legacy file-run-logs`, và `search-service` khi chạy `make -f Makefile.legacy search-run-logs`.
 
 Docker stdout logs:
 

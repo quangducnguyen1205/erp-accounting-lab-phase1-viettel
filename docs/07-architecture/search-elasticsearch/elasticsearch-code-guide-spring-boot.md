@@ -198,8 +198,8 @@ Nếu tạo endpoint reindex:
 
 Tối thiểu manual verification:
 
-1. `make db-up`
-2. `make elastic-up`
+1. `make -f Makefile.legacy db-up`
+2. `make -f Makefile.legacy elastic-up`
 3. Chạy app với `APP_SEARCH_ENABLED=true`.
 4. Reindex `master_data`.
 5. Search bằng token tenant 1.
@@ -224,7 +224,7 @@ Automated test có thể để sau vì Elasticsearch container làm test nặng 
 ## Done criteria cho code mini-lab
 
 - App vẫn chạy/test bình thường khi `APP_SEARCH_ENABLED=false`.
-- Elasticsearch local chạy được bằng `make elastic-up`.
+- Elasticsearch local chạy được bằng `make -f Makefile.legacy elastic-up`.
 - Có cách reindex dữ liệu `master_data` vào `master_data_search`.
 - Search keyword trả kết quả tenant-aware.
 - Tenant 1 không thấy document tenant 2 và ngược lại.

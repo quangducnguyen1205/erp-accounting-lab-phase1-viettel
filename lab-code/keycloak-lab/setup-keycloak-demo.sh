@@ -297,6 +297,7 @@ main() {
 
   ensure_user tenant1-user 1 ACCOUNTANT
   ensure_user tenant2-user 2 VIEWER
+  ensure_user platform-admin 1 ADMIN
 
   echo ""
   echo "Keycloak demo setup completed."
@@ -304,7 +305,7 @@ main() {
   echo "API client: $API_CLIENT"
   echo "Web client: $WEB_CLIENT"
   echo "Login theme: $LOGIN_THEME"
-  echo "Users: tenant1-user/password, tenant2-user/password"
+  echo "Users: tenant1-user/password, tenant2-user/password, platform-admin/password"
 }
 
 main "$@"

@@ -8,44 +8,45 @@
 # - Token đã có tenant_id và role claim.
 # - Role mapping đã được tự cấu hình trong Keycloak.
 
-# TODO: lấy token từ 'auth-token-api.http' bằng cách chạy các request tương ứng.
-# Sau khi chạy, các biến 'accountantTenant1Token', 'viewerTenant2Token', 'noRoleToken', 'adminToken'
+# Lấy token từ `auth-token-api.http`.
+# Sau khi chạy, các biến `tenant1_token`, `tenant2_token`, `admin_token`
 # sẽ được cập nhật tự động trong global variables của session.
 # Dùng shared environment "development" trong http-client.private.env.json làm fallback.
 
-@invalidToken = invalid.jwt.token
+@invalid_token = invalid.jwt.token
+@kong_base_url = http://localhost:18000
 
 # TODO: chạy tenant 2 list trước, copy một id thuộc tenant 2.
 @tenant2RecordId = 6
 @keyword = Laptop
 
 ### Missing token -> expected 401
-GET {{baseUrl}}/api/master-data
+GET {{tenant_demo_base_url}}/api/master-data
 
 ### Invalid token -> expected 401
-GET {{baseUrl}}/api/master-data
-Authorization: Bearer {{invalidToken}}
+GET {{tenant_demo_base_url}}/api/master-data
+Authorization: Bearer {{invalid_token}}
 
 ### Allowed read: tenant 1 role phù hợp -> expected 200
 # Expected: chỉ thấy tenantId = 1.
-GET {{baseUrl}}/api/master-data
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/api/master-data
+Authorization: Bearer {{tenant1_token}}
 
 ### Allowed read: tenant 2 role phù hợp -> expected 200
 # Expected: chỉ thấy tenantId = 2.
-GET {{baseUrl}}/api/master-data
-Authorization: Bearer {{viewerTenant2Token}}
+GET {{tenant_demo_base_url}}/api/master-data
+Authorization: Bearer {{tenant2_token}}
 
-### Missing role -> expected 403 sau khi RBAC được implement
-GET {{baseUrl}}/api/master-data
-Authorization: Bearer {{noRoleToken}}
+### Admin role cũng đọc được tenant 1 theo tenant_id trong token
+GET {{tenant_demo_base_url}}/api/master-data
+Authorization: Bearer {{admin_token}}
 
 ### Cross-tenant id: tenant 1 có role đúng vẫn không đọc được record tenant 2
 # Expected: 404 hoặc không lộ dữ liệu tenant 2.
-GET {{baseUrl}}/api/master-data/{{tenant2RecordId}}
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/api/master-data/{{tenant2RecordId}}
+Authorization: Bearer {{tenant1_token}}
 
 ### Optional search read through search-service nếu service đang chạy
 # Expected: kết quả scoped theo tenant từ token. Endpoint này đi qua Kong tới search-service.
-GET {{baseUrl}}/api/search/master-data?keyword={{keyword}}
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{kong_base_url}}/api/search/master-data?keyword={{keyword}}
+Authorization: Bearer {{tenant1_token}}

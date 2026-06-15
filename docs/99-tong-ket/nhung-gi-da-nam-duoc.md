@@ -69,7 +69,7 @@ Các điểm đã nắm chắc hơn:
 
 ## Milestone #1: SQL playground tenant-aware
 
-Milestone #1 đã đóng phần thực hành SQL nền tảng cho mô hình shared-table multi-tenant. Các lệnh verify đã chạy lại trên database local sạch: `make db-up`, `make db-status`, `make sql-reset`, `make sql-all`, `make sql-3`, `make sql-4`, `make sql-5`.
+Milestone #1 đã đóng phần thực hành SQL nền tảng cho mô hình shared-table multi-tenant. Các lệnh verify đã chạy lại trên database local sạch: `make -f Makefile.legacy db-up`, `make db-status`, `make sql-reset`, `make sql-all`, `make sql-3`, `make sql-4`, `make sql-5`.
 
 ### Schema baseline
 
@@ -501,7 +501,7 @@ Milestone #11 nối bài học PostgreSQL `LIKE`/index query-pattern với lý d
 
 - `cd lab-code/tenant-demo && ./mvnw validate`
 - `cd lab-code && make app-test`
-- `cd lab-code && make db-up && make elastic-up`
+- `cd lab-code && make -f Makefile.legacy db-up && make -f Makefile.legacy elastic-up`
 - `curl http://localhost:9200`
 - Chạy app với search enabled, gọi reindex và search bằng Bearer token local.
 
@@ -663,7 +663,7 @@ Trạng thái: đã đóng mini-lab cơ bản.
 ### Case đã verify
 
 - `make app-test` pass khi `APP_MESSAGING_ENABLED=false`.
-- Kafka local chạy bằng `make kafka-up`, container healthy.
+- Kafka local chạy bằng `make -f Makefile.legacy kafka-up`, container healthy.
 - App chạy với `APP_MESSAGING_ENABLED=true` và các lab khác tắt để cô lập Kafka.
 - Create `master_data` trả `201` và publish `changeType=CREATED`.
 - Update `master_data` trả `200` và publish `changeType=UPDATED`.
@@ -915,7 +915,7 @@ Trạng thái: đã thêm và verify service split đầu tiên ở `lab-code/au
 - read-only API `GET /api/audit-events` và `GET /api/audit-events/{eventId}`;
 - JWT Resource Server rules riêng trong audit service; role mapping và `tenant_id` filter plumbing dùng chung qua `lab-code/common-security`;
 - Kong route `/api/audit-events` tới audit service;
-- Maven/IntelliJ host-run workflow qua `make audit-log-run` và `make audit-log-run-logs`;
+- Maven/IntelliJ host-run workflow qua `make -f Makefile.legacy audit-log-run` và `make -f Makefile.legacy audit-log-run-logs`;
 - file log `lab-code/logs/audit-log-service.log` để Loki/Alloy tail trong demo centralized logs;
 - full E2E đã chạy qua Kong: `tenant1-user` tạo `master_data` -> Kafka event -> audit service consume/store -> tenant 1 đọc được audit event;
 - tenant isolation đã verify: `tenant2-user` đọc audit list không thấy event tenant 1;

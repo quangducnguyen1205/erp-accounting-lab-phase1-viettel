@@ -160,7 +160,7 @@ cd lab-code
 make common-security-install
 ```
 
-Các Makefile target chính như `make app-test`, `make app-run`, `make app-run-logs`, `make audit-log-validate`, `make audit-log-run` và `make audit-log-run-logs` đã phụ thuộc target này để workflow ít bị quên bước.
+Các Makefile target chính như `make app-test`, `make -f Makefile.legacy app-run`, `make -f Makefile.legacy app-run-logs`, `make audit-log-validate`, `make -f Makefile.legacy audit-log-run` và `make -f Makefile.legacy audit-log-run-logs` đã phụ thuộc target này để workflow ít bị quên bước.
 
 Java backend services hiện chạy Maven/IntelliJ trên host. Docker vẫn dùng cho infra/tooling, không còn là runtime chính của `audit-log-service`.
 

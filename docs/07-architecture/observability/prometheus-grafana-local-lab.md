@@ -182,9 +182,9 @@ tenant_demo_kafka_publish_duration_seconds_sum
 
 ```bash
 cd lab-code
-make db-up
-make redis-up
-make kafka-up
+make -f Makefile.legacy db-up
+make -f Makefile.legacy redis-up
+make -f Makefile.legacy kafka-up
 ```
 
 2. Start app on host:
@@ -214,7 +214,7 @@ curl http://localhost:8080/actuator/prometheus
 
 ```bash
 cd lab-code
-make observability-up
+make -f Makefile.legacy observability-up
 make observability-status
 ```
 

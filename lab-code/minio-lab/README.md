@@ -32,9 +32,9 @@ MINIO_ROOT_PASSWORD=minioadmin
 Từ `lab-code/`:
 
 ```bash
-make minio-up
+make -f Makefile.legacy minio-up
 make minio-status
-make minio-down
+make -f Makefile.legacy minio-down
 ```
 
 Hoặc chạy trực tiếp trong folder này:
@@ -85,7 +85,7 @@ MINIO_REGION=us-east-1
 ## Mini-lab flow dự kiến
 
 1. Start PostgreSQL + Keycloak + MinIO.
-2. Start `file-service` bằng `make file-run-logs`.
+2. Start `file-service` bằng `make -f Makefile.legacy file-run-logs`.
 3. Upload file bằng API backend qua Kong: `POST /api/files`.
 4. `file-service` tạo metadata tenant-aware trong PostgreSQL.
 5. `file-service` upload binary object vào MinIO.
@@ -95,7 +95,7 @@ MINIO_REGION=us-east-1
 ## Cleanup
 
 ```bash
-make minio-down
+make -f Makefile.legacy minio-down
 ```
 
 Lệnh này dừng container compose. Volume `minio_data` vẫn giữ dữ liệu nếu chưa xóa volume.

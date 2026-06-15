@@ -106,92 +106,19 @@ lab-code/
 
 ## Makefile workflow hiện tại
 
-Chạy từng lab riêng khi chỉ cần một phần hạ tầng:
+Main workflow hiện ưu tiên final demo, không liệt kê toàn bộ mini-lab cũ trong `make help`.
 
 ```bash
-make db-up          # PostgreSQL cho SQL/Spring Boot baseline
-make keycloak-up    # Keycloak cho auth/OIDC/RBAC mini-lab
-make elastic-up     # Elasticsearch cho search mini-lab
-make minio-up       # MinIO cho file storage mini-lab
-make redis-up       # Redis cho cache mini-lab
-make kafka-up       # Kafka cho async messaging mini-lab
-make kafka-ui-up    # Kafka UI cho inspect topic/message/consumer group
-make common-security-install # Install shared security module cho local Maven services
-make audit-log-run  # Audit service Maven host-run, consume Kafka event, expose /api/audit-events
-make audit-log-run-logs # Audit service host-run + ghi lab-code/logs/audit-log-service.log cho Loki
-make file-run       # File service Maven host-run, expose /api/files
-make file-run-logs  # File service host-run + ghi lab-code/logs/file-service.log cho Loki
-make search-run     # Search service Maven host-run, expose /api/search/master-data
-make search-run-logs # Search service host-run + ghi lab-code/logs/search-service.log cho Loki
-make observability-up # Prometheus + Grafana cho observability mini-lab
-make loki-up        # Loki + Alloy + Grafana cho centralized logs
-make gateway-run    # Spring Cloud Gateway static route mini-lab
-make web-ui-up      # React Web UI demo Docker-first
+cd lab-code
+make help
+make info
+make up
+make status
+make down
+make clean-logs
 ```
 
-Khi cần demo nhiều phần cùng lúc, dùng:
-
-```bash
-make infra-up
-make infra-status
-```
-
-`infra-up` bật PostgreSQL + Keycloak + Elasticsearch + MinIO + Redis + Kafka. Prometheus/Grafana metrics chạy riêng bằng `make observability-up`, Loki/Grafana logs chạy riêng bằng `make loki-up`, Kafka UI chạy riêng bằng `make kafka-ui-up`, audit/file/search services chạy riêng bằng Maven/IntelliJ qua `make audit-log-run`, `make file-run`, `make search-run` hoặc các target `*-run-logs`, gateway chạy riêng bằng `make gateway-run` hoặc `make kong-up`, React Web UI chạy riêng bằng `make web-ui-up` để full infra mặc định không quá nặng. Khi chỉ học một lab nhỏ, vẫn nên dùng target riêng như `make kafka-up`, `make kafka-ui-up`, `make audit-log-run`, `make file-run`, `make search-run`, `make redis-up`, `make observability-up`, `make loki-up`, `make gateway-run` hoặc `make web-ui-up` để máy nhẹ hơn và dễ debug hơn.
-
-Spring Boot app vẫn chạy riêng bằng:
-
-```bash
-make app-run
-```
-
-Khi demo Loki/Grafana log aggregation và muốn thấy cả log `tenant-demo` trong Grafana Explore, dùng target file-log:
-
-```bash
-make app-run-logs
-```
-
-Target này chạy app ở Keycloak + Kafka mode mặc định và ghi log vào `lab-code/logs/tenant-demo.log` để Alloy tail sang Loki. Với audit service, dùng:
-
-```bash
-make audit-log-run-logs
-```
-
-Target này ghi `lab-code/logs/audit-log-service.log`. Các target `*-run-logs` xóa file log cũ ở đầu lần chạy để demo mới dễ đọc, nhưng không tự xóa khi dừng service để bạn còn inspect sau demo. Khi muốn dọn thủ công:
-
-Với file service, dùng:
-
-```bash
-make file-run-logs
-```
-
-Target này ghi `lab-code/logs/file-service.log`.
-
-Với search service, dùng:
-
-```bash
-make search-run-logs
-```
-
-Target này ghi `lab-code/logs/search-service.log`.
-
-```bash
-make logs-list
-make logs-clean
-```
-
-File `lab-code/logs/*.log` là local artifact, không commit.
-
-Mục tiêu là giữ từng mini-lab cô lập được, nhưng vẫn có một đường nhanh để bật hạ tầng demo chung.
-
-Khi muốn bật toàn bộ demo local nhanh hơn, dùng one-command runner:
-
-```bash
-make demo-info
-make demo-up
-make demo-status
-```
-
-`demo-up` bật Docker infra/tooling/web UI gồm PostgreSQL, Keycloak, Redis, Kafka, Kafka UI, MinIO, Elasticsearch, Kong, Loki/Grafana/Alloy và React Web UI. Sau đó target chạy bốn Java service chính bằng Maven trên host ở background:
+`make up` bật Docker infra/tooling/web UI gồm PostgreSQL, Keycloak, Redis, Kafka, Kafka UI, MinIO, Elasticsearch, Kong, Loki/Grafana/Alloy và React Web UI. Sau đó target chạy bốn Java service chính bằng Maven trên host ở background:
 
 ```text
 tenant-demo
@@ -200,14 +127,39 @@ file-service
 search-service
 ```
 
-PID local nằm trong `.pids/`; log Java service nằm trong `logs/`. Nếu đang phát triển một service thủ công trong IntelliJ, có thể không dùng `demo-up` hoặc dừng process tương ứng rồi chạy `make app-run-logs`, `make audit-log-run-logs`, `make file-run-logs` hoặc `make search-run-logs` ở terminal riêng để debug rõ hơn.
+PID local nằm trong `.pids/`; log Java service nằm trong `logs/`. Nếu đang phát triển một service thủ công trong IntelliJ, có thể không dùng `make up` hoặc dừng process tương ứng rồi chạy target legacy ở terminal riêng để debug rõ hơn:
+
+```bash
+make -f Makefile.legacy app-run-logs
+make -f Makefile.legacy audit-log-run-logs
+make -f Makefile.legacy file-run-logs
+make -f Makefile.legacy search-run-logs
+```
 
 Dừng demo:
 
 ```bash
-make demo-down
-make logs-clean   # optional, chỉ khi muốn xóa generated *.log
+make down
+make clean-logs   # optional, chỉ khi muốn xóa generated *.log
 ```
+
+Các target mini-lab lịch sử vẫn được giữ trong:
+
+```text
+lab-code/Makefile.legacy
+```
+
+Ví dụ khi chỉ muốn học một lab nhỏ:
+
+```bash
+make -f Makefile.legacy kafka-up
+make -f Makefile.legacy kafka-ui-up
+make -f Makefile.legacy app-run-logs
+make -f Makefile.legacy search-run-logs
+make -f Makefile.legacy help
+```
+
+File `lab-code/logs/*.log` và `.pids/` là local artifact, không commit.
 
 React Web UI demo nằm ở `web-ui-demo/`. UI chạy bằng Docker, mặc định gọi Kong Gateway, và không gọi trực tiếp PostgreSQL/Redis/Kafka/MinIO/Prometheus/Grafana trong business flow. Product direction mới là `Master Data Portal`.
 

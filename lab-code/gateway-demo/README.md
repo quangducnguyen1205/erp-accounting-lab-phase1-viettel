@@ -25,15 +25,15 @@ Terminal 1:
 
 ```bash
 cd lab-code
-make db-up
-make app-run
+make -f Makefile.legacy db-up
+make -f Makefile.legacy app-run
 ```
 
 Terminal 2:
 
 ```bash
 cd lab-code
-make gateway-run
+make -f Makefile.legacy gateway-run
 ```
 
 ## Verify

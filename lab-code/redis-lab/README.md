@@ -23,9 +23,9 @@ Port `16379` được dùng để tránh đụng Redis local khác trên máy.
 Từ `lab-code/`:
 
 ```bash
-make redis-up
+make -f Makefile.legacy redis-up
 make redis-status
-make redis-down
+make -f Makefile.legacy redis-down
 ```
 
 Hoặc chạy trực tiếp:
@@ -96,7 +96,7 @@ HTTP Client file:
 ## Cleanup
 
 ```bash
-make redis-down
+make -f Makefile.legacy redis-down
 ```
 
 Compose hiện không mount volume, nên dữ liệu Redis là ephemeral cho lab. Nếu cần reset nhanh khi container đang chạy:

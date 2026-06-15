@@ -9,8 +9,7 @@ import org.springframework.stereotype.Component;
  * ==============================================================
  *
  * Messaging tắt mặc định để app-test không cần Kafka.
- * Khi bạn tự code producer/consumer thật, class này là nơi đọc topic,
- * bootstrap servers và consumer group từ application.yml/.env.
+ * tenant-demo hiện chỉ publish event. Audit/search service là consumer thật.
  *
  * ==============================================================
  */
@@ -23,8 +22,6 @@ public class MessagingProperties {
     private String bootstrapServers = "localhost:19092";
 
     private String masterDataTopic = "master-data-events";
-
-    private String consumerGroupId = "tenant-demo-master-data";
 
     public boolean isEnabled() {
         return enabled;
@@ -50,11 +47,4 @@ public class MessagingProperties {
         this.masterDataTopic = masterDataTopic;
     }
 
-    public String getConsumerGroupId() {
-        return consumerGroupId;
-    }
-
-    public void setConsumerGroupId(String consumerGroupId) {
-        this.consumerGroupId = consumerGroupId;
-    }
 }

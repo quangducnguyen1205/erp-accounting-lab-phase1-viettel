@@ -126,6 +126,21 @@ Nếu demo phát triển thành một project thật sự lớn, nên tách sang
 - `docs/99-tong-ket/phase1-5-production-like-demo-plan.md`: kế hoạch Phase 1.5 sau feedback mentor 11/06.
 - `presentation-notes/demo-script-keycloak-tenant-flow.md`: demo script backend Keycloak cũ, vẫn hữu ích nếu chỉ muốn trình bày auth flow.
 
+## Chạy final demo local
+
+Luồng demo hiện tại được gom về một workflow ngắn trong `lab-code/Makefile`:
+
+```bash
+cd lab-code
+make help
+make up
+make status
+make down
+make clean-logs   # optional, chỉ khi muốn xóa generated logs/*.log
+```
+
+`make up` bật Docker infra/tooling/web UI và chạy bốn Java service chính bằng Maven ở background: `tenant-demo`, `audit-log-service`, `file-service`, `search-service`. Các target mini-lab lịch sử vẫn còn trong `lab-code/Makefile.legacy` để học từng công nghệ riêng, ví dụ `make -f Makefile.legacy kafka-up`.
+
 Workflow học code dự kiến:
 
 1. Tự implement task code được giao trước.

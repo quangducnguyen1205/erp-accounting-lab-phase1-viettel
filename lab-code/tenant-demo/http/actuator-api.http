@@ -3,40 +3,40 @@
 # Điều kiện:
 # - tenant-demo đang chạy ở http://localhost:8080.
 # - /actuator/health public.
-# - /actuator/info và /actuator/metrics cần Bearer accountantTenant1Token theo SecurityConfig.
+# - /actuator/info và /actuator/metrics cần Bearer tenant1_token theo SecurityConfig.
 #
-# Không paste accountantTenant1Token thật vào Git. Dùng dev accountantTenant1Token local hoặc Keycloak accountantTenant1Token
+# Không paste tenant1_token thật vào Git. Dùng dev tenant1_token local hoặc Keycloak tenant1_token
 # trong private env/working tree local.
 
-@tenantDemoUrl = http://localhost:8080
-#@accountantTenant1Token = <paste-local-jwt-or-keycloak-accountantTenant1Token-here>
-@invalidaccountantTenant1Token = invalid.jwt.accountantTenant1Token
+@tenant_demo_base_url = http://localhost:8080
+#@tenant1_token = <paste-local-jwt-or-keycloak-tenant1_token-here>
+@invalid_tenant1_token = invalid.jwt.tenant1_token
 
-### Health không cần accountantTenant1Token
+### Health không cần tenant1_token
 # Expected: 200, body tối thiểu có {"status":"UP"} nếu app và dependencies ổn.
-GET {{tenantDemoUrl}}/actuator/health
+GET {{tenant_demo_base_url}}/actuator/health
 
-### Info cần accountantTenant1Token
-# Expected: 200 nếu accountantTenant1Token hợp lệ; body chỉ có metadata explicit từ info.app.*
-GET {{tenantDemoUrl}}/actuator/info
-Authorization: Bearer {{accountantTenant1Token}}
+### Info cần tenant1_token
+# Expected: 200 nếu tenant1_token hợp lệ; body chỉ có metadata explicit từ info.app.*
+GET {{tenant_demo_base_url}}/actuator/info
+Authorization: Bearer {{tenant1_token}}
 
-### Metrics list cần accountantTenant1Token
+### Metrics list cần tenant1_token
 # Expected: 200, danh sách metric names built-in của Micrometer/Spring Boot.
-GET {{tenantDemoUrl}}/actuator/metrics
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/actuator/metrics
+Authorization: Bearer {{tenant1_token}}
 
 ### Một metric cụ thể - JVM memory used
 # Expected: 200 nếu metric tồn tại.
-GET {{tenantDemoUrl}}/actuator/metrics/jvm.memory.used
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/actuator/metrics/jvm.memory.used
+Authorization: Bearer {{tenant1_token}}
 
-### Info thiếu accountantTenant1Token - expected 401
-GET {{tenantDemoUrl}}/actuator/info
+### Info thiếu tenant1_token - expected 401
+GET {{tenant_demo_base_url}}/actuator/info
 
-### Metrics invalid accountantTenant1Token - expected 401
-GET {{tenantDemoUrl}}/actuator/metrics
-Authorization: Bearer {{invalidaccountantTenant1Token}}
+### Metrics invalid tenant1_token - expected 401
+GET {{tenant_demo_base_url}}/actuator/metrics
+Authorization: Bearer {{invalid_tenant1_token}}
 
-### Business API vẫn cần accountantTenant1Token - expected 401
-GET {{tenantDemoUrl}}/api/master-data
+### Business API vẫn cần tenant1_token - expected 401
+GET {{tenant_demo_base_url}}/api/master-data

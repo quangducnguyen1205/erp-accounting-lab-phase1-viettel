@@ -18,18 +18,18 @@ Nhóm này chuẩn bị mini-lab centralized logging cho Phase 1.5. Mục tiêu 
 - Runtime Docker lab đã có ở `lab-code/loki-lab/`.
 - Stack local dùng Loki + Grafana + Grafana Alloy, không dùng Promtail làm default collector.
 - Makefile targets:
-  - `make loki-up`
+  - `make -f Makefile.legacy loki-up`
   - `make loki-status`
   - `make loki-info`
-  - `make loki-logs`
-  - `make loki-down`
+  - `make -f Makefile.legacy loki-logs`
+  - `make -f Makefile.legacy loki-down`
 
 ## Cách dùng nhanh
 
 Từ `lab-code/`:
 
 ```bash
-make loki-up
+make -f Makefile.legacy loki-up
 make loki-status
 curl -f http://localhost:3100/ready
 ```
@@ -52,7 +52,7 @@ Vào `Explore`, chọn datasource `Loki`, query ví dụ:
 
 Xem thêm guide thực hành: [how-to-read-logs-in-grafana.md](how-to-read-logs-in-grafana.md).
 
-Lưu ý: lab dùng mô hình hybrid. Docker services được collect từ stdout; `tenant-demo`, `audit-log-service`, `file-service` và `search-service` host Maven được collect qua `lab-code/logs/*.log` khi chạy `make app-run-logs`, `make audit-log-run-logs`, `make file-run-logs` hoặc `make search-run-logs`.
+Lưu ý: lab dùng mô hình hybrid. Docker services được collect từ stdout; `tenant-demo`, `audit-log-service`, `file-service` và `search-service` host Maven được collect qua `lab-code/logs/*.log` khi chạy `make -f Makefile.legacy app-run-logs`, `make -f Makefile.legacy audit-log-run-logs`, `make -f Makefile.legacy file-run-logs` hoặc `make -f Makefile.legacy search-run-logs`.
 
 ## Caveat
 

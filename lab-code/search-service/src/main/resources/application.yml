@@ -42,3 +42,4 @@ app:
   search:
     elasticsearch-uris: ${ELASTICSEARCH_URIS:http://localhost:9200}
     master-data-index: ${ELASTICSEARCH_MASTER_DATA_INDEX:master_data_search}
+    master-data-source-base-url: ${MASTER_DATA_SOURCE_BASE_URL:http://localhost:8080}

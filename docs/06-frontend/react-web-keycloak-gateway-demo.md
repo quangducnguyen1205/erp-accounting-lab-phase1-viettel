@@ -1,6 +1,6 @@
 # React Web + Keycloak + Gateway demo
 
-Tài liệu này mô tả React Web UI cho Phase 1.5. Mục tiêu là nhìn được flow kiến trúc end-to-end, không xây full frontend product.
+Tài liệu này mô tả React Web UI cho Phase 1.5. UI hiện là `Master Data Portal`: một business app nhỏ cho danh mục, tệp tin, tìm kiếm và lịch sử hoạt động. Flow kiến trúc vẫn được demo qua backend/logs/docs, nhưng không còn là nội dung chính trên màn hình người dùng.
 
 ```text
 React Web UI
@@ -76,9 +76,9 @@ UI sinh `X-Request-Id` cho mỗi API call. Gateway forward header này sang back
 method=GET path=/api/master-data status=200 requestId=web-demo-...
 ```
 
-Nhờ đó khi demo có thể:
+Nhờ đó khi demo kỹ thuật có thể:
 
-- nhìn requestId trên UI;
+- mở phần `Chi tiết kỹ thuật` trong UI nếu cần lấy requestId;
 - tìm log backend cùng requestId;
 - nếu Prometheus/Grafana đang chạy, quan sát metric backend tăng sau API call.
 
@@ -165,59 +165,41 @@ Production không nên mở CORS bừa bãi. Cần giới hạn origin thật, a
 
 ## Demo script ngắn
 
-1. Start infra:
+1. Start final demo stack:
 
    ```bash
    cd lab-code
-   make infra-up
+   make up
    ```
 
-2. Start backend:
+   Target này bật Docker infra/tooling/web UI và chạy bốn Java service bằng Maven ở background. Nếu muốn học từng mini-lab riêng, dùng `make -f Makefile.legacy help`.
 
-   ```bash
-   cd lab-code
-   make app-run-logs
-   ```
-
-3. Start audit service và Kong. Audit service là Java service Maven/host-run:
-
-   ```bash
-   cd lab-code
-   make audit-log-run-logs
-   ```
-
-   Mở terminal khác cho Kong:
-
-   ```bash
-   cd lab-code
-   make kong-up
-   ```
-
-4. Start UI bằng Docker:
-
-   ```bash
-   cd lab-code
-   make web-ui-up
-   ```
-
-5. Mở `http://localhost:5173`, login Keycloak.
-6. Dashboard: kiểm user/tenant/role/API base URL.
-7. Master Data: load/create/edit/tạm ngưng `master_data`.
-8. Master Data: dùng `Load by code` để gọi `GET /api/master-data/code/{code}` qua Gateway. Nếu Redis enabled, gọi cùng code hai lần rồi kiểm log/metric backend để thấy miss/hit; UI không tự kết luận cache status.
-9. Files/Tệp tin: upload/list/download/delete qua `GET/POST/DELETE /api/files` nếu `file-service` và MinIO đang chạy.
-10. Master Data: dùng `Tìm kiếm nâng cao` để gọi `GET /api/search/master-data?keyword=...` qua Kong tới `search-service` nếu Elasticsearch đang chạy.
-11. Activity Log: bấm `Load activity` để gọi `GET /api/audit-events` qua Kong tới `audit-log-service`.
-12. Demo docs: dùng URL/LogQL trong final demo script để mở Grafana Loki/Kafka UI khi cần giải thích backend flow.
+2. Mở `http://localhost:5173`, login Keycloak.
+3. Dashboard: kiểm user/tenant/role.
+4. Master Data: load/create/edit/tạm ngưng `master_data`.
+5. Master Data: dùng `Load by code` để gọi `GET /api/master-data/code/{code}` qua Gateway. Nếu Redis enabled, gọi cùng code hai lần rồi kiểm log/metric backend để thấy miss/hit; UI không tự kết luận cache status.
+6. Files/Tệp tin: upload/list/download/delete qua `/api/files`.
+7. Master Data: dùng `Tìm kiếm nâng cao` để gọi `/api/search/master-data?keyword=...` qua Kong tới `search-service`.
+8. Activity Log: bấm `Load activity` để gọi `/api/audit-events` qua Kong tới `audit-log-service`.
+9. Demo docs: dùng URL/LogQL trong final demo script để mở Grafana Loki/Kafka UI khi cần giải thích backend flow.
 
 Đối chiếu:
 
-   - UI status và requestId.
+   - UI status; requestId nằm trong `Chi tiết kỹ thuật` khi cần debug.
    - `tenant-demo` log có requestId.
    - Kafka publish/consume log nếu messaging enabled. Create/update/deactivate đều có thể phát `MasterDataChangedEvent`; tạm ngưng dùng `changeType=DEACTIVATED`.
    - Audit event xuất hiện trong UI sau khi audit service consume/store.
    - Search result xuất hiện sau khi search-service consume/index Kafka event; đây là eventual consistency.
    - Redis cache hit/miss qua `Load by code` hoặc HTTP cache lab nếu cache enabled.
    - Prometheus/Grafana nếu observability lab đang chạy.
+
+Stop:
+
+```bash
+cd lab-code
+make down
+make clean-logs   # optional
+```
 
 ## Khi redirect về UI nhưng vẫn thấy Guest
 

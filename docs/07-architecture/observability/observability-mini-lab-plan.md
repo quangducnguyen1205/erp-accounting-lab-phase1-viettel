@@ -140,7 +140,7 @@ Artifact optional sau:
 - [x] Request log không chứa payload nhạy cảm.
 - [x] Custom metrics xuất hiện trong `/actuator/metrics/{name}` sau khi gọi code path tương ứng.
 - [x] Custom metric tags không có tenantId/requestId/code/eventId/userId.
-- [x] `make observability-up` chạy Prometheus + Grafana local.
+- [x] `make -f Makefile.legacy observability-up` chạy Prometheus + Grafana local.
 - [x] Prometheus target `tenant-demo` là `UP`.
 - [x] Grafana datasource Prometheus hoạt động.
 - [x] Summary ghi rõ giới hạn: chưa có Loki/tracing/alerting/production monitoring.

@@ -81,20 +81,20 @@ export function FilesScreen({
       <section className="screen-heading">
         <p className="eyebrow">Tệp tin</p>
         <h2>Tệp tin tenant</h2>
-        <p>Upload, tải xuống và quản lý metadata file trong phạm vi tenant hiện tại.</p>
+        <p>Tải lên, tải xuống và quản lý tệp tin trong phạm vi tenant hiện tại.</p>
       </section>
 
       <section className="panel">
         <div className="panel-heading">
           <div>
             <h3>Tải file lên</h3>
-            <p>File binary được lưu ở MinIO; metadata và tenant ownership lưu trong PostgreSQL.</p>
+            <p>Chọn một file nhỏ để lưu vào kho tệp tin của tenant.</p>
           </div>
-          <Badge tone="blue">MinIO</Badge>
+          <Badge tone="blue">Tenant-safe</Badge>
         </div>
         {isViewer && (
           <Alert tone="warning" title="Vai trò VIEWER">
-            Viewer có thể xem và tải file xuống, nhưng không được upload hoặc xóa file. Backend sẽ trả HTTP 403.
+            Viewer có thể xem và tải file xuống, nhưng không được upload hoặc xóa file.
           </Alert>
         )}
         <form className="upload-form" onSubmit={submitUpload}>
@@ -104,7 +104,7 @@ export function FilesScreen({
           </label>
           <button type="submit" disabled={disabled || loading}>{loading ? 'Đang tải lên...' : 'Tải lên'}</button>
         </form>
-        <p className="hint">UI không gọi MinIO trực tiếp. Mọi request đi qua Kong Gateway rồi tới file-service.</p>
+        <p className="hint">Mọi thao tác tệp tin đều được kiểm tra theo tenant và vai trò đăng nhập.</p>
         {uploadHint && <Alert tone={uploadHintTone} title="File">{uploadHint}</Alert>}
       </section>
 
@@ -112,7 +112,7 @@ export function FilesScreen({
         <div className="panel-heading">
           <div>
             <h3>Danh sách file</h3>
-            <p>Danh sách metadata của tenant hiện tại. Cross-tenant download trả 404 để không lộ fileId.</p>
+            <p>Danh sách tệp tin thuộc tenant hiện tại.</p>
           </div>
           <button type="button" onClick={onLoad} disabled={disabled || loading}>{loading ? 'Đang tải...' : 'Tải danh sách'}</button>
         </div>
@@ -125,7 +125,7 @@ export function FilesScreen({
           />
         ) : (
           <EmptyState title="Chưa có file trong tenant này">
-            HTTP 200 với danh sách rỗng vẫn là trạng thái hợp lệ.
+            Chưa có file nào được tải lên cho tenant này.
           </EmptyState>
         )}
       </section>
@@ -133,18 +133,18 @@ export function FilesScreen({
       <section className="panel panel-span-3">
         <div className="panel-heading">
           <div>
-            <h3>Trạng thái cần demo</h3>
-            <p>Dùng requestId/status để đối chiếu log file-service trong Grafana Loki.</p>
+            <h3>Trạng thái thường gặp</h3>
+            <p>Các thông báo phổ biến khi quản lý tệp tin.</p>
           </div>
           <Badge tone={lastResult?.ok ? 'success' : lastResult ? 'danger' : 'neutral'}>
-            {lastResult ? `HTTP ${lastResult.status}` : 'Chưa chạy'}
+            {lastResult ? (lastResult.ok ? 'Thành công' : 'Cần kiểm tra') : 'Chưa chạy'}
           </Badge>
         </div>
         <div className="state-grid">
-          <Alert tone="info" title="Upload thành công">Kỳ vọng HTTP 201 và metadata có fileId mới.</Alert>
-          <Alert tone="warning" title="403 Forbidden">Viewer không được upload/xóa file.</Alert>
-          <Alert tone="danger" title="404 Not Found">File không tồn tại trong tenant hiện tại hoặc thuộc tenant khác.</Alert>
-          <Alert tone="info" title="Loki">Tìm log bằng <code>{'{service="file-service"}'}</code> hoặc requestId.</Alert>
+          <Alert tone="info" title="Tải lên thành công">File mới sẽ xuất hiện trong danh sách sau khi tải lại.</Alert>
+          <Alert tone="warning" title="Không đủ quyền">Viewer không được upload hoặc xóa file.</Alert>
+          <Alert tone="danger" title="Không tìm thấy">File không tồn tại hoặc bạn không có quyền truy cập.</Alert>
+          <Alert tone="info" title="Hệ thống chưa sẵn sàng">Chờ một chút rồi thử lại sau.</Alert>
         </div>
       </section>
     </div>

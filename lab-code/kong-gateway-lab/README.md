@@ -9,8 +9,8 @@ Spring Cloud Gateway lab hiện có vẫn được giữ. Kong lab không xóa h
 Từ `lab-code/`:
 
 ```bash
-make kong-up
-make kong-status
+make -f Makefile.legacy kong-up
+make -f Makefile.legacy kong-status
 ```
 
 URLs:
@@ -34,8 +34,8 @@ Lab này giả định `tenant-demo` đang chạy trên host ở port `8080`:
 
 ```bash
 cd lab-code
-make db-up
-make app-run
+make -f Makefile.legacy db-up
+make -f Makefile.legacy app-run
 ```
 
 Kong chạy trong container, nên upstream trong `kong.yml` dùng:
@@ -74,7 +74,7 @@ Kỳ vọng:
 ## Dừng lab
 
 ```bash
-make kong-down
+make -f Makefile.legacy kong-down
 ```
 
 ## Docs nên đọc

@@ -214,7 +214,7 @@ export function MasterDataScreen({
         <div className="panel-heading">
           <div>
             <h3>Tìm kiếm nâng cao</h3>
-            <p>Tìm qua search-service và Elasticsearch projection. Kết quả có thể trễ vài giây sau khi tạo/sửa bản ghi.</p>
+            <p>Tìm kiếm dữ liệu danh mục theo mã, tên hoặc loại. Kết quả mới cập nhật có thể trễ vài giây.</p>
           </div>
           <Badge tone="teal">Search</Badge>
         </div>
@@ -230,11 +230,11 @@ export function MasterDataScreen({
             columns={columns.filter((column) => column.key !== 'actions')}
             rows={searchResults}
             emptyTitle="Không có kết quả"
-            emptyMessage="Nếu vừa tạo/sửa bản ghi, chờ Kafka và search-service index xong rồi thử lại."
+            emptyMessage="Nếu vừa tạo/sửa bản ghi, chờ vài giây rồi thử lại."
           />
         ) : (
-          <EmptyState title="Chưa tìm kiếm bằng backend">
-            Tìm kiếm này đi qua Kong tới search-service; UI không gọi Elasticsearch trực tiếp.
+          <EmptyState title="Chưa tìm kiếm nâng cao">
+            Nhập từ khóa để tìm trong dữ liệu danh mục đã được lập chỉ mục.
           </EmptyState>
         )}
       </section>
@@ -249,7 +249,7 @@ export function MasterDataScreen({
         </div>
         {isViewer && (
           <Alert tone="warning" title="Vai trò VIEWER">
-            Viewer có thể xem dữ liệu nhưng không được tạo bản ghi mới. Nếu gửi form, backend sẽ trả HTTP 403.
+            Viewer có thể xem dữ liệu nhưng không được tạo bản ghi mới. Nếu vẫn gửi form, hệ thống sẽ từ chối thao tác.
           </Alert>
         )}
         <form className="form-grid" onSubmit={onCreate}>
@@ -274,23 +274,25 @@ export function MasterDataScreen({
             <button type="submit" disabled={disabled || loading}>{loading ? 'Đang tạo...' : 'Tạo bản ghi'}</button>
           </div>
         </form>
-        <p className="hint">Mã phải duy nhất trong từng tenant. Mã trùng sẽ trả `409 Conflict`.</p>
+        <p className="hint">Mã phải duy nhất trong từng tenant. Nếu mã bị trùng, hãy chọn mã khác.</p>
         {postCreateHint && <Alert tone="success" title="Thao tác thành công">{postCreateHint}</Alert>}
       </section>
 
       <section className="panel panel-span-2">
         <div className="panel-heading">
           <div>
-            <h3>Trạng thái lỗi</h3>
-            <p>Các trạng thái này cần rõ ràng khi demo với mentor.</p>
+            <h3>Trạng thái thường gặp</h3>
+            <p>Các thông báo phổ biến khi thao tác dữ liệu.</p>
           </div>
-          <Badge tone={lastResult?.ok ? 'success' : 'neutral'}>{lastResult ? `HTTP ${lastResult.status}` : 'Chưa chạy'}</Badge>
+          <Badge tone={lastResult?.ok ? 'success' : 'neutral'}>
+            {lastResult ? (lastResult.ok ? 'Thành công' : 'Cần kiểm tra') : 'Chưa chạy'}
+          </Badge>
         </div>
         <div className="state-grid">
-          <Alert tone="danger" title="401 Unauthorized">Token bị thiếu, hết hạn hoặc không hợp lệ. Hãy đăng nhập lại.</Alert>
-          <Alert tone="warning" title="403 Forbidden">Đã đăng nhập nhưng vai trò hiện tại không được phép tạo.</Alert>
-          <Alert tone="danger" title="409 Conflict">Mã bị trùng trong cùng tenant. Đổi mã rồi thử lại.</Alert>
-          <Alert tone="info" title="Service unavailable">Kong không gọi được upstream service. Kiểm tra process và port.</Alert>
+          <Alert tone="danger" title="Phiên đăng nhập hết hạn">Đăng nhập lại để tiếp tục thao tác.</Alert>
+          <Alert tone="warning" title="Không đủ quyền">Vai trò hiện tại không được phép tạo, sửa hoặc tạm ngưng bản ghi.</Alert>
+          <Alert tone="danger" title="Mã bị trùng">Mã dữ liệu đã tồn tại trong tenant hiện tại.</Alert>
+          <Alert tone="info" title="Hệ thống chưa sẵn sàng">Chờ một chút rồi thử lại sau.</Alert>
         </div>
       </section>
     </div>

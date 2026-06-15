@@ -201,7 +201,7 @@ Manual Kafka verification sau khi tự code:
 
 ```bash
 cd lab-code
-make kafka-up
+make -f Makefile.legacy kafka-up
 make kafka-status
 ```
 

@@ -5,7 +5,7 @@
 
 ### Create master_data through Kong
 POST http://localhost:18000/api/master-data
-Authorization: Bearer <ACCOUNTANT_ACCESS_TOKEN>
+Authorization: Bearer {{tenant1_token}}
 Content-Type: application/json
 X-Request-Id: cross-service-create-001
 
@@ -18,7 +18,7 @@ X-Request-Id: cross-service-create-001
 
 ### Read audit events through Kong
 GET http://localhost:18000/api/audit-events?limit=20
-Authorization: Bearer <ACCOUNTANT_ACCESS_TOKEN>
+Authorization: Bearer {{tenant1_token}}
 X-Request-Id: cross-service-audit-001
 
 ### Missing token should remain blocked

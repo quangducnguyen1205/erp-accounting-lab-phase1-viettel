@@ -28,8 +28,8 @@ Tùy mode auth bạn muốn demo:
 
 ```bash
 cd lab-code
-make db-up
-make app-run
+make -f Makefile.legacy db-up
+make -f Makefile.legacy app-run
 ```
 
 Nếu chạy Keycloak mode thì start Keycloak và env tương ứng như các lab trước.
@@ -38,7 +38,7 @@ Nếu chạy Keycloak mode thì start Keycloak và env tương ứng như các l
 
 ```bash
 cd lab-code
-make gateway-run
+make -f Makefile.legacy gateway-run
 ```
 
 Gateway mặc định:
@@ -56,7 +56,7 @@ http://localhost:8080
 Có thể override:
 
 ```bash
-GATEWAY_PORT=8081 TENANT_DEMO_URI=http://localhost:8080 make gateway-run
+GATEWAY_PORT=8081 TENANT_DEMO_URI=http://localhost:8080 make -f Makefile.legacy gateway-run
 ```
 
 ## 4. Verify bằng HTTP Client

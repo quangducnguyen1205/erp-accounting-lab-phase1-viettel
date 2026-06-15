@@ -1,21 +1,25 @@
-### Audit health - public
-GET http://localhost:8082/actuator/health
+@kong_base_url = http://localhost:18000
+@audit_log_base_url = http://localhost:8082
+@event_id = REPLACE_WITH_EVENT_ID
 
-### List current tenant audit events - direct service
-GET http://localhost:8082/api/audit-events?limit=20
-Authorization: Bearer <ACCESS_TOKEN>
-X-Request-Id: audit-direct-001
+### Audit health - direct service
+GET {{audit_log_base_url}}/actuator/health
 
-### Get one audit event by eventId - direct service
-GET http://localhost:8082/api/audit-events/<EVENT_ID>
-Authorization: Bearer <ACCESS_TOKEN>
-X-Request-Id: audit-direct-002
+### List current tenant activity - tenant1 through Kong
+GET {{kong_base_url}}/api/audit-events?limit=20
+Authorization: Bearer {{tenant1_token}}
+X-Request-Id: audit-tenant1-list-001
 
-### List current tenant audit events - through Kong
-GET http://localhost:18000/api/audit-events?limit=20
-Authorization: Bearer <ACCESS_TOKEN>
-X-Request-Id: audit-kong-001
+### List current tenant activity - tenant2 through Kong
+GET {{kong_base_url}}/api/audit-events?limit=20
+Authorization: Bearer {{tenant2_token}}
+X-Request-Id: audit-tenant2-list-001
 
-### Missing token through Kong - expected 401
-GET http://localhost:18000/api/audit-events
-X-Request-Id: audit-kong-missing-token
+### Get one event by eventId - tenant1 through Kong
+GET {{kong_base_url}}/api/audit-events/{{event_id}}
+Authorization: Bearer {{tenant1_token}}
+X-Request-Id: audit-tenant1-one-001
+
+### Missing token - expected 401
+GET {{kong_base_url}}/api/audit-events
+X-Request-Id: audit-missing-token-001

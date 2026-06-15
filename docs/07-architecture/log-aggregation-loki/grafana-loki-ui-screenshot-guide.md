@@ -103,7 +103,7 @@ LogQL:
 {service="tenant-demo"}
 ```
 
-Đây là business API service. Trong repo này, logs đến từ `lab-code/logs/tenant-demo.log` vì app chạy host Maven bằng `make app-run-logs`. Dùng query này để xem auth/RBAC, tenant context, DB behavior, Redis cache, Kafka publish.
+Đây là business API service. Trong repo này, logs đến từ `lab-code/logs/tenant-demo.log` vì app chạy host Maven bằng `make -f Makefile.legacy app-run-logs`. Dùng query này để xem auth/RBAC, tenant context, DB behavior, Redis cache, Kafka publish.
 
 ### Step 6 - Read `audit-log-service` logs
 
@@ -117,7 +117,7 @@ LogQL:
 
 Đây là async Kafka consumer service. Dùng query này để xem `MasterDataChangedEvent` đã được consume/store chưa và audit API có filter tenant đúng không.
 
-Trong workflow hiện tại, logs của service này đến từ `lab-code/logs/audit-log-service.log` khi chạy bằng `make audit-log-run-logs`.
+Trong workflow hiện tại, logs của service này đến từ `lab-code/logs/audit-log-service.log` khi chạy bằng `make -f Makefile.legacy audit-log-run-logs`.
 
 ### Step 7 - Trace by business code
 
@@ -305,10 +305,10 @@ These values are high-cardinality or sensitive. Keep them in log message and sea
 
 - Expecting browser console JavaScript errors to appear in Loki. Browser console is separate.
 - Searching an old time range and thinking logs are missing.
-- Forgetting to run `tenant-demo` with `make app-run-logs`.
-- Forgetting to run `audit-log-service` with `make audit-log-run-logs`.
-- Forgetting to run `file-service` with `make file-run-logs`.
-- Forgetting to run `search-service` with `make search-run-logs`.
+- Forgetting to run `tenant-demo` with `make -f Makefile.legacy app-run-logs`.
+- Forgetting to run `audit-log-service` with `make -f Makefile.legacy audit-log-run-logs`.
+- Forgetting to run `file-service` with `make -f Makefile.legacy file-run-logs`.
+- Forgetting to run `search-service` with `make -f Makefile.legacy search-run-logs`.
 - Expecting `requestId` to appear as a label.
 - Starting with a too broad query and getting lost.
 - Confusing Kafka UI with Loki: Kafka UI shows messages/consumer groups; Loki shows service logs.

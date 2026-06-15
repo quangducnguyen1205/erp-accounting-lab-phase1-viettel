@@ -23,9 +23,12 @@ Phase 1 có embedded mini-lab trong `tenant-demo` để học Elasticsearch nhan
 - PostgreSQL vẫn là source of truth.
 - Elasticsearch là search projection, chạy khi bật `search-service` và Elasticsearch local.
 - React UI gọi `GET /api/search/master-data?keyword=...` qua Kong; UI không gọi Elasticsearch trực tiếp.
+- Admin local `platform-admin` có thể gọi `POST /api/search/master-data/reindex` để rebuild search projection cho tenant hiện tại. Endpoint này chỉ dùng manual/HTTP Client, không có trong React UI.
 
 ## Caveat
 
 Search query luôn phải filter `tenantId`. Không filter sau khi đã lấy raw results về app.
 
 Search projection là eventually consistent. Sau khi create/update/deactivate master data, cần Kafka deliver event và `search-service` index xong thì kết quả mới xuất hiện.
+
+Reindex hiện là tenant-scoped local admin operation, chưa phải production backfill/all-tenant workflow.

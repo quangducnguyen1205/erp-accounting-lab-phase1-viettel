@@ -35,14 +35,14 @@ Docker vẫn dùng cho infra/tooling như PostgreSQL, Keycloak, Kafka, Kong, Kaf
 Từ `lab-code/`:
 
 ```bash
-make audit-log-run
+make -f Makefile.legacy audit-log-run
 make audit-log-status
 ```
 
 Khi muốn Grafana Loki đọc được log của service, chạy target file-log:
 
 ```bash
-make audit-log-run-logs
+make -f Makefile.legacy audit-log-run-logs
 ```
 
 Target này ghi log vào:
@@ -51,11 +51,11 @@ Target này ghi log vào:
 lab-code/logs/audit-log-service.log
 ```
 
-`make audit-log-run-logs` xóa file log cũ ở đầu lần chạy để demo mới dễ đọc. Nó không tự xóa log khi dừng service, vì sau demo thường vẫn muốn mở Grafana/Loki hoặc đọc file. Dọn thủ công bằng:
+`make -f Makefile.legacy audit-log-run-logs` xóa file log cũ ở đầu lần chạy để demo mới dễ đọc. Nó không tự xóa log khi dừng service, vì sau demo thường vẫn muốn mở Grafana/Loki hoặc đọc file. Dọn thủ công bằng:
 
 ```bash
 make logs-list
-make logs-clean
+make clean-logs
 ```
 
 Validate Maven:
@@ -70,7 +70,7 @@ Dừng service bằng `Ctrl+C` trong terminal Maven/IntelliJ đang chạy.
 
 Service chạy ở `http://localhost:8082`.
 
-Kong route sau khi chạy `make kong-up`:
+Kong route sau khi chạy `make -f Makefile.legacy kong-up`:
 
 ```text
 http://localhost:18000/api/audit-events
@@ -88,7 +88,7 @@ Audit API yêu cầu Bearer token hợp lệ. Service lấy `tenant_id` từ JWT
 
 1. Start PostgreSQL, Keycloak, Kafka.
 2. Start `tenant-demo` với `APP_MESSAGING_ENABLED=true`.
-3. Start `audit-log-service` bằng `make audit-log-run` hoặc `make audit-log-run-logs`.
+3. Start `audit-log-service` bằng `make -f Makefile.legacy audit-log-run` hoặc `make -f Makefile.legacy audit-log-run-logs`.
 4. Create/update `master_data` qua `tenant-demo` hoặc Kong.
 5. Mở Kafka UI để xem topic `master-data-events`.
 6. Gọi `GET /api/audit-events` qua Kong bằng token cùng tenant.

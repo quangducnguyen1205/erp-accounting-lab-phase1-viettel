@@ -27,6 +27,7 @@ This pattern is useful when search needs a different query model than the relati
 | Projection service | `search-service/.../search/MasterDataSearchProjectionService.java` |
 | Elasticsearch adapter | `search-service/.../search/MasterDataSearchGateway.java` |
 | Search API | `search-service/.../search/MasterDataSearchController.java` |
+| Admin reindex API | `POST /api/search/master-data/reindex`, role `ADMIN` only |
 | Security | `search-service/.../security/SecurityConfig.java` + `common-security` |
 
 The DTO copy is deliberate. It keeps `search-service` from importing `tenant-demo` code. In a larger organization, this contract would usually become a versioned shared contract package or schema registry subject.
@@ -69,16 +70,39 @@ Both `audit-log-service` and `search-service` consume the same topic with differ
 
 The current search projection marks the document inactive. Search API filters `active=true`, so deactivated records disappear from normal search results while PostgreSQL keeps the historical row.
 
-## 6. Common Mistakes
+## 6. Tenant-Scoped Reindex
+
+Reindex is an operational/manual endpoint, not a product feature:
+
+```text
+POST /api/search/master-data/reindex
+Authorization: Bearer <platform-admin token>
+```
+
+Runtime flow:
+
+```text
+platform-admin token
+  -> Kong
+  -> search-service validates ADMIN role and tenant_id
+  -> search-service calls tenant-demo GET /api/master-data with same token
+  -> tenant-demo returns active source records for that tenant
+  -> search-service deletes old tenant docs from Elasticsearch
+  -> search-service bulk indexes current tenant records
+```
+
+Current scope is tenant-specific because it uses `tenant_id` from the admin token. No all-tenant/global reindex workflow is implemented in this lab.
+
+## 7. Common Mistakes
 
 - Emitting only `aggregateId` and then expecting search-service to build a full projection without another call.
 - Calling `tenant-demo` from search-service for every event unless that tradeoff is intentional.
 - Forgetting that audit and search are separate consumers with separate consumer groups.
 - Assuming Kafka delivery means Elasticsearch index is instantly updated.
 - Returning cross-tenant search results because tenant filter was missing.
-- Keeping old `/api/search/master-data/reindex` docs as the product path.
+- Putting the reindex endpoint into the React UI.
 
-## 7. Verification
+## 8. Verification
 
 Compile/config checks:
 
@@ -93,9 +117,9 @@ Runtime smoke:
 
 ```bash
 cd lab-code
-make elastic-up
-make kafka-up
-make search-run-logs
+make -f Makefile.legacy elastic-up
+make -f Makefile.legacy kafka-up
+make -f Makefile.legacy search-run-logs
 ```
 
 Then create a master-data record and search it:
@@ -110,4 +134,6 @@ Expected:
 - tenant 1 finds tenant 1 records;
 - tenant 2 does not see tenant 1 records;
 - deactivated records disappear from active search;
+- `platform-admin` can reindex the current tenant;
+- `tenant1-user` and `tenant2-user` get `403` on reindex;
 - `{service="search-service"}` in Loki shows consume/index logs.

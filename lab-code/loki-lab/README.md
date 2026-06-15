@@ -60,10 +60,10 @@ admin / admin
 Từ `lab-code/`:
 
 ```bash
-make loki-up
+make -f Makefile.legacy loki-up
 make loki-status
 make loki-info
-make loki-down
+make -f Makefile.legacy loki-down
 ```
 
 Hoặc chạy trực tiếp:
@@ -119,8 +119,8 @@ Không dùng `requestId`, `tenantId`, `userId`, token, event id hoặc object ke
 Nếu chạy Java service bằng target thường:
 
 ```bash
-make app-run
-make audit-log-run
+make -f Makefile.legacy app-run
+make -f Makefile.legacy audit-log-run
 ```
 
 log vẫn hiện ở terminal host, nhưng chưa có file để Alloy đọc.
@@ -128,10 +128,10 @@ log vẫn hiện ở terminal host, nhưng chưa có file để Alloy đọc.
 Khi demo centralized logs, dùng file-log targets:
 
 ```bash
-make app-run-logs
-make audit-log-run-logs
-make file-run-logs
-make search-run-logs
+make -f Makefile.legacy app-run-logs
+make -f Makefile.legacy audit-log-run-logs
+make -f Makefile.legacy file-run-logs
+make -f Makefile.legacy search-run-logs
 ```
 
 Các target này xóa file log cũ ở đầu lần chạy và set:
@@ -147,7 +147,7 @@ File `lab-code/logs/*.log` là generated local log, không commit. Logs không b
 
 ```bash
 make logs-list
-make logs-clean
+make clean-logs
 ```
 
 `gateway-demo` nếu chạy host Maven vẫn chưa có file-log collector riêng; Kong container logs thì được collect qua Docker source.
@@ -158,14 +158,14 @@ make logs-clean
 
 ```bash
 cd lab-code
-make web-ui-up
-make kafka-up
+make -f Makefile.legacy web-ui-up
+make -f Makefile.legacy kafka-up
 ```
 
 2. Start Loki lab:
 
 ```bash
-make loki-up
+make -f Makefile.legacy loki-up
 make loki-status
 curl -f http://localhost:3100/ready
 ```
@@ -201,7 +201,7 @@ http://localhost:13001
 {service=~"tenant-demo|kong-gateway"} |= "403"
 ```
 
-Với Java host-run services, query chỉ có log nếu service được chạy bằng target file-log tương ứng: `make app-run-logs`, `make audit-log-run-logs`, `make file-run-logs`, hoặc `make search-run-logs`.
+Với Java host-run services, query chỉ có log nếu service được chạy bằng target file-log tương ứng: `make -f Makefile.legacy app-run-logs`, `make -f Makefile.legacy audit-log-run-logs`, `make -f Makefile.legacy file-run-logs`, hoặc `make -f Makefile.legacy search-run-logs`.
 
 Nếu muốn đọc log theo đúng cách demo backend engineer, xem:
 
@@ -212,7 +212,7 @@ Nếu muốn đọc log theo đúng cách demo backend engineer, xem:
 
 ```bash
 cd lab-code
-make loki-down
+make -f Makefile.legacy loki-down
 ```
 
 Loki/Grafana dùng Docker named volumes. Log history local còn tồn tại khi container restart, miễn là volume chưa bị xóa.

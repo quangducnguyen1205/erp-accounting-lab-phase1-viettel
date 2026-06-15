@@ -38,7 +38,7 @@ Bootstrap nghĩa là khi cố ý xóa volume:
 
 ```bash
 cd lab-code
-make keycloak-reset
+make -f Makefile.legacy keycloak-reset
 make keycloak-up
 make keycloak-setup
 ```
@@ -79,7 +79,7 @@ chỉ dừng container, không xóa dữ liệu.
 Lệnh phá dữ liệu có chủ đích:
 
 ```bash
-make keycloak-reset
+make -f Makefile.legacy keycloak-reset
 ```
 
 sẽ chạy `docker compose down -v` trong `keycloak-lab`, tức là xóa named volume PostgreSQL của Keycloak. Sau reset phải chạy lại:

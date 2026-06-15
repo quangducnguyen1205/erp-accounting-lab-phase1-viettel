@@ -41,7 +41,7 @@ export function DashboardScreen({ authState, rows, auditEvents, files, masterDat
           Lịch sử hoạt động được tải từ audit API khi người dùng yêu cầu.
         </StatusCard>
         <StatusCard label="Tệp tin" title={filesLoaded ? files.length : 'Chưa tải'} badge="Files" tone="indigo">
-          File metadata được tải từ file-service theo tenant hiện tại.
+          Số tệp tin đã tải trong phạm vi tenant hiện tại.
         </StatusCard>
         <StatusCard label="Tenant" title={authState.userInfo?.tenantId ?? '(none)'} badge="Tenant" tone="indigo">
           Phạm vi tenant lấy từ Keycloak token đã được backend kiểm tra.
@@ -92,23 +92,32 @@ export function DashboardScreen({ authState, rows, auditEvents, files, masterDat
           <button type="button" className="button-secondary" onClick={() => onNavigate('files')}>Quản lý tệp tin</button>
           <button type="button" className="button-secondary" onClick={() => onNavigate('activity-log')}>Xem lịch sử</button>
         </div>
-        <p className="hint">Phần giải thích kiến trúc dùng demo script để mở Kafka UI và Grafana Loki bên ngoài luồng sản phẩm.</p>
+        <p className="hint">Phần giải thích kỹ thuật nằm trong demo script, không phải thao tác chính của người dùng.</p>
       </section>
 
       <section className="panel panel-span-3">
         <div className="panel-heading">
           <div>
-            <h3>Request gần nhất</h3>
-            <p>Dùng thông tin này khi cần tra cứu lỗi backend.</p>
+            <h3>Thao tác gần nhất</h3>
+            <p>Hiển thị kết quả thao tác mới nhất trong phiên làm việc.</p>
           </div>
-          <Badge tone={lastResult?.ok ? 'success' : lastResult ? 'danger' : 'neutral'}>{lastResult ? `HTTP ${lastResult.status}` : 'Chưa có request'}</Badge>
+          <Badge tone={lastResult?.ok ? 'success' : lastResult ? 'danger' : 'neutral'}>
+            {lastResult ? (lastResult.ok ? 'Thành công' : 'Cần kiểm tra') : 'Chưa có'}
+          </Badge>
         </div>
-        <dl className="facts">
-          <dt>requestId</dt>
-          <dd><code>{lastResult?.requestId ?? '(none yet)'}</code></dd>
-          <dt>Endpoint</dt>
-          <dd>{lastResult?.endpoint ?? '(none yet)'}</dd>
-        </dl>
+        {lastResult ? (
+          <details className="technical-details">
+            <summary>Chi tiết kỹ thuật</summary>
+            <dl className="facts">
+              <dt>HTTP status</dt>
+              <dd>{lastResult.status}</dd>
+              <dt>requestId</dt>
+              <dd><code>{lastResult.requestId}</code></dd>
+            </dl>
+          </details>
+        ) : (
+          <EmptyState title="Chưa có thao tác">Tải dữ liệu hoặc tạo bản ghi để xem trạng thái gần nhất.</EmptyState>
+        )}
       </section>
     </div>
   );

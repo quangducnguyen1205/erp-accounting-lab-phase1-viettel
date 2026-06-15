@@ -79,7 +79,7 @@ PostgreSQL:
 
 ```bash
 cd lab-code
-make db-up
+make -f Makefile.legacy db-up
 make db-status
 ```
 

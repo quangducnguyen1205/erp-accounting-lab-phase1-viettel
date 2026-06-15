@@ -31,7 +31,7 @@ public class MasterDataChangedEventConsumer {
             @Payload MasterDataChangedEvent event,
             @Header(name = KafkaHeaders.RECEIVED_KEY, required = false) String key
     ) {
-        log.info(
+        log.debug(
                 "Consumed search projection event eventId={}, tenantId={}, aggregateId={}, code={}, changeType={}, key={}",
                 event.eventId(),
                 event.tenantId(),

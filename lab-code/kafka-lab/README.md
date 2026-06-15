@@ -13,9 +13,9 @@ Mục tiêu hiện tại:
 Chạy từ `lab-code/`:
 
 ```bash
-make kafka-up
+make -f Makefile.legacy kafka-up
 make kafka-status
-make kafka-down
+make -f Makefile.legacy kafka-down
 ```
 
 Kafka local expose bootstrap server:
@@ -33,7 +33,7 @@ kafka:9092
 Chạy UI từ `lab-code/`:
 
 ```bash
-make kafka-ui-up
+make -f Makefile.legacy kafka-ui-up
 ```
 
 Mở `http://localhost:18082` để inspect topic/message/consumer group.
@@ -165,10 +165,18 @@ Không dùng CLI test này làm bằng chứng code Spring Boot đã publish. Re
 APP_MESSAGING_ENABLED=false
 KAFKA_BOOTSTRAP_SERVERS=localhost:19092
 KAFKA_MASTER_DATA_TOPIC=master-data-events
-KAFKA_CONSUMER_GROUP_ID=tenant-demo-master-data
 ```
 
 Giữ `APP_MESSAGING_ENABLED=false` mặc định để `make app-test` không phụ thuộc Kafka.
+
+Trong final demo, `tenant-demo` chỉ publish event. Consumer thật là:
+
+```text
+audit-log-service
+search-service
+```
+
+Không còn kỳ vọng consumer group `tenant-demo-master-data` trong Kafka UI.
 
 Khi chỉ muốn chạy Kafka mini-lab, nên tắt các lab khác để app không phụ thuộc Elasticsearch/MinIO/Redis:
 
@@ -183,7 +191,7 @@ APP_CACHE_ENABLED=false \
 ## Cleanup
 
 ```bash
-make kafka-down
+make -f Makefile.legacy kafka-down
 ```
 
 Nếu cần reset lab data Kafka local, có thể dùng Docker Compose volume cleanup thủ công. Không làm reset destructive trong Makefile mặc định.

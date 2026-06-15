@@ -167,4 +167,3 @@ app:
     enabled: ${APP_MESSAGING_ENABLED:false}
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
     master-data-topic: ${KAFKA_MASTER_DATA_TOPIC:master-data-events}
-    consumer-group-id: ${KAFKA_CONSUMER_GROUP_ID:tenant-demo-master-data}

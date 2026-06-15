@@ -58,8 +58,8 @@ app:
 
 ```bash
 cd lab-code
-make db-up
-make app-run
+make -f Makefile.legacy db-up
+make -f Makefile.legacy app-run
 ```
 
 2. Nếu dùng dev token endpoint, đặt `JWT_DEV_TOKEN_ENABLED=true` trong `.env`.

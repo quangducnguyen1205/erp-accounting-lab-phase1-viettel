@@ -1,22 +1,55 @@
-@baseUrl = http://localhost:18000
+@kong_base_url = http://localhost:18000
+@search_service_base_url = http://localhost:8084
 @keyword = Laptop
-@invalidToken = invalid.jwt.token
+@invalid_token = invalid.jwt.token
 
-### Search tenant-scoped master data through Kong
-GET {{baseUrl}}/api/search/master-data?keyword={{keyword}}
-Authorization: Bearer {{access_token}}
-X-Request-Id: search-demo-001
+### Health - direct service
+GET {{search_service_base_url}}/actuator/health
+
+### Search tenant-scoped master data as tenant1 through Kong
+GET {{kong_base_url}}/api/search/master-data?keyword={{keyword}}
+Authorization: Bearer {{tenant1_token}}
+X-Request-Id: search-tenant1-001
+
+### Search tenant-scoped master data as tenant2 through Kong
+GET {{kong_base_url}}/api/search/master-data?keyword={{keyword}}
+Authorization: Bearer {{tenant2_token}}
+X-Request-Id: search-tenant2-001
 
 ### Missing token should return 401
-GET {{baseUrl}}/api/search/master-data?keyword={{keyword}}
-X-Request-Id: search-demo-missing-token
+GET {{kong_base_url}}/api/search/master-data?keyword={{keyword}}
+X-Request-Id: search-missing-token-001
 
 ### Invalid token should return 401
-GET {{baseUrl}}/api/search/master-data?keyword={{keyword}}
-Authorization: Bearer {{invalidToken}}
-X-Request-Id: search-demo-invalid-token
+GET {{kong_base_url}}/api/search/master-data?keyword={{keyword}}
+Authorization: Bearer {{invalid_token}}
+X-Request-Id: search-invalid-token-001
 
 ### Blank keyword should return 400 after authentication
-GET {{baseUrl}}/api/search/master-data?keyword=
-Authorization: Bearer {{access_token}}
-X-Request-Id: search-demo-blank-keyword
+GET {{kong_base_url}}/api/search/master-data?keyword=
+Authorization: Bearer {{tenant1_token}}
+X-Request-Id: search-blank-keyword-001
+
+### Reindex missing token - expected 401
+POST {{kong_base_url}}/api/search/master-data/reindex
+X-Request-Id: search-reindex-missing-token-001
+
+### Reindex as ACCOUNTANT - expected 403
+POST {{kong_base_url}}/api/search/master-data/reindex
+Authorization: Bearer {{tenant1_token}}
+X-Request-Id: search-reindex-accountant-403
+
+### Reindex as VIEWER - expected 403
+POST {{kong_base_url}}/api/search/master-data/reindex
+Authorization: Bearer {{tenant2_token}}
+X-Request-Id: search-reindex-viewer-403
+
+### Reindex as platform admin - expected 200
+POST {{kong_base_url}}/api/search/master-data/reindex
+Authorization: Bearer {{admin_token}}
+X-Request-Id: search-reindex-admin-001
+
+### Search after reindex
+GET {{kong_base_url}}/api/search/master-data?keyword={{keyword}}
+Authorization: Bearer {{admin_token}}
+X-Request-Id: search-after-reindex-001

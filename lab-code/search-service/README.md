@@ -1,8 +1,8 @@
 # Search Service
 
-`search-service` owns the Phase 1.5 Elasticsearch projection for `Master Data Portal`.
+`search-service` sở hữu Elasticsearch projection cho `Master Data Portal`.
 
-It is intentionally Maven/IntelliJ-first like the other Java backend services:
+Service này chạy Maven/IntelliJ-first giống các Java backend service khác:
 
 ```text
 tenant-demo
@@ -15,74 +15,135 @@ React Web UI
     -> search-service :8084
 ```
 
-## Run
+PostgreSQL trong `tenant-demo` vẫn là source of truth. Elasticsearch chỉ là projection phục vụ tìm kiếm nhanh và có thể trễ vài giây sau create/update/deactivate.
 
-Start Docker infra first:
+## Chạy service
+
+Start Docker infra trước:
 
 ```bash
 cd lab-code
 make keycloak-up
 make keycloak-setup
-make kafka-up
-make elastic-up
-make kong-up
+make -f Makefile.legacy kafka-up
+make -f Makefile.legacy elastic-up
+make -f Makefile.legacy kong-up
 ```
 
-Start `tenant-demo` with Kafka enabled in another terminal so it can publish `MasterDataChangedEvent`:
+Start `tenant-demo` với Kafka enabled ở terminal khác để publish `MasterDataChangedEvent`:
 
 ```bash
 cd lab-code
 APP_AUTH_MODE=keycloak \
 APP_MESSAGING_ENABLED=true \
 KAFKA_BOOTSTRAP_SERVERS=localhost:19092 \
-make app-run-logs
+make -f Makefile.legacy app-run-logs
 ```
 
-Run the service:
+Run search-service:
 
 ```bash
 cd lab-code
-make search-run
+make -f Makefile.legacy search-run
 ```
 
-Run with Loki-friendly file logging:
+Run với file log để Loki/Alloy tail:
 
 ```bash
 cd lab-code
-make search-run-logs
+make -f Makefile.legacy search-run-logs
 ```
 
-The log file is:
+Log file:
 
 ```text
 lab-code/logs/search-service.log
 ```
 
+Final demo path khuyến nghị là:
+
+```bash
+cd lab-code
+make up
+```
+
 ## API
 
-All endpoints validate JWT through Spring Security Resource Server and derive `tenant_id` from the token.
+Mọi endpoint validate JWT bằng Spring Security Resource Server và lấy `tenant_id` từ token đã validate.
+
+### Search
 
 ```text
 GET /api/search/master-data?keyword=...
 ```
 
-Search results are filtered by tenant and `active=true`.
+Role được phép:
+
+- `ADMIN`
+- `ACCOUNTANT`
+- `VIEWER`
+
+Kết quả luôn filter theo tenant hiện tại và `active=true`.
+
+### Reindex tenant hiện tại
+
+```text
+POST /api/search/master-data/reindex
+```
+
+Chỉ role `ADMIN` được gọi. Endpoint này dành cho IntelliJ `.http` hoặc manual operational test, không expose trên React UI.
+
+Luồng reindex:
+
+1. `search-service` lấy `tenant_id` từ token admin.
+2. Gọi `tenant-demo` endpoint `GET /api/master-data` bằng chính token admin để lấy dữ liệu nguồn của tenant hiện tại.
+3. Xóa document search cũ của tenant đó trong Elasticsearch.
+4. Bulk index lại danh sách master data đang active.
+5. Trả summary ngắn:
+
+```json
+{
+  "tenantId": 1,
+  "indexName": "master_data_search",
+  "indexedCount": 12,
+  "deletedCount": 12,
+  "requestedAt": "2026-06-14T00:00:00Z"
+}
+```
+
+Reindex hiện là tenant-scoped, không phải global all-tenant job.
+
+## HTTP Client
+
+Xem:
+
+```text
+lab-code/search-service/http/search-api.http
+lab-code/README-http-client.md
+```
+
+Các case chính:
+
+- thiếu token -> `401`;
+- `tenant1-user` / `tenant2-user` gọi reindex -> `403`;
+- `platform-admin` gọi reindex -> `200`;
+- search sau reindex trả dữ liệu trong tenant hiện tại.
 
 ## Logs
 
-When running with:
+Khi chạy:
 
 ```bash
-make search-run-logs
+make -f Makefile.legacy search-run-logs
 ```
 
-Spring Boot also writes a local file log:
+Spring Boot ghi thêm file log:
 
 ```text
 lab-code/logs/search-service.log
 ```
 
-Grafana Alloy tails that file into Loki with:
+Grafana Alloy tail file này vào Loki với label:
 
 ```text
 service="search-service"
@@ -90,10 +151,11 @@ source="file"
 environment="local"
 ```
 
-Search request text such as `requestId`, code, or keyword should be searched with LogQL `|=`, not added as Loki labels.
+Search request text như `requestId`, code hoặc keyword nên search bằng LogQL `|=`, không thêm thành Loki label.
 
 ## Caveat
 
-This service is an eventually consistent projection. A newly created or updated master-data record appears after Kafka delivery and indexing complete.
-
-There is no outbox, retry/DLT, schema registry, or full reindex workflow yet. Those are later production-hardening topics.
+- Chưa có outbox, nên DB write và Kafka publish chưa atomic.
+- Chưa có retry/DLT cho failed indexing.
+- Chưa có schema registry; event DTO đang duplicated có chủ đích để học service boundary.
+- Reindex là admin/manual endpoint local, chưa phải production backfill workflow.

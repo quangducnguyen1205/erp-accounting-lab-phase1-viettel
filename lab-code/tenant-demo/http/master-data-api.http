@@ -9,46 +9,46 @@
 # - Nếu local data khác, đổi @code hoặc @category cho khớp dữ liệu của bạn.
 
 # Dùng shared environment "development" trong http-client.private.env.json.
-# accountantTenant1Token, viewerTenant2Token đã có sẵn.
+# tenant1_token, tenant2_token đã có sẵn.
 @code = LAPTOP-01
 @category = Laptop
 @tenant2RecordId = 6
 
 ### List master data - tenant 1
-GET {{baseUrl}}/api/master-data
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/api/master-data
+Authorization: Bearer {{tenant1_token}}
 
 ### List master data - tenant 2
-GET {{baseUrl}}/api/master-data
-Authorization: Bearer {{viewerTenant2Token}}
+GET {{tenant_demo_base_url}}/api/master-data
+Authorization: Bearer {{tenant2_token}}
 
 ### Missing Authorization - expected 401
-GET {{baseUrl}}/api/master-data
+GET {{tenant_demo_base_url}}/api/master-data
 
 ### Find by code trong tenant 1
-GET {{baseUrl}}/api/master-data/code/{{code}}
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/api/master-data/code/{{code}}
+Authorization: Bearer {{tenant1_token}}
 
 ### Find by code trong tenant 2
-GET {{baseUrl}}/api/master-data/code/{{code}}
-Authorization: Bearer {{viewerTenant2Token}}
+GET {{tenant_demo_base_url}}/api/master-data/code/{{code}}
+Authorization: Bearer {{tenant2_token}}
 
 ### Find by category trong tenant 1
-GET {{baseUrl}}/api/master-data/category/{{category}}
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/api/master-data/category/{{category}}
+Authorization: Bearer {{tenant1_token}}
 
 ### Find by category trong tenant 2
-GET {{baseUrl}}/api/master-data/category/{{category}}
-Authorization: Bearer {{viewerTenant2Token}}
+GET {{tenant_demo_base_url}}/api/master-data/category/{{category}}
+Authorization: Bearer {{tenant2_token}}
 
 ### Cross-tenant id check - tenant 1 thử truy cập id của tenant 2
 # Expected: 404 Not Found.
 # Ý nghĩa: record có tồn tại trong database, nhưng KHÔNG thuộc tenant 1,
 # nên API không được trả dữ liệu đó cho tenant 1.
-GET {{baseUrl}}/api/master-data/{{tenant2RecordId}}
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/api/master-data/{{tenant2RecordId}}
+Authorization: Bearer {{tenant1_token}}
 
 ### Cross-tenant id check - tenant 2 truy cập lại chính id đó
 # Expected: 200 OK nếu record vẫn active và đúng là thuộc tenant 2.
-GET {{baseUrl}}/api/master-data/{{tenant2RecordId}}
-Authorization: Bearer {{viewerTenant2Token}}
+GET {{tenant_demo_base_url}}/api/master-data/{{tenant2RecordId}}
+Authorization: Bearer {{tenant2_token}}

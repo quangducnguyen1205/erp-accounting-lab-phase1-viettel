@@ -217,8 +217,8 @@ Chạy app:
 
 ```bash
 cd lab-code
-make db-up
-make app-run
+make -f Makefile.legacy db-up
+make -f Makefile.legacy app-run
 ```
 
 Manual check:
@@ -252,7 +252,7 @@ curl http://localhost:8080/actuator/metrics
 3. Gọi `observability-api.http` để xem request log có/không có `X-Request-Id`.
 4. Gọi các endpoint `/actuator/metrics/tenant_demo...` trong `observability-api.http`.
 5. Bật Redis/Kafka nếu muốn thấy custom metric tăng sau hit/miss hoặc publish event.
-6. Chạy `make observability-up` và đọc `prometheus-grafana-local-lab.md` để thấy Prometheus scrape + Grafana dashboard local.
+6. Chạy `make -f Makefile.legacy observability-up` và đọc `prometheus-grafana-local-lab.md` để thấy Prometheus scrape + Grafana dashboard local.
 
 ---
 

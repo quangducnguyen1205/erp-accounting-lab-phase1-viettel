@@ -34,9 +34,9 @@ Trên Linux, compose có `extra_hosts: host.docker.internal:host-gateway`.
 Từ `lab-code/`:
 
 ```bash
-make observability-up
+make -f Makefile.legacy observability-up
 make observability-status
-make observability-down
+make -f Makefile.legacy observability-down
 ```
 
 Hoặc chạy trực tiếp:
@@ -53,9 +53,9 @@ docker compose down
 
 ```bash
 cd lab-code
-make db-up
-make redis-up
-make kafka-up
+make -f Makefile.legacy db-up
+make -f Makefile.legacy redis-up
+make -f Makefile.legacy kafka-up
 ```
 
 2. Start `tenant-demo` on host with the features you want to observe.
@@ -82,7 +82,7 @@ curl http://localhost:8080/actuator/prometheus
 
 ```bash
 cd lab-code
-make observability-up
+make -f Makefile.legacy observability-up
 make observability-status
 ```
 
@@ -118,7 +118,7 @@ Dashboards -> Phase 1 Lab -> Tenant Demo Observability
 
 ```bash
 cd lab-code
-make observability-down
+make -f Makefile.legacy observability-down
 ```
 
 Prometheus/Grafana use Docker named volumes. Scraped history survives container restart while volumes exist.

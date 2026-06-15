@@ -5,7 +5,7 @@
 # Header X-Tenant-Id không còn được hỗ trợ vì JWT là mặc định.
 
 # Dùng shared environment "development" trong http-client.private.env.json.
-# accountantTenant1Token, viewerTenant2Token đã có sẵn.
+# tenant1_token, tenant2_token đã có sẵn.
 @invalidJwt = invalid.jwt.token
 @code = LAPTOP-01
 @tenant2RecordId = 10
@@ -13,57 +13,57 @@
 ### 1. Tạo/lấy dev token tenant 1
 # Request này lấy token từ DevTokenController của tenant-demo APP
 # Cần JWT_DEV_TOKEN_ENABLED=true trong .env.
-# Sau khi chạy, 'accountantTenant1Token' sẽ được cập nhật trong global variables.
-GET {{baseUrl}}/api/dev/tokens/tenant-1?roles=ACCOUNTANT
+# Sau khi chạy, 'tenant1_token' sẽ được cập nhật trong global variables.
+GET {{tenant_demo_base_url}}/api/dev/tokens/tenant-1?roles=ACCOUNTANT
 
 > {%
     client.test("Request executed successfully", function() {
         client.assert(response.status === 200, "Response status is not 200");
     });
-    client.global.set("accountantTenant1Token", response.body.accessToken);
-    client.log("Updated global variable: accountantTenant1Token from dev endpoint");
+    client.global.set("tenant1_token", response.body.accessToken);
+    client.log("Updated global variable: tenant1_token from dev endpoint");
 %}
 
 ### 2. Tạo/lấy dev token tenant 2
 # Request này lấy token từ DevTokenController của tenant-demo APP
 # Cần JWT_DEV_TOKEN_ENABLED=true trong .env.
-# Sau khi chạy, 'viewerTenant2Token' sẽ được cập nhật trong global variables.
-GET {{baseUrl}}/api/dev/tokens/tenant-2?roles=VIEWER
+# Sau khi chạy, 'tenant2_token' sẽ được cập nhật trong global variables.
+GET {{tenant_demo_base_url}}/api/dev/tokens/tenant-2?roles=VIEWER
 
 > {%
     client.test("Request executed successfully", function() {
         client.assert(response.status === 200, "Response status is not 200");
     });
-    client.global.set("viewerTenant2Token", response.body.accessToken);
-    client.log("Updated global variable: viewerTenant2Token from dev endpoint");
+    client.global.set("tenant2_token", response.body.accessToken);
+    client.log("Updated global variable: tenant2_token from dev endpoint");
 %}
 
 ### JWT tenant 1 - list master data
 # Expected sau khi JWT active: 200, chỉ thấy data tenant 1.
-GET {{baseUrl}}/api/master-data
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/api/master-data
+Authorization: Bearer {{tenant1_token}}
 
 ### JWT tenant 2 - list master data
 # Expected sau khi JWT active: 200, chỉ thấy data tenant 2.
-GET {{baseUrl}}/api/master-data
-Authorization: Bearer {{viewerTenant2Token}}
+GET {{tenant_demo_base_url}}/api/master-data
+Authorization: Bearer {{tenant2_token}}
 
 ### Missing Authorization - expected 401 sau khi JWT active
-GET {{baseUrl}}/api/master-data
+GET {{tenant_demo_base_url}}/api/master-data
 
 ### Invalid Authorization - expected 401 sau khi JWT active
-GET {{baseUrl}}/api/master-data
+GET {{tenant_demo_base_url}}/api/master-data
 Authorization: Bearer {{invalidJwt}}
 
 ### Query by code scoped theo tenant 1
-GET {{baseUrl}}/api/master-data/code/{{code}}
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/api/master-data/code/{{code}}
+Authorization: Bearer {{tenant1_token}}
 
 ### Query by code scoped theo tenant 2
-GET {{baseUrl}}/api/master-data/code/{{code}}
-Authorization: Bearer {{viewerTenant2Token}}
+GET {{tenant_demo_base_url}}/api/master-data/code/{{code}}
+Authorization: Bearer {{tenant2_token}}
 
 ### Cross-tenant id - tenant 1 gọi id của tenant 2
 # Expected sau khi JWT active: 404 hoặc bị chặn, không lộ data tenant 2.
-GET {{baseUrl}}/api/master-data/{{tenant2RecordId}}
-Authorization: Bearer {{accountantTenant1Token}}
+GET {{tenant_demo_base_url}}/api/master-data/{{tenant2RecordId}}
+Authorization: Bearer {{tenant1_token}}

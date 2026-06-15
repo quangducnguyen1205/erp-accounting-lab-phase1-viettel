@@ -13,7 +13,7 @@ Folder này chỉ chứa phần frontend cần thiết để demo flow kiến tr
 ## Trạng Thái
 
 - React Web UI demo đã được implement và verify ở `lab-code/web-ui-demo/`.
-- UI chạy theo Docker-first workflow qua `make web-ui-up`, không yêu cầu local npm.
+- UI chạy theo Docker-first workflow qua `make -f Makefile.legacy web-ui-up`, không yêu cầu local npm.
 - UI là thin client: login Keycloak, gọi API qua Gateway, load/create `master_data`, lookup by code cho Redis demo path và hiển thị requestId để đối chiếu log.
 - Product direction mới là `Master Data Portal`: một business app nhỏ để quản lý master data và xem activity log, không phải architecture console.
 - React implementation đã được realign theo IA mới: Dashboard, Master Data, Activity Log, Account.

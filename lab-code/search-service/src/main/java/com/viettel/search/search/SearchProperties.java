@@ -25,6 +25,8 @@ public class SearchProperties {
 
     private String masterDataIndex = "master_data_search";
 
+    private String masterDataSourceBaseUrl = "http://localhost:8080";
+
     public String getElasticsearchUris() {
         return elasticsearchUris;
     }
@@ -39,5 +41,13 @@ public class SearchProperties {
 
     public void setMasterDataIndex(String masterDataIndex) {
         this.masterDataIndex = masterDataIndex;
+    }
+
+    public String getMasterDataSourceBaseUrl() {
+        return masterDataSourceBaseUrl;
+    }
+
+    public void setMasterDataSourceBaseUrl(String masterDataSourceBaseUrl) {
+        this.masterDataSourceBaseUrl = masterDataSourceBaseUrl;
     }
 }

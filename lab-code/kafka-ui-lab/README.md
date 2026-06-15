@@ -9,7 +9,7 @@ Kafka UI là tool xem trạng thái Kafka, không thay thế producer/consumer c
 Từ `lab-code/`:
 
 ```bash
-make kafka-ui-up
+make -f Makefile.legacy kafka-ui-up
 make kafka-ui-status
 ```
 
@@ -22,10 +22,10 @@ http://localhost:18082
 Dừng Kafka UI:
 
 ```bash
-make kafka-ui-down
+make -f Makefile.legacy kafka-ui-down
 ```
 
-`make kafka-ui-up` sẽ chạy `make kafka-up` trước để bảo đảm Kafka broker và Docker network `viettel-kafka-net` đã tồn tại.
+`make -f Makefile.legacy kafka-ui-up` sẽ chạy `make -f Makefile.legacy kafka-up` trước để bảo đảm Kafka broker và Docker network `viettel-kafka-net` đã tồn tại.
 
 ## Kafka UI kết nối Kafka như thế nào?
 

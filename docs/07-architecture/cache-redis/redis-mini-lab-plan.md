@@ -102,7 +102,7 @@ Không bật mặc định để `make app-test` không phụ thuộc Redis.
 
 ```bash
 cd lab-code
-make redis-up
+make -f Makefile.legacy redis-up
 make redis-status
 ```
 

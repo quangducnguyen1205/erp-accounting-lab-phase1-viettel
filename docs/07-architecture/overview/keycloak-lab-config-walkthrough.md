@@ -67,7 +67,7 @@ volumes:
   viettel-keycloak-postgres-data:
 ```
 
-Volume này giữ realm/client/user/role sau khi chạy `make keycloak-down`. Chỉ mất dữ liệu khi chạy target destructive `make keycloak-reset`.
+Volume này giữ realm/client/user/role sau khi chạy `make keycloak-down`. Chỉ mất dữ liệu khi chạy target destructive `make -f Makefile.legacy keycloak-reset`.
 
 ## `setup-keycloak-demo.sh`
 
@@ -98,11 +98,11 @@ Từ `lab-code/`:
 
 ```bash
 make keycloak-up       # start Keycloak + DB, giữ volume
-make keycloak-status   # xem container
-make keycloak-logs     # xem log
+make -f Makefile.legacy keycloak-status   # xem container
+make -f Makefile.legacy keycloak-logs     # xem log
 make keycloak-setup    # bootstrap realm/client/user/role
 make keycloak-down     # dừng container, giữ volume
-make keycloak-reset    # DESTRUCTIVE: xóa volume Keycloak DB
+make -f Makefile.legacy keycloak-reset    # DESTRUCTIVE: xóa volume Keycloak DB
 ```
 
 `keycloak-reset` cố ý có tên rõ vì nó xóa realm/client/user local. Không dùng target này khi chỉ muốn restart.
@@ -113,7 +113,7 @@ make keycloak-reset    # DESTRUCTIVE: xóa volume Keycloak DB
 cd lab-code
 make keycloak-up
 make keycloak-setup
-make keycloak-status
+make -f Makefile.legacy keycloak-status
 ```
 
 Sau đó mở:

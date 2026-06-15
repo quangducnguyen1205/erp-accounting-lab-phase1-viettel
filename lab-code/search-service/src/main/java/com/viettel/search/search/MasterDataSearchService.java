@@ -1,10 +1,13 @@
 package com.viettel.search.search;
 
 import com.viettel.common.security.TenantContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
 import java.util.List;
 
 /*
@@ -32,16 +35,49 @@ import java.util.List;
 @Service
 public class MasterDataSearchService {
 
-    private final MasterDataSearchGateway gateway;
+    private static final Logger log = LoggerFactory.getLogger(MasterDataSearchService.class);
 
-    public MasterDataSearchService(MasterDataSearchGateway gateway) {
+    private final MasterDataSearchGateway gateway;
+    private final MasterDataSourceClient sourceClient;
+
+    public MasterDataSearchService(MasterDataSearchGateway gateway, MasterDataSourceClient sourceClient) {
         this.gateway = gateway;
+        this.sourceClient = sourceClient;
     }
 
     public List<MasterDataSearchDocument> search(String keyword) {
         Long tenantId = currentTenantId();
         validate(keyword);
         return gateway.search(tenantId, keyword.trim());
+    }
+
+    public MasterDataReindexResponse reindexCurrentTenant(String accessToken) {
+        Long tenantId = currentTenantId();
+        Instant requestedAt = Instant.now();
+
+        List<MasterDataSourceRecord> sourceRecords = sourceClient.listCurrentTenantMasterData(accessToken);
+        List<MasterDataSearchDocument> documents = sourceRecords.stream()
+                .map(record -> MasterDataSearchDocument.fromSourceRecord(tenantId, record, requestedAt))
+                .toList();
+
+        long deletedCount = gateway.deleteTenantDocuments(tenantId);
+        int indexedCount = gateway.bulkIndex(documents);
+
+        log.info(
+                "Reindexed master data search projection tenantId={}, indexName={}, deletedCount={}, indexedCount={}",
+                tenantId,
+                gateway.indexName(),
+                deletedCount,
+                indexedCount
+        );
+
+        return new MasterDataReindexResponse(
+                tenantId,
+                gateway.indexName(),
+                indexedCount,
+                deletedCount,
+                requestedAt
+        );
     }
 
     private Long currentTenantId() {

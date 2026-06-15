@@ -129,8 +129,7 @@ Repo này dùng workflow Docker-first, không yêu cầu local `npm`.
 Từ thư mục `lab-code/`:
 
 ```bash
-make web-ui-info
-make web-ui-up
+make up
 ```
 
 Mở:
@@ -142,7 +141,7 @@ http://localhost:5173
 Nếu muốn chạy foreground để nhìn log trực tiếp:
 
 ```bash
-make web-ui-run
+make -f Makefile.legacy web-ui-run
 ```
 
 Build production artifact trong Docker:
@@ -155,60 +154,16 @@ Build output `dist/` chỉ nằm trong Docker image/layer; không commit `dist/`
 
 ## Demo route
 
-1. Start infra cần thiết:
+1. Start final demo stack:
 
    ```bash
    cd lab-code
-   make infra-up
+   make up
    ```
 
-2. Start `tenant-demo` ở Keycloak + Kafka mode:
+   Target này bật Docker infra/tooling/web UI và bốn Java service chính ở background. Các target mini-lab cũ vẫn còn trong `Makefile.legacy`, ví dụ `make -f Makefile.legacy web-ui-up` hoặc `make -f Makefile.legacy app-run-logs`.
 
-   ```bash
-   cd lab-code
-   APP_AUTH_MODE=keycloak APP_MESSAGING_ENABLED=true KAFKA_BOOTSTRAP_SERVERS=localhost:19092 make app-run-logs
-   ```
-
-   File `tenant-demo/.env` nên có `APP_AUTH_MODE=keycloak` và issuer URI đúng với Keycloak local. Dùng `app-run-logs` khi muốn Loki thấy `tenant-demo` log.
-
-3. Start audit service và Kong. Audit service chạy Maven/host giống `tenant-demo`:
-
-   ```bash
-   cd lab-code
-   make audit-log-run-logs
-   ```
-
-   Mở terminal khác cho Kong:
-
-   ```bash
-   cd lab-code
-   make kong-up
-   ```
-
-   Nếu demo tệp tin, start thêm MinIO và file-service:
-
-   ```bash
-   cd lab-code
-   make minio-up
-   make file-run-logs
-   ```
-
-   Nếu demo tìm kiếm nâng cao, start thêm Elasticsearch và search-service:
-
-   ```bash
-   cd lab-code
-   make elastic-up
-   make search-run-logs
-   ```
-
-4. Start UI:
-
-   ```bash
-   cd lab-code
-   make web-ui-up
-   ```
-
-5. Trên UI:
+2. Trên UI:
 
    - Login bằng Keycloak.
    - Dashboard/Account: kiểm API base URL đang là Kong và user/tenant/role đúng.
@@ -220,8 +175,16 @@ Build output `dist/` chỉ nằm trong Docker image/layer; không commit `dist/`
    - Tệp tin: upload file nhỏ, tải danh sách, tải xuống, thử viewer `403` nếu cần.
    - Activity Log: đợi một chút rồi bấm `Load activity`.
    - Demo docs: mở Grafana Loki/Kafka UI từ URL trong demo script nếu cần giải thích backend flow.
-   - Xem `requestId` sau request.
+   - Khi cần debug, mở `Chi tiết kỹ thuật` để xem requestId.
    - Đối chiếu log `tenant-demo` và `audit-log-service` bằng requestId/event log.
+
+Stop:
+
+```bash
+cd lab-code
+make down
+make clean-logs   # optional
+```
 
 ## Quan sát backend integrations
 
@@ -259,7 +222,7 @@ UI không kết luận Kafka/audit thành công sau POST. Chỉ khi `GET /api/au
 | Master Data | Load/list, load by code, create, edit/update, soft delete/tạm ngưng, backend search qua search-service, `401`/`403`/`404`/`409`/unavailable states. |
 | Files / Tệp tin | Upload, list metadata, download, delete qua `/api/files`; binary lưu ở MinIO, metadata ở file-service DB schema. |
 | Activity Log | Activity table/timeline, tenant2 empty success state. Current API path remains `/api/audit-events`. |
-| Account | Username, tenant_id, roles, token status hidden, API gateway preset, logout and secondary demo tool links. |
+| Account | Username, tenant_id, roles, token status hidden, API base URL và logout. |
 
 Backend/observability links stay in docs or a small secondary demo note, not primary product navigation.
 

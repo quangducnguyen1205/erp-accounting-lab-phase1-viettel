@@ -147,6 +147,6 @@ Lý do chính:
 
 ## 9. Suggested next Codex task
 
-> Run the final Master Data Portal smoke demo with `make demo-up`, then polish only bugs found in the run.
+> Run the final Master Data Portal smoke demo with `make up`, then polish only bugs found in the run.
 
 Lý do: Loki/log aggregation, Kafka UI, Kong Gateway, audit/file/search services và Keycloak theme đã có nền local. Flow cần kiểm lại theo một script duy nhất: CRUD -> file upload/download -> search projection -> activity log -> Kafka UI -> Loki.

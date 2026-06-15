@@ -29,8 +29,9 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
+        String uri = request.getRequestURI();
         return "GET".equalsIgnoreCase(request.getMethod())
-                && "/actuator/health".equals(request.getRequestURI());
+                && ("/actuator/health".equals(uri) || "/actuator/prometheus".equals(uri));
     }
 
     @Override

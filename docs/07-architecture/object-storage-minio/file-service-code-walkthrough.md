@@ -108,18 +108,18 @@ Start dependencies:
 
 ```bash
 cd lab-code
-make db-up
+make -f Makefile.legacy db-up
 make keycloak-up
 make keycloak-setup
-make minio-up
-make kong-up
+make -f Makefile.legacy minio-up
+make -f Makefile.legacy kong-up
 ```
 
 Run service:
 
 ```bash
 cd lab-code
-make file-run-logs
+make -f Makefile.legacy file-run-logs
 ```
 
 Validate:

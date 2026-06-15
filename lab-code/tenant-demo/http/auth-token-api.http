@@ -1,93 +1,61 @@
-# Auth Token API - Token Generation and Storage Flow
+# Token helper cho IntelliJ HTTP Client
 #
-# This file handles the "Postman-like" flow for fetching and storing tokens.
-# Tokens are stored in global variables and shared across all .http files
-# during the current IDE session.
+# Chạy các request này sau `make keycloak-up && make keycloak-setup`.
+# Script cuối mỗi request set global variable trong phiên IDE:
+# - tenant1_token
+# - tenant2_token
+# - admin_token
 #
-# Variables updated:
-# - accountantTenant1Token
-# - viewerTenant2Token
-# - adminToken
-# - noRoleToken
-#
-# LIMITATION: Global variables set via scripts are stored in memory by default.
-# To ensure IntelliJ updates `http-client.private.env.json`, the variables
-# must exist in that file first. When you run these requests, IntelliJ's 
-# HTTP Client will automatically update the values in your private environment file.
+# Nếu muốn lưu qua nhiều phiên IntelliJ, copy token vào file local:
+# `lab-code/http-client.env.json` hoặc `http-client.private.env.json`.
+# Không commit token thật.
 
-@keycloakUrl = http://localhost:18080
-@realm = viettel-lab
-@clientId = tenant-demo-api-client
-@password = password
+@keycloak_base_url = http://localhost:18080
+@keycloak_realm = viettel-lab
+@keycloak_client_id = tenant-demo-api-client
+@demo_password = password
 
-### 0. Keycloak OIDC Discovery & Metadata
-# Dùng để kiểm tra issuer, token_endpoint, jwks_uri...
-GET {{keycloakUrl}}/realms/{{realm}}/.well-known/openid-configuration
+### 0. Keycloak OIDC discovery
+GET {{keycloak_base_url}}/realms/{{keycloak_realm}}/.well-known/openid-configuration
 
-### 0.1. JWKS endpoint
-# Resource Server (Spring Boot) dùng public keys từ đây để verify chữ ký JWT
-GET {{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/certs
-
-### 1. Get Token for Accountant (Tenant 1)
-# User: tenant1-user
-# Role: ACCOUNTANT, Tenant: 1
-POST {{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token
+### 1. Token tenant1 ACCOUNTANT
+POST {{keycloak_base_url}}/realms/{{keycloak_realm}}/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=password&client_id={{clientId}}&username=tenant1-user&password={{password}}
+grant_type=password&client_id={{keycloak_client_id}}&username=tenant1-user&password={{demo_password}}
 
 > {%
-    client.test("Request executed successfully", function() {
+    client.test("tenant1 token ok", function() {
         client.assert(response.status === 200, "Response status is not 200");
     });
-    client.global.set("accountantTenant1Token", response.body.access_token);
-    client.log("Updated global variable: accountantTenant1Token");
+    client.global.set("tenant1_token", response.body.access_token);
+    client.log("Updated global variable: tenant1_token");
 %}
 
-### 2. Get Token for Viewer (Tenant 2)
-# User: tenant2-user
-# Role: VIEWER, Tenant: 2
-POST {{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token
+### 2. Token tenant2 VIEWER
+POST {{keycloak_base_url}}/realms/{{keycloak_realm}}/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=password&client_id={{clientId}}&username=tenant2-user&password={{password}}
+grant_type=password&client_id={{keycloak_client_id}}&username=tenant2-user&password={{demo_password}}
 
 > {%
-    client.test("Request executed successfully", function() {
+    client.test("tenant2 token ok", function() {
         client.assert(response.status === 200, "Response status is not 200");
     });
-    client.global.set("viewerTenant2Token", response.body.access_token);
-    client.log("Updated global variable: viewerTenant2Token");
+    client.global.set("tenant2_token", response.body.access_token);
+    client.log("Updated global variable: tenant2_token");
 %}
 
-### 3. Get Token for Admin
-# User: tenant-admin
-# Role: ADMIN, Tenant: 4 (Sample)
-POST {{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token
+### 3. Token platform admin ADMIN
+POST {{keycloak_base_url}}/realms/{{keycloak_realm}}/protocol/openid-connect/token
 Content-Type: application/x-www-form-urlencoded
 
-grant_type=password&client_id={{clientId}}&username=tenant-admin&password={{password}}
+grant_type=password&client_id={{keycloak_client_id}}&username=platform-admin&password={{demo_password}}
 
 > {%
-    client.test("Request executed successfully", function() {
+    client.test("admin token ok", function() {
         client.assert(response.status === 200, "Response status is not 200");
     });
-    client.global.set("adminToken", response.body.access_token);
-    client.log("Updated global variable: adminToken");
-%}
-
-### 4. Get Token for No-Role User
-# User: tenant-no-role-user
-# Role: None, Tenant: 3 (Sample)
-POST {{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token
-Content-Type: application/x-www-form-urlencoded
-
-grant_type=password&client_id={{clientId}}&username=tenant-no-role-user&password={{password}}
-
-> {%
-    client.test("Request executed successfully", function() {
-        client.assert(response.status === 200, "Response status is not 200");
-    });
-    client.global.set("noRoleToken", response.body.access_token);
-    client.log("Updated global variable: noRoleToken");
+    client.global.set("admin_token", response.body.access_token);
+    client.log("Updated global variable: admin_token");
 %}

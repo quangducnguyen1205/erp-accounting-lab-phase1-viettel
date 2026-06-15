@@ -122,11 +122,11 @@ README giữ lệnh chạy và verify nhanh.
 Targets:
 
 ```bash
-make kong-up
-make kong-status
+make -f Makefile.legacy kong-up
+make -f Makefile.legacy kong-status
 make kong-logs
 make kong-config
-make kong-down
+make -f Makefile.legacy kong-down
 make kong-info
 ```
 
@@ -268,16 +268,16 @@ Start backend trước:
 
 ```bash
 cd lab-code
-make db-up
-make app-run
+make -f Makefile.legacy db-up
+make -f Makefile.legacy app-run
 ```
 
 Ở terminal khác:
 
 ```bash
 cd lab-code
-make kong-up
-make kong-status
+make -f Makefile.legacy kong-up
+make -f Makefile.legacy kong-status
 ```
 
 Verify health:
@@ -320,7 +320,7 @@ Kỳ vọng:
 Stop:
 
 ```bash
-make kong-down
+make -f Makefile.legacy kong-down
 ```
 
 ## 10. Production Caveats

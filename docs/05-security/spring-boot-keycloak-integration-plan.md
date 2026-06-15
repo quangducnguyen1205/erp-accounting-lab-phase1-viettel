@@ -148,7 +148,7 @@ lab-code/tenant-demo/http/keycloak-api.http
 
 ```bash
 cd lab-code
-APP_AUTH_MODE=keycloak make app-run
+APP_AUTH_MODE=keycloak make -f Makefile.legacy app-run
 ```
 
 4. Gọi API:

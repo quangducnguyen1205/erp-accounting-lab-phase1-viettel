@@ -30,6 +30,7 @@ Current Phase 1.5 mapping:
 | Kafka consumer group | `search-service` |
 | Elasticsearch index | `master_data_search` |
 | Public route | `GET /api/search/master-data?keyword=...` through Kong |
+| Admin reindex route | `POST /api/search/master-data/reindex` through Kong, role `ADMIN` only |
 | Kong config | `lab-code/kong-gateway-lab/kong.yml` |
 | Loki log file | `lab-code/logs/search-service.log` |
 
@@ -66,6 +67,14 @@ For `DEACTIVATED` events, the search document is marked inactive and normal sear
 
 Roles allowed to search are the same local demo roles used for read paths: `ADMIN`, `ACCOUNTANT`, and `VIEWER`.
 
+Reindex is intentionally stricter:
+
+- only role `ADMIN` can call `POST /api/search/master-data/reindex`;
+- the endpoint uses `tenant_id` from the admin token;
+- the current phase rebuilds only that tenant's search documents.
+
+`platform-admin / password` is the local demo admin account created by Keycloak bootstrap.
+
 ## 5. Common Mistakes
 
 - Treating Elasticsearch as the source of truth.
@@ -74,6 +83,7 @@ Roles allowed to search are the same local demo roles used for read paths: `ADMI
 - Calling Elasticsearch directly from React UI.
 - Expecting a newly updated record to appear instantly without Kafka/indexing delay.
 - Forgetting that delete/deactivate must also update the projection.
+- Exposing reindex as a normal product UI button.
 - Adding `requestId`, `tenantId`, or `code` as Loki labels instead of text-searching logs.
 
 ## 6. Verification
@@ -84,9 +94,9 @@ Start dependencies and services:
 cd lab-code
 make keycloak-up
 make keycloak-setup
-make kafka-up
-make elastic-up
-make kong-up
+make -f Makefile.legacy kafka-up
+make -f Makefile.legacy elastic-up
+make -f Makefile.legacy kong-up
 ```
 
 Run Java services in separate terminals:
@@ -96,12 +106,12 @@ cd lab-code
 APP_AUTH_MODE=keycloak \
 APP_MESSAGING_ENABLED=true \
 KAFKA_BOOTSTRAP_SERVERS=localhost:19092 \
-make app-run-logs
+make -f Makefile.legacy app-run-logs
 ```
 
 ```bash
 cd lab-code
-make search-run-logs
+make -f Makefile.legacy search-run-logs
 ```
 
 Then create or update master data and search through Kong:
@@ -116,6 +126,7 @@ Check:
 - UI search returns only current tenant records;
 - Kafka UI shows `master-data-events`;
 - search-service log shows consume/index activity;
+- `platform-admin` can call reindex, while `tenant1-user` and `tenant2-user` get `403`;
 - Loki query `{service="search-service"}` shows service logs.
 
 ## 7. Caveats
@@ -123,5 +134,5 @@ Check:
 - No outbox yet, so DB write and Kafka publish are not atomic.
 - No retry/DLT yet for failed indexing.
 - No schema registry yet; event DTOs are intentionally duplicated for learning.
-- No full reindex admin workflow yet.
+- Reindex exists only as a tenant-scoped local/admin endpoint; no global production backfill workflow yet.
 - Elasticsearch is local lab infrastructure, not a production cluster.

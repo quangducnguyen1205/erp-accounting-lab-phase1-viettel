@@ -3,6 +3,7 @@ package com.viettel.search.search;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import co.elastic.clients.elasticsearch.core.BulkResponse;
+import co.elastic.clients.elasticsearch.core.DeleteByQueryResponse;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.transport.endpoints.BooleanResponse;
@@ -98,6 +99,21 @@ public class MasterDataSearchGateway {
 
         refreshIndexForLocalLab();
         return documents.size();
+    }
+
+    public long deleteTenantDocuments(Long tenantId) {
+        ensureIndexExists();
+
+        DeleteByQueryResponse response = callElasticsearch("delete tenant master_data documents", () -> client.deleteByQuery(d -> d
+                .index(indexName())
+                .query(q -> q.term(t -> t
+                        .field("tenantId")
+                        .value(tenantId)
+                ))
+                .refresh(true)
+        ));
+
+        return response.deleted();
     }
 
     public List<MasterDataSearchDocument> search(Long tenantId, String keyword) {

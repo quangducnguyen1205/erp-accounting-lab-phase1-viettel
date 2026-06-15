@@ -19,6 +19,7 @@ Kiểm tra Keycloak local nếu vừa reset volume:
 | Web origin | `http://localhost:5173` |
 | User ACCOUNTANT | `tenant1-user` / `password`, `tenant_id=1`, role `ACCOUNTANT` |
 | User VIEWER | `tenant2-user` / `password`, `tenant_id=2`, role `VIEWER` |
+| User ADMIN | `platform-admin` / `password`, `tenant_id=1`, role `ADMIN` |
 
 `tenant-demo-web` phải là public SPA client: client authentication off, standard flow on. Role nên nằm ở `realm_access.roles` hoặc đúng `resource_access.<KEYCLOAK_CLIENT_ID>.roles` mà backend đang đọc.
 
@@ -30,7 +31,7 @@ Từ `lab-code/` có thể bật full local demo bằng:
 
 ```bash
 cd lab-code
-make demo-up
+make up
 ```
 
 Target này bật Docker infra/tooling/web UI:
@@ -54,14 +55,14 @@ PID nằm trong `lab-code/.pids/`, log nằm trong `lab-code/logs/*.log`.
 Kiểm tra:
 
 ```bash
-make demo-status
+make status
 ```
 
 Dừng:
 
 ```bash
-make demo-down
-make logs-clean   # optional, chỉ khi muốn xóa generated *.log
+make down
+make clean-logs   # optional, chỉ khi muốn xóa generated *.log
 ```
 
 ### Option B - manual terminals
@@ -70,22 +71,22 @@ Terminal 1 - Docker infra/tooling:
 
 ```bash
 cd lab-code
-make db-up
-make keycloak-up
-make keycloak-setup
-make kafka-up
-make minio-up
-make elastic-up
-make kong-up
-make kafka-ui-up
-make loki-up
-make web-ui-up
+make -f Makefile.legacy db-up
+make -f Makefile.legacy keycloak-up
+make -f Makefile.legacy keycloak-setup
+make -f Makefile.legacy kafka-up
+make -f Makefile.legacy minio-up
+make -f Makefile.legacy elastic-up
+make -f Makefile.legacy kong-up
+make -f Makefile.legacy kafka-ui-up
+make -f Makefile.legacy loki-up
+make -f Makefile.legacy web-ui-up
 ```
 
 Nếu muốn demo Prometheus/Grafana metrics, bật thêm:
 
 ```bash
-make observability-up
+make -f Makefile.legacy observability-up
 ```
 
 Terminal 2 - `tenant-demo` Java service host-run. File `tenant-demo/.env` nên dùng `APP_AUTH_MODE=keycloak`. Bật thêm feature flags theo phần muốn demo:
@@ -104,16 +105,16 @@ cd lab-code
 APP_AUTH_MODE=keycloak \
 APP_MESSAGING_ENABLED=true \
 KAFKA_BOOTSTRAP_SERVERS=localhost:19092 \
-make app-run-logs
+make -f Makefile.legacy app-run-logs
 ```
 
-Target này ghi log vào `lab-code/logs/tenant-demo.log` để Alloy tail sang Loki. Nếu không cần Loki cho `tenant-demo`, vẫn có thể dùng `make app-run`.
+Target này ghi log vào `lab-code/logs/tenant-demo.log` để Alloy tail sang Loki. Nếu không cần Loki cho `tenant-demo`, vẫn có thể dùng `make -f Makefile.legacy app-run`.
 
 Terminal 3 - `audit-log-service` Java service host-run:
 
 ```bash
 cd lab-code
-make audit-log-run-logs
+make -f Makefile.legacy audit-log-run-logs
 ```
 
 Target này ghi `lab-code/logs/audit-log-service.log` để Loki/Alloy tail sang Grafana Explore. Dừng bằng `Ctrl+C` trong terminal đó.
@@ -122,7 +123,7 @@ Terminal 4 - `file-service` Java service host-run:
 
 ```bash
 cd lab-code
-make file-run-logs
+make -f Makefile.legacy file-run-logs
 ```
 
 Target này ghi `lab-code/logs/file-service.log` để Loki/Alloy tail sang Grafana Explore. Dừng bằng `Ctrl+C` trong terminal đó.
@@ -131,7 +132,7 @@ Terminal 5 - `search-service` Java service host-run:
 
 ```bash
 cd lab-code
-make search-run-logs
+make -f Makefile.legacy search-run-logs
 ```
 
 Target này ghi `lab-code/logs/search-service.log` để Loki/Alloy tail sang Grafana Explore. Dừng bằng `Ctrl+C` trong terminal đó.
@@ -206,12 +207,14 @@ Nếu `APP_MESSAGING_ENABLED=true`:
 1. Tạo, update hoặc tạm ngưng `master_data`.
 2. Quan sát log:
    - `tenant-demo` producer log `Published Kafka event`;
-   - `audit-log-service` log `Consumed cross-service event` và `Stored audit event`.
+   - `audit-log-service` log `Stored audit event`;
+   - `search-service` log `Updated search projection` nếu search service đang chạy.
 3. Mở Kafka UI `http://localhost:18082`:
    - topic `master-data-events`;
    - message key dạng `tenant:{tenantId}:master-data:{id}`;
    - `changeType` có thể là `CREATED`, `UPDATED` hoặc `DEACTIVATED`.
-   - consumer group `audit-log-service`.
+   - consumer group `audit-log-service`;
+   - consumer group `search-service` nếu search service đang chạy.
 4. Giải thích event có `tenantId`, Kafka key tenant-aware, PostgreSQL vẫn là source of truth.
 
 ### D. Observability
@@ -320,39 +323,39 @@ Elasticsearch/search hiện là `search-service` event-driven projection. File u
 
 ## 6. Stop demo
 
-Nếu dùng `make demo-up`, dừng bằng:
+Nếu dùng `make up`, dừng bằng:
 
 ```bash
 cd lab-code
-make demo-down
+make down
 ```
 
 Nếu chạy thủ công, đầu tiên dừng các Java service đang chạy foreground bằng `Ctrl+C`:
 
-- terminal `make app-run` hoặc `make app-run-logs`;
-- terminal `make audit-log-run` hoặc `make audit-log-run-logs`;
-- terminal `make file-run` hoặc `make file-run-logs` nếu demo file;
-- terminal `make search-run` hoặc `make search-run-logs` nếu demo search;
+- terminal `make -f Makefile.legacy app-run` hoặc `make -f Makefile.legacy app-run-logs`;
+- terminal `make -f Makefile.legacy audit-log-run` hoặc `make -f Makefile.legacy audit-log-run-logs`;
+- terminal `make -f Makefile.legacy file-run` hoặc `make -f Makefile.legacy file-run-logs` nếu demo file;
+- terminal `make -f Makefile.legacy search-run` hoặc `make -f Makefile.legacy search-run-logs` nếu demo search;
 
 Sau đó dừng Docker infra/tooling:
 
 ```bash
 cd lab-code
-make web-ui-down
-make kong-down
-make kafka-ui-down
-make loki-down
-make kafka-down
-make elastic-down
-make minio-down
-make redis-down
-make keycloak-down
-make db-down
-make observability-down
-make logs-clean
+make -f Makefile.legacy web-ui-down
+make -f Makefile.legacy kong-down
+make -f Makefile.legacy kafka-ui-down
+make -f Makefile.legacy loki-down
+make -f Makefile.legacy kafka-down
+make -f Makefile.legacy elastic-down
+make -f Makefile.legacy minio-down
+make -f Makefile.legacy redis-down
+make -f Makefile.legacy keycloak-down
+make -f Makefile.legacy db-down
+make -f Makefile.legacy observability-down
+make clean-logs
 ```
 
-Nếu đang chạy `make gateway-run` foreground, dừng bằng `Ctrl+C` trong terminal tương ứng.
+Nếu đang chạy `make -f Makefile.legacy gateway-run` foreground, dừng bằng `Ctrl+C` trong terminal tương ứng.
 
 ## 7. Caveat cần nói rõ
 

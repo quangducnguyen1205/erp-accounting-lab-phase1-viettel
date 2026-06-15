@@ -8,7 +8,7 @@ Guide này giúp làm quen MinIO Console ở mức đủ dùng cho Phase 1. Đâ
 
 ```bash
 cd lab-code
-make minio-up
+make -f Makefile.legacy minio-up
 make minio-status
 ```
 
