@@ -8,7 +8,6 @@ Mục tiêu là giúp mình hiểu Elasticsearch đủ để thiết kế search
 - API/request/response cụ thể: [elasticsearch-request-response-shapes.md](./elasticsearch-request-response-shapes.md)
 - Pattern code Spring Boot: [elasticsearch-code-guide-spring-boot.md](./elasticsearch-code-guide-spring-boot.md)
 - Thiết kế class trong repo này: [elasticsearch-design-patterns-spring-boot.md](./elasticsearch-design-patterns-spring-boot.md)
-- Checklist lab hiện tại: [elasticsearch-mini-lab-plan.md](./elasticsearch-mini-lab-plan.md)
 
 ## 1. Elasticsearch là gì?
 

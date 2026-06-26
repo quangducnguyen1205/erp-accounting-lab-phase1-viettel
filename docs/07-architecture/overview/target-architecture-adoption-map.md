@@ -90,7 +90,6 @@ Sau feedback mentor ngày 11/06/2026, Phase 1.5 đưa demo gần target hơn b�
 | `lab-code/kong-gateway-lab` | Kong Gateway lab | Local lab implemented | DB-less Kong, route `/api/master-data`, `/api/audit-events` và health route đến `tenant-demo`, Makefile targets `kong-*`. |
 | `lab-code/audit-log-service` | Second backend service / Kafka consumer | Verified | Consume `MasterDataChangedEvent`, store `audit_log.audit_events`, expose tenant-aware read API through Kong. |
 | Keycloak Authorization/RBAC task | Authorization layer sau AuthN | Verified | Role/authority check nhỏ, phân biệt `401`/`403`, vẫn giữ tenant-aware query. |
-| `presentation-notes/demo-script-keycloak-tenant-flow.md` | Mentor-facing demo path | Prepared | Script start DB/Keycloak/app, verify tenant 1/2, cross-tenant id. |
 | SQL playground `01-09` | PostgreSQL learning lab | Implemented | Schema, EXPLAIN, index pattern, migration, ACID/isolation. |
 | `docs/07-architecture/overview/keycloak-in-target-architecture.md` | Security architecture mapping | Done | Map Keycloak/OIDC vào target architecture. |
 

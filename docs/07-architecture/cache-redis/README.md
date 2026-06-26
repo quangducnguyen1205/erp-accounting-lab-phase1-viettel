@@ -8,7 +8,6 @@ Nhóm này giải thích Redis và cache-aside pattern, rồi áp dụng vào re
 
 1. [redis-cache-strategy.md](redis-cache-strategy.md) - foundation: Redis, in-memory cache, TTL, invalidation, tenant-safe key.
 2. [redis-code-guide-spring-boot.md](redis-code-guide-spring-boot.md) - RedisTemplate + manual cache-aside design.
-3. [redis-mini-lab-plan.md](redis-mini-lab-plan.md) - checklist verify miss -> DB -> set TTL -> hit.
 
 ## Trạng Thái
 

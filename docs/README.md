@@ -2,23 +2,17 @@
 
 ## Mục tiêu
 
-Thư mục `docs/` là source of truth cho kiến thức Phase 1 và Phase 1.5 đã được chuẩn hóa. Local notes, prompt thô, câu hỏi nháp và review nháp không nằm ở đây.
-
-Nếu chỉ có thời gian đọc một đường duy nhất, bắt đầu từ:
-
-- [00-gioi-thieu/lo-trinh-doc-cuoi-phase-1.md](00-gioi-thieu/lo-trinh-doc-cuoi-phase-1.md)
+Thư mục `docs/` là source of truth cho kiến thức Phase 1 và Phase 1.5 đã được chuẩn hóa. Bản đồ tài liệu này (reading map) được dùng để tra cứu các chủ đề kỹ thuật và kiến trúc của repository.
 
 ## Thứ tự đọc đề xuất
 
-1. [00-gioi-thieu/](00-gioi-thieu/) - bối cảnh Phase 1, phạm vi học và lộ trình đọc cuối.
-2. [01-saas/](01-saas/) - SaaS, cloud, subscription, on-premise.
-3. [02-multi-tenant/](02-multi-tenant/) - multi-tenant, tenant isolation và trade-off.
-4. [03-backend-database-mo-rong/](03-backend-database-mo-rong/) - PostgreSQL, index, migration, transaction.
-5. [04-spring-boot/](04-spring-boot/) - Spring Boot, JPA, filter, repository/service/controller, test.
-6. [05-security/](05-security/) - JWT, Spring Security Resource Server, Keycloak/OIDC/RBAC.
-7. [07-architecture/](07-architecture/) - gateway, service boundary, Kafka, MinIO, Elasticsearch, Redis, observability.
-8. [06-frontend/](06-frontend/) - React Web UI demo `Master Data Portal`.
-9. [99-tong-ket/](99-tong-ket/) - tổng kết, demo script cuối và giới hạn production-like.
+1. [01-saas/](01-saas/) - SaaS, cloud, subscription, on-premise.
+2. [02-multi-tenant/](02-multi-tenant/) - multi-tenant, tenant isolation và trade-off.
+3. [03-backend-database-mo-rong/](03-backend-database-mo-rong/) - PostgreSQL, index, migration, transaction.
+4. [04-spring-boot/](04-spring-boot/) - Spring Boot, JPA, filter, repository/service/controller, test.
+5. [05-security/](05-security/) - JWT, Spring Security Resource Server, Keycloak/OIDC/RBAC.
+6. [07-architecture/](07-architecture/) - gateway, service boundary, Kafka, MinIO, Elasticsearch, Redis, observability.
+7. [06-frontend/](06-frontend/) - React Web UI demo `Master Data Portal`.
 
 ## Nội dung cốt lõi và nội dung mở rộng
 
@@ -42,25 +36,6 @@ Khi thêm một công nghệ mới, ưu tiên cấu trúc tài liệu:
    `docs/07-architecture/<topic-folder>/<tech>-request-response-shapes.md`.
 3. Code guide doc: `docs/07-architecture/<topic-folder>/<tech>-code-guide-spring-boot.md`.
 4. Lab README: `lab-code/<tech>-lab/README.md` hoặc README của service tương ứng.
-5. Summary sau khi xong: `docs/99-tong-ket/nhung-gi-da-nam-duoc.md`.
-
-Template chung: [99-tong-ket/technology-mini-lab-template.md](99-tong-ket/technology-mini-lab-template.md).
-
-Chuẩn viết theory doc chi tiết:
-[99-tong-ket/theory-doc-writing-standard.md](99-tong-ket/theory-doc-writing-standard.md).
-
-Demo script cuối Phase 1.5:
-[99-tong-ket/final-production-like-demo-script.md](99-tong-ket/final-production-like-demo-script.md).
-
-Tài liệu rehearsal và Q&A:
-
-- [99-tong-ket/final-demo-evidence-checklist.md](99-tong-ket/final-demo-evidence-checklist.md)
-- [99-tong-ket/final-demo-operational-qna.md](99-tong-ket/final-demo-operational-qna.md)
-- [99-tong-ket/final-demo-rehearsal-transcript.md](99-tong-ket/final-demo-rehearsal-transcript.md)
-
-Plan Phase 1.5:
-[99-tong-ket/phase1-5-production-like-demo-plan.md](99-tong-ket/phase1-5-production-like-demo-plan.md).
-
 ## Nguồn tham khảo chuẩn cần đối chiếu
 
 Các theory doc nên ưu tiên nguồn chính thức hoặc authoritative:

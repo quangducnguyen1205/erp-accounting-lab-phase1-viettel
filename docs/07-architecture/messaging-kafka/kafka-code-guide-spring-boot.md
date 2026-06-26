@@ -6,7 +6,6 @@ Tài liệu này hướng dẫn hình dạng code Spring Boot cho Kafka/async me
 
 - `kafka-async-messaging.md`
 - `kafka-event-shapes.md`
-- `kafka-mini-lab-plan.md`
 
 Mục tiêu code:
 

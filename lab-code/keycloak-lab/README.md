@@ -254,7 +254,6 @@ Sau khi token flow đã chạy được, phần kế tiếp là tạo role và k
 ```text
 docs/05-security/keycloak-authorization-rbac-tenant-scope.md
 docs/05-security/keycloak-authorization-admin-console-guide.md
-docs/05-security/keycloak-authorization-mini-lab-plan.md
 lab-code/tenant-demo/http/keycloak-authorization-api.http
 ```
 

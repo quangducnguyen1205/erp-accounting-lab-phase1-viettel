@@ -11,7 +11,6 @@ Nhóm này giải thích logging, metrics, health check, Actuator, Micrometer v�
 3. [spring-boot-actuator-code-guide.md](spring-boot-actuator-code-guide.md) - Actuator endpoint/config/security flow.
 4. [micrometer-custom-metrics.md](micrometer-custom-metrics.md) - Counter/Timer, MeterRegistry, tag cardinality.
 5. [prometheus-grafana-local-lab.md](prometheus-grafana-local-lab.md) - `/actuator/prometheus`, Prometheus scrape, Grafana datasource/dashboard.
-6. [observability-mini-lab-plan.md](observability-mini-lab-plan.md) - checklist milestone.
 
 ## Trạng Thái
 
