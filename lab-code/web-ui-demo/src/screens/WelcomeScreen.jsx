@@ -9,18 +9,18 @@ export function WelcomeScreen({ authState, onLogin }) {
           <div className="brand-block brand-block-large">
             <span className="brand-mark">MD</span>
             <div>
-              <strong>Cổng quản lý danh mục</strong>
-              <span>Quản lý dữ liệu dùng chung theo tenant</span>
+              <strong>Master Data Portal</strong>
+              <span>Cổng quản lý danh mục</span>
             </div>
           </div>
 
           <p>
-            Tạo, xem và theo dõi dữ liệu danh mục dùng chung cho từng tenant.
-            Đăng nhập, phân quyền và cô lập tenant được xử lý ở phía sau.
+            Quản lý dữ liệu danh mục dùng chung cho từng tenant.
+            Đăng nhập, phân quyền và cô lập tenant được xử lý ở phía backend.
           </p>
 
           <div className="flow-grid">
-            {['Dữ liệu theo tenant', 'Nhật ký hoạt động', 'Phân quyền theo vai trò', 'Tài liệu đính kèm'].map((item) => (
+            {['Dữ liệu theo tenant', 'Tra cứu danh mục', 'Phân quyền theo vai trò', 'Tài liệu đính kèm'].map((item) => (
               <span key={item}>{item}</span>
             ))}
           </div>
@@ -31,7 +31,7 @@ export function WelcomeScreen({ authState, onLogin }) {
           <h1>Cổng quản lý danh mục</h1>
           <p>
             Quản lý dữ liệu dùng chung theo tenant. Đăng nhập để tải dữ liệu,
-            tạo bản ghi mới và xem nhật ký hoạt động.
+            tạo bản ghi mới và tra cứu danh mục.
           </p>
 
           <button type="button" className="button-primary button-large" onClick={onLogin} disabled={authState.initializing}>
@@ -46,12 +46,12 @@ export function WelcomeScreen({ authState, onLogin }) {
             </div>
             <div>
               <code>tenant2-user</code>
-              <Badge tone="indigo">VIEWER</Badge>
+              <Badge tone="blue">VIEWER</Badge>
             </div>
             <small>Thông tin mật khẩu demo được giữ trong tài liệu hướng dẫn nội bộ.</small>
           </div>
 
-          <p className="token-note">Access token không bao giờ được hiển thị trong UI này.</p>
+          <p className="token-note">Access token không bao giờ được hiển thị trong giao diện này.</p>
 
           {authState.warning && <Alert tone="warning" title="Cảnh báo auth">{authState.warning}</Alert>}
           {authState.error && <Alert tone="danger" title="Lỗi đăng nhập">{authState.error}</Alert>}

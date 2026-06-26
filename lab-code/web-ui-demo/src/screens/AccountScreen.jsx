@@ -1,17 +1,5 @@
 import { Badge } from '../components/Badge';
 
-const KEYCLOAK_INTERNAL_ROLES = [
-  'offline_access',
-  'uma_authorization',
-  'manage-account',
-  'manage-account-links',
-  'view-profile'
-];
-
-function isKeycloakInternal(role) {
-  return KEYCLOAK_INTERNAL_ROLES.includes(role) || role.startsWith('default-roles-');
-}
-
 function primaryAppRole(userInfo) {
   const roles = [...(userInfo?.realmRoles ?? []), ...(userInfo?.clientRoles ?? [])];
   return roles.find((role) => ['ADMIN', 'ACCOUNTANT', 'VIEWER'].includes(role)) ?? '(không xác định)';
@@ -26,8 +14,6 @@ function humanTenant(tenantId) {
 
 export function AccountScreen({
   authState,
-  apiBaseUrl,
-  lastResult,
   onLogout,
   onRefresh
 }) {
@@ -67,36 +53,16 @@ export function AccountScreen({
         <div className="panel-heading">
           <div>
             <h3>Ghi chú bảo mật</h3>
-            <p>Thông tin kỹ thuật nhạy cảm không hiển thị trực tiếp trong giao diện.</p>
+            <p>Cách hệ thống bảo vệ dữ liệu của bạn.</p>
           </div>
           <Badge tone="neutral">An toàn</Badge>
         </div>
         <ul className="plain-list">
           <li>Nội dung access token không được hiển thị trong giao diện.</li>
           <li>Tenant được xác định từ token đã xác thực, không lấy từ form.</li>
+          <li>Phân quyền được thực thi ở phía backend cho mỗi thao tác.</li>
           <li>Vai trò quyết định thao tác nào được phép thực hiện.</li>
         </ul>
-      </section>
-
-      <section className="panel panel-span-3 technical-panel">
-        <div className="panel-heading">
-          <div>
-            <h3>Thông tin kỹ thuật</h3>
-            <p>Dành cho lúc demo hoặc debug. Không cần dùng trong thao tác nghiệp vụ hằng ngày.</p>
-          </div>
-          <Badge tone="neutral">Dành cho kỹ thuật</Badge>
-        </div>
-
-        <dl className="facts technical-facts">
-          <dt>API base URL</dt>
-          <dd><code>{apiBaseUrl}</code></dd>
-          <dt>requestId gần nhất</dt>
-          <dd>{lastResult?.requestId ? <code>{lastResult.requestId}</code> : 'Chưa có thao tác API trong phiên này'}</dd>
-          <dt>Trạng thái gần nhất</dt>
-          <dd>{lastResult ? (lastResult.ok ? 'Thành công' : 'Chưa thành công') : 'Chưa có'}</dd>
-          <dt>Endpoint gần nhất</dt>
-          <dd>{lastResult?.endpoint ? <code>{lastResult.endpoint}</code> : 'Chưa có'}</dd>
-        </dl>
       </section>
     </div>
   );

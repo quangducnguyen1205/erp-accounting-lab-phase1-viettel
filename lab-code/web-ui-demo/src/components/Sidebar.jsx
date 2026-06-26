@@ -1,9 +1,14 @@
-const navItems = [
-  { id: 'dashboard', label: 'Tổng quan', eyebrow: 'Bức tranh chung' },
-  { id: 'master-data', label: 'Dữ liệu danh mục', eyebrow: 'Bản ghi' },
-  { id: 'files', label: 'Tài liệu đính kèm', eyebrow: 'Tệp tin của tenant' },
-  { id: 'activity-log', label: 'Nhật ký hoạt động', eyebrow: 'Lịch sử' },
-  { id: 'account', label: 'Tài khoản', eyebrow: 'Thiết lập' }
+const workspaceItems = [
+  { id: 'dashboard', label: 'Tổng quan' },
+  { id: 'master-data', label: 'Danh mục tham chiếu' },
+  { id: 'lookup', label: 'Tra cứu' },
+  { id: 'files', label: 'Tài liệu đính kèm' },
+  { id: 'activity-log', label: 'Nhật ký hoạt động' }
+];
+
+const secondaryItems = [
+  { id: 'demo', label: 'Demo & kỹ thuật' },
+  { id: 'account', label: 'Tài khoản' }
 ];
 
 export function Sidebar({ activeScreen, onNavigate }) {
@@ -12,28 +17,40 @@ export function Sidebar({ activeScreen, onNavigate }) {
       <div className="brand-block">
         <span className="brand-mark">MD</span>
         <div>
-          <strong>Master Data</strong>
-          <span>Portal</span>
+          <strong>Master Data Portal</strong>
+          <span>Cổng quản lý danh mục</span>
         </div>
       </div>
 
-      <nav className="sidebar-nav" aria-label="Các khu vực trong ứng dụng">
-        {navItems.map((item) => (
+      <nav className="sidebar-nav" aria-label="Điều hướng chính">
+        <small className="nav-group-label">Workspace</small>
+        {workspaceItems.map((item) => (
           <button
             key={item.id}
             type="button"
             className={activeScreen === item.id ? 'nav-item nav-item-active' : 'nav-item'}
             onClick={() => onNavigate(item.id)}
           >
-            <span>{item.label}</span>
-            <small>{item.eyebrow}</small>
+            {item.label}
+          </button>
+        ))}
+
+        <div className="nav-divider" />
+
+        {secondaryItems.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            className={activeScreen === item.id ? 'nav-item nav-item-active' : 'nav-item'}
+            onClick={() => onNavigate(item.id)}
+          >
+            {item.label}
           </button>
         ))}
       </nav>
 
       <div className="sidebar-note">
-        <strong>Phiên làm việc</strong>
-        <span>Dữ liệu, tài liệu và nhật ký theo tenant</span>
+        <span>Dữ liệu theo phạm vi tenant đăng nhập</span>
       </div>
     </aside>
   );

@@ -1,32 +1,32 @@
 import { Badge } from '../components/Badge';
 import { DataTable } from '../components/DataTable';
+import { formatDateTime } from '../utils/formatDateTime';
 
 const columns = [
-  { key: 'occurredAt', label: 'Thời gian', render: (event) => event.occurredAt ?? event.consumedAt ?? '(không trả về)' },
-  { key: 'changeType', label: 'Hành động', render: (event) => <Badge tone={event.changeType === 'CREATED' ? 'success' : 'blue'}>{event.changeType ?? event.eventType ?? 'Đã thay đổi'}</Badge> },
+  { key: 'occurredAt', label: 'Thời gian', render: (event) => formatDateTime(event.occurredAt ?? event.consumedAt, 'Chưa có thời gian') },
+  { key: 'changeType', label: 'Hành động', render: (event) => <Badge tone={event.changeType === 'CREATED' ? 'success' : event.changeType === 'DEACTIVATED' ? 'warning' : 'blue'}>{event.changeType ?? event.eventType ?? 'Đã thay đổi'}</Badge> },
   { key: 'aggregateCode', label: 'Mã bản ghi', render: (event) => <code>{event.aggregateCode ?? event.code ?? event.aggregateId ?? '(missing)'}</code> },
   { key: 'aggregateType', label: 'Loại', render: (event) => event.aggregateType ?? 'Master data' },
-  { key: 'eventId', label: 'Mã sự kiện', render: (event) => <small><code>{event.eventId}</code></small> }
+  { key: 'eventId', label: 'Mã sự kiện', render: (event) => <small className="text-muted"><code>{event.eventId}</code></small> }
 ];
 
 export function ActivityLogScreen({ events, onLoad, loading, disabled, activityLoaded, tenantId }) {
   return (
     <div className="screen-grid">
       <section className="screen-heading">
-        <p className="eyebrow">Nhật ký hoạt động</p>
-        <h2>Nhật ký hoạt động</h2>
-        <p>Xem các thay đổi đã ghi nhận cho tenant hiện tại. Kết quả hoặc nhật ký có thể xuất hiện sau vài giây vì hệ thống xử lý bất đồng bộ.</p>
+        <div className="screen-heading-row">
+          <div>
+            <p className="eyebrow">Nhật ký hoạt động</p>
+            <h2>Nhật ký hoạt động</h2>
+            <p>Xem các thay đổi đã ghi nhận cho tenant hiện tại. Nhật ký có thể xuất hiện sau vài giây vì thay đổi được xử lý bất đồng bộ.</p>
+          </div>
+          <div className="screen-heading-actions">
+            <button type="button" onClick={onLoad} disabled={disabled || loading}>{loading ? 'Đang tải...' : 'Tải nhật ký'}</button>
+          </div>
+        </div>
       </section>
 
       <section className="panel panel-span-3 activity-panel">
-        <div className="panel-heading">
-          <div>
-            <h3>Dòng nhật ký</h3>
-            <p>Tải những thay đổi mới nhất trong phạm vi tài khoản hiện tại.</p>
-          </div>
-          <button type="button" onClick={onLoad} disabled={disabled || loading}>{loading ? 'Đang tải...' : 'Tải nhật ký'}</button>
-        </div>
-
         <DataTable
           columns={columns}
           rows={events}

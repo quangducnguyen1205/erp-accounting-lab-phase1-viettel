@@ -19,7 +19,9 @@ import { getAuthSnapshot, initKeycloak, keycloak, refreshToken } from './keycloa
 import { AccountScreen } from './screens/AccountScreen';
 import { ActivityLogScreen } from './screens/ActivityLogScreen';
 import { DashboardScreen } from './screens/DashboardScreen';
+import { DemoScreen } from './screens/DemoScreen';
 import { FilesScreen } from './screens/FilesScreen';
+import { LookupScreen } from './screens/LookupScreen';
 import { MasterDataScreen } from './screens/MasterDataScreen';
 import { WelcomeScreen } from './screens/WelcomeScreen';
 
@@ -246,13 +248,14 @@ export default function App() {
           return [result.data, ...current.filter((row) => row.id !== result.data.id)];
         });
       }
-      setPostCreateHint('Đã tạo bản ghi. Chờ một chút rồi mở Lịch sử hoạt động để xác nhận thay đổi.');
-      return;
+      setPostCreateHint('Đã tạo bản ghi. Chờ một chút rồi mở Nhật ký hoạt động để xác nhận thay đổi.');
+      return result;
     }
 
     if (result?.status === 403) {
       setDemoProgress((current) => ({ ...current, viewerCreateForbidden: true }));
     }
+    return result;
   }
 
   async function handleUpdate(row, payload) {
@@ -387,6 +390,21 @@ export default function App() {
           onLoad={handleLoad}
           loading={loading}
           disabled={!authReady}
+          form={form}
+          setForm={setForm}
+          onCreate={handleCreate}
+          onUpdate={handleUpdate}
+          onDeactivate={handleDeactivate}
+          onGenerateCode={handleGenerateCode}
+          postCreateHint={postCreateHint}
+          userInfo={authState.userInfo}
+        />
+      );
+    }
+
+    if (activeScreen === 'lookup') {
+      return (
+        <LookupScreen
           lookupCode={lookupCode}
           setLookupCode={setLookupCode}
           lookupResult={lookupResult}
@@ -396,15 +414,8 @@ export default function App() {
           searchResults={searchResults}
           searchLoaded={searchLoaded}
           onBackendSearch={handleSearchMasterData}
-          form={form}
-          setForm={setForm}
-          onCreate={handleCreate}
-          onUpdate={handleUpdate}
-          onDeactivate={handleDeactivate}
-          onGenerateCode={handleGenerateCode}
-          postCreateHint={postCreateHint}
-          lastResult={lastResult}
-          userInfo={authState.userInfo}
+          loading={loading}
+          disabled={!authReady}
         />
       );
     }
@@ -432,7 +443,6 @@ export default function App() {
           onDelete={handleDeleteFile}
           loading={loading}
           disabled={!authReady}
-          lastResult={lastResult}
           userInfo={authState.userInfo}
         />
       );
@@ -442,10 +452,18 @@ export default function App() {
       return (
         <AccountScreen
           authState={authState}
-          apiBaseUrl={apiBaseUrl}
-          lastResult={lastResult}
           onLogout={() => keycloak.logout({ redirectUri: window.location.origin })}
           onRefresh={handleRefreshToken}
+        />
+      );
+    }
+
+    if (activeScreen === 'demo') {
+      return (
+        <DemoScreen
+          authState={authState}
+          apiBaseUrl={apiBaseUrl}
+          lastResult={lastResult}
         />
       );
     }

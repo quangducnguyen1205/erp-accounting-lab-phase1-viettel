@@ -2,22 +2,14 @@ import { useMemo, useState } from 'react';
 import { Alert } from '../components/Alert';
 import { Badge } from '../components/Badge';
 import { DataTable } from '../components/DataTable';
-import { EmptyState } from '../components/EmptyState';
+import { Drawer } from '../components/Drawer';
+import { formatDateTime } from '../utils/formatDateTime';
 
 export function MasterDataScreen({
   rows,
   onLoad,
   loading,
   disabled,
-  lookupCode,
-  setLookupCode,
-  lookupResult,
-  onLookup,
-  searchKeyword,
-  setSearchKeyword,
-  searchResults,
-  searchLoaded,
-  onBackendSearch,
   form,
   setForm,
   onCreate,
@@ -30,8 +22,11 @@ export function MasterDataScreen({
   const [searchTerm, setSearchTerm] = useState('');
   const [editingRow, setEditingRow] = useState(null);
   const [editForm, setEditForm] = useState({ code: '', name: '', category: '', isActive: true });
+  const [createOpen, setCreateOpen] = useState(false);
+
   const roles = [...(userInfo?.realmRoles ?? []), ...(userInfo?.clientRoles ?? [])];
   const isViewer = roles.includes('VIEWER') && !roles.includes('ACCOUNTANT') && !roles.includes('ADMIN');
+
   const filteredRows = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
     if (!term) {
@@ -76,6 +71,14 @@ export function MasterDataScreen({
     }
   }
 
+  async function submitCreate(event) {
+    event.preventDefault();
+    const result = await onCreate(event);
+    if (result?.ok) {
+      setCreateOpen(false);
+    }
+  }
+
   async function deactivate(row) {
     const confirmed = window.confirm(`Tạm ngưng bản ghi ${row.code}?`);
     if (!confirmed) {
@@ -99,16 +102,16 @@ export function MasterDataScreen({
         return <Badge tone={active ? 'success' : 'warning'}>{active ? 'Đang hoạt động' : 'Tạm ngưng'}</Badge>;
       }
     },
-    { key: 'updatedAt', label: 'Cập nhật', render: (row) => row.updatedAt ?? row.createdAt ?? '(không trả về)' },
+    { key: 'updatedAt', label: 'Cập nhật', render: (row) => formatDateTime(row.updatedAt ?? row.createdAt) },
     {
       key: 'actions',
       label: 'Thao tác',
       render: (row) => (
         <div className="row-actions">
-          <button type="button" className="button-secondary" onClick={() => startEdit(row)} disabled={disabled || loading}>
+          <button type="button" className="button-secondary button-sm" onClick={() => startEdit(row)} disabled={disabled || loading}>
             Sửa
           </button>
-          <button type="button" className="button-danger" onClick={() => deactivate(row)} disabled={disabled || loading}>
+          <button type="button" className="button-danger button-sm" onClick={() => deactivate(row)} disabled={disabled || loading}>
             Tạm ngưng
           </button>
         </div>
@@ -117,87 +120,53 @@ export function MasterDataScreen({
   ];
 
   return (
-    <div className="screen-grid master-data-layout">
+    <div className="screen-grid">
       <section className="screen-heading">
-        <p className="eyebrow">Dữ liệu danh mục</p>
-        <h2>Dữ liệu danh mục</h2>
-        <p>Quản lý bản ghi dùng chung trong tenant: tải danh sách, tạo mới, chỉnh sửa và tạm ngưng khi không còn sử dụng.</p>
+        <div className="screen-heading-row">
+          <div>
+            <p className="eyebrow">Danh mục tham chiếu</p>
+            <h2>Danh mục tham chiếu</h2>
+            <p>Quản lý bản ghi dùng chung trong tenant: tải danh sách, tạo mới, chỉnh sửa và tạm ngưng.</p>
+          </div>
+          <div className="screen-heading-actions">
+            <button type="button" onClick={() => { onGenerateCode(); setCreateOpen(true); }} disabled={disabled || loading}>
+              Tạo danh mục
+            </button>
+          </div>
+        </div>
       </section>
 
       <section className="panel panel-span-3 master-list-panel">
         <div className="panel-heading list-heading">
           <div>
             <h3>Danh sách bản ghi</h3>
-            <p>Đây là vùng làm việc chính. Dữ liệu chỉ thuộc tenant hiện tại.</p>
+            <p>Dữ liệu chỉ thuộc tenant hiện tại.</p>
           </div>
-          <div className="toolbar-actions">
-            <button type="button" className="button-secondary" onClick={onGenerateCode}>Tạo mã mới</button>
-            <button type="button" onClick={onLoad} disabled={disabled || loading}>{loading ? 'Đang tải...' : 'Tải dữ liệu'}</button>
-          </div>
+          <button type="button" onClick={onLoad} disabled={disabled || loading}>{loading ? 'Đang tải...' : 'Tải dữ liệu'}</button>
         </div>
         <div className="list-toolbar">
           <label className="field-label table-filter">
             Lọc nhanh
             <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Tìm theo mã hoặc tên" />
           </label>
-          <span className="list-count">{filteredRows.length} bản ghi đang hiển thị</span>
+          <span className="list-count">{filteredRows.length} bản ghi</span>
         </div>
         <DataTable
           columns={columns}
           rows={filteredRows}
           emptyTitle="Chưa có dữ liệu"
-          emptyMessage={searchTerm ? 'Không có bản ghi đã tải nào khớp với tìm kiếm.' : 'Hãy tải dữ liệu sau khi đăng nhập. Tenant mới có thể chưa có dữ liệu.'}
+          emptyMessage={searchTerm ? 'Không có bản ghi nào khớp với tìm kiếm.' : 'Hãy tải dữ liệu sau khi đăng nhập. Tenant mới có thể chưa có dữ liệu.'}
         />
+        {postCreateHint && <Alert tone="success" title="Thao tác thành công">{postCreateHint}</Alert>}
       </section>
 
-      {editingRow && (
-        <section className="panel panel-span-3 edit-panel">
-          <div className="panel-heading">
-            <div>
-              <h3>Sửa bản ghi</h3>
-              <p>Cập nhật mã, tên, nhóm hoặc trạng thái của bản ghi đang chọn.</p>
-            </div>
-            <Badge tone="blue">Đang sửa</Badge>
-          </div>
-          <form className="form-grid" onSubmit={submitEdit}>
-            <label>
-              Mã danh mục
-              <input value={editForm.code} onChange={updateEditField('code')} required />
-            </label>
-            <label>
-              Tên danh mục
-              <input value={editForm.name} onChange={updateEditField('name')} required />
-            </label>
-            <label>
-              Nhóm danh mục
-              <input value={editForm.category} onChange={updateEditField('category')} required />
-            </label>
-            <label className="check-row">
-              <input type="checkbox" checked={editForm.isActive} onChange={updateEditField('isActive')} />
-              Đang hoạt động
-            </label>
-            <div className="form-actions">
-              <button type="button" className="button-secondary" onClick={() => setEditingRow(null)}>Hủy</button>
-              <button type="submit" disabled={disabled || loading}>{loading ? 'Đang lưu...' : 'Lưu thay đổi'}</button>
-            </div>
-          </form>
-        </section>
-      )}
-
-      <section className="panel create-panel">
-        <div className="panel-heading">
-          <div>
-            <h3>Tạo bản ghi</h3>
-            <p>Thêm dữ liệu danh mục mới trong tenant.</p>
-          </div>
-          <Badge tone="indigo">ACCOUNTANT</Badge>
-        </div>
+      <Drawer open={createOpen} onClose={() => setCreateOpen(false)} title="Tạo danh mục mới">
         {isViewer && (
           <Alert tone="warning" title="Vai trò VIEWER">
-            Viewer có thể xem dữ liệu nhưng không được tạo bản ghi mới. Nếu vẫn gửi form, hệ thống sẽ từ chối thao tác.
+            Viewer có thể xem dữ liệu nhưng không được tạo bản ghi mới.
           </Alert>
         )}
-        <form className="form-grid compact-form" onSubmit={onCreate}>
+        <form className="drawer-form" onSubmit={submitCreate}>
           <label>
             Mã danh mục
             <input value={form.code} onChange={updateField('code')} required />
@@ -214,85 +183,38 @@ export function MasterDataScreen({
             <input type="checkbox" checked={form.isActive} onChange={updateField('isActive')} />
             Đang hoạt động
           </label>
-          <div className="form-actions">
+          <div className="drawer-actions">
             <button type="button" className="button-secondary" onClick={onGenerateCode}>Tạo mã mới</button>
             <button type="submit" disabled={disabled || loading}>{loading ? 'Đang tạo...' : 'Tạo bản ghi'}</button>
           </div>
         </form>
         <p className="hint">Mã chỉ cần duy nhất với bản ghi đang hoạt động trong từng tenant.</p>
-        {postCreateHint && <Alert tone="success" title="Thao tác thành công">{postCreateHint}</Alert>}
-      </section>
+      </Drawer>
 
-      <details className="panel panel-span-2 lookup-tools">
-        <summary>
-          <span>
-            <strong>Công cụ tra cứu</strong>
-            <small>Tra cứu theo mã hoặc tìm kiếm nâng cao khi cần đối chiếu dữ liệu.</small>
-          </span>
-        </summary>
-
-        <div className="secondary-tool-grid">
-          <section className="tool-section">
-            <div className="panel-heading">
-              <div>
-                <h3>Tìm theo mã</h3>
-                <p>Tìm một bản ghi bằng mã nghiệp vụ.</p>
-              </div>
-              <Badge tone="teal">Tra cứu</Badge>
-            </div>
-            <form className="inline-form" onSubmit={onLookup}>
-                <label>
-                Mã danh mục
-                <input value={lookupCode} onChange={(event) => setLookupCode(event.target.value)} required />
-              </label>
-              <button type="submit" disabled={disabled || loading}>{loading ? 'Đang tải...' : 'Tìm theo mã'}</button>
-            </form>
-            {lookupResult ? (
-              <dl className="facts result-facts">
-                <dt>ID</dt>
-                <dd>{lookupResult.id}</dd>
-                <dt>Mã danh mục</dt>
-                <dd><code>{lookupResult.code}</code></dd>
-                <dt>Tên danh mục</dt>
-                <dd>{lookupResult.name}</dd>
-                <dt>Nhóm danh mục</dt>
-                <dd>{lookupResult.category}</dd>
-              </dl>
-            ) : (
-              <EmptyState title="Chưa tìm kiếm">Nhập mã danh mục để xem thông tin chi tiết.</EmptyState>
-            )}
-          </section>
-
-          <section className="tool-section">
-            <div className="panel-heading">
-              <div>
-                <h3>Tìm kiếm nâng cao</h3>
-                <p>Tìm theo mã, tên hoặc nhóm danh mục. Kết quả có thể xuất hiện sau vài giây vì hệ thống xử lý bất đồng bộ.</p>
-              </div>
-              <Badge tone="teal">Tìm kiếm</Badge>
-            </div>
-            <form className="inline-form" onSubmit={onBackendSearch}>
-              <label>
-                Từ khóa
-                <input value={searchKeyword} onChange={(event) => setSearchKeyword(event.target.value)} placeholder="Nhập mã, tên hoặc nhóm" required />
-              </label>
-              <button type="submit" disabled={disabled || loading}>{loading ? 'Đang tìm...' : 'Tìm kiếm'}</button>
-            </form>
-            {searchLoaded ? (
-              <DataTable
-                columns={columns.filter((column) => column.key !== 'actions')}
-                rows={searchResults}
-                emptyTitle="Không có kết quả"
-                emptyMessage="Nếu vừa tạo/sửa bản ghi, chờ vài giây rồi thử lại."
-              />
-            ) : (
-              <EmptyState title="Chưa tìm kiếm nâng cao">
-                Nhập từ khóa để tìm trong dữ liệu danh mục.
-              </EmptyState>
-            )}
-          </section>
-        </div>
-      </details>
+      <Drawer open={Boolean(editingRow)} onClose={() => setEditingRow(null)} title="Sửa bản ghi">
+        <form className="drawer-form" onSubmit={submitEdit}>
+          <label>
+            Mã danh mục
+            <input value={editForm.code} onChange={updateEditField('code')} required />
+          </label>
+          <label>
+            Tên danh mục
+            <input value={editForm.name} onChange={updateEditField('name')} required />
+          </label>
+          <label>
+            Nhóm danh mục
+            <input value={editForm.category} onChange={updateEditField('category')} required />
+          </label>
+          <label className="check-row">
+            <input type="checkbox" checked={editForm.isActive} onChange={updateEditField('isActive')} />
+            Đang hoạt động
+          </label>
+          <div className="drawer-actions">
+            <button type="button" className="button-secondary" onClick={() => setEditingRow(null)}>Hủy</button>
+            <button type="submit" disabled={disabled || loading}>{loading ? 'Đang lưu...' : 'Lưu thay đổi'}</button>
+          </div>
+        </form>
+      </Drawer>
     </div>
   );
 }

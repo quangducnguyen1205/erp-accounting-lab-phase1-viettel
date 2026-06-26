@@ -7,7 +7,6 @@ export function AppShell({ activeScreen, onNavigate, authState, onLogout, onRefr
       <Sidebar activeScreen={activeScreen} onNavigate={onNavigate} />
       <div className="console-main">
         <Topbar
-          activeScreen={activeScreen}
           authState={authState}
           onLogout={onLogout}
           onRefresh={onRefresh}
