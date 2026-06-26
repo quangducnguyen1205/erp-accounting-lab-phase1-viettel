@@ -4,7 +4,7 @@
 
 Đây là checklist cho Milestone #16. Mục tiêu là chạy một mini-lab nhỏ quanh Spring Boot Actuator + logging/metrics cơ bản, không dựng full observability platform.
 
-Trạng thái hiện tại: đã đóng ở Phase 1 learning level. Actuator baseline, request logging baseline, custom Micrometer metrics baseline và local Prometheus/Grafana lab đã được implement, đọc hiểu và verify. Tracing, log aggregation và alerting vẫn là optional sau.
+Trạng thái hiện tại: đã đóng ở Phase 1 learning level. Actuator baseline, request logging baseline, custom Micrometer metrics baseline và local Prometheus/Grafana lab đã được implement, đọc hiểu và verify. Phase 1.5 đã bổ sung Loki + Alloy cho local log aggregation (`lab-code/loki-lab/`). Tracing và alerting vẫn là optional sau.
 
 Đọc trước:
 
@@ -93,11 +93,11 @@ Spring Boot app đang chạy
   - HTTP business error count nếu có câu hỏi rõ.
 - Polish dashboard rất nhẹ nếu cần demo mentor.
 
-### Không làm ngay
+### Không làm ngay (ghi chú phạm vi Phase 1 ban đầu)
 
 - Không dựng production observability platform.
 - Không làm tracing distributed.
-- Không thêm Loki/ELK log aggregation.
+- Không thêm Loki/ELK log aggregation trong Milestone #16. *(Ghi chú Phase 1.5: Loki + Alloy local lab đã được bổ sung sau trong `lab-code/loki-lab/`.)*
 - Không thêm Alertmanager/alert rules.
 - Không expose endpoint nhạy cảm.
 - Không log token/secret/password.

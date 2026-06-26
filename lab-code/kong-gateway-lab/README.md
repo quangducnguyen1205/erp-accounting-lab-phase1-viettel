@@ -30,7 +30,7 @@ Không expose Admin API kiểu này ra môi trường thật.
 
 ## Điều kiện để route chạy
 
-Lab này giả định `tenant-demo` đang chạy trên host ở port `8080`:
+Lab này giả định các backend service đang chạy trên host:
 
 ```bash
 cd lab-code
@@ -50,11 +50,13 @@ Không dùng `localhost:8080` bên trong container Kong, vì `localhost` lúc đ
 
 | Client gọi Kong | Kong route tới | Ghi chú |
 |---|---|---|
-| `GET /tenant-demo/actuator/health` | `tenant-demo /actuator/health` | health route để verify nhanh |
-| `/api/master-data...` | `tenant-demo /api/master-data...` | giữ nguyên path, preserve `Authorization` và `X-Request-Id` |
-| `/api/audit-events...` | `audit-log-service /api/audit-events...` | read-only audit API sau service split |
+| `GET /tenant-demo/actuator/health` | `tenant-demo :8080 /actuator/health` | health route để verify nhanh |
+| `/api/master-data...` | `tenant-demo :8080 /api/master-data...` | giữ nguyên path, preserve `Authorization` và `X-Request-Id` |
+| `/api/audit-events...` | `audit-log-service :8082 /api/audit-events...` | read-only audit API sau service split |
+| `/api/files...` | `file-service :8083 /api/files...` | tenant-aware file upload/download/delete |
+| `/api/search/master-data...` | `search-service :8084 /api/search/master-data...` | Elasticsearch search projection |
 
-Kong không validate JWT trong mini-lab này. Backend `tenant-demo` vẫn validate token, map role, set tenant context và query tenant-aware.
+Trong mini-lab này, Kong không thực hiện validate JWT. Thay vào đó, mỗi backend service đứng sau Kong sẽ tự chịu trách nhiệm validate JWT và áp dụng authorization / tenant scope. Riêng `tenant-demo` đảm nhận thêm việc map role, thiết lập tenant context và thực hiện các truy vấn tenant-aware.
 
 ## Verify nhanh
 
@@ -62,13 +64,17 @@ Kong không validate JWT trong mini-lab này. Backend `tenant-demo` vẫn valida
 curl -i http://localhost:18000/tenant-demo/actuator/health
 curl -i http://localhost:18000/api/master-data
 curl -i http://localhost:18000/api/audit-events
+curl -i http://localhost:18000/api/files
+curl -i http://localhost:18000/api/search/master-data
 ```
 
 Kỳ vọng:
 
 - health route trả health response nếu `tenant-demo` đang chạy;
 - `/api/master-data` thiếu token trả `401` từ backend;
-- `/api/audit-events` thiếu token trả `401` từ audit-log-service nếu service đang chạy;
+- `/api/audit-events` thiếu token trả `401` từ `audit-log-service` nếu service đang chạy;
+- `/api/files` thiếu token trả `401` từ `file-service` nếu service đang chạy;
+- `/api/search/master-data` thiếu token trả `401` từ `search-service` nếu service đang chạy;
 - có token hợp lệ thì backend xử lý như khi gọi trực tiếp.
 
 ## Dừng lab
