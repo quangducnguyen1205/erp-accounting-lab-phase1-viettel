@@ -105,7 +105,8 @@ Nếu demo phát triển thành một project thật sự lớn, nên tách sang
 
 Điểm điều hướng chính:
 
-- `docs/README.md`: Bản đồ chỉ dẫn tài liệu (reading map) chính của dự án.
+- [ROADMAP.md](ROADMAP.md): Lộ trình đọc lại kiến thức (Static technical rereading map) đi từ nền tảng đến kiến trúc runtime.
+- `docs/README.md`: Bản đồ chỉ dẫn tài liệu chính của dự án.
 
 ## Chạy final demo local
 
