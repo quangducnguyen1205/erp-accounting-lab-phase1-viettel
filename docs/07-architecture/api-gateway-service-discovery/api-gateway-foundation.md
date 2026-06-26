@@ -1,5 +1,8 @@
 # API Gateway foundation
 
+> [!NOTE]
+> **Phạm vi tài liệu:** Gateway chính thức cho Phase 1.5 demo hiện là **Kong Gateway**. Nội dung Spring Cloud Gateway trong thư mục này được giữ lại làm tài liệu tham khảo lịch sử.
+
 ## 1. API Gateway là gì?
 
 API Gateway là entry point nằm trước các backend services. Client gọi Gateway, Gateway quyết định request đó đi tới service nào.

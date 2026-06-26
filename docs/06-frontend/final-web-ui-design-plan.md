@@ -1,5 +1,8 @@
 # Final Web UI Design Plan
 
+> [!NOTE]
+> **Phạm vi tài liệu:** Đây là bản thiết kế lịch sử cho phần giao diện frontend. UI/UX hiện đã được chốt và đóng băng ở commit `ead9c7f`. Không thay đổi thêm.
+
 ## Goal
 
 Design the final Phase 1.5 web UI as a small business product, not as an architecture dashboard.

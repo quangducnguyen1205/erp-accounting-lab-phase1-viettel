@@ -1,5 +1,8 @@
 # Kafka / async messaging foundation
 
+> [!NOTE]
+> **Phạm vi tài liệu:** Tính năng nhắn tin không đồng bộ với Kafka hiện ở mức cơ bản để chứng minh luồng luân chuyển sự kiện. Các kỹ thuật hardening nâng cao (như Outbox, Dead Letter Queue - DLT, Idempotency Framework) thuộc phạm vi mở rộng trong tương lai.
+
 ## Vai trò tài liệu
 
 Tài liệu này là nền tảng để hiểu Kafka trong backend architecture. Mục tiêu chưa phải xây full event platform, mà là biết khi nào dùng async messaging, Kafka nằm ở đâu trong hệ thống SaaS/ERP và những lỗi tư duy phổ biến cần tránh.

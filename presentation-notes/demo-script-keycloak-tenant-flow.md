@@ -1,5 +1,8 @@
 # Demo script: Keycloak + tenant-aware API
 
+> [!NOTE]
+> **Phạm vi tài liệu:** Đây là kịch bản demo lịch sử chỉ dùng Keycloak với backend API (không có frontend). Giao diện và luồng hiện tại được gộp chung trong kịch bản demo cuối Phase 1.5.
+
 > Mục tiêu: có một đường demo backend chắc chắn để trình bày với mentor trước khi quyết định có làm React UI nhỏ hay không.
 
 ## 1. Thông điệp chính

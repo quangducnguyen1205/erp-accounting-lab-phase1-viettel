@@ -1,5 +1,8 @@
 # Script demo Phase 1 cũ
 
+> [!NOTE]
+> **Phạm vi tài liệu:** Đây là tài liệu lịch sử giữ lại để tránh đứt gãy link. Nội dung đã được thay thế hoàn toàn bởi kịch bản mới.
+
 Tài liệu này được giữ để không làm gãy các link cũ.
 
 Kịch bản demo cuối hiện tại nằm ở:
