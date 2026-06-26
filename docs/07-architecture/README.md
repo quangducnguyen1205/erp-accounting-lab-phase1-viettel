@@ -21,9 +21,6 @@ Thư mục này nối các mini-lab trong repo với target architecture rộng 
 13. [../06-frontend/](../06-frontend/) - React Web UI `Master Data Portal`.
 14. [awareness/](awareness/) - các chủ đề target architecture chưa implement trong Phase 1.
 
-Demo script cuối Phase 1.5:
-[../99-tong-ket/final-production-like-demo-script.md](../99-tong-ket/final-production-like-demo-script.md).
-
 ## Trạng thái Phase 1.5
 
 | Nhóm | Trạng thái | Doc bắt đầu |
@@ -51,9 +48,6 @@ Demo script cuối Phase 1.5:
 - Config/code walkthrough doc: giải thích từng file config/code mới và runtime flow thực tế.
 - Lab README: chỉ giữ lệnh chạy local và cleanup.
 - Summary/report: ghi lại kết quả sau khi đã tự code/verify.
-
-Chuẩn chi tiết:
-[../99-tong-ket/theory-doc-writing-standard.md](../99-tong-ket/theory-doc-writing-standard.md).
 
 ## Giới hạn hiện tại
 

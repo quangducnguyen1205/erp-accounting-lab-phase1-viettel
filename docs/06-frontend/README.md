@@ -7,8 +7,6 @@ Thư mục này chỉ chứa phần frontend cần thiết để demo flow kiế
 ## Thứ tự đọc đề xuất
 
 1. [react-web-keycloak-gateway-demo.md](react-web-keycloak-gateway-demo.md) - React Web + Keycloak + Gateway demo.
-2. [final-web-ui-design-plan.md](final-web-ui-design-plan.md) - Design-first plan for the `Master Data Portal` product UI.
-3. [final-web-ui-figma-screen-handoff.md](final-web-ui-figma-screen-handoff.md) - Figma screen/frame handoff and screenshot checklist.
 
 ## Trạng thái
 
@@ -17,7 +15,6 @@ Thư mục này chỉ chứa phần frontend cần thiết để demo flow kiế
 - UI là thin client: login Keycloak, gọi API qua Gateway, load/create `master_data`, lookup by code cho Redis demo path và hiển thị requestId để đối chiếu log.
 - Product direction mới là `Master Data Portal`: một business app nhỏ để quản lý master data và xem activity log, không phải architecture console.
 - React implementation đã được realign theo IA mới: Tổng quan, Danh mục tham chiếu, Tra cứu, Tài liệu đính kèm, Nhật ký hoạt động, Demo & kỹ thuật, Tài khoản.
-- Full screen handoff đang được tracking ở [final-web-ui-figma-screen-handoff.md](final-web-ui-figma-screen-handoff.md). Figma Starter MCP limit hiện còn chặn việc generate/export toàn bộ screen set tự động.
 - Không dùng React Native hoặc Expo trong repo Viettel Phase 1 này.
 
 ## Giới hạn hiện tại

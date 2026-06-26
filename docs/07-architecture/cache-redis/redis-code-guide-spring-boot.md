@@ -2,7 +2,6 @@
 
 ## Vai trò tài liệu
 
-Tài liệu này hướng dẫn shape code Spring Boot cho Redis/cache mini-lab. Concept nền nằm ở `redis-cache-strategy.md`, còn checklist thực hành nằm ở `redis-mini-lab-plan.md`.
 
 Mục tiêu code:
 

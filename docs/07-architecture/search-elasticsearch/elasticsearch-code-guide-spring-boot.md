@@ -11,7 +11,6 @@ File này là **code guide** cho mini-lab Elasticsearch. Nó không giải thíc
 
 Nếu cần lệnh chạy Docker/checklist lab, đọc:
 
-- `docs/07-architecture/search-elasticsearch/elasticsearch-mini-lab-plan.md`
 - `lab-code/elasticsearch-lab/README.md`
 
 Nếu muốn hiểu vì sao code tách thành Controller/Service/Gateway/Document, đọc:

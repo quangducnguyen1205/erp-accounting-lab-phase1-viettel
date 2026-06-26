@@ -7,7 +7,6 @@ Tài liệu này giải thích kiến thức nền về Redis/cache cho backend.
 Đọc tiếp theo:
 
 - `redis-code-guide-spring-boot.md` - cách tích hợp Redis vào Spring Boot.
-- `redis-mini-lab-plan.md` - checklist mini-lab cache nhỏ trong repo.
 - `lab-code/redis-lab/README.md` - lệnh chạy Redis local.
 
 ---

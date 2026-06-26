@@ -341,7 +341,6 @@ Keycloak token
 
 - `docs/05-security/keycloak-oidc-mental-model.md`
 - `docs/05-security/keycloak-oauth2-oidc-awareness.md`
-- `docs/05-security/keycloak-mini-lab-plan.md`
 - `lab-code/keycloak-lab/README.md`
 - `docs/05-security/oauth2-jwt-resource-server-concepts.md`
 - `docs/05-security/jwt-implementation-walkthrough.md`

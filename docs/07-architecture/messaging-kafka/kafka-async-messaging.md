@@ -11,7 +11,6 @@ Tài liệu này là nền tảng để hiểu Kafka trong backend architecture.
 
 - `kafka-event-shapes.md` - event/message shape cụ thể.
 - `kafka-code-guide-spring-boot.md` - shape code Spring Boot.
-- `kafka-mini-lab-plan.md` - checklist mini-lab.
 
 ---
 

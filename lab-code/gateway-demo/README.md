@@ -9,7 +9,6 @@ Thư mục này chạy một Spring Cloud Gateway nhỏ để học API Gateway 
 - `../../docs/07-architecture/api-gateway-service-discovery/api-gateway-foundation.md`
 - `../../docs/07-architecture/api-gateway-service-discovery/spring-cloud-gateway-code-guide.md`
 - `../../docs/07-architecture/api-gateway-service-discovery/service-discovery-load-balancing-awareness.md`
-- `../../docs/07-architecture/api-gateway-service-discovery/api-gateway-mini-lab-plan.md`
 
 ## Local ports
 

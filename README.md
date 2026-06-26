@@ -1,12 +1,12 @@
-# Phase 1 - Kho kiến thức SaaS, Multi-tenant và Backend Database
+# Phase 1 / Phase 1.5 - Technical Reference Project
 
-Repository này là nơi lưu trữ kiến thức đã được tổng hợp trong Phase 1 của quá trình học backend cho bài toán ERP/kế toán SaaS đa tenant.
+Repository này là kho lưu trữ kiến thức và mã nguồn tham chiếu tĩnh (closed technical reference) cho kiến trúc ERP/kế toán SaaS đa tenant Phase 1 / Phase 1.5.
 
 Mục tiêu của repo không phải là lưu mọi nháp học tập, mà là làm nguồn sự thật công khai cho các phần kiến thức đã được học, rà soát và chuẩn hóa.
 
 Các câu hỏi tự học, câu trả lời nháp, review, ghi chú mentor, prompt và scratch notes được giữ ở local để không làm nhiễu lịch sử GitHub.
 
-## Trạng thái học hiện tại
+## Kiến trúc tham chiếu hiện tại
 
 - Đã hoàn thành nền tảng SaaS, multi-tenant, SQL playground, migration/locking, ACID/isolation và tenant-aware backend API.
 - Đã có demo Spring Boot nhỏ trong `lab-code/tenant-demo` với PostgreSQL/Flyway, tenant-aware API, JWT tạm fallback, Keycloak AuthN/AuthZ mode và các mini-lab architecture.
@@ -28,15 +28,13 @@ Các câu hỏi tự học, câu trả lời nháp, review, ghi chú mentor, pro
 ```text
 .
 ├── docs/
-│   ├── 00-gioi-thieu/
 │   ├── 01-saas/
 │   ├── 02-multi-tenant/
 │   ├── 03-backend-database-mo-rong/
 │   ├── 04-spring-boot/
 │   ├── 05-security/
 │   ├── 06-frontend/
-│   ├── 07-architecture/
-│   └── 99-tong-ket/
+│   └── 07-architecture/
 ├── lab-code/
 │   ├── sql-playground/
 │   ├── common-security/
@@ -55,9 +53,6 @@ Các câu hỏi tự học, câu trả lời nháp, review, ghi chú mentor, pro
 │   ├── kong-gateway-lab/
 │   ├── gateway-demo/
 │   └── web-ui-demo/
-├── reports/
-│   └── latex/
-├── presentation-notes/
 ├── local/
 ├── .gitignore
 ├── LICENSE
@@ -67,8 +62,6 @@ Các câu hỏi tự học, câu trả lời nháp, review, ghi chú mentor, pro
 ## Nội dung được commit
 
 - Ghi chú lý thuyết markdown đã được tổng hợp.
-- Báo cáo LaTeX dạng nguồn `.tex`.
-- Tài liệu thuyết trình dạng markdown có sơ đồ, bảng và ghi chú nói ngắn.
 - Lab code nhỏ phục vụ việc học Phase 1, bao gồm SQL playground, Spring Boot tenant demo và Keycloak mini-lab.
 - Các README giải thích cách sử dụng repo.
 
@@ -85,33 +78,6 @@ Các nội dung sau không được commit:
 - File build từ LaTeX, bao gồm PDF mặc định.
 
 Thư mục `local/` chỉ giữ một file README làm placeholder. Mọi nội dung thực tế trong `local/` được ignore.
-
-## Báo cáo
-
-Báo cáo tiến độ nằm tại:
-
-```text
-reports/latex/bao-cao-saas-multi-tenant.tex
-```
-
-Báo cáo được viết bằng LaTeX để có thể compile sang PDF khi cần:
-
-```bash
-cd reports/latex
-xelatex bao-cao-saas-multi-tenant.tex
-```
-
-PDF không được commit mặc định vì là file build. Nếu sau này cần publish PDF, có thể chủ động force-add file PDF.
-
-## Tài liệu thuyết trình
-
-Tài liệu thuyết trình nằm tại:
-
-```text
-presentation-notes/thuyet-trinh-saas-multi-tenant.md
-```
-
-Đây không phải slide thiết kế. File này là talk-through document: có sơ đồ ASCII, bảng so sánh, ý chính và ghi chú khi trình bày để có thể mở ra và trao đổi nhanh với leader.
 
 ## Quyết định về code demo
 
@@ -139,15 +105,7 @@ Nếu demo phát triển thành một project thật sự lớn, nên tách sang
 
 Điểm điều hướng chính:
 
-- `docs/README.md`: index tài liệu.
-- `docs/00-gioi-thieu/lo-trinh-doc-cuoi-phase-1.md`: tuyến đọc cuối từ foundation đến final demo.
-- `ROADMAP.md`: tiến độ và kế hoạch học.
-- `docs/99-tong-ket/final-production-like-demo-script.md`: kịch bản demo canonical cuối Phase 1 / Phase 1.5.
-- `docs/99-tong-ket/final-demo-evidence-checklist.md`: checklist bằng chứng khi chạy demo.
-- `docs/99-tong-ket/final-demo-operational-qna.md`: ghi chú Q&A vận hành, latency, concurrency, Kafka lag, cache, search và file.
-- `docs/99-tong-ket/final-demo-rehearsal-transcript.md`: transcript rehearsal để tập nói trước buổi demo.
-- `docs/99-tong-ket/phase1-5-production-like-demo-plan.md`: kế hoạch Phase 1.5 sau feedback mentor 11/06.
-- `presentation-notes/demo-script-keycloak-tenant-flow.md`: demo script backend Keycloak cũ, vẫn hữu ích nếu chỉ muốn trình bày auth flow.
+- `docs/README.md`: Bản đồ chỉ dẫn tài liệu (reading map) chính của dự án.
 
 ## Chạy final demo local
 
@@ -171,11 +129,6 @@ make clean-logs   # optional, chỉ khi muốn xóa generated logs/*.log
 
 Các target mini-lab lịch sử vẫn còn trong `lab-code/Makefile.legacy` để học từng công nghệ riêng, ví dụ `make -f Makefile.legacy kafka-up`.
 
-Workflow học code dự kiến:
-
-1. Tự implement task code được giao trước.
-2. Sau đó mới nhờ Agent review, chỉ ra lỗi, đề xuất sửa và giải thích.
-3. Mục tiêu là học bằng cách tự viết code, không phụ thuộc vào tự động hóa ngay từ đầu.
 
 ## Nguyên tắc quản lý repo
 

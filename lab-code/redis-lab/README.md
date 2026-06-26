@@ -8,7 +8,6 @@ Thư mục này chạy Redis local để học cache-aside và tenant-safe cache
 
 - `../../docs/07-architecture/cache-redis/redis-cache-strategy.md`
 - `../../docs/07-architecture/cache-redis/redis-code-guide-spring-boot.md`
-- `../../docs/07-architecture/cache-redis/redis-mini-lab-plan.md`
 
 ## Local service
 

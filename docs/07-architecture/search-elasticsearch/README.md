@@ -12,7 +12,6 @@ Phase 1 có embedded mini-lab trong `tenant-demo` để học Elasticsearch nhan
 2. [elasticsearch-request-response-shapes.md](elasticsearch-request-response-shapes.md) - REST URI, request/response/error shape.
 3. [elasticsearch-design-patterns-spring-boot.md](elasticsearch-design-patterns-spring-boot.md) - gateway/adapter, search projection, source of truth.
 4. [elasticsearch-code-guide-spring-boot.md](elasticsearch-code-guide-spring-boot.md) - Spring Boot class/package/config shape.
-5. [elasticsearch-mini-lab-plan.md](elasticsearch-mini-lab-plan.md) - checklist mini-lab.
 6. [search-service-split-plan.md](search-service-split-plan.md) - Phase 1.5 service boundary: Kafka event -> search-service -> Elasticsearch.
 7. [cross-service-search-projection.md](cross-service-search-projection.md) - code walkthrough and runtime flow for the event-driven projection.
 

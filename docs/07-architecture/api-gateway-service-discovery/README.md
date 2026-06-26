@@ -9,7 +9,6 @@ Nhóm này giải thích API Gateway, static routing, service discovery và load
 1. [api-gateway-foundation.md](api-gateway-foundation.md) - API Gateway là gì, route/predicate/filter, gateway vs backend service.
 2. [spring-cloud-gateway-code-guide.md](spring-cloud-gateway-code-guide.md) - cách đọc cấu hình/code gateway demo trong repo.
 3. [service-discovery-load-balancing-awareness.md](service-discovery-load-balancing-awareness.md) - static URL, DNS, Eureka/Consul, Kubernetes Service, load balancing.
-4. [api-gateway-mini-lab-plan.md](api-gateway-mini-lab-plan.md) - checklist chạy gateway local.
 
 ## Trạng thái
 

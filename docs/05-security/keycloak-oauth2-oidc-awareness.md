@@ -12,7 +12,6 @@ Phần thao tác Admin Console có screenshot:
 
 Kế hoạch chạy mini-lab:
 
-- `docs/05-security/keycloak-mini-lab-plan.md`
 
 ## Keycloak nằm ở đâu trong kiến trúc?
 
@@ -51,7 +50,6 @@ Chưa làm:
 2. `docs/05-security/jwt-implementation-walkthrough.md`
 3. `docs/05-security/keycloak-oidc-mental-model.md`
 4. `docs/05-security/keycloak-admin-console-guide.md`
-5. `docs/05-security/keycloak-mini-lab-plan.md`
 
 ## Nguồn tham khảo chuẩn
 
