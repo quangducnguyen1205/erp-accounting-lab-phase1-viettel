@@ -5,30 +5,36 @@ function primaryRole(userInfo) {
   return roles.find((role) => ['ADMIN', 'ACCOUNTANT', 'VIEWER'].includes(role)) ?? roles[0] ?? 'NO_ROLE';
 }
 
+function humanTenant(tenantId) {
+  if (!tenantId) {
+    return '(không xác định)';
+  }
+  return `Tenant ${tenantId}`;
+}
+
 export function Topbar({ activeScreen, authState, onLogout, onRefresh }) {
   const user = authState.userInfo;
   const role = primaryRole(user);
   const pageTitles = {
     dashboard: 'Tổng quan',
-    'master-data': 'Danh mục',
-    files: 'Tệp tin',
-    'activity-log': 'Lịch sử hoạt động',
+    'master-data': 'Dữ liệu danh mục',
+    files: 'Tài liệu đính kèm',
+    'activity-log': 'Nhật ký hoạt động',
     account: 'Tài khoản'
   };
 
   return (
     <header className="topbar">
       <div>
-        <p className="eyebrow">Cổng quản lý danh mục</p>
+        <p className="eyebrow">Master Data Portal</p>
         <h1>{pageTitles[activeScreen] ?? 'Tổng quan'}</h1>
       </div>
 
       <div className="topbar-status">
-        <Badge tone="blue">Phiên đang hoạt động</Badge>
-        <Badge tone={role === 'ACCOUNTANT' ? 'success' : role === 'VIEWER' ? 'indigo' : 'neutral'}>{role}</Badge>
+        <Badge tone={role === 'ACCOUNTANT' ? 'indigo' : role === 'VIEWER' ? 'blue' : 'neutral'}>{role}</Badge>
         <div className="user-summary">
           <strong>{user?.username ?? 'Khách'}</strong>
-          <span>tenant_id {user?.tenantId ?? '(none)'}</span>
+          <span>{humanTenant(user?.tenantId)}</span>
         </div>
         <button type="button" className="button-secondary" onClick={onRefresh}>Làm mới</button>
         <button type="button" className="button-secondary" onClick={onLogout}>Đăng xuất</button>

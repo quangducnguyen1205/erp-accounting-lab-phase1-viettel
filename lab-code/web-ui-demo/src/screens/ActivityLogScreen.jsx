@@ -13,27 +13,27 @@ export function ActivityLogScreen({ events, onLoad, loading, disabled, activityL
   return (
     <div className="screen-grid">
       <section className="screen-heading">
-        <p className="eyebrow">Lịch sử hoạt động</p>
-        <h2>Lịch sử hoạt động</h2>
-        <p>Xem các thay đổi đã ghi nhận cho tenant hiện tại. Hoạt động có thể xuất hiện sau vài giây vì hệ thống xử lý bất đồng bộ.</p>
+        <p className="eyebrow">Nhật ký hoạt động</p>
+        <h2>Nhật ký hoạt động</h2>
+        <p>Xem các thay đổi đã ghi nhận cho tenant hiện tại. Kết quả hoặc nhật ký có thể xuất hiện sau vài giây vì hệ thống xử lý bất đồng bộ.</p>
       </section>
 
       <section className="panel panel-span-3 activity-panel">
         <div className="panel-heading">
           <div>
-            <h3>Dòng hoạt động</h3>
+            <h3>Dòng nhật ký</h3>
             <p>Tải những thay đổi mới nhất trong phạm vi tài khoản hiện tại.</p>
           </div>
-          <button type="button" onClick={onLoad} disabled={disabled || loading}>{loading ? 'Đang tải...' : 'Tải lịch sử'}</button>
+          <button type="button" onClick={onLoad} disabled={disabled || loading}>{loading ? 'Đang tải...' : 'Tải nhật ký'}</button>
         </div>
 
         <DataTable
           columns={columns}
           rows={events}
-          emptyTitle={activityLoaded ? 'Chưa có hoạt động nào trong tenant này' : 'Chưa tải lịch sử'}
+          emptyTitle={activityLoaded ? 'Chưa có nhật ký trong tenant này' : 'Chưa tải nhật ký'}
           emptyMessage={activityLoaded
-            ? `Không có hoạt động trong tenant ${tenantId ?? '(unknown)'}. Điều này cũng xác nhận tài khoản hiện tại không nhìn thấy lịch sử của tenant khác.`
-            : 'Tạo một bản ghi với vai trò ACCOUNTANT, sau đó tải lịch sử để xem thay đổi.'}
+            ? `Không có nhật ký trong tenant ${tenantId ?? '(unknown)'}. Điều này cũng xác nhận tài khoản hiện tại không nhìn thấy nhật ký của tenant khác.`
+            : 'Tạo một bản ghi với vai trò ACCOUNTANT, sau đó tải nhật ký để xem thay đổi.'}
         />
       </section>
     </div>

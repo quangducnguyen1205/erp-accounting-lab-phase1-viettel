@@ -1,5 +1,29 @@
 import { Badge } from '../components/Badge';
 
+const KEYCLOAK_INTERNAL_ROLES = [
+  'offline_access',
+  'uma_authorization',
+  'manage-account',
+  'manage-account-links',
+  'view-profile'
+];
+
+function isKeycloakInternal(role) {
+  return KEYCLOAK_INTERNAL_ROLES.includes(role) || role.startsWith('default-roles-');
+}
+
+function primaryAppRole(userInfo) {
+  const roles = [...(userInfo?.realmRoles ?? []), ...(userInfo?.clientRoles ?? [])];
+  return roles.find((role) => ['ADMIN', 'ACCOUNTANT', 'VIEWER'].includes(role)) ?? '(không xác định)';
+}
+
+function humanTenant(tenantId) {
+  if (!tenantId) {
+    return '(không xác định)';
+  }
+  return `Tenant ${tenantId}`;
+}
+
 export function AccountScreen({
   authState,
   apiBaseUrl,
@@ -7,7 +31,7 @@ export function AccountScreen({
   onLogout,
   onRefresh
 }) {
-  const roles = [...(authState.userInfo?.realmRoles ?? []), ...(authState.userInfo?.clientRoles ?? [])];
+  const appRole = primaryAppRole(authState.userInfo);
 
   return (
     <div className="screen-grid">
@@ -21,24 +45,20 @@ export function AccountScreen({
         <div className="panel-heading">
           <div>
             <h3>Tài khoản đã đăng nhập</h3>
-            <p>Chi tiết token được ẩn. Hệ thống tự kiểm tra quyền trong mỗi thao tác.</p>
+            <p>Hệ thống tự kiểm tra quyền trong mỗi thao tác.</p>
           </div>
           <Badge tone="success">Đã đăng nhập</Badge>
         </div>
         <dl className="facts">
           <dt>Username</dt>
           <dd>{authState.userInfo?.username ?? '(unknown)'}</dd>
-          <dt>tenant_id</dt>
-          <dd>{authState.userInfo?.tenantId ?? '(missing)'}</dd>
-          <dt>Roles</dt>
-          <dd>{roles.join(', ') || '(none)'}</dd>
-          <dt>Access token</dt>
-          <dd>{authState.hasToken ? 'có (ẩn)' : 'thiếu'}</dd>
-          <dt>Hết hạn lúc</dt>
-          <dd>{authState.tokenExpiresAt}</dd>
+          <dt>Tenant</dt>
+          <dd>{humanTenant(authState.userInfo?.tenantId)}</dd>
+          <dt>Vai trò ứng dụng</dt>
+          <dd><Badge tone={appRole === 'ACCOUNTANT' ? 'indigo' : appRole === 'VIEWER' ? 'blue' : 'neutral'}>{appRole}</Badge></dd>
         </dl>
         <div className="form-actions account-actions">
-          <button type="button" className="button-secondary" onClick={onRefresh}>Làm mới token</button>
+          <button type="button" className="button-secondary" onClick={onRefresh}>Làm mới phiên</button>
           <button type="button" onClick={onLogout}>Đăng xuất</button>
         </div>
       </section>
@@ -52,8 +72,8 @@ export function AccountScreen({
           <Badge tone="neutral">An toàn</Badge>
         </div>
         <ul className="plain-list">
-          <li>Access token chỉ hiển thị trạng thái, không hiển thị nội dung.</li>
-          <li>tenant_id được lấy từ token đã xác thực, không lấy từ form.</li>
+          <li>Nội dung access token không được hiển thị trong giao diện.</li>
+          <li>Tenant được xác định từ token đã xác thực, không lấy từ form.</li>
           <li>Vai trò quyết định thao tác nào được phép thực hiện.</li>
         </ul>
       </section>
@@ -64,7 +84,7 @@ export function AccountScreen({
             <h3>Thông tin kỹ thuật</h3>
             <p>Dành cho lúc demo hoặc debug. Không cần dùng trong thao tác nghiệp vụ hằng ngày.</p>
           </div>
-          <Badge tone="neutral">Ẩn token</Badge>
+          <Badge tone="neutral">Dành cho kỹ thuật</Badge>
         </div>
 
         <dl className="facts technical-facts">

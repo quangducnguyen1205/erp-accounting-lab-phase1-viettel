@@ -88,9 +88,9 @@ export function MasterDataScreen({
   }
 
   const columns = [
-    { key: 'code', label: 'Mã', render: (row) => <code>{row.code}</code> },
-    { key: 'name', label: 'Tên' },
-    { key: 'category', label: 'Loại', render: (row) => row.category ?? row.type ?? '(không trả về)' },
+    { key: 'code', label: 'Mã danh mục', render: (row) => <code>{row.code}</code> },
+    { key: 'name', label: 'Tên danh mục' },
+    { key: 'category', label: 'Nhóm danh mục', render: (row) => row.category ?? row.type ?? '(không trả về)' },
     {
       key: 'isActive',
       label: 'Trạng thái',
@@ -119,7 +119,7 @@ export function MasterDataScreen({
   return (
     <div className="screen-grid master-data-layout">
       <section className="screen-heading">
-        <p className="eyebrow">Danh mục</p>
+        <p className="eyebrow">Dữ liệu danh mục</p>
         <h2>Dữ liệu danh mục</h2>
         <p>Quản lý bản ghi dùng chung trong tenant: tải danh sách, tạo mới, chỉnh sửa và tạm ngưng khi không còn sử dụng.</p>
       </section>
@@ -155,21 +155,21 @@ export function MasterDataScreen({
           <div className="panel-heading">
             <div>
               <h3>Sửa bản ghi</h3>
-              <p>Cập nhật mã, tên, loại hoặc trạng thái của bản ghi đang chọn.</p>
+              <p>Cập nhật mã, tên, nhóm hoặc trạng thái của bản ghi đang chọn.</p>
             </div>
             <Badge tone="blue">Đang sửa</Badge>
           </div>
           <form className="form-grid" onSubmit={submitEdit}>
             <label>
-              Mã
+              Mã danh mục
               <input value={editForm.code} onChange={updateEditField('code')} required />
             </label>
             <label>
-              Tên
+              Tên danh mục
               <input value={editForm.name} onChange={updateEditField('name')} required />
             </label>
             <label>
-              Loại
+              Nhóm danh mục
               <input value={editForm.category} onChange={updateEditField('category')} required />
             </label>
             <label className="check-row">
@@ -190,7 +190,7 @@ export function MasterDataScreen({
             <h3>Tạo bản ghi</h3>
             <p>Thêm dữ liệu danh mục mới trong tenant.</p>
           </div>
-          <Badge tone="blue">ACCOUNTANT</Badge>
+          <Badge tone="indigo">ACCOUNTANT</Badge>
         </div>
         {isViewer && (
           <Alert tone="warning" title="Vai trò VIEWER">
@@ -199,15 +199,15 @@ export function MasterDataScreen({
         )}
         <form className="form-grid compact-form" onSubmit={onCreate}>
           <label>
-            Mã
+            Mã danh mục
             <input value={form.code} onChange={updateField('code')} required />
           </label>
           <label>
-            Tên
+            Tên danh mục
             <input value={form.name} onChange={updateField('name')} required />
           </label>
           <label>
-            Loại
+            Nhóm danh mục
             <input value={form.category} onChange={updateField('category')} required />
           </label>
           <label className="check-row">
@@ -223,7 +223,7 @@ export function MasterDataScreen({
         {postCreateHint && <Alert tone="success" title="Thao tác thành công">{postCreateHint}</Alert>}
       </section>
 
-      <details className="panel panel-span-2 lookup-tools" open>
+      <details className="panel panel-span-2 lookup-tools">
         <summary>
           <span>
             <strong>Công cụ tra cứu</strong>
@@ -241,8 +241,8 @@ export function MasterDataScreen({
               <Badge tone="teal">Tra cứu</Badge>
             </div>
             <form className="inline-form" onSubmit={onLookup}>
-              <label>
-                Mã
+                <label>
+                Mã danh mục
                 <input value={lookupCode} onChange={(event) => setLookupCode(event.target.value)} required />
               </label>
               <button type="submit" disabled={disabled || loading}>{loading ? 'Đang tải...' : 'Tìm theo mã'}</button>
@@ -251,15 +251,15 @@ export function MasterDataScreen({
               <dl className="facts result-facts">
                 <dt>ID</dt>
                 <dd>{lookupResult.id}</dd>
-                <dt>Mã</dt>
+                <dt>Mã danh mục</dt>
                 <dd><code>{lookupResult.code}</code></dd>
-                <dt>Tên</dt>
+                <dt>Tên danh mục</dt>
                 <dd>{lookupResult.name}</dd>
-                <dt>Loại</dt>
+                <dt>Nhóm danh mục</dt>
                 <dd>{lookupResult.category}</dd>
               </dl>
             ) : (
-              <EmptyState title="Chưa tìm kiếm">Nhập một mã nghiệp vụ để tải chi tiết bản ghi.</EmptyState>
+              <EmptyState title="Chưa tìm kiếm">Nhập mã danh mục để xem thông tin chi tiết.</EmptyState>
             )}
           </section>
 
@@ -267,14 +267,14 @@ export function MasterDataScreen({
             <div className="panel-heading">
               <div>
                 <h3>Tìm kiếm nâng cao</h3>
-                <p>Tìm theo mã, tên hoặc loại. Kết quả mới cập nhật có thể trễ vài giây.</p>
+                <p>Tìm theo mã, tên hoặc nhóm danh mục. Kết quả có thể xuất hiện sau vài giây vì hệ thống xử lý bất đồng bộ.</p>
               </div>
               <Badge tone="teal">Tìm kiếm</Badge>
             </div>
             <form className="inline-form" onSubmit={onBackendSearch}>
               <label>
                 Từ khóa
-                <input value={searchKeyword} onChange={(event) => setSearchKeyword(event.target.value)} placeholder="Nhập mã, tên hoặc loại" required />
+                <input value={searchKeyword} onChange={(event) => setSearchKeyword(event.target.value)} placeholder="Nhập mã, tên hoặc nhóm" required />
               </label>
               <button type="submit" disabled={disabled || loading}>{loading ? 'Đang tìm...' : 'Tìm kiếm'}</button>
             </form>

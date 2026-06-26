@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Alert } from '../components/Alert';
 import { Badge } from '../components/Badge';
 import { DataTable } from '../components/DataTable';
@@ -31,6 +31,7 @@ export function FilesScreen({
   userInfo
 }) {
   const [selectedFile, setSelectedFile] = useState(null);
+  const fileInputRef = useRef(null);
   const [uploadHint, setUploadHint] = useState('');
   const [uploadHintTone, setUploadHintTone] = useState('info');
   const roles = [...(userInfo?.realmRoles ?? []), ...(userInfo?.clientRoles ?? [])];
@@ -69,8 +70,10 @@ export function FilesScreen({
     const result = await onUpload(selectedFile);
     if (result?.ok) {
       setSelectedFile(null);
-      event.target.reset();
-      setUploadHint('Đã tải file lên. Metadata đã lưu theo tenant hiện tại.');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      setUploadHint('Đã tải tệp tin lên. Metadata đã lưu theo tenant hiện tại.');
       setUploadHintTone('success');
     }
   }
@@ -78,15 +81,15 @@ export function FilesScreen({
   return (
     <div className="screen-grid files-layout">
       <section className="screen-heading">
-        <p className="eyebrow">Tệp tin</p>
-        <h2>Tệp tin tenant</h2>
+        <p className="eyebrow">Tài liệu đính kèm</p>
+        <h2>Tài liệu đính kèm</h2>
         <p>Tải lên, tải xuống và quản lý tệp tin trong phạm vi tenant hiện tại.</p>
       </section>
 
       <section className="panel panel-span-2 files-list-panel">
         <div className="panel-heading">
           <div>
-            <h3>Danh sách tệp tin</h3>
+            <h3>Danh sách tài liệu</h3>
             <p>Metadata tệp tin thuộc tenant hiện tại.</p>
           </div>
           <button type="button" onClick={onLoad} disabled={disabled || loading}>{loading ? 'Đang tải...' : 'Tải danh sách'}</button>
@@ -95,12 +98,12 @@ export function FilesScreen({
           <DataTable
             columns={columns}
             rows={files}
-            emptyTitle="Chưa có file"
-            emptyMessage="Tải file lên để thấy metadata tại đây."
+            emptyTitle="Chưa có tệp tin"
+            emptyMessage="Tải tệp tin lên để thấy metadata tại đây."
           />
         ) : (
-          <EmptyState title="Chưa có tệp tin trong tenant này">
-            Khi có tệp tin, danh sách sẽ hiển thị tên file, dung lượng và thao tác tải xuống.
+          <EmptyState title="Chưa có tài liệu trong tenant này">
+            Khi có tệp tin, danh sách sẽ hiển thị tên, dung lượng và thao tác tải xuống.
           </EmptyState>
         )}
       </section>
@@ -109,24 +112,30 @@ export function FilesScreen({
         <div className="panel-heading">
           <div>
             <h3>Tải tệp tin lên</h3>
-            <p>Chọn một file nhỏ để lưu trong tenant hiện tại.</p>
+            <p>Chọn một tệp tin nhỏ để lưu trong tenant hiện tại.</p>
           </div>
           <Badge tone={isViewer ? 'warning' : 'blue'}>{isViewer ? 'Chỉ đọc' : 'Có quyền ghi'}</Badge>
         </div>
         {isViewer && (
           <Alert tone="warning" title="Vai trò VIEWER">
-            Viewer có thể xem và tải file xuống, nhưng không được upload hoặc xóa file.
+            Viewer có thể xem và tải tệp tin xuống, nhưng không được tải lên hoặc xóa.
           </Alert>
         )}
         <form className="upload-form" onSubmit={submitUpload}>
-          <label className="field-label">
-            Chọn file
-            <input type="file" onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)} />
-          </label>
+          <div className="file-input-wrap">
+            <label className={`file-input-label${selectedFile ? ' has-file' : ''}`}>
+              {selectedFile ? selectedFile.name : 'Chọn tệp tin để tải lên'}
+              <input
+                ref={fileInputRef}
+                type="file"
+                onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
+              />
+            </label>
+          </div>
           <button type="submit" disabled={disabled || loading}>{loading ? 'Đang tải lên...' : 'Tải lên'}</button>
         </form>
         <p className="hint">Mọi thao tác tệp tin đều được kiểm tra theo tenant và vai trò đăng nhập.</p>
-        {uploadHint && <Alert tone={uploadHintTone} title="File">{uploadHint}</Alert>}
+        {uploadHint && <Alert tone={uploadHintTone} title="Tệp tin">{uploadHint}</Alert>}
       </section>
     </div>
   );

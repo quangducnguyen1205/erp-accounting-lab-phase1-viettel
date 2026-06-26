@@ -40,13 +40,13 @@ export function DashboardScreen({ authState, rows, auditEvents, files, masterDat
         <StatusCard label="Thay đổi gần đây" title={activityLoaded ? auditEvents.length : 'Chưa tải'} badge="Lịch sử" tone="teal">
           Số hoạt động đã tải trong phiên làm việc hiện tại.
         </StatusCard>
-        <StatusCard label="Tệp tin" title={filesLoaded ? files.length : 'Chưa tải'} badge="Tệp" tone="indigo">
+        <StatusCard label="Tài liệu" title={filesLoaded ? files.length : 'Chưa tải'} badge="Tệp" tone="indigo">
           Số tệp tin đã tải trong phạm vi tenant hiện tại.
         </StatusCard>
         <StatusCard label="Tenant" title={authState.userInfo?.tenantId ?? '(none)'} badge="Tenant" tone="indigo">
           Phạm vi dữ liệu đang được áp dụng cho người dùng hiện tại.
         </StatusCard>
-        <StatusCard label="Vai trò" title={role} badge="Quyền" tone={role === 'ACCOUNTANT' ? 'success' : 'indigo'}>
+        <StatusCard label="Vai trò" title={role} badge="Quyền" tone={role === 'ACCOUNTANT' ? 'indigo' : 'blue'}>
           Vai trò quyết định thao tác nào được phép thực hiện.
         </StatusCard>
       </section>
@@ -54,10 +54,10 @@ export function DashboardScreen({ authState, rows, auditEvents, files, masterDat
       <section className="panel panel-span-2">
         <div className="panel-heading">
           <div>
-            <h3>Hoạt động gần đây</h3>
+            <h3>Nhật ký gần đây</h3>
             <p>Những hoạt động mới nhất đã tải cho tenant hiện tại.</p>
           </div>
-          <Badge tone={activityLoaded ? 'success' : 'neutral'}>{activityLoaded ? 'Đã tải' : 'Chưa tải'}</Badge>
+          <Badge tone={activityLoaded ? 'blue' : 'neutral'}>{activityLoaded ? 'Đã tải' : 'Chưa tải'}</Badge>
         </div>
         {recentEvents.length > 0 ? (
           <ul className="activity-list">
@@ -72,8 +72,8 @@ export function DashboardScreen({ authState, rows, auditEvents, files, masterDat
             ))}
           </ul>
         ) : (
-          <EmptyState title="Tải lịch sử để xem thay đổi gần đây">
-            Mở Lịch sử hoạt động sau khi tạo bản ghi hoặc tải hoạt động của tenant.
+          <EmptyState title="Tải nhật ký để xem thay đổi gần đây">
+            Mở Nhật ký hoạt động sau khi tạo bản ghi hoặc tải nhật ký của tenant.
           </EmptyState>
         )}
       </section>
@@ -89,10 +89,10 @@ export function DashboardScreen({ authState, rows, auditEvents, files, masterDat
         <div className="action-list">
           <button type="button" className="button-secondary" onClick={() => onNavigate('master-data')}>Tải dữ liệu danh mục</button>
           <button type="button" className="button-secondary" onClick={() => onNavigate('master-data')}>Tạo bản ghi</button>
-          <button type="button" className="button-secondary" onClick={() => onNavigate('files')}>Quản lý tệp tin</button>
-          <button type="button" className="button-secondary" onClick={() => onNavigate('activity-log')}>Xem lịch sử</button>
+          <button type="button" className="button-secondary" onClick={() => onNavigate('files')}>Quản lý tài liệu</button>
+          <button type="button" className="button-secondary" onClick={() => onNavigate('activity-log')}>Xem nhật ký</button>
         </div>
-        <p className="hint">Bắt đầu bằng cách tải danh mục, tạo bản ghi mới, sau đó kiểm tra lịch sử hoạt động.</p>
+        <p className="hint">Bắt đầu bằng cách tải danh mục, tạo bản ghi mới, sau đó kiểm tra nhật ký hoạt động.</p>
       </section>
     </div>
   );

@@ -20,7 +20,7 @@ export function WelcomeScreen({ authState, onLogin }) {
           </p>
 
           <div className="flow-grid">
-            {['Dữ liệu theo tenant', 'Lịch sử hoạt động', 'Phân quyền theo vai trò', 'Tệp tin dùng chung'].map((item) => (
+            {['Dữ liệu theo tenant', 'Nhật ký hoạt động', 'Phân quyền theo vai trò', 'Tài liệu đính kèm'].map((item) => (
               <span key={item}>{item}</span>
             ))}
           </div>
@@ -31,7 +31,7 @@ export function WelcomeScreen({ authState, onLogin }) {
           <h1>Cổng quản lý danh mục</h1>
           <p>
             Quản lý dữ liệu dùng chung theo tenant. Đăng nhập để tải dữ liệu,
-            tạo bản ghi mới và xem lịch sử hoạt động.
+            tạo bản ghi mới và xem nhật ký hoạt động.
           </p>
 
           <button type="button" className="button-primary button-large" onClick={onLogin} disabled={authState.initializing}>
@@ -42,7 +42,7 @@ export function WelcomeScreen({ authState, onLogin }) {
             <h2>Tài khoản demo</h2>
             <div>
               <code>tenant1-user</code>
-              <Badge tone="success">ACCOUNTANT</Badge>
+              <Badge tone="indigo">ACCOUNTANT</Badge>
             </div>
             <div>
               <code>tenant2-user</code>
