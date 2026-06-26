@@ -6,7 +6,7 @@ const columns = [
   { key: 'changeType', label: 'Hành động', render: (event) => <Badge tone={event.changeType === 'CREATED' ? 'success' : 'blue'}>{event.changeType ?? event.eventType ?? 'Đã thay đổi'}</Badge> },
   { key: 'aggregateCode', label: 'Mã bản ghi', render: (event) => <code>{event.aggregateCode ?? event.code ?? event.aggregateId ?? '(missing)'}</code> },
   { key: 'aggregateType', label: 'Loại', render: (event) => event.aggregateType ?? 'Master data' },
-  { key: 'eventId', label: 'Event ID', render: (event) => <small><code>{event.eventId}</code></small> }
+  { key: 'eventId', label: 'Mã sự kiện', render: (event) => <small><code>{event.eventId}</code></small> }
 ];
 
 export function ActivityLogScreen({ events, onLoad, loading, disabled, activityLoaded, tenantId }) {
@@ -15,14 +15,14 @@ export function ActivityLogScreen({ events, onLoad, loading, disabled, activityL
       <section className="screen-heading">
         <p className="eyebrow">Lịch sử hoạt động</p>
         <h2>Lịch sử hoạt động</h2>
-        <p>Lịch sử được sinh ra khi dữ liệu danh mục thay đổi. Mỗi tài khoản chỉ thấy dữ liệu trong tenant của mình.</p>
+        <p>Xem các thay đổi đã ghi nhận cho tenant hiện tại. Hoạt động có thể xuất hiện sau vài giây vì hệ thống xử lý bất đồng bộ.</p>
       </section>
 
-      <section className="panel panel-span-3">
+      <section className="panel panel-span-3 activity-panel">
         <div className="panel-heading">
           <div>
-            <h3>Hoạt động trong tenant</h3>
-            <p>Tải hoạt động mới nhất của tài khoản hiện tại.</p>
+            <h3>Dòng hoạt động</h3>
+            <p>Tải những thay đổi mới nhất trong phạm vi tài khoản hiện tại.</p>
           </div>
           <button type="button" onClick={onLoad} disabled={disabled || loading}>{loading ? 'Đang tải...' : 'Tải lịch sử'}</button>
         </div>

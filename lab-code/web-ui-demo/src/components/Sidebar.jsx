@@ -1,7 +1,7 @@
 const navItems = [
-  { id: 'dashboard', label: 'Tổng quan', eyebrow: 'Overview' },
+  { id: 'dashboard', label: 'Tổng quan', eyebrow: 'Bức tranh chung' },
   { id: 'master-data', label: 'Danh mục', eyebrow: 'Bản ghi' },
-  { id: 'files', label: 'Tệp tin', eyebrow: 'Upload' },
+  { id: 'files', label: 'Tệp tin', eyebrow: 'Tài liệu' },
   { id: 'activity-log', label: 'Lịch sử hoạt động', eyebrow: 'Lịch sử' },
   { id: 'account', label: 'Tài khoản', eyebrow: 'Thiết lập' }
 ];
@@ -12,8 +12,8 @@ export function Sidebar({ activeScreen, onNavigate }) {
       <div className="brand-block">
         <span className="brand-mark">MD</span>
         <div>
-          <strong>Quản lý</strong>
-          <span>Danh mục</span>
+          <strong>Master Data</strong>
+          <span>Portal</span>
         </div>
       </div>
 
@@ -32,8 +32,8 @@ export function Sidebar({ activeScreen, onNavigate }) {
       </nav>
 
       <div className="sidebar-note">
-        <strong>Demo local</strong>
-        <span>Dữ liệu, file và lịch sử theo tenant</span>
+        <strong>Phiên làm việc</strong>
+        <span>Dữ liệu, tệp tin và lịch sử theo tenant</span>
       </div>
     </aside>
   );

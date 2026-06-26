@@ -29,7 +29,6 @@ export function Topbar({ activeScreen, authState, onLogout, onRefresh }) {
         <div className="user-summary">
           <strong>{user?.username ?? 'Khách'}</strong>
           <span>tenant_id {user?.tenantId ?? '(none)'}</span>
-          <small>token {authState.hasToken ? 'có (ẩn)' : 'thiếu'}</small>
         </div>
         <button type="button" className="button-secondary" onClick={onRefresh}>Làm mới</button>
         <button type="button" className="button-secondary" onClick={onLogout}>Đăng xuất</button>

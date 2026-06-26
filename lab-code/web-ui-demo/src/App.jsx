@@ -442,6 +442,8 @@ export default function App() {
       return (
         <AccountScreen
           authState={authState}
+          apiBaseUrl={apiBaseUrl}
+          lastResult={lastResult}
           onLogout={() => keycloak.logout({ redirectUri: window.location.origin })}
           onRefresh={handleRefreshToken}
         />

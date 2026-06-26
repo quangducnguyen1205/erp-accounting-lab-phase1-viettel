@@ -2,6 +2,8 @@ import { Badge } from '../components/Badge';
 
 export function AccountScreen({
   authState,
+  apiBaseUrl,
+  lastResult,
   onLogout,
   onRefresh
 }) {
@@ -15,7 +17,7 @@ export function AccountScreen({
         <p>Xem ngữ cảnh đăng nhập và vai trò của phiên hiện tại.</p>
       </section>
 
-      <section className="panel panel-span-2">
+      <section className="panel panel-span-2 account-profile-panel">
         <div className="panel-heading">
           <div>
             <h3>Tài khoản đã đăng nhập</h3>
@@ -41,7 +43,7 @@ export function AccountScreen({
         </div>
       </section>
 
-      <section className="panel panel-span-2">
+      <section className="panel">
         <div className="panel-heading">
           <div>
             <h3>Ghi chú bảo mật</h3>
@@ -54,6 +56,27 @@ export function AccountScreen({
           <li>tenant_id được lấy từ token đã xác thực, không lấy từ form.</li>
           <li>Vai trò quyết định thao tác nào được phép thực hiện.</li>
         </ul>
+      </section>
+
+      <section className="panel panel-span-3 technical-panel">
+        <div className="panel-heading">
+          <div>
+            <h3>Thông tin kỹ thuật</h3>
+            <p>Dành cho lúc demo hoặc debug. Không cần dùng trong thao tác nghiệp vụ hằng ngày.</p>
+          </div>
+          <Badge tone="neutral">Ẩn token</Badge>
+        </div>
+
+        <dl className="facts technical-facts">
+          <dt>API base URL</dt>
+          <dd><code>{apiBaseUrl}</code></dd>
+          <dt>requestId gần nhất</dt>
+          <dd>{lastResult?.requestId ? <code>{lastResult.requestId}</code> : 'Chưa có thao tác API trong phiên này'}</dd>
+          <dt>Trạng thái gần nhất</dt>
+          <dd>{lastResult ? (lastResult.ok ? 'Thành công' : 'Chưa thành công') : 'Chưa có'}</dd>
+          <dt>Endpoint gần nhất</dt>
+          <dd>{lastResult?.endpoint ? <code>{lastResult.endpoint}</code> : 'Chưa có'}</dd>
+        </dl>
       </section>
     </div>
   );

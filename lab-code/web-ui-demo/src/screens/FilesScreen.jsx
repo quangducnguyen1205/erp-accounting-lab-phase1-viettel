@@ -76,20 +76,42 @@ export function FilesScreen({
   }
 
   return (
-    <div className="screen-grid">
+    <div className="screen-grid files-layout">
       <section className="screen-heading">
         <p className="eyebrow">Tệp tin</p>
         <h2>Tệp tin tenant</h2>
         <p>Tải lên, tải xuống và quản lý tệp tin trong phạm vi tenant hiện tại.</p>
       </section>
 
-      <section className="panel">
+      <section className="panel panel-span-2 files-list-panel">
         <div className="panel-heading">
           <div>
-            <h3>Tải file lên</h3>
-            <p>Chọn một file nhỏ để lưu vào kho tệp tin của tenant.</p>
+            <h3>Danh sách tệp tin</h3>
+            <p>Metadata tệp tin thuộc tenant hiện tại.</p>
           </div>
-          <Badge tone="blue">Tenant-safe</Badge>
+          <button type="button" onClick={onLoad} disabled={disabled || loading}>{loading ? 'Đang tải...' : 'Tải danh sách'}</button>
+        </div>
+        {files.length > 0 ? (
+          <DataTable
+            columns={columns}
+            rows={files}
+            emptyTitle="Chưa có file"
+            emptyMessage="Tải file lên để thấy metadata tại đây."
+          />
+        ) : (
+          <EmptyState title="Chưa có tệp tin trong tenant này">
+            Khi có tệp tin, danh sách sẽ hiển thị tên file, dung lượng và thao tác tải xuống.
+          </EmptyState>
+        )}
+      </section>
+
+      <section className="panel upload-panel">
+        <div className="panel-heading">
+          <div>
+            <h3>Tải tệp tin lên</h3>
+            <p>Chọn một file nhỏ để lưu trong tenant hiện tại.</p>
+          </div>
+          <Badge tone={isViewer ? 'warning' : 'blue'}>{isViewer ? 'Chỉ đọc' : 'Có quyền ghi'}</Badge>
         </div>
         {isViewer && (
           <Alert tone="warning" title="Vai trò VIEWER">
@@ -106,29 +128,6 @@ export function FilesScreen({
         <p className="hint">Mọi thao tác tệp tin đều được kiểm tra theo tenant và vai trò đăng nhập.</p>
         {uploadHint && <Alert tone={uploadHintTone} title="File">{uploadHint}</Alert>}
       </section>
-
-      <section className="panel panel-span-2">
-        <div className="panel-heading">
-          <div>
-            <h3>Danh sách file</h3>
-            <p>Danh sách tệp tin thuộc tenant hiện tại.</p>
-          </div>
-          <button type="button" onClick={onLoad} disabled={disabled || loading}>{loading ? 'Đang tải...' : 'Tải danh sách'}</button>
-        </div>
-        {files.length > 0 ? (
-          <DataTable
-            columns={columns}
-            rows={files}
-            emptyTitle="Chưa có file"
-            emptyMessage="Tải file lên để thấy metadata tại đây."
-          />
-        ) : (
-          <EmptyState title="Chưa có file trong tenant này">
-            Chưa có file nào được tải lên cho tenant này.
-          </EmptyState>
-        )}
-      </section>
-
     </div>
   );
 }

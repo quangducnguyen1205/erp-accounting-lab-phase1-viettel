@@ -20,14 +20,14 @@ export function WelcomeScreen({ authState, onLogin }) {
           </p>
 
           <div className="flow-grid">
-            {['Dữ liệu theo tenant', 'Lịch sử hoạt động', 'Phân quyền theo vai trò', 'Trạng thái request'].map((item) => (
+            {['Dữ liệu theo tenant', 'Lịch sử hoạt động', 'Phân quyền theo vai trò', 'Tệp tin dùng chung'].map((item) => (
               <span key={item}>{item}</span>
             ))}
           </div>
         </div>
 
         <div className="welcome-card">
-          <p className="eyebrow">Business portal local</p>
+          <p className="eyebrow">Master Data Portal</p>
           <h1>Cổng quản lý danh mục</h1>
           <p>
             Quản lý dữ liệu dùng chung theo tenant. Đăng nhập để tải dữ liệu,
@@ -41,14 +41,14 @@ export function WelcomeScreen({ authState, onLogin }) {
           <div className="account-hints">
             <h2>Tài khoản demo</h2>
             <div>
-              <code>tenant1-user / password</code>
+              <code>tenant1-user</code>
               <Badge tone="success">ACCOUNTANT</Badge>
             </div>
             <div>
-              <code>tenant2-user / password</code>
+              <code>tenant2-user</code>
               <Badge tone="indigo">VIEWER</Badge>
             </div>
-            <small>Tài khoản local-only cho lab học tập.</small>
+            <small>Thông tin mật khẩu demo được giữ trong tài liệu hướng dẫn nội bộ.</small>
           </div>
 
           <p className="token-note">Access token không bao giờ được hiển thị trong UI này.</p>

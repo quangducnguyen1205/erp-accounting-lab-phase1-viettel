@@ -169,15 +169,15 @@ Build output `dist/` chỉ nằm trong Docker image/layer; không commit `dist/`
 
    - Login bằng Keycloak.
    - Dashboard/Account: kiểm user/tenant/role đúng; API vẫn dùng Kong theo cấu hình runtime.
-   - Master Data: bấm `Load master data`.
-   - Master Data: bấm `Load by code` với một code có thật như `LAPTOP-01`.
+   - Master Data: bấm `Tải dữ liệu`.
+   - Master Data: bấm `Tìm theo mã` với một code có thật như `LAPTOP-01`.
    - Master Data: tạo record với code `UI-DEMO-*`.
    - Master Data: sửa tên/loại/mã khi cần và thử tạm ngưng bản ghi. Tạm ngưng là soft delete/deactivate: bản ghi không còn hiện trong list/lookup thường; code của bản ghi đã tạm ngưng có thể được dùng lại cho bản ghi active mới.
    - Master Data: dùng `Tìm kiếm nâng cao` để gọi search-service qua Kong. Kết quả có thể trễ vài giây sau create/update/deactivate vì search là Elasticsearch projection từ Kafka event.
    - Tệp tin: upload file nhỏ, tải danh sách, tải xuống, thử viewer `403` nếu cần.
    - Activity Log: đợi một chút rồi bấm `Load activity`.
    - Demo docs: mở Grafana Loki/Kafka UI từ URL trong demo script nếu cần giải thích backend flow.
-   - Khi cần debug, mở `Chi tiết kỹ thuật` để xem requestId.
+   - Khi cần debug, mở màn `Tài khoản` và xem khu vực `Thông tin kỹ thuật`.
    - Đối chiếu log `tenant-demo` và `audit-log-service` bằng requestId/event log.
 
 Stop:
@@ -220,18 +220,18 @@ UI không kết luận Kafka/audit thành công sau POST. Chỉ khi `GET /api/au
 
 | Screen | Vai trò |
 |---|---|
-| Welcome | Login Keycloak, account hint local, không hiển thị token. |
+| Welcome | Login Keycloak, gợi ý tài khoản local, không hiển thị password hoặc token. |
 | Dashboard | Business overview: total records, active records, recent changes, current tenant/role. |
 | Master Data | Load/list, load by code, create, edit/update, soft delete/tạm ngưng, backend search qua search-service, `401`/`403`/`404`/`409`/unavailable states. |
 | Files / Tệp tin | Upload, list metadata, download, delete qua `/api/files`; binary lưu ở MinIO, metadata ở file-service DB schema. |
 | Activity Log | Activity table/timeline, tenant2 empty success state. Current API path remains `/api/audit-events`. |
-| Account | Username, tenant_id, roles, token status hidden, API base URL và logout. |
+| Account | Username, tenant_id, roles, token status hidden, logout và khu vực kỹ thuật phụ cho API base URL/requestId. |
 
 Backend/observability links stay in docs or a small secondary demo note, not primary product navigation.
 
 ## Debug login state
 
-Sau khi redirect từ Keycloak về UI, panel `Keycloak login` hiển thị vài field an toàn:
+Sau khi redirect từ Keycloak về UI, màn `Tài khoản` hiển thị vài field an toàn:
 
 - `authenticated`: adapter Keycloak đã xác thực chưa.
 - `access token`: token có sẵn trong memory chưa, nhưng không hiển thị token.
@@ -251,6 +251,6 @@ Code UI đã làm `keycloak.init(...)` idempotent để React Strict Mode trong 
 ## Giới hạn hiện tại
 
 - Browser token handling trong lab này chỉ để học local. Production SPA cần kiểm soát redirect URI, PKCE, CORS, token lifetime và logout kỹ hơn.
-- Gateway đang dùng static route tới `tenant-demo`; service discovery/load balancing chỉ ở mức awareness.
+- Gateway đang dùng route tĩnh cho demo local; service discovery/load balancing chỉ ở mức awareness.
 - UI không làm authorization decision thật. Backend vẫn là security boundary.
 - Không đưa token, password, secret hoặc private file vào repo.

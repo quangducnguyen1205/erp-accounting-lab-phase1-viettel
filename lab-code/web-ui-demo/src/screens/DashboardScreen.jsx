@@ -38,16 +38,16 @@ export function DashboardScreen({ authState, rows, auditEvents, files, masterDat
           Số bản ghi đang hoạt động được tính từ danh sách đã tải.
         </StatusCard>
         <StatusCard label="Thay đổi gần đây" title={activityLoaded ? auditEvents.length : 'Chưa tải'} badge="Lịch sử" tone="teal">
-          Lịch sử hoạt động được tải từ audit API khi người dùng yêu cầu.
+          Số hoạt động đã tải trong phiên làm việc hiện tại.
         </StatusCard>
-        <StatusCard label="Tệp tin" title={filesLoaded ? files.length : 'Chưa tải'} badge="Files" tone="indigo">
+        <StatusCard label="Tệp tin" title={filesLoaded ? files.length : 'Chưa tải'} badge="Tệp" tone="indigo">
           Số tệp tin đã tải trong phạm vi tenant hiện tại.
         </StatusCard>
         <StatusCard label="Tenant" title={authState.userInfo?.tenantId ?? '(none)'} badge="Tenant" tone="indigo">
-          Phạm vi tenant lấy từ Keycloak token đã được backend kiểm tra.
+          Phạm vi dữ liệu đang được áp dụng cho người dùng hiện tại.
         </StatusCard>
         <StatusCard label="Vai trò" title={role} badge="Quyền" tone={role === 'ACCOUNTANT' ? 'success' : 'indigo'}>
-          Vai trò quyết định backend có cho phép tạo bản ghi hay không.
+          Vai trò quyết định thao tác nào được phép thực hiện.
         </StatusCard>
       </section>
 
