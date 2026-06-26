@@ -161,13 +161,13 @@ Nên làm trong mini-lab:
 - Thêm request logging nhỏ hoặc học cách đọc log hiện có.
 - Thêm 1-2 counter/timer nếu cần, ví dụ Kafka publish success/failure hoặc cache hit/miss.
 
-Chưa cần làm ngay:
+Chưa cần làm ngay (ghi chú Phase 1 ban đầu):
 
 - Prometheus/Grafana stack đầy đủ.
-- Loki/ELK log pipeline.
+- Loki/ELK log pipeline. *(Ghi chú Phase 1.5: Loki + Alloy local lab đã được bổ sung sau trong `lab-code/loki-lab/`.)*
 - Distributed tracing với OpenTelemetry.
 - Alerting production.
-- Log aggregation multi-service.
+- Log aggregation multi-service production.
 
 ---
 

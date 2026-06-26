@@ -254,7 +254,7 @@ Chưa làm trong Phase 1:
 
 - Alertmanager/alert rules.
 - Distributed tracing.
-- Loki/ELK log aggregation.
+- Loki/ELK log aggregation. *(Ngoài phạm vi metrics-lab này. Local Loki + Alloy đã có riêng trong `lab-code/loki-lab/` từ Phase 1.5.)*
 - Kubernetes/service discovery.
 - Auth/network hardening cho Prometheus endpoint.
 - Long-term retention/remote write.
