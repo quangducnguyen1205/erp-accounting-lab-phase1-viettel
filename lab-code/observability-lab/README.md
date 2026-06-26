@@ -123,11 +123,11 @@ make -f Makefile.legacy observability-down
 
 Prometheus/Grafana use Docker named volumes. Scraped history survives container restart while volumes exist.
 
-## Out of scope
+## Out of scope (for this metrics-lab)
 
 - Alertmanager.
 - Distributed tracing.
-- Loki/ELK log aggregation.
+- Loki/ELK log aggregation. *(Local Loki + Alloy đã có riêng trong `lab-code/loki-lab/` từ Phase 1.5.)*
 - Kubernetes.
 - Production auth/network hardening.
 - SLO/SLI design.
