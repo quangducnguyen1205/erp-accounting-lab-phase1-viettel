@@ -16,7 +16,7 @@ Thư mục này chỉ chứa phần frontend cần thiết để demo flow kiế
 - UI chạy theo Docker-first workflow qua `make -f Makefile.legacy web-ui-up`, không yêu cầu local npm.
 - UI là thin client: login Keycloak, gọi API qua Gateway, load/create `master_data`, lookup by code cho Redis demo path và hiển thị requestId để đối chiếu log.
 - Product direction mới là `Master Data Portal`: một business app nhỏ để quản lý master data và xem activity log, không phải architecture console.
-- React implementation đã được realign theo IA mới: Dashboard, Master Data, Activity Log, Account.
+- React implementation đã được realign theo IA mới: Tổng quan, Danh mục tham chiếu, Tra cứu, Tài liệu đính kèm, Nhật ký hoạt động, Demo & kỹ thuật, Tài khoản.
 - Full screen handoff đang được tracking ở [final-web-ui-figma-screen-handoff.md](final-web-ui-figma-screen-handoff.md). Figma Starter MCP limit hiện còn chặn việc generate/export toàn bộ screen set tự động.
 - Không dùng React Native hoặc Expo trong repo Viettel Phase 1 này.
 

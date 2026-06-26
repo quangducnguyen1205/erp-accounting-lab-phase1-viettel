@@ -171,7 +171,7 @@ Action:
 2. Bấm đăng nhập.
 3. Keycloak themed login page xuất hiện.
 4. Login `tenant1-user/password`.
-5. Vào màn Account hoặc topbar để thấy tenant/role.
+5. Vào màn Tài khoản hoặc topbar để thấy tenant/role.
 
 Điểm cần nói:
 
@@ -293,9 +293,9 @@ Production gap:
 
 Action:
 
-1. Mở Activity Log trong UI.
-2. Load activity sau khi tạo/sửa/tạm ngưng master data.
-3. Login tenant 2 và load Activity Log.
+1. Mở Nhật ký hoạt động trong UI.
+2. Load activity sau khi tạo/sửa/tạm ngưng danh mục tham chiếu.
+3. Login tenant 2 và load Nhật ký hoạt động.
 
 Expected:
 
@@ -312,7 +312,7 @@ Expected:
 
 Action:
 
-1. Mở màn Tệp tin.
+1. Mở màn Tài liệu đính kèm.
 2. Upload file nhỏ bằng tenant 1.
 3. Load danh sách file.
 4. Download file.
@@ -464,7 +464,7 @@ lab-code/logs/search-service.log
 | Redis cache | Redis + tenant-demo | get-by-code 2 lần | cache hit/miss log/metric |
 | Kafka | Kafka UI | create/update/deactivate | topic, key, message |
 | Consumer group/lag | Kafka UI | xem groups | lag 0 hoặc giải thích lag |
-| Audit read model | audit-log-service | load Activity Log | audit events |
+| Audit read model | audit-log-service | load Nhật ký hoạt động | audit events |
 | Search projection | search-service | search keyword | result appears after delay |
 | Reindex | search-service | admin `.http` | `200` summary |
 | File boundary | file-service + MinIO | upload/download | metadata + stream |
@@ -510,7 +510,7 @@ curl -f http://localhost:3100/ready
 UI actions:
 
 ```text
-Login -> Danh mục -> tạo/sửa/tạm ngưng -> Tệp tin -> Lịch sử hoạt động -> Tìm kiếm -> Tài khoản
+Login -> Tổng quan -> Danh mục tham chiếu -> tạo/sửa/tạm ngưng -> Tài liệu đính kèm -> Nhật ký hoạt động -> Tra cứu -> Tài khoản
 ```
 
 ## 12. Log/Grafana/Kafka UI evidence
