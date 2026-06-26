@@ -155,11 +155,6 @@ Xem:
 
 Không commit local IntelliJ env thật hoặc token thật.
 
-## Tài liệu demo liên quan
-
-Khi cần rehearsal hoặc demo trước mentor, đọc:
-
-
 ## Nguyên tắc học code
 
 1. Tự đọc docs và tự chạy lab trước.

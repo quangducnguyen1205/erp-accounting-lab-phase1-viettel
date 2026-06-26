@@ -134,7 +134,7 @@ Tiêu chí hoàn thành khi học sau:
 
 ## 7. Áp dụng vào repo hiện tại
 
-Hiện tại **không implement** các phần này. Roadmap chính đi tiếp Redis/cache trước.
+Hiện tại **không implement** các phần này. Trong lộ trình Phase 1 ban đầu, Redis/cache được ưu tiên trước.
 
 Nếu sau này cần chọn một feature nhỏ để demo, nên chọn:
 
