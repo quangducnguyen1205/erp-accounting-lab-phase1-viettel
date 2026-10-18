@@ -35,7 +35,7 @@ Spring Boot tenant-demo
 -> Keycloak Authorization/RBAC mini-lab
 -> Elasticsearch, MinIO, Redis, Kafka, Observability local mini-labs
 -> Spring Cloud Gateway static route
--> React Web UI demo Docker-first
+-> React Web UI demo (host-native Vite)
 ```
 
 Sau feedback mentor ngày 11/06/2026, Phase 1.5 đưa demo gần target hơn bằng Loki log aggregation, Kafka UI, Kong Gateway và các service split nhỏ (`audit-log-service`, `file-service`, `search-service`).
@@ -44,7 +44,7 @@ Sau feedback mentor ngày 11/06/2026, Phase 1.5 đưa demo gần target hơn b�
 
 | Topic | Vai trò trong kiến trúc | Khi repo nên học/dùng | Mini-lab trigger | Trạng thái hiện tại | Rủi ro overdo |
 |---|---|---|---|---|---|
-| React Web frontend | UI web mỏng cho user thao tác, login Keycloak và gọi API qua Gateway. | Đã dùng làm final demo trực quan sau khi backend/gateway ổn. | Login Keycloak, ACCOUNTANT load/create `master_data`, VIEWER load nhưng create `403`, hiển thị requestId để đối chiếu log. | Verified Docker-first ở `lab-code/web-ui-demo`. | Dễ sa vào UI/state/CSS; không dùng React Native/Expo trong repo này. |
+| React Web frontend | UI web mỏng cho user thao tác, login Keycloak và gọi API qua Gateway. | Đã dùng làm final demo trực quan sau khi backend/gateway ổn. | Login Keycloak, ACCOUNTANT load/create `master_data`, VIEWER load nhưng create `403`, hiển thị requestId để đối chiếu log. | Verified ở `lab-code/web-ui-demo`; UI nay chạy host-native bằng `npm run dev`. | Dễ sa vào UI/state/CSS; không dùng React Native/Expo trong repo này. |
 | API Gateway / service discovery / load balancing | Entry point, routing, auth pre-check, rate limit, service discovery. | Đã thêm mini-lab static route để hiểu gateway flow; discovery/load balancing vẫn awareness. | Route `/api/**` qua gateway đến `tenant-demo`, forward `Authorization` và `X-Request-Id`. | Static route mini-lab verified. | Chạy gateway production/service discovery thật quá sớm sẽ tốn setup, ít giá trị Phase 1. |
 | Keycloak/OIDC | Authentication, login/token issuer, issuer/JWKS, user identity claims. | Đã chạm auth nên đã làm mini-lab. | User/token/tenant claim flow, Resource Server validation. | Keycloak mini-lab verified. | Overclaim production IAM quá sớm. |
 | Keycloak Authorization/RBAC/tenant-scope | Authorization: user được phép làm gì, role/scope/authority, service/business permission. | Đã làm sau feedback mentor Đạt ngày 25/05. | Realm roles vs client roles, role claim, Spring Security authorities, 401 vs 403, tenant-scope. | Mini-lab verified. | Làm full permission matrix hoặc Keycloak Authorization Services/UMA quá sớm. |
@@ -84,7 +84,7 @@ Sau feedback mentor ngày 11/06/2026, Phase 1.5 đưa demo gần target hơn b�
 | `com.viettel.demo.messaging` | Kafka async event propagation | Verified | Publish/consume `MasterDataChangedEvent`, event có tenantId và tenant-aware key. |
 | `com.viettel.demo.observability` + `lab-code/observability-lab` | Logging/metrics/local monitoring | Verified | RequestId/MDC, custom Micrometer metrics, Prometheus target UP, Grafana datasource/dashboard. |
 | `lab-code/gateway-demo` | API Gateway/static routing | Verified | Spring Cloud Gateway route `/api/**` đến `tenant-demo`, service discovery để awareness. |
-| `lab-code/web-ui-demo` | React Web thin client | Verified | Docker-first Vite app; Keycloak login bằng public client, gọi Gateway `/api/master-data`, lookup by code, create data và hiển thị requestId. |
+| `lab-code/web-ui-demo` | React Web thin client | Verified | Host-native Vite app (`npm run dev`); Keycloak login bằng public client, gọi Gateway `/api/master-data`, lookup by code, create data và hiển thị requestId. |
 | `lab-code/loki-lab` | Loki log aggregation lab | Local lab implemented | Docker Compose Loki + Grafana + Alloy, Makefile targets `loki-*`. |
 | `lab-code/kafka-ui-lab` | Kafka UI inspection lab | Local lab implemented | Docker Compose + Makefile targets, connects to Kafka via `viettel-kafka-net`. |
 | `lab-code/kong-gateway-lab` | Kong Gateway lab | Local lab implemented | DB-less Kong, route `/api/master-data`, `/api/audit-events` và health route đến `tenant-demo`, Makefile targets `kong-*`. |

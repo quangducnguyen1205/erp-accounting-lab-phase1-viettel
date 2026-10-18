@@ -11,7 +11,7 @@ Thư mục này chỉ chứa phần frontend cần thiết để demo flow kiế
 ## Trạng thái
 
 - React Web UI demo đã được implement và verify ở `lab-code/web-ui-demo/`.
-- UI chạy theo Docker-first workflow qua `make -f Makefile.legacy web-ui-up`, không yêu cầu local npm.
+- UI chạy host-native trên macOS: `cd lab-code/web-ui-demo && npm run dev`, mở URL Vite in ra (thường `http://localhost:5173`). Không dùng Docker cho Node/npm/Vite. Backend/infra (Keycloak, Gateway, Java service) vẫn chạy bằng Docker.
 - UI là thin client: login Keycloak, gọi API qua Gateway, load/create `master_data`, lookup by code cho Redis demo path và hiển thị requestId để đối chiếu log.
 - Product direction mới là `Master Data Portal`: một business app nhỏ để quản lý master data và xem activity log, không phải architecture console.
 - React implementation đã được realign theo IA mới: Tổng quan, Danh mục tham chiếu, Tra cứu, Tài liệu đính kèm, Nhật ký hoạt động, Demo & kỹ thuật, Tài khoản.

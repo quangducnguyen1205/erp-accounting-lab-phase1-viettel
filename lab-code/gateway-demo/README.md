@@ -59,7 +59,7 @@ Gateway có CORS local cho origin mặc định:
 WEB_UI_ORIGIN=http://localhost:5173
 ```
 
-Điều này chỉ để browser demo gọi `http://localhost:8081/api/**` từ Vite container/dev server. Backend `tenant-demo` vẫn validate JWT và enforce tenant-aware query.
+Điều này chỉ để browser demo gọi `http://localhost:8081/api/**` từ Vite dev server chạy host-native. Backend `tenant-demo` vẫn validate JWT và enforce tenant-aware query.
 
 ## Giới hạn hiện tại
 

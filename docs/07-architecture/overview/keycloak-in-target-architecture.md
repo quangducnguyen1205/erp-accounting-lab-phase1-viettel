@@ -253,7 +253,7 @@ Những điểm Phase 1 chỉ cần biết, chưa implement:
 | `DataLeakageTest` | Regression test chống cross-tenant leakage. | Có local JWT mode. | Chưa chạy test tự động với live Keycloak. |
 | API Gateway trong sơ đồ | Protected entry layer. | Có static route mini-lab. | Awareness: gateway có thể validate/pass token; backend vẫn enforce security. |
 | Authorization/RBAC service | Business authorization tập trung. | Chưa implement. | Nên học sau khi có RBAC use case. |
-| React Web app | OAuth2/OIDC client. | Có thin demo Docker-first ở `lab-code/web-ui-demo`. | Dùng để demo flow, chưa phải production frontend. |
+| React Web app | OAuth2/OIDC client. | Có thin demo host-native (`npm run dev`) ở `lab-code/web-ui-demo`. | Dùng để demo flow, chưa phải production frontend. |
 
 ## 10. Best next task
 

@@ -55,7 +55,7 @@ Alloy tail các file log đó để gửi vào Loki. Logs không tự xóa khi s
 
 ### Docker-first
 
-Docker vẫn dùng cho infra/tooling/web UI:
+Docker vẫn dùng cho infra/tooling (**không dùng cho frontend** — web UI chạy host-native bằng `npm run dev`, xem `web-ui-demo/README.md`):
 
 - PostgreSQL
 - Keycloak
@@ -66,7 +66,6 @@ Docker vẫn dùng cho infra/tooling/web UI:
 - Elasticsearch
 - Kong
 - Loki/Grafana/Alloy
-- React Web UI container
 
 ## Thư mục runtime chính
 

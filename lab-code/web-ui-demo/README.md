@@ -124,35 +124,48 @@ User demo kỳ vọng trong lab hiện tại:
 
 Nếu thấy ghi nhầm `tenant1-user` cho cả hai tenant thì đó là typo; user tenant 2 đúng là `tenant2-user`.
 
-## Chạy UI bằng Docker
+## Chạy UI trực tiếp trên macOS
 
-Repo này dùng workflow Docker-first, không yêu cầu local `npm`.
+Frontend chạy **host-native**, không dùng Docker cho Node/npm/Vite.
 
-Từ thư mục `lab-code/`:
+Toolchain hiện tại trên máy: Node.js `22.23.2`, npm `10.9.8`.
 
 ```bash
-make up
+cd /Users/nqd2005/Projects/viettel/lab-code/web-ui-demo
+npm run dev
 ```
 
-Mở:
+Mở URL mà Vite in ra ở terminal, thường là:
 
 ```text
 http://localhost:5173
 ```
 
-Nếu muốn chạy foreground để nhìn log trực tiếp:
+Chạy `npm install` khi mới clone, khi `package.json` hoặc `package-lock.json`
+thay đổi, hoặc khi `node_modules/` thiếu — không chạy lại mỗi task.
+
+Script có thật trong `package.json`: `dev`, `build`, `preview`. Không có
+`typecheck`, `lint` hay `test` — đừng báo cáo những gate không tồn tại.
+
+Build production artifact:
 
 ```bash
-make -f Makefile.legacy web-ui-run
+npm run build
 ```
 
-Build production artifact trong Docker:
+Output `dist/` không commit vào repo.
 
-```bash
-make web-ui-build
-```
-
-Build output `dist/` chỉ nằm trong Docker image/layer; không commit `dist/` vào repo.
+> **Backend/infra vẫn dùng Docker.** Keycloak, Kong Gateway, các Java service,
+> PostgreSQL, Redis, Kafka, MinIO, Elasticsearch và observability stack vẫn chạy
+> bằng Docker Compose từ `lab-code/` (`make up`, `make keycloak-up`,
+> `make keycloak-setup`). UI host-native gọi sang các service đó qua
+> `VITE_API_BASE_URL` và `VITE_KEYCLOAK_URL`. "Frontend không dùng Docker"
+> không có nghĩa là cả hệ thống không dùng Docker.
+>
+> `Dockerfile` và `docker-compose.yml` trong thư mục này là đường chạy FE cũ đã
+> ngừng dùng; image tương ứng đã bị xoá. Đừng dựng lại container Node/Vite,
+> nginx frontend hay volume `node_modules` cho UI. Hai file đó là cấu hình
+> nguồn nên không bị xoá trong đợt cập nhật tài liệu này.
 
 ## Demo route
 

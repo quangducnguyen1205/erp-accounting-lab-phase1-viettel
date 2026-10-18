@@ -90,7 +90,7 @@ Repository này vẫn được ưu tiên làm kho kiến thức Phase 1, nhưng 
 - `lab-code/audit-log-service/`: service split đầu tiên, consume `MasterDataChangedEvent` và expose audit API tenant-aware.
 - `lab-code/file-service/`: service split cho upload/download file tenant-aware qua MinIO.
 - `lab-code/search-service/`: service split cho Elasticsearch projection/search tenant-aware qua Kafka event.
-- `lab-code/web-ui-demo/`: React Web/Vite thin client chạy Docker-first, gọi Gateway sau khi login Keycloak. Đây là demo trực quan cuối Phase 1, không phải React Native/Expo.
+- `lab-code/web-ui-demo/`: React Web/Vite thin client chạy host-native (`npm run dev`), gọi Gateway sau khi login Keycloak. Đây là demo trực quan cuối Phase 1, không phải React Native/Expo.
 
 Java backend services hiện ưu tiên chạy Maven/IntelliJ trên host:
 
